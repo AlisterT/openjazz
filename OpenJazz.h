@@ -22,9 +22,7 @@
 #include <stdlib.h>
 #include <SDL/SDL.h>
 
-#ifdef Main
- #define Extern
-#else
+#ifndef Extern
  #define Extern extern
 #endif
 
@@ -130,11 +128,31 @@
 #define PA_RSPRING  36
 #define PA_LSPRING  37 /* Surely these are the wrong way round? */
 
+// Player facing
+#define PF_LEFT 0
+#define PF_RIGHT 1
+
+// Player reactions
+#define PR_NONE       0
+#define PR_HURT       1
+#define PR_KILLED     2
+#define PR_INVINCIBLE 3
+#define PR_WON        4
+
 // Player speeds
 #define PS_WALK  300
 #define PS_RUN   325
 #define PS_FALL  350
 #define PS_JUMP -350
+
+// Bullet types
+#define B_BLASTER  41
+#define B_LTOASTER 42
+#define B_RTOASTER 51
+#define B_LMISSILE 52
+#define B_RMISSILE 43
+#define B_BOUNCER  49
+#define B_TNT      130
 
 // General
 #define LW        256 /* Level width */
@@ -142,17 +160,15 @@
 #define BLACK      31
 #define EVENTS    127
 #define ELENGTH    32 /* Length of events, in bytes */
-#define SPRITES   256
-#define ANIMS     125
+#define ANIMS     128
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
 #define TW         32 /* Tile width */
 #define TH         32 /* Tile height */
 #define KEYS        8 /* As in keyboard keys */
 #define SKEY      254 /* As in sprite colour key */
 #define TKEY      127 /* As in tileset colour key */
-#define WALKTIME  500 /* Time before a walk becomes a run */
-#define JUMPTIME  40000 /* Divide by 100 when springs etc. all work */
-#define LEANTIME 1000 /* Time before walking into a wall becomes a lean */
+#define HURTTIME 1000
+#define EOLTIME  4000
 
 // Return values that should be acted upon
 #define CONTINUE  0
@@ -173,7 +189,6 @@
                         }
 
 
-
 // Datatypes
 
 
@@ -185,7 +200,7 @@ struct _paletteEffect {
   unsigned char  first;    // The first palette index affected by the effect
   unsigned char  amount;   /* The number of (consecutive) palette indices
                               affected by the effect */
-  int            type;     /* Type of effect, see PE constants */
+  unsigned char  type;     /* Type of effect, see PE constants */
   float          speed;    /* When type is:
                               PE_FADE - Number of seconds the fade lasts
                               PE_ROTATE - Rotations per second
@@ -212,31 +227,49 @@ struct _paletteEffect {
 
 typedef struct {
 
-  SDL_Surface *pixels;
-  unsigned char w;
-  unsigned char h; // Dimensions of the letters
-  char map[128]; // Maps ASCII values to letter positions
+  SDL_Surface   *pixels;
+  unsigned char *w;
+  unsigned char  h; // Dimensions of the letters
+  char           map[128]; // Maps ASCII values to letter positions
 
 } font;
 
 
 typedef struct {
 
-  unsigned char tile;   // Indexes the tile set
-  unsigned char bg;     /* 0 = Normal background
-                           1 = Black background */
-  unsigned char event;  // Indexes the event set
-
-  // The following require more research into events
-  unsigned char x, y;   /* Actual coordinates of the event assigned to this
-                           tile, if applicable */
-  unsigned char health; // Health of the event, if applicable
+  unsigned char tile;  // Indexes the tile set
+  unsigned char bg;    /* 0 = Normal background
+                          1 = Black background */
+  unsigned char event; // Indexes the event set
+  unsigned char hits;  // Number of times the event has been shot
+  int           time;  // Point at which the event will do something,
+                       // e.g. terminate
 
 } gridElement;
 
+typedef struct _event event;
+
+struct _event {
+
+  event         *next;
+  event         *prev;
+  float          x, y;   // Actual position of the event
+  unsigned char  gridX, gridY; // Grid position of the event
+  unsigned char  anim;   // E_LEFTANIM, etc, or 0
+
+};
+
 typedef struct {
 
-  SDL_Surface   *sprites[19]; // Pointers to members of the sprite set
+  SDL_Surface   *pixels; // Pointer to the sprite surface
+  unsigned char  x;      // Horizontal offset
+  unsigned char  y;      // Vertical offset
+
+} sprite;
+
+typedef struct {
+
+  sprite         sprites[19]; // Pointers to members of the sprite set
   signed char    y[19];       // Vertical offsets (for pickup wobble effect)
   unsigned char  frames;      // Number of frames
 
@@ -246,20 +279,45 @@ typedef struct {
 
     char  anims[PANIMS];
     int   anim;
-    float x, y;
-    float viewX, viewY;
+    int   facing;
+    int   viewX, viewY;
     int   viewW, viewH;
-    int   walkStart;
-    int   jumpStart;
+    float x, y;
+    float dx, dy;
+    int   jumpDuration;
+    int   jumpTime;
     int   score;
     int   energy;
     float energyBar;
     int   lives;
-    int   facing; /* 0 = left, 1 = right. The order is needed for animation. */
-    int   rising; /* 0 = not rising, 1 = jumping, 2 = somersaulting,
-                     3 = red spring, 4 = green spring, 5 = blue spring */
+    int   reaction;
+    int   reactionTime;
+    int   ammo[4];
+    int   ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer
+                       3 = TNT */
+    int   shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange,
+                     4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
+    int   floating; // 0 = normal, 1 = boarding/birding/whatever
 
 } player;
+
+typedef struct _bullet bullet;
+
+struct _bullet {
+
+  bullet *next;
+  int     origin; // Negative: x coordinate of the event that fired
+                  // Positive: The player who fired
+  int     type;   // Negative: y coordinate of the event that fired
+                  // Positive: 0 = blaster, 1 = toaster, 2 = missiles,
+                  //           4 = bouncer, 5 = bird ammo
+  float   x;
+  float   y;
+  float   dx;
+  float   dy;     // Speed in pixels per second
+  int     time;   // The time at which the bullet will self-destruct
+
+};
 
 
 // Variables
@@ -268,6 +326,7 @@ Extern struct {
 
   // It's pretty safe to assume there's one of these, but that's about it
   SDL_Surface *pixels;
+  SDL_Color    palette[256];
 
 } cutscene;
 
@@ -280,40 +339,55 @@ Extern struct {
 } keys[8];
 
 
-Extern player players[1]; // To do: Replace for multiplayer
-
 Extern char *path; // Path to game data
 
 Extern SDL_Surface *panel;
+Extern SDL_Surface *panelAmmo[5];
 
-Extern font font2;          /* Taken from .0FN file name */
-Extern font fontbig;        /* Taken from .0FN file name */
-Extern font fontiny;        /* Taken from .0FN file name */
-Extern font fontmn1;        /* Taken from .0FN file name */
-Extern font fontmn2;        /* Taken from .0FN file name */
-Extern font panelBigFont;   /* Not a font file, found in the PANEL.000 */
-Extern font panelSmallFont; /* Not a font file, found in the PANEL.000 */
+Extern font *font2;         /* Taken from .0FN file name */
+Extern font *fontbig;       /* Taken from .0FN file name */
+Extern font *fontiny;       /* Taken from .0FN file name */
+Extern font *fontmn1;       /* Taken from .0FN file name */
+Extern font *fontmn2;       /* Taken from .0FN file name */
+Extern font *redFontmn2;    /* Redenned version of fontmn2 */
+Extern font panelBigFont;   /* Not a font file, found in PANEL.000 */
+Extern font panelSmallFont; /* Not a font file, found in PANEL.000 */
+
+Extern SDL_Surface *menuScreens[14];
+Extern SDL_Color    menuPalettes[3][256];
+Extern int          episodes;
 
 Extern gridElement    grid[LH][LW]; // All levels are the same size
 Extern unsigned char  eventSet[EVENTS][ELENGTH]; // Not all used
-Extern SDL_Surface   *spriteSet[SPRITES]; // 208 of which are in mainchar.000
+Extern event         *firstEvent, *unusedEvent;
+Extern sprite        *spriteSet; // 208 of which are usually in mainchar.000
+Extern int            sprites;
 Extern anim           animSet[ANIMS];
 Extern SDL_Surface   *tileSet;
 Extern char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
-
-Extern SDL_Color      realPalette[256];
-Extern SDL_Color      bgPalette[255];
-Extern paletteEffect *firstPE;
+Extern bullet        *firstBullet, *unusedBullet;
+Extern int            time;
+Extern int            skyOrb;
+Extern player        *players;
+Extern int            nPlayers;
+Extern player        *localPlayer;
+Extern char          *sceneFile;
+Extern SDL_Color      levelPalette[256];
+Extern SDL_Color      levelBGPalette[255];
 Extern paletteEffect *bgPE;
+
+Extern paletteEffect *firstPE;
 Extern int            bgScale;
 
 Extern SDL_Surface *screen;
+Extern SDL_Color   *currentPalette;
 Extern int   screenW, screenH, fullscreen;
 Extern float fps;
 Extern float spf;
 
-Extern int world, level, nextworld, nextlevel;
-Extern int difficulty;
+Extern unsigned char world, level, nextworld, nextlevel;
+Extern unsigned char difficulty;
+Extern unsigned char checkX, checkY;
 
 
 // Functions in bonus.c
@@ -323,9 +397,21 @@ Extern void freeBonus (void);
 Extern void bonusLoop (void);
 
 
+// Functions in events.c
+
+Extern void createPlayerBullet (player *source, int ticks);
+Extern void createEventBullet  (event *source, int ticks);
+Extern void removeBullet       (bullet * previous);
+Extern void freeBullets        (void);
+Extern void createEvent        (int x, int y);
+Extern void removeEvent        (event * previous);
+Extern void freeEvents         (void);
+Extern void processEvent       (event *evt, int ticks);
+
+
 // Functions in font.c
 
-Extern font * loadFont   (char * fn);
+Extern font * loadFont   (char * fn, SDL_Color *palette);
 Extern void   freeFont   (font * f);
 Extern void   showString (char * s, int x, int y, font * f);
 Extern void   showNumber (int n, int x, int y, font * f);
@@ -341,22 +427,26 @@ Extern int             loadNextLevel (void);
 Extern int             loadMacro     (char * fn);
 Extern void            freeLevel     (void);
 Extern int             checkMask     (int x, int y);
-Extern void            processEvent  (int x, int y, int frame);
 Extern void            levelLoop     (void);
 
 
 // Functions in main.c
 
-Extern FILE          * fopenFromPath  (char * fn);
-Extern unsigned char * loadRLE        (FILE * f, int size);
-Extern void            skipRLE        (FILE * f);
-Extern SDL_Surface   * createSurface  (unsigned char * pixels, int width,
-                                       int height);
-Extern int             loadMain       (void);
-Extern void            updatePalettes (void);
-Extern int             loop           (void);
-Extern void            quit           (void);
+Extern FILE          * fopenFromPath      (char * fn);
+Extern unsigned char * loadRLE            (FILE * f, int size);
+Extern void            skipRLE            (FILE * f);
+Extern SDL_Surface   * createSurface      (unsigned char * pixels,
+                                           SDL_Color *palette, int width,
+                                           int height);
+Extern SDL_Surface   * createBlankSurface (SDL_Color *palette);
+Extern void            loadPalette        (SDL_Color *palette, FILE *f);
+Extern int             loadMain           (void);
+Extern void            usePalette         (SDL_Color *palette);
+Extern int             loop               (void);
+Extern void            quit               (void);
 
+#define loadSurface(file, palette, width, height) \
+  createSurface(loadRLE(file, (width) * (height)), palette, width, height)
 
 // Functions in menu.c
 

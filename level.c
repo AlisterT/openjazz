@@ -28,12 +28,6 @@
 #include <string.h>
 
 
-char *sceneFile;
-int   nPlayers = 1;
-int   time;
-int   skyOrb;
-
-
 int loadSprites (char * fn) {
 
   FILE *f, *mf, *sf;
@@ -44,22 +38,33 @@ int loadSprites (char * fn) {
                         // take ages.
 
   // Open fn
-  f = sf = fopenFromPath(fn);
+  sf = fopenFromPath(fn);
 
   // This function loads all the sprites, not fust those in fn
   // Note: Lower case is necessary for Unix support
   mf = fopenFromPath("mainchar.000");
 
+  sprites = fgetc(sf);
+  sprites += fgetc(sf) << 8; // Not that the sprite set can ever be larger than
+                             // 256...
+
+  // Include space in the sprite set for the blank sprite at the end
+  spriteSet = malloc(sizeof(sprite) * (sprites + 1));
+
+  // Read horizontal offsets
+  for (i = 0; i < sprites; i++) spriteSet[i].x = fgetc(sf) << 2;
+
+  // Read vertical offsets
+  for (i = 0; i < sprites; i++) spriteSet[i].y = fgetc(sf);
+
   // Find where the sprites start in fn
-  sposition = 2;
-  sposition += fgetc(f) << 1;
-  sposition += fgetc(f) << 1;
+  sposition = ftell(sf);
 
   // Find where the sprites start in mainchar.000
   mposition = 2;
 
   // Loop through all the sprites to be loaded
-  for (i = 0; i < SPRITES; i++) {
+  for (i = 0; i < sprites; i++) {
 
     // Go to the start of the current sprite or file indicator
     fseek(sf, sposition, SEEK_SET);
@@ -77,10 +82,7 @@ int loadSprites (char * fn) {
       mposition += 2;
 
       // Create a blank sprite
-      pixels = malloc(1);
-      *pixels = SKEY;
-      spriteSet[i] = createSurface(pixels, 1, 1);
-      SDL_SetColorKey(spriteSet[i], SDL_SRCCOLORKEY, SKEY);
+      spriteSet[i].pixels = createBlankSurface(levelPalette);
       i++;
 
     }
@@ -101,11 +103,11 @@ int loadSprites (char * fn) {
 
     // Width
     w = fgetc(f) << 2;
-    fseek(f, 1, SEEK_CUR);
+    w += fgetc(f) << 10;
 
     // Height
     h = fgetc(f);
-    fseek(f, 1, SEEK_CUR);
+    h += fgetc(f) << 8;
 
     // Position of the next sprite or file indicator in each file
     if (f == sf) {
@@ -126,6 +128,7 @@ int loadSprites (char * fn) {
 
     // m is for MAGIC
     m = fgetc(f);
+    m += fgetc(f) << 8;
 
     // Allocate space for pixel data
     pixels = malloc(w * h);
@@ -135,12 +138,12 @@ int loadSprites (char * fn) {
 
     // Actually, m is for mask offset.
     // Sprites can be either masked or not masked.
-    if (m == 0) {
+    if (!m) {
 
       // Not masked
       // Load the pixel data directly for descrambling
 
-      fseek(f, 3, SEEK_CUR);
+      fseek(f, 2, SEEK_CUR);
 
       fread(pixels, w, h, f);
 
@@ -149,8 +152,6 @@ int loadSprites (char * fn) {
 
       // Masked
       // Load the pixel data according to the mask
-
-      fseek(f, 1, SEEK_CUR);
 
       // Masked sprites have their own next sprite offsets
       if (f == sf) {
@@ -175,7 +176,7 @@ int loadSprites (char * fn) {
 
         for (x = 0; x < w; x++) {
 
-          if ((x & 3) == 0) m = fgetc(f);
+          if (!(x & 3)) m = fgetc(f);
           pixels[(y * w) + x] = (m >> (x & 3)) & 1;
 
         }
@@ -239,8 +240,8 @@ int loadSprites (char * fn) {
 
 
     // Convert the sprite to an SDL surface
-    spriteSet[i] = createSurface(sorted, w, h);
-    SDL_SetColorKey(spriteSet[i], SDL_SRCCOLORKEY, SKEY);
+    spriteSet[i].pixels = createSurface(sorted, levelPalette, w, h);
+    SDL_SetColorKey(spriteSet[i].pixels, SDL_SRCCOLORKEY, SKEY);
 
     // Free redundant data
     free(pixels);
@@ -251,12 +252,9 @@ int loadSprites (char * fn) {
 
     if (fgetc(sf) == -1) {
 
-      for (i++; i < SPRITES; i++) {
+      for (i++; i < sprites; i++) {
 
-        pixels = malloc(1);
-        *pixels = SKEY;
-        spriteSet[i] = createSurface(pixels, 1, 1);
-        SDL_SetColorKey(spriteSet[i], SDL_SRCCOLORKEY, SKEY);
+        spriteSet[i].pixels = createBlankSurface(levelPalette);
 
       }
 
@@ -266,6 +264,13 @@ int loadSprites (char * fn) {
 
   fclose(mf);
   fclose(sf);
+
+
+  // Include a blank sprite at the end
+
+  spriteSet[sprites].pixels = createBlankSurface(levelPalette);
+  spriteSet[sprites].x = 0;
+  spriteSet[sprites].y = 0;
 
   return CONTINUE;
 
@@ -285,45 +290,15 @@ int loadTiles (char * fn) {
 
   // Load the palette
 
-  buffer = loadRLE(f, 768);
-
-  for (count = 0; count < 256; count++) {
-
-    // Palette entries are 6-bit
-    // Shift them upwards to 8-bit, and fill in the lower 2 bits
-    realPalette[count].r = (buffer[count * 3] << 2) +
-                           (buffer[count * 3] >> 6);
-    realPalette[count].g = (buffer[(count * 3) + 1] << 2) +
-                           (buffer[(count * 3) + 1] >> 6);
-    realPalette[count].b = (buffer[(count * 3) + 2] << 2) +
-                           (buffer[(count * 3) + 2] >> 6);
-
-  }
-
-  free(buffer);
+  loadPalette(levelPalette, f);
 
   // Apply the palette to surfaces that already exist, e.g. fonts
-  updatePalettes();
+  usePalette(levelPalette);
 
 
   // Load the background palette
 
-  buffer = loadRLE(f, 765);
-
-  for (count = 0; count < 255; count++) {
-
-    // Palette entries are 6-bit
-    // Shift them upwards to 8-bit, and fill in the lower 2 bits
-    bgPalette[count].r = (buffer[count * 3] << 2) +
-                         (buffer[count * 3] >> 6);
-    bgPalette[count].g = (buffer[(count * 3) + 1] << 2) +
-                         (buffer[(count * 3) + 1] >> 6);
-    bgPalette[count].b = (buffer[(count * 3) + 2] << 2) +
-                         (buffer[(count * 3) + 2] >> 6);
-
-  }
-
-  free(buffer);
+  loadPalette(levelBGPalette, f);
 
 
   // Skip the second, identical, background palette
@@ -357,7 +332,7 @@ int loadTiles (char * fn) {
 
       for (count = 0; count < rle; count++) buffer[pos++] = fgetc(f);
 
-    } else if (rle == 0) { // This happens at the end of each tile
+    } else if (!rle) { // This happens at the end of each tile
 
         // 0 pixels means 1 pixel, apparently
         buffer[pos++] = fgetc(f);
@@ -378,7 +353,7 @@ int loadTiles (char * fn) {
   // Should be a multiple of 60
   nTiles = pos / (TW * TH);
 
-  tileSet = createSurface(buffer, TW, TH * nTiles);
+  tileSet = createSurface(buffer, levelPalette, TW, TH * nTiles);
   SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
 
   return nTiles;
@@ -392,13 +367,17 @@ int loadLevel (char * fn) {
   FILE *f;
   unsigned char *buffer;
   paletteEffect *pe;
+  unsigned char birdEvent[ELENGTH] = {0, 0, 0, 0, 8, 51, 52, 0,
+                                      0, 0, 7, 0, 0, B_BLASTER, 1, 1,
+                                      0, 10, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0};
   unsigned char nTiles;
   int count, x, y;
 
 
   f = fopenFromPath(fn);
 
-  if (strncasecmp(fn + 6, ".j1l", 4) == 0) {
+  if (!strncasecmp(fn + 6, ".j1l", 4)) {
 
     // Load level data from a *.j1l file
 
@@ -442,7 +421,7 @@ int loadLevel (char * fn) {
     // Load sprite set from corresponding Sprites.###
     // Note: Lower case is required for Unix support
     sprintf(subFN, "sprites.%3s", fn + 7);
-    loadSprites(subFN), free(subFN);
+    loadSprites(subFN);
 
     free(subFN);
 
@@ -463,6 +442,7 @@ int loadLevel (char * fn) {
       grid[y][x].tile = buffer[(y + (x * LH)) << 1];
       grid[y][x].bg = buffer[((y + (x * LH)) << 1) + 1] >> 7;
       grid[y][x].event = buffer[((y + (x * LH)) << 1) + 1] & 127;
+      grid[y][x].hits = 0;
 
     }
 
@@ -523,14 +503,16 @@ int loadLevel (char * fn) {
 
   buffer = loadRLE(f, EVENTS * ELENGTH);
 
-  for (count = 0; count < EVENTS; count++) {
+  // Set event 0
+  memset(*eventSet, 0, ELENGTH);
 
-    for (x = 0; x < ELENGTH; x++)
-      eventSet[count][x] = buffer[(count * ELENGTH) + x];
-
-  }
+  for (count = 1; count < EVENTS; count++)
+    memcpy(eventSet[count], buffer + (count * ELENGTH), ELENGTH);
 
   free(buffer);
+
+  // Create the bird
+  memcpy(eventSet[121], birdEvent, ELENGTH);
 
 
   // Eliminate event references for events of too high a difficulty
@@ -563,6 +545,7 @@ int loadLevel (char * fn) {
 
       // Get frame
       x = buffer[(count * 64) + 7 + y];
+      if (x > sprites) x = sprites;
 
       animSet[count].sprites[y] = spriteSet[x];
 
@@ -598,7 +581,7 @@ int loadLevel (char * fn) {
   fseek(f, 25 - x, SEEK_CUR);
 
   x = fgetc(f);
-  if (x == 0) x = 9;
+  if (!x) x = 9;
   sceneFile = malloc(x + 1);
   for (y = 0; y < x; y++) sceneFile[y] = fgetc(f);
   sceneFile[x] = 0;
@@ -610,10 +593,12 @@ int loadLevel (char * fn) {
 
   // First up, the player's coordinates
   // These are grid coordiantes, so they must be shifted into real coordinates
-  players[0].x = fgetc(f) << 5;
-  players[0].x += fgetc(f) << 13;
-  players[0].y = fgetc(f) << 5;
-  players[0].y += fgetc(f) << 13;
+  checkX = fgetc(f);
+  checkX += fgetc(f) << 8;
+  checkY = fgetc(f);
+  checkY += fgetc(f) << 8;
+  localPlayer->x = checkX << 5;
+  localPlayer->y = checkY << 5;
 
   // Next level
   nextlevel = fgetc(f);
@@ -632,7 +617,7 @@ int loadLevel (char * fn) {
   buffer = loadRLE(f, PANIMS * 2);
 
   for (count = 0; count < PANIMS; count++)
-    players[0].anims[count] = buffer[count << 1];
+    localPlayer->anims[count] = buffer[count << 1];
 
   free(buffer);
 
@@ -803,17 +788,23 @@ int loadLevel (char * fn) {
   }
 
 
-  // some intital values for the player
+  // Some initial values for the player
 
-  players[0].jumpStart = 0;
-  players[0].walkStart = 0;
-  players[0].facing = 1;
-  players[0].energy = 4;
-  players[0].energyBar = 0;
+  localPlayer->facing = 1;
+  localPlayer->dx = 0;
+  localPlayer->dy = 0;
+  localPlayer->jumpDuration = 300;
+  localPlayer->jumpTime = 0;
+  localPlayer->energy = 4;
+  localPlayer->energyBar = 0;
+  localPlayer->reaction = 0;
+  localPlayer->reactionTime = 0;
+  localPlayer->floating = 0;
 
 
   // Set the time at which the level will end
   time = SDL_GetTicks() + ((5 - difficulty) * 2 * 60 * 1000);
+
 
   return CONTINUE;
 
@@ -825,8 +816,6 @@ int loadNextLevel () {
   FILE *f;
   char *fn;
   int count;
-
-  fn = malloc(11);
 
   if (nextlevel == 99) {
 
@@ -856,12 +845,14 @@ int loadNextLevel () {
 
   }
 
+  fn = malloc(11);
+
   // Load whichever level nextlevel and nextworld refer to
   sprintf(fn, "level%1d.%03d", level, world);
   f = fopenFromPath(fn);
 
   // If that didn't work, scan for level
-  for (count = 0; (count < 156) && (f == NULL); count++) {
+  for (count = 0; (count < 156) && !f; count++) {
 
     if (level >= 2) {
 
@@ -883,7 +874,7 @@ int loadNextLevel () {
 
   }
 
-  if (f != NULL) {
+  if (f) {
 
     // if the scan was successful
 
@@ -923,7 +914,7 @@ void freeLevel (void) {
   int count;
 
   // Free the palette effects
-  while(firstPE != NULL) {
+  while (firstPE) {
 
     pe = firstPE->next;
     free(firstPE);
@@ -931,14 +922,19 @@ void freeLevel (void) {
 
   }
 
-  // Free the tile set
+  freeBullets();
+  freeEvents();
+
   SDL_FreeSurface(tileSet);
 
-  // Free the sprites, remembering to include the last blank one
-  for (count = 0; count < SPRITES; count++) SDL_FreeSurface(spriteSet[count]);
+  for (count = 0; count <= sprites; count++)
+    SDL_FreeSurface(spriteSet[count].pixels);
 
-  // Free the cutscene file name
+  free(spriteSet);
+
   free(sceneFile);
+
+  freeMusic();
 
   return;
 
@@ -951,10 +947,6 @@ int checkMask (int x, int y) {
   // Anything off the edge of the map is solid
   if ((x < 0) || (y < 0) || (x > LW * TW) || (y > LH * TH)) return 1;
 
-  // If the player is going upwards through one-way scenery, pretend it is not
-  // solid
-  if ((players[0].rising != 0) && (grid[y >> 5][x >> 5].event) == 122) return 0;
-
   // Check the mask in the tile in question
   return mask[grid[y >> 5][x >> 5].tile]
              [(((y & 31) >> 2) << 3) + ((x & 31) >> 2)];
@@ -962,95 +954,11 @@ int checkMask (int x, int y) {
 }
 
 
-
-void processEvent (int x, int y, int frame) {
-
-  SDL_Rect dst;
-  gridElement *ge;
-  unsigned char *event;
-
-  // To do: A whole lot
-
-  // Get the grid element at the given coordinates
-  ge = grid[y + ((int)players[0].viewY >> 5)] + x +
-       ((int)players[0].viewX >> 5);
-
-  // Get the event used by the grid element
-  event = eventSet[ge->event];
-
-  switch (ge->event) {
-
-    case 0: // No event
-    case 122: // One-way
-    case 123: // Foreground
-    case 124: // Foreground
-    case 125: // Foreground
-    case 126: // ...Something
-
-      break;
-
-    default:
-
-      // What follows is BRIMMING WITH EVIL
-
-      // Find the horizontal position at which to draw the event
-      dst.x = (x << 5) - ((int)players[0].viewX & 31);
-
-      // Decide whether to use the left or the right animation, based on whether
-      // the player is to the left or to the right of the event
-      if (players[0].x < ((x + ((int)players[0].viewX >> 5)) << 5)) {
-
-        // Ensure that the animation reference is valid
-        if ((event[E_LEFTANIM] > 0) && (event[E_LEFTANIM] < ANIMS)  ) {
-
-          // Find the vertical position at which to draw the event
-          dst.y = animSet[event[E_LEFTANIM]].
-                  y[frame % animSet[event[E_LEFTANIM]].frames]
-                  - animSet[event[E_LEFTANIM]].
-                  sprites[frame % animSet[event[E_LEFTANIM]].frames]->h
-                  + ((y + 1) << 5) - ((int)players[0].viewY & 31);
-
-          // Draw the event
-          SDL_BlitSurface(animSet[event[E_LEFTANIM]].
-                          sprites[frame % animSet[event[E_LEFTANIM]].frames],
-                          NULL, screen, &dst);
-
-        }
-
-      } else {
-
-        // Ensure that the animation reference is valid
-        if ((event[E_RIGHTANIM] > 0) && (event[E_RIGHTANIM] < ANIMS)  ) {
-
-          // Find the vertical position at which to draw the event
-          dst.y = animSet[event[E_RIGHTANIM]].
-                  y[frame % animSet[event[E_RIGHTANIM]].frames]
-                  - animSet[event[E_RIGHTANIM]].
-                  sprites[frame % animSet[event[E_RIGHTANIM]].frames]->h
-                  + ((y + 1) << 5) - ((int)players[0].viewY & 31);
-
-          // Draw the event
-          SDL_BlitSurface(animSet[event[E_RIGHTANIM]].
-                          sprites[frame % animSet[event[E_RIGHTANIM]].frames],
-                          NULL, screen, &dst);
-
-        }
-
-      }
-
-      break;
-
-  }
-
-  return;
-
-}
-
-
-
 void levelLoop (void) {
 
   gridElement *ge;
+  bullet *bul, *prevBul;
+  event *evt, *nextEvt;
   SDL_Rect src, dst;
   float dx, dy;
   int x, y, ticks, frame;
@@ -1094,94 +1002,127 @@ void levelLoop (void) {
 
     // Physics
 
-    // Determine the player's motion
+    // Determine the player's trajectory
 
     if (keys[K_LEFT].state == SDL_PRESSED) {
+
+      if (localPlayer->dx > 0) localPlayer->dx -= 600 * spf;
+      if (localPlayer->dx > -PS_WALK) localPlayer->dx -= 300 * spf;
+      if (localPlayer->dx > -PS_RUN) localPlayer->dx -= 150 * spf;
+      if (localPlayer->dx < -PS_RUN) localPlayer->dx = -PS_RUN;
+
+      localPlayer->facing = 0;
+
+    } else if (keys[K_RIGHT].state == SDL_PRESSED) {
     
-      if ((players[0].walkStart == 0) || (players[0].facing == 1))
-        players[0].walkStart = ticks;
+      if (localPlayer->dx < 0) localPlayer->dx += 600 * spf;
+      if (localPlayer->dx < PS_WALK) localPlayer->dx += 300 * spf;
+      if (localPlayer->dx < PS_RUN) localPlayer->dx += 150 * spf;
+      if (localPlayer->dx > PS_RUN) localPlayer->dx = PS_RUN;
 
-      players[0].facing = 0;
+      localPlayer->facing = 1;
 
-    }
+    } else {
 
-    if ((keys[K_LEFT].state == SDL_RELEASED) && (players[0].facing == 0)) {
+      if (localPlayer->dx > 0) {
 
-       players[0].walkStart = 0;
-
-    }
-    
-    if (keys[K_RIGHT].state == SDL_PRESSED) {
-    
-      if ((players[0].walkStart == 0) || (players[0].facing == 0))
-        players[0].walkStart = ticks;
-
-      players[0].facing = 1;
-
-    }
-
-    if ((keys[K_RIGHT].state == SDL_RELEASED) && (players[0].facing == 1)) {
-
-       players[0].walkStart = 0;
-
-    }
-    
-    if ((keys[K_JUMP].state == SDL_PRESSED) &&
-        (checkMask(players[0].x + 12, players[0].y + 33) ||
-         checkMask(players[0].x + 16, players[0].y + 33) ||
-         checkMask(players[0].x + 20, players[0].y + 33)   ) &&
-        !checkMask(players[0].x + 16, players[0].y - 1) &&
-        (players[0].jumpStart == 0) && (players[0].rising == 0)) {
-
-      players[0].jumpStart = ticks;
-      if ((players[0].walkStart) &&
-          (players[0].jumpStart - players[0].walkStart > WALKTIME))
-        players[0].rising = 2;
-      else players[0].rising = 1;
-
-    }
-
-    if ((keys[K_JUMP].state == SDL_RELEASED)
-        || checkMask(players[0].x + 16, players[0].y + 11)
-        || (ticks - players[0].jumpStart > JUMPTIME)) {
-
-       if (players[0].jumpStart) {
-
-         players[0].walkStart = 0;
-         players[0].jumpStart = 0;
-
-       }
-
-       if (players[0].rising <= 2) players[0].rising = 0;
-
-    }
-    
-
-    // Calculate the player's trajectory
-
-    if (players[0].rising > 0) dy = spf * PS_JUMP;
-    else dy = spf * PS_FALL;
-
-    if (players[0].walkStart > 0) {
-
-      if (players[0].facing == 0) {
-
-        if (ticks - players[0].walkStart > WALKTIME) dx = spf * -PS_RUN;
-        else dx = spf * -PS_WALK;
-
-      } else {
-
-        if (ticks - players[0].walkStart > WALKTIME) dx = spf * PS_RUN;
-        else dx = spf * PS_WALK;
+        if (localPlayer->dx < 1000 * spf) localPlayer->dx = 0;
+        else localPlayer->dx -= 1000 * spf;
 
       }
 
-    } else dx = 0;
+      if (localPlayer->dx < 0) {
 
+        if (localPlayer->dx > -1000 * spf) localPlayer->dx = 0;
+        else localPlayer->dx += 1000 * spf;
+
+      }
+
+    }
+
+
+    if (localPlayer->floating) {
+    
+      if (keys[K_UP].state == SDL_PRESSED) {
+
+        if (localPlayer->dy > 0) localPlayer->dy -= 600 * spf;
+        if (localPlayer->dy > -PS_WALK) localPlayer->dy -= 300 * spf;
+        if (localPlayer->dy > -PS_RUN) localPlayer->dy -= 150 * spf;
+        if (localPlayer->dy < -PS_RUN) localPlayer->dy = -PS_RUN;
+
+        localPlayer->facing = 0;
+
+      } else if (keys[K_DOWN].state == SDL_PRESSED) {
+    
+        if (localPlayer->dy < 0) localPlayer->dy += 600 * spf;
+        if (localPlayer->dy < PS_WALK) localPlayer->dy += 300 * spf;
+        if (localPlayer->dy < PS_RUN) localPlayer->dy += 150 * spf;
+        if (localPlayer->dy > PS_RUN) localPlayer->dy = PS_RUN;
+
+        localPlayer->facing = 1;
+
+      } else {
+
+        if (localPlayer->dy > 0) {
+
+          if (localPlayer->dy < 1000 * spf) localPlayer->dy = 0;
+          else localPlayer->dy -= 1000 * spf;
+
+        }
+
+        if (localPlayer->dy < 0) {
+
+          if (localPlayer->dy > -1000 * spf) localPlayer->dy = 0;
+          else localPlayer->dy += 1000 * spf;
+
+        }
+
+      }
+
+    } else {
+
+      if (keys[K_JUMP].state == SDL_PRESSED) {
+
+        if (localPlayer->jumpTime > ticks) {
+
+          localPlayer->dy = PS_JUMP;
+
+        } else if ((checkMask(localPlayer->x + 12, localPlayer->y + 1) ||
+                    checkMask(localPlayer->x + 16, localPlayer->y + 1) ||
+                    checkMask(localPlayer->x + 20, localPlayer->y + 1)   ) &&
+                   (!checkMask(localPlayer->x + 16, localPlayer->y - 33) ||
+                    (grid[(int)(localPlayer->y - 21) >> 5]
+                         [(int)(localPlayer->x + 16) >> 5].event == 122)   ) ) {
+
+          localPlayer->jumpTime = ticks + localPlayer->jumpDuration;
+          localPlayer->dy = PS_JUMP;
+
+        }
+
+      }
+
+      if (keys[K_JUMP].state == SDL_RELEASED) localPlayer->jumpTime = 0;
+
+      if (checkMask(localPlayer->x + 16, localPlayer->y - 21) &&
+          (grid[(int)(localPlayer->y - 21) >> 5]
+               [(int)(localPlayer->x + 16) >> 5].event != 122)  ) {
+
+        localPlayer->jumpTime = 0;
+        localPlayer->dy = 0;
+
+      }
+    
+      localPlayer->dy += 3000 * spf;
+      if (localPlayer->dy > PS_FALL) localPlayer->dy = PS_FALL;
+
+    }
 
     // Apply as much of that trajectory as possible, without going into the
     // scenery
     
+    dx = localPlayer->dx * spf;
+    dy = localPlayer->dy * spf;
+
     x = (int)dx;
     y = (int)dy;
 
@@ -1189,20 +1130,23 @@ void levelLoop (void) {
 
     while (y > 0) {
 
-      if (checkMask(players[0].x + 12, players[0].y + 33) ||
-          checkMask(players[0].x + 16, players[0].y + 33) ||
-          checkMask(players[0].x + 20, players[0].y + 33)   ) break;
+      if (checkMask(localPlayer->x + 12, localPlayer->y + 1) ||
+          checkMask(localPlayer->x + 16, localPlayer->y + 1) ||
+          checkMask(localPlayer->x + 20, localPlayer->y + 1)   ) break;
 
-      players[0].y++;
+      localPlayer->y++;
       y--;
 
     }
 
+
     while (y < 0) {
 
-      if (checkMask(players[0].x + 16, players[0].y + 11)) break;
+      if (checkMask(localPlayer->x + 16, localPlayer->y - 21) &&
+          (grid[(int)(localPlayer->y - 21) >> 5]
+               [(int)(localPlayer->x + 16) >> 5].event != 122)  ) break;
 
-      players[0].y--;
+      localPlayer->y--;
       y++;
 
     }
@@ -1210,104 +1154,125 @@ void levelLoop (void) {
     dy -= (int)dy;
 
     if (((dy > 0) &&
-        !(checkMask(players[0].x + 12, players[0].y + 32 + dy) ||
-          checkMask(players[0].x + 16, players[0].y + 32 + dy) ||
-          checkMask(players[0].x + 20, players[0].y + 32 + dy)   )) ||
-        ((dy < 0) && !checkMask(players[0].x + 16, players[0].y + 12 + dy)))
-      players[0].y += dy;
+        !(checkMask(localPlayer->x + 12, localPlayer->y + dy) ||
+          checkMask(localPlayer->x + 16, localPlayer->y + dy) ||
+          checkMask(localPlayer->x + 20, localPlayer->y + dy)   )) ||
+        ((dy < 0) &&
+         (!checkMask(localPlayer->x + 16, localPlayer->y + dy - 20) ||
+          (grid[(int)(localPlayer->y + dy - 20) >> 5]
+               [(int)(localPlayer->x + 16) >> 5].event == 122)        )))
+      localPlayer->y += dy;
 
     // Then for the horizontal component of the trajectory
 
     while (x < 0) {
 
-      if (checkMask(players[0].x + 5, players[0].y + 13)) break;
+      if (checkMask(localPlayer->x + 5, localPlayer->y - 19)) break;
 
-      players[0].x--;
+      localPlayer->x--;
       x++;
 
     }
 
     while (x > 0) {
 
-      if (checkMask(players[0].x + 27, players[0].y + 13)) break;
+      if (checkMask(localPlayer->x + 27, localPlayer->y - 19)) break;
 
-      players[0].x++;
+      localPlayer->x++;
       x--;
 
     }
 
     dx -= (int)dx;
 
-    if (((dx < 0) && !checkMask(players[0].x + 6 + dx, players[0].y + 13)) ||
-        ((dx > 0) && !checkMask(players[0].x + 26 + dx, players[0].y + 13))   )
-      players[0].x += dx;
+    if (((dx < 0) &&
+         !checkMask(localPlayer->x + 6 + dx, localPlayer->y - 19)) ||
+        ((dx > 0) &&
+         !checkMask(localPlayer->x + 26 + dx, localPlayer->y - 19))  )
+      localPlayer->x += dx;
 
-    // Push the player upwards if on an uphill slope
-    while (checkMask(players[0].x + 16, players[0].y + 32)) players[0].y--;
+    // If on an uphill slope, push the player upwards
+    while (checkMask(localPlayer->x + 16, localPlayer->y))
+      localPlayer->y--;
 
 
     // Choose animation
 
-    if (players[0].rising == 0) {
+    if (localPlayer->reaction == PR_KILLED)
+      localPlayer->anim = localPlayer->anims[PA_LDIE + localPlayer->facing];
 
-      if (checkMask(players[0].x + 12, players[0].y + 36) ||
-          checkMask(players[0].x + 16, players[0].y + 36) ||
-          checkMask(players[0].x + 20, players[0].y + 36) ||
-          checkMask(players[0].x + 12, players[0].y + 44) ||
-          checkMask(players[0].x + 16, players[0].y + 44) ||
-          checkMask(players[0].x + 20, players[0].y + 44)   ) {
+    else if (localPlayer->floating)
+      localPlayer->anim = localPlayer->anims[PA_LBOARD + localPlayer->facing];
 
-        if (players[0].walkStart) {
+    else if (localPlayer->dy >= 0) {
 
-          if (ticks - players[0].walkStart > WALKTIME)
-            players[0].anim = players[0].anims[PA_LRUN + players[0].facing];
+      if (checkMask(localPlayer->x + 12, localPlayer->y + 4) ||
+          checkMask(localPlayer->x + 16, localPlayer->y + 4) ||
+          checkMask(localPlayer->x + 20, localPlayer->y + 4) ||
+          checkMask(localPlayer->x + 12, localPlayer->y + 12) ||
+          checkMask(localPlayer->x + 16, localPlayer->y + 12) ||
+          checkMask(localPlayer->x + 20, localPlayer->y + 12)   ) {
+
+        if (localPlayer->dx) {
+
+          if (localPlayer->dx <= -PS_RUN)
+            localPlayer->anim = localPlayer->anims[PA_LRUN];
+          else if (localPlayer->dx >= PS_RUN)
+            localPlayer->anim = localPlayer->anims[PA_RRUN];
+          else if ((localPlayer->dx < 0) && (localPlayer->facing == 1))
+            localPlayer->anim = localPlayer->anims[PA_LSTOP];
+          else if ((localPlayer->dx > 0) && !localPlayer->facing)
+            localPlayer->anim = localPlayer->anims[PA_RSTOP];
           else
-            players[0].anim = players[0].anims[PA_LWALK + players[0].facing];
+            localPlayer->anim = localPlayer->anims[PA_LWALK +
+                                                   localPlayer->facing];
 
         } else {
 
-          if (!checkMask(players[0].x + 12, players[0].y + 44) &&
-              !checkMask(players[0].x + 8, players[0].y + 40))
-            players[0].anim = players[0].anims[PA_LEDGE];
-          else if (!checkMask(players[0].x + 20, players[0].y + 44) &&
-                   !checkMask(players[0].x + 24, players[0].y + 40))
-            players[0].anim = players[0].anims[PA_REDGE];
+          if (!checkMask(localPlayer->x + 12, localPlayer->y + 12) &&
+              !checkMask(localPlayer->x + 8, localPlayer->y + 8))
+            localPlayer->anim = localPlayer->anims[PA_LEDGE];
+          else if (!checkMask(localPlayer->x + 20, localPlayer->y + 12) &&
+                   !checkMask(localPlayer->x + 24, localPlayer->y + 8))
+            localPlayer->anim = localPlayer->anims[PA_REDGE];
+          else if (keys[K_FIRE].state == SDL_PRESSED)
+            localPlayer->anim = localPlayer->anims[PA_LSHOOT +
+                                                   localPlayer->facing];
           else
-            players[0].anim = players[0].anims[PA_LSTAND + players[0].facing];
+            localPlayer->anim = localPlayer->anims[PA_LSTAND +
+                                                 localPlayer->facing];
 
         }
 
-      } else players[0].anim = players[0].anims[PA_LFALL + players[0].facing];
+      } else localPlayer->anim = localPlayer->anims[PA_LFALL +
+                                                  localPlayer->facing];
 
-    } else if (players[0].rising == 1)
-      players[0].anim = players[0].anims[PA_LJUMP + players[0].facing];
+    } else if (localPlayer->dy >= PS_JUMP)
+      localPlayer->anim = localPlayer->anims[PA_LJUMP + localPlayer->facing];
 
-    else if (players[0].rising == 2)
-      players[0].anim = players[0].anims[PA_LSPIN + players[0].facing];
-
-    else if (players[0].rising > 2)
-      players[0].anim = players[0].anims[PA_LSPRING + players[0].facing];
+    else
+      localPlayer->anim = localPlayer->anims[PA_LSPRING - localPlayer->facing];
 
 
     // Calculate viewport dimensions
 
     // Can we can see below the panel?
-    if (players[0].viewW > panel->w) players[0].viewH = screenH;
-    else players[0].viewH = screenH - 33;
-    players[0].viewW = screenW;
+    if (localPlayer->viewW > panel->w) localPlayer->viewH = screenH;
+    else localPlayer->viewH = screenH - 33;
+    localPlayer->viewW = screenW;
 
-    players[0].viewX = players[0].x + 8 - (players[0].viewW / 2);
-    players[0].viewY = players[0].y + 8 - (players[0].viewH / 2);
+    localPlayer->viewX = localPlayer->x + 8 - (localPlayer->viewW / 2);
+    localPlayer->viewY = localPlayer->y - 24 - (localPlayer->viewH / 2);
 
-    if (players[0].viewX < 0) players[0].viewX = 0;
+    if (localPlayer->viewX < 0) localPlayer->viewX = 0;
 
-    if (players[0].viewX + players[0].viewW >= LW * TW)
-      players[0].viewX = (LW * TW) - players[0].viewW;
+    if (localPlayer->viewX + localPlayer->viewW >= LW * TW)
+      localPlayer->viewX = (LW * TW) - localPlayer->viewW;
 
-    if (players[0].viewY < 0) players[0].viewY = 0;
+    if (localPlayer->viewY < 0) localPlayer->viewY = 0;
 
-    if (players[0].viewY + players[0].viewH >= LH * TH)
-      players[0].viewY = (LH * TH) - players[0].viewH;
+    if (localPlayer->viewY + localPlayer->viewH >= LH * TH)
+      localPlayer->viewY = (LH * TH) - localPlayer->viewH;
 
 
     // Set tile drawing dimensions
@@ -1325,8 +1290,8 @@ void levelLoop (void) {
       dst.y = 0;
       SDL_FillRect(screen, &dst, 156);
 
-      for (y = ((int)(players[0].viewY) % bgScale);
-           y < players[0].viewH; y += bgScale    ) {
+      for (y = ((int)(localPlayer->viewY) % bgScale);
+           y < localPlayer->viewH; y += bgScale    ) {
 
         dst.y = y;
         SDL_FillRect(screen, &dst, 157 + (y / bgScale));
@@ -1334,13 +1299,13 @@ void levelLoop (void) {
       }
 
       // Assign the correct portion of the sky palette
-      bgPE->position = players[0].viewY + (players[0].viewH / 2) - 4;
+      bgPE->position = localPlayer->viewY + (localPlayer->viewH / 2) - 4;
 
       // Show sun / moon / etc.
       if (skyOrb) {
 
-        dst.x = players[0].viewW * 0.8f;
-        dst.y = players[0].viewH * 0.12f;
+        dst.x = localPlayer->viewW * 0.8f;
+        dst.y = localPlayer->viewH * 0.12f;
         src.y = skyOrb << 5;
         SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1357,44 +1322,45 @@ void levelLoop (void) {
     // Tell the diagonal lines background where it should be
     if (bgPE->type == PE_1D) {
 
-      bgPE->position = players[0].viewX + players[0].viewY;
+      bgPE->position = localPlayer->viewX + localPlayer->viewY;
 
     }
 
     // Tell the parallaxing background where it should be
     if (bgPE->type == PE_2D) {
 
-      ((short int *)&(bgPE->position))[0] = players[0].viewX;
-      ((short int *)&(bgPE->position))[1] = players[0].viewY;
+      ((short int *)&(bgPE->position))[0] = localPlayer->viewX;
+      ((short int *)&(bgPE->position))[1] = localPlayer->viewY;
 
     }
 
 
     // Show background tiles
 
-    for (y = 0; y <= ((players[0].viewH - 1) >> 5) + 1; y++) {
+    for (y = 0; y <= ((localPlayer->viewH - 1) >> 5) + 1; y++) {
 
-      for (x = 0; x <= ((players[0].viewW - 1) >> 5) + 1; x++) {
+      for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
 
         // Get the grid element from the given coordinates
-        ge = grid[y + ((int)players[0].viewY >> 5)] + x +
-             ((int)players[0].viewX >> 5);
+        ge = grid[y + ((int)localPlayer->viewY >> 5)] + x +
+             ((int)localPlayer->viewX >> 5);
 
         // If this tile uses a black background, draw it
         if (ge->bg) {
 
-          dst.x = (x << 5) - ((int)players[0].viewX & 31);
-          dst.y = (y << 5) - ((int)players[0].viewY & 31);
+          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
+          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
           dst.w = dst.h = TW;
           SDL_FillRect(screen, &dst, 31);
 
         }
 
         // If this is not a foreground tile, draw it
-        if ((ge->event < 123) || (ge->event > 125)) {
+        if ((eventSet[ge->event][E_BEHAVIOUR] != 38) &&
+            ((ge->event < 124) || (ge->event > 125))  ) {
 
-          dst.x = (x << 5) - ((int)players[0].viewX & 31);
-          dst.y = (y << 5) - ((int)players[0].viewY & 31);
+          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
+          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
           src.y = ge->tile << 5;
           SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1404,41 +1370,247 @@ void levelLoop (void) {
 
     }
 
+    // Search for active events
+    for (y = ((int)localPlayer->viewY >> 5) - 5;
+         y < ((int)(localPlayer->viewY + localPlayer->viewH) >> 5) + 5; y++) {
 
-    // Show events
-    for (y = 0; y <= ((players[0].viewH - 1) >> 5) + 1; y++) {
+      for (x = ((int)localPlayer->viewX >> 5) - 5;
+           x < ((int)(localPlayer->viewX + localPlayer->viewW) >> 5) + 5; x++) {
 
-      for (x = 0; x <= ((players[0].viewW - 1) >> 5) + 1; x++)
-        processEvent(x, y, frame);
+        if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) && grid[y][x].event) {
+
+          dx = -1;
+          evt = firstEvent;
+
+          while (evt) {
+
+            if ((evt->gridX == x) && (evt->gridY == y)) {
+
+              dx = 0;
+
+              break;
+
+            }
+
+            evt = evt->next;
+
+          }
+
+          if (dx) createEvent(x, y);
+
+        }
+
+      }
+
+    }
+
+    // Process active events
+    evt = firstEvent;
+
+    while (evt) {
+
+      if ((evt->anim != E_FINISHANIM) &&
+          (grid[evt->gridY][evt->gridX].event != 121) &&
+          ((evt->x < localPlayer->viewX - 160) ||
+           (evt->x > localPlayer->viewX + localPlayer->viewW + 160) ||
+           (evt->y < localPlayer->viewY - 160) ||
+           (evt->y > localPlayer->viewY + localPlayer->viewH + 160)   ) &&
+          ((evt->gridX < ((int)localPlayer->viewX >> 5) - 1) ||
+           (evt->gridX >
+            ((int)(localPlayer->viewX + localPlayer->viewW) >> 5) + 1) ||
+           (evt->gridY < ((int)localPlayer->viewY >> 5) - 1) ||
+           (evt->gridY >
+            ((int)(localPlayer->viewY + localPlayer->viewH) >> 5) + 1)   )     ) {
+
+        // If the event and its origin are off-screen, and the event is not
+        // in the process of self-destruction, remove it
+        nextEvt = evt->next;
+        removeEvent(evt);
+        evt = nextEvt;
+
+      } else {
+
+        nextEvt = evt->next;
+        processEvent(evt, ticks);
+        evt = nextEvt;
+
+      }
 
     }
 
 
+    // Handle spikes
+    if ((localPlayer->reaction == PR_NONE) &&
+        (((grid[(int)(localPlayer->y - 20) >> 5]
+               [(int)(localPlayer->x + 16) >> 5].event == 126) &&
+          checkMask(localPlayer->x + 16, localPlayer->y - 21)  ) || /* Above */
+         ((grid[(int)(localPlayer->y) >> 5]
+               [(int)(localPlayer->x + 16) >> 5].event == 126) &&
+          checkMask(localPlayer->x + 16, localPlayer->y + 1)  ) || /* Below */
+         ((grid[(int)(localPlayer->y - 10) >> 5]
+               [(int)(localPlayer->x + 6) >> 5].event == 126) &&
+          checkMask(localPlayer->x + 5, localPlayer->y - 10)  ) || /* To left*/
+         ((grid[(int)(localPlayer->y - 10) >> 5]
+               [(int)(localPlayer->x + 26) >> 5].event == 126) && /* To right*/
+          checkMask(localPlayer->x + 27, localPlayer->y - 10)  )   )) {
+
+          localPlayer->energy--;
+
+          if (localPlayer->energy) {
+
+            localPlayer->reaction = PR_HURT;
+            localPlayer->reactionTime = ticks + 2000;
+
+            if (localPlayer->dx < 0) {
+
+              localPlayer->dx = PS_RUN;
+              localPlayer->dy = PS_JUMP;
+
+            } else {
+
+              localPlayer->dx = -PS_RUN;
+              localPlayer->dy = PS_JUMP;
+
+            }
+
+          } else {
+
+            localPlayer->reaction = PR_KILLED;
+            localPlayer->reactionTime = ticks + 2000;
+
+          }
+
+        }
+
+
     // Show the player
 
-    dst.x = players[0].x - players[0].viewX;
-    dst.y = players[0].y + 35 - animSet[players[0].anim].sprites[frame %
-                           animSet[players[0].anim].frames]->h
-            - players[0].viewY;
-    SDL_BlitSurface(animSet[players[0].anim].sprites[frame %
-                    animSet[players[0].anim].frames], NULL, screen, &dst);
+    if (!((localPlayer->reaction == PR_HURT) && (frame & 1))) {
+
+      dst.x = localPlayer->x - localPlayer->viewX +
+              animSet[localPlayer->anim].
+               sprites[frame % animSet[localPlayer->anim].frames].x;
+      dst.y = localPlayer->y + 4 - localPlayer->viewY +
+              animSet[localPlayer->anim].
+               sprites[frame % animSet[localPlayer->anim].frames].y +
+              animSet[localPlayer->anim].
+               y[frame % animSet[localPlayer->anim].frames] -
+              animSet[localPlayer->anim].sprites[0].pixels->h;
+      SDL_BlitSurface(animSet[localPlayer->anim].
+                       sprites[frame % animSet[localPlayer->anim].frames].
+                       pixels, NULL, screen, &dst);
+
+    }
+
+    if (localPlayer->reaction == PR_INVINCIBLE) {
+
+      dst.x = localPlayer->x + 6 - localPlayer->viewX;
+      dst.y = localPlayer->y - 32 - localPlayer->viewY;
+      SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
+                      NULL, screen, &dst);
+
+      dst.x = localPlayer->x + 16 - localPlayer->viewX;
+      dst.y = localPlayer->y - 32 - localPlayer->viewY;
+      SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
+                      NULL, screen, &dst);
+
+      dst.x = localPlayer->x + 6 - localPlayer->viewX;
+      dst.y = localPlayer->y - 16 - localPlayer->viewY;
+      SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
+                      NULL, screen, &dst);
+
+      dst.x = localPlayer->x + 16 - localPlayer->viewX;
+      dst.y = localPlayer->y - 16 - localPlayer->viewY;
+      SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
+                      NULL, screen, &dst);
+
+    }
+
+    // Handle firing
+
+    if (keys[K_FIRE].state == SDL_PRESSED) {
+
+      keys[K_FIRE].state = SDL_RELEASED; // Fix: This is going to make rapid-
+                                         // fire somewhat difficult
+
+      createPlayerBullet(localPlayer, ticks);
+
+    }
+
+
+    // Process and show bullets
+
+    bul = firstBullet;
+    prevBul = NULL;
+
+    while (bul) {
+
+      if ((ticks > bul->time) ||
+          (checkMask(bul->x, bul->y) && (bul->type != B_BOUNCER))) {
+
+        bul = bul->next;
+
+        // Hit an obstacle, destroy the bullet
+        removeBullet(prevBul);
+
+      } else {
+
+        if (bul->type == B_BOUNCER) {
+
+          if (checkMask(bul->x, bul->y - 4)) bul->dy = 0;
+          else if (checkMask(bul->x, bul->y + 4)) bul->dy = -600;
+          else if (checkMask(bul->x - 4, bul->y)) bul->dx = 500;
+          else if (checkMask(bul->x + 4, bul->y)) bul->dx = -500;
+          else bul->dy += 3000 * spf;
+
+        }
+
+        bul->x += bul->dx * spf;
+        bul->y += bul->dy * spf;
+
+        dst.x = bul->x - (spriteSet[bul->type].pixels->w >> 1) -
+                localPlayer->viewX;
+        dst.y = bul->y - (spriteSet[bul->type].pixels->h >> 1) -
+                localPlayer->viewY;
+
+        // Show the bullet
+        SDL_BlitSurface(spriteSet[bul->type].pixels, NULL, screen, &dst);
+
+        prevBul = bul;
+        bul = bul->next;
+
+      }
+
+    }
 
 
     // Show foreground tiles
 
-    for (y = 0; y <= ((players[0].viewH - 1) >> 5) + 1; y++) {
+    for (y = 0; y <= ((localPlayer->viewH - 1) >> 5) + 1; y++) {
 
-      for (x = 0; x <= ((players[0].viewW - 1) >> 5) + 1; x++) {
+      for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
 
         // Get the grid element from the given coordinates
-        ge = grid[y + ((int)players[0].viewY >> 5)] + x +
-             ((int)players[0].viewX >> 5);
+        ge = grid[y + ((int)localPlayer->viewY >> 5)] + x +
+             ((int)localPlayer->viewX >> 5);
+
+        // If this is an "animated" foreground tile, draw it
+        if (ge->event == 123) {
+
+          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
+          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
+          if (frame & 1) src.y = eventSet[ge->event][E_YAXIS] << 5;
+          else src.y = eventSet[ge->event][E_MULTIPURPOSE] << 5;
+          SDL_BlitSurface(tileSet, &src, screen, &dst);
+
+        }
 
         // If this is a foreground tile, draw it
-        if ((ge->event >= 123) && (ge->event <= 125)) {
+        if ((ge->event == 124) || (ge->event == 125) ||
+            (eventSet[ge->event][E_BEHAVIOUR] == 38)   ) {
 
-          dst.x = (x << 5) - ((int)players[0].viewX & 31);
-          dst.y = (y << 5) - ((int)players[0].viewY & 31);
+          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
+          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
           src.y = ge->tile << 5;
           SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1459,11 +1631,37 @@ void levelLoop (void) {
     // widths between 321 and 672. A new approach may be needed, e.g. splitting
     // the panel down the middle.
 
+    // Check for a change in ammo
+    if (keys[K_CHANGE].state == SDL_PRESSED) {
+
+      keys[K_CHANGE].state = SDL_RELEASED;
+
+      localPlayer->ammoType = ((localPlayer->ammoType + 2) % 5) - 1;
+
+      // If there is no ammo of this type, go to the next type that has ammo
+      while ((localPlayer->ammoType > -1) &&
+             !localPlayer->ammo[localPlayer->ammoType])
+        localPlayer->ammoType = ((localPlayer->ammoType + 2) % 5) - 1;
+
+    }
+
+    // If the current ammo has been exhausted, go to the previous type that has
+    // ammo
+    while ((localPlayer->ammoType > -1) &&
+           !localPlayer->ammo[localPlayer->ammoType])
+      localPlayer->ammoType--;
+
+
     // Show panel
 
-    if (players[0].viewW <= 320) players[0].viewH += 33;
+    // Change the ammo type display on the panel
+    dst.x = 250;
+    dst.y = 2;
+    SDL_BlitSurface(panelAmmo[localPlayer->ammoType + 1], NULL, panel, &dst);
+
+    if (localPlayer->viewW <= 320) localPlayer->viewH += 33;
     dst.x = 0;
-    dst.y = players[0].viewH - 33;
+    dst.y = localPlayer->viewH - 33;
     SDL_BlitSurface(panel, NULL, screen, &dst);
     dst.y += 32;
     dst.w = 320;
@@ -1474,75 +1672,69 @@ void levelLoop (void) {
     // Show panel data
 
     // Show score
-    showNumber(players[0].score++, 84, players[0].viewH - 27, &panelSmallFont);
+    showNumber(localPlayer->score, 84, localPlayer->viewH - 27,
+               &panelSmallFont);
 
     // Show time remaining
     x = time - ticks;
     y = x / (60 * 1000);
-    showNumber(y, 116, players[0].viewH - 27, &panelSmallFont);
+    showNumber(y, 116, localPlayer->viewH - 27, &panelSmallFont);
     x -= (y * 60 * 1000);
     y = x / 1000;
-    showNumber(y, 136, players[0].viewH - 27, &panelSmallFont);
+    showNumber(y, 136, localPlayer->viewH - 27, &panelSmallFont);
     x -= (y * 1000);
     y = x / 100;
-    showNumber(y, 148, players[0].viewH - 27, &panelSmallFont);
+    showNumber(y, 148, localPlayer->viewH - 27, &panelSmallFont);
 
     // Show lives
-    showNumber(players[0].lives, 124, players[0].viewH - 13, &panelSmallFont);
+    showNumber(localPlayer->lives, 124, localPlayer->viewH - 13, &panelSmallFont);
 
     // Show planet number
     if (world <= 41) // Main game levels
-      showNumber((world % 3) + 1, 184, players[0].viewH - 13, &panelSmallFont);
+      showNumber((world % 3) + 1, 184, localPlayer->viewH - 13, &panelSmallFont);
     else if ((world >= 50) && (world <= 52)) // Christmas levels
-      showNumber(world - 49, 184, players[0].viewH - 13, &panelSmallFont);
+      showNumber(world - 49, 184, localPlayer->viewH - 13, &panelSmallFont);
     else // New levels
-      showNumber(world, 184, players[0].viewH - 13, &panelSmallFont);
+      showNumber(world, 184, localPlayer->viewH - 13, &panelSmallFont);
 
     // Show level number
-    showNumber(level + 1, 196, players[0].viewH - 13, &panelSmallFont);
+    showNumber(level + 1, 196, localPlayer->viewH - 13, &panelSmallFont);
 
     // Show ammo
-    // Temp: At the moment, just show infinity
-    showString(":;", 224, players[0].viewH - 13, &panelSmallFont);
-
-    // Temp: FPS, screen resolution, displayed in the ammo type box
-    showString("FPS", 252, players[0].viewH - 27, &panelBigFont);
-    showNumber((short int)smoothfps, 308, players[0].viewH - 27, &panelBigFont);
-    showNumber(screenW, 276, players[0].viewH - 15, &panelBigFont);
-    showNumber(screenH, 308, players[0].viewH - 15, &panelBigFont);
+    if (localPlayer->ammoType == -1)
+      showString(":;", 224, localPlayer->viewH - 13, &panelSmallFont);
+    else showNumber(localPlayer->ammo[localPlayer->ammoType], 244,
+                    localPlayer->viewH - 13, &panelSmallFont);
 
     // Draw the health bar
 
     dst.x = 20;
-    dst.y = players[0].viewH - 13;
+    dst.y = localPlayer->viewH - 13;
     dst.h = 7;
 
-    // For testing:
-    players[0].energy = 4 - (((ticks + (10 * 60 * 1000) - time)  / 4000) % 5);
+    if ((int)(localPlayer->energyBar) < (localPlayer->energy << 4)) {
 
-    if ((int)(players[0].energyBar) < (players[0].energy << 4)) {
+      if ((localPlayer->energy << 4) - localPlayer->energyBar < spf * 64)
+        localPlayer->energyBar = localPlayer->energy << 4;
+      else localPlayer->energyBar += spf * 64;
 
-      if ((players[0].energy << 4) - players[0].energyBar < spf * 64)
-        players[0].energyBar = players[0].energy << 4;
-      else players[0].energyBar += spf * 64;
+    } else if ((int)(localPlayer->energyBar) > (localPlayer->energy << 4)) {
 
-    } else if ((int)(players[0].energyBar) > (players[0].energy << 4)) {
-
-      if (players[0].energyBar - (players[0].energy << 4) < spf * 64)
-        players[0].energyBar = players[0].energy << 4;
-      else players[0].energyBar -= spf * 64;
+      if (localPlayer->energyBar - (localPlayer->energy << 4) < spf * 64)
+        localPlayer->energyBar = localPlayer->energy << 4;
+      else localPlayer->energyBar -= spf * 64;
 
     }
 
-    if (players[0].energyBar > 1) {
+    if (localPlayer->energyBar > 1) {
 
-      dst.w = players[0].energyBar - 1;
+      dst.w = localPlayer->energyBar - 1;
 
       // Choose energy bar colour
-      if (players[0].energy == 4) x = 24;
-      if (players[0].energy == 3) x = 17;
-      if (players[0].energy == 2) x = 80;
-      if (players[0].energy <= 1) x = 32 + ((frame * 4) & 15);
+      if (localPlayer->energy == 4) x = 24;
+      if (localPlayer->energy == 3) x = 17;
+      if (localPlayer->energy == 2) x = 80;
+      if (localPlayer->energy <= 1) x = 32 + ((frame * 4) & 15);
 
       // Draw energy bar
       SDL_FillRect(screen, &dst, x);
@@ -1556,20 +1748,65 @@ void levelLoop (void) {
     SDL_FillRect(screen, &dst, 31);
 
 
-    // Temp: Can skip to the next level by pressing the spacebar
-    if ((ticks > time) || (keys[K_FIRE].state == SDL_PRESSED)) {
+    // Temp: FPS and screen resolution
+    showString("FPS", 252, 27, &panelBigFont);
+    showNumber((short int)smoothfps, 308, 27, &panelBigFont);
+    showNumber(screenW, 276, 15, &panelBigFont);
+    showNumber(screenH, 308, 15, &panelBigFont);
 
-      keys[K_FIRE].state = SDL_RELEASED;
 
-      if (nextlevel == 99)
-        DORETURN(loadScene(sceneFile), freeLevel();)
+    // Check if time has run out
+    if (ticks > time) {
 
-      freeLevel();
+      localPlayer->reaction = PR_KILLED;
+      localPlayer->reactionTime = ticks + 2000;
 
-      if (nextlevel == 99)
-        sceneLoop();
+    }
 
-      DORETURN(loadNextLevel(), )
+
+    // Handle player reactions
+    if (localPlayer->reaction && (localPlayer->reactionTime < ticks)) {
+
+      switch (localPlayer->reaction) {
+
+        case PR_KILLED:
+
+          nextlevel = level;
+          nextworld = world;
+          localPlayer->lives--;
+
+          freeLevel();
+
+          x = checkX;
+          y = checkY;
+
+          DORETURN(loadNextLevel(), )
+
+          localPlayer->x = x << 5;
+          localPlayer->y = y << 5;
+
+          break;
+
+        case PR_WON:
+
+          if (nextlevel == 99) DORETURN(loadScene(sceneFile), freeLevel();)
+
+          freeLevel();
+
+          if (nextlevel == 99) {
+
+            sceneLoop();
+            freeScene();
+
+          }
+
+          DORETURN(loadNextLevel(), )
+
+          break;
+
+      }
+
+      localPlayer->reaction = PR_NONE;
 
     }
 

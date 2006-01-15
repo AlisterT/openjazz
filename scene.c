@@ -32,7 +32,7 @@ int loadScene (char * fn) {
 
   FILE *f;
   unsigned char *buffer;
-  int i;
+  int count;
 
   f = fopenFromPath(fn);
 
@@ -45,27 +45,14 @@ int loadScene (char * fn) {
   // Load the palette
 
   fseek(f, 5, SEEK_CUR);
-
-  buffer = loadRLE(f, 768);
-
-  for (i = 0; i < 256; i++) {
-
-    // Palette entries are 6-bit
-    // Shift them upwards to 8-bit, and fill in the lower 2 bits
-    realPalette[i].r = (buffer[i * 3] << 2) + (buffer[i * 3] >> 6);
-    realPalette[i].g = (buffer[(i * 3) + 1] << 2) + (buffer[(i * 3) + 1] >> 6);
-    realPalette[i].b = (buffer[(i * 3) + 2] << 2) + (buffer[(i * 3) + 2] >> 6);
-
-  }
-
-  free(buffer);
+  loadPalette(cutscene.palette, f);
 
   // Apply the palette to surfaces that already exist, e.g. fonts
-  updatePalettes();
+  usePalette(cutscene.palette);
 
   fseek(f, 4, SEEK_CUR);
 
-  cutscene.pixels = createSurface(loadRLE(f, 320 * 200), 320, 200);
+  cutscene.pixels = loadSurface(f, cutscene.palette, 320, 200);
 
   fclose(f);
 
@@ -93,6 +80,7 @@ void sceneLoop (void) {
     DORETURN(loop(), freeScene();)
 
     // Temporary stuff
+    SDL_FillRect(screen, NULL, 31);
     SDL_BlitSurface(cutscene.pixels, NULL, screen, NULL);
     SDL_Delay(50);
 

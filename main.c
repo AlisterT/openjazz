@@ -24,7 +24,7 @@
  */
 
 
-#define Main
+#define Extern
 #include "OpenJazz.h"
 #include <string.h>
 
@@ -60,8 +60,8 @@ FILE * fopenFromPath (char * fileName) {
 
 unsigned char * loadRLE (FILE *f, int size) {
 
-  int rle, pos, byte, count, next;
   char *buffer;
+  int rle, pos, byte, count, next;
 
   // Determine the byte that follows the block
   next = fgetc(f);
@@ -122,19 +122,22 @@ void skipRLE (FILE *f) {
 }
 
 
-SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
+SDL_Surface * createSurface (unsigned char * pixels, SDL_Color *palette,
+                             int width, int height                      ) {
 
   SDL_Surface *ret;
+  int y;
 
   // Create the surface
   ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
   // Set the surface's palette
-  SDL_SetPalette(ret, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0, 256);
+  SDL_SetPalette(ret, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
 
   // Upload pixel data to the surface
   if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
-  memcpy(ret->pixels, pixels, width * height);
+  for (y = 0; y < height; y++)
+    memcpy(ret->pixels + (ret->pitch * y), pixels + (width * y), width);
   if (SDL_MUSTLOCK(ret)) SDL_UnlockSurface(ret);
 
   // Free redundant pixel data
@@ -145,31 +148,73 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
+SDL_Surface * createBlankSurface (SDL_Color *palette) {
+
+  SDL_Surface *ret;
+  unsigned char *pixels;
+
+  pixels = malloc(1);
+  *pixels = SKEY;
+  ret = createSurface(pixels, palette, 1, 1);
+  SDL_SetColorKey(ret, SDL_SRCCOLORKEY, SKEY);
+
+  return ret;
+
+}
+
+
+void loadPalette (SDL_Color *palette, FILE *f) {
+
+  unsigned char *buffer;
+  int count;
+
+  buffer = loadRLE(f, 768);
+
+  for (count = 0; count < 256; count++) {
+
+    // Palette entries are 6-bit
+    // Shift them upwards to 8-bit, and fill in the lower 2 bits
+    palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 6);
+    palette[count].g = (buffer[(count * 3) + 1] << 2) +
+                       (buffer[(count * 3) + 1] >> 6);
+    palette[count].b = (buffer[(count * 3) + 2] << 2) +
+                       (buffer[(count * 3) + 2] >> 6);
+
+  }
+
+  free(buffer);
+
+  return;
+
+}
+
+
 int loadMain (void) {
 
   FILE *f;
-  unsigned char *pixels;
-  int rle, pos, index, count;
+  SDL_Color palette[256];
+  unsigned char *pixels, *sorted;
+  int rle, pos, index, count, x, y;
 
 
   // Generate a placeholder palette
 
   for (count = 0; count < 256; count++) {
 
-    realPalette[count].r = count;
-    realPalette[count].g = count;
-    realPalette[count].b = count;
+    palette[count].r = count;
+    palette[count].g = count;
+    palette[count].b = count;
 
   }
 
-  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0, 256);
+  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
 
 
   f = fopenFromPath("panel.000");
 
   // Load the panel
 
-  panel = createSurface(loadRLE(f, 320 * 32), 320, 32);
+  panel = loadSurface(f, palette, 320, 32);
 
 
   // Load the large panel font
@@ -229,10 +274,11 @@ int loadMain (void) {
   for (; count < 128; count++) panelBigFont.map[count] = 39;
 
   // Set font dimensions
-  panelBigFont.w = 8;
+  panelBigFont.w = malloc(40);
+  for (count = 0; count < 40; count++) panelBigFont.w[count] = 8;
   panelBigFont.h = 8;
 
-  panelBigFont.pixels = createSurface(pixels, 8, 320);
+  panelBigFont.pixels = createSurface(pixels, palette, 8, 320);
 
 
   // Load the small panel font
@@ -275,8 +321,6 @@ int loadMain (void) {
 
   }
 
-  fclose(f);
-
   // Create ASCII->font map
   for (count = 0; count < 48; count++) panelSmallFont.map[count] = 12;
   // Use :; to represent oo
@@ -284,28 +328,137 @@ int loadMain (void) {
   for (; count < 128; count++) panelSmallFont.map[count] = 12;
 
   // Set font dimensions
-  panelSmallFont.w = 8;
+  panelSmallFont.w = malloc(13);
+  for (count = 0; count < 13; count++) panelSmallFont.w[count] = 8;
   panelSmallFont.h = 7;
 
-  panelSmallFont.pixels = createSurface(pixels, 8, 280);
+  panelSmallFont.pixels = createSurface(pixels, palette, 8, 280);
+
+  // Load the panel's ammo graphics
+
+  fseek(f, 7537, SEEK_SET);
+  sorted = malloc(64 * 27);
+  pixels = loadRLE(f, 64 * 27);
+
+  for (y = 0; y < 27; y++) {
+
+    for (x = 0; x < 64; x++)
+      sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+
+  }
+
+  panelAmmo[0] = createSurface(sorted, palette, 64, 27);
+  sorted = pixels; // Re-use the allocated memory
+
+  fseek(f, 8264, SEEK_SET);
+  pixels = loadRLE(f, 64 * 27);
+
+  for (y = 0; y < 27; y++) {
+
+    for (x = 0; x < 64; x++)
+      sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+
+  }
+
+  panelAmmo[1] = createSurface(sorted, palette, 64, 27);
+  sorted = pixels; // Re-use the allocated memory
+
+  fseek(f, 9550, SEEK_SET);
+  pixels = loadRLE(f, 64 * 27);
+
+  for (y = 0; y < 27; y++) {
+
+    for (x = 0; x < 64; x++)
+      sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+
+  }
+
+  panelAmmo[2] = createSurface(sorted, palette, 64, 27);
+  sorted = pixels; // Re-use the allocated memory
+
+  fseek(f, 11060, SEEK_SET);
+  pixels = loadRLE(f, 64 * 27);
+
+  for (y = 0; y < 27; y++) {
+
+    for (x = 0; x < 64; x++)
+      sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+
+  }
+
+  panelAmmo[3] = createSurface(sorted, palette, 64, 27);
+  sorted = pixels; // Re-use the allocated memory
+
+  fseek(f, 12258, SEEK_SET);
+  pixels = loadRLE(f, 64 * 27);
+
+  for (y = 0; y < 27; y++) {
+
+    for (x = 0; x < 64; x++)
+      sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+
+  }
+
+  panelAmmo[4] = createSurface(sorted, palette, 64, 27);
+  free(pixels);
+
+  fclose(f);
+
+  // Load real fonts
+  font2 = loadFont("font2.0fn", palette);
+  fontbig = loadFont("fontbig.0fn", palette);
+  fontiny = loadFont("fontiny.0fn", palette);
+  fontmn1 = loadFont("fontmn1.0fn", palette);
+  fontmn2 = loadFont("fontmn2.0fn", palette);
+  redFontmn2 = loadFont("fontmn2.0fn", palette);
+
+  if (SDL_MUSTLOCK(redFontmn2->pixels)) SDL_LockSurface(redFontmn2->pixels);
+
+  for (y = 0; y < redFontmn2->pixels->h; y++) {
+
+    for (x = 0; x < redFontmn2->pixels->w; x++){
+
+      if (((unsigned char *)redFontmn2->pixels->pixels)
+           [(y * redFontmn2->pixels->pitch) + x])
+        ((unsigned char *)redFontmn2->pixels->pixels)
+         [(y * redFontmn2->pixels->pitch) + x] -= 120;
+
+    }
+
+  }
+
+  if (SDL_MUSTLOCK(redFontmn2->pixels)) SDL_UnlockSurface(redFontmn2->pixels);
 
   return 0;
 
 }
 
 
-void updatePalettes (void) {
+void usePalette (SDL_Color *palette) {
 
   // Make palette changes invisible until the next draw
   SDL_FillRect(screen, NULL, 31);
   SDL_Flip(screen);
 
-  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0, 256);
-  SDL_SetPalette(panel, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0, 256);
-  SDL_SetPalette(panelBigFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0,
+  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panel, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelAmmo[0], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelAmmo[1], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelAmmo[2], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelAmmo[3], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelAmmo[4], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(font2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(fontbig->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(fontiny->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(fontmn1->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(fontmn2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(redFontmn2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(panelBigFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0,
                  256);
-  SDL_SetPalette(panelSmallFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, realPalette,
+  SDL_SetPalette(panelSmallFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, palette,
                  0, 256);
+
+  currentPalette = palette;
 
   return;
 
@@ -322,7 +475,6 @@ int loop (void) {
 
   // Show everything that has been drawn so far
   SDL_Flip(screen);
-
 
   // Calculate frame rate
   count = SDL_GetTicks();
@@ -351,7 +503,7 @@ int loop (void) {
             screen = SDL_SetVideoMode(screenW, screenH, 8,
                                       SDL_FULLSCREEN | SDL_DOUBLEBUF |
                                       SDL_HWSURFACE | SDL_HWPALETTE);
-            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0,
+            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
                            256);
 
             // A real 8-bit display is quite likely if the user has the right
@@ -371,7 +523,7 @@ int loop (void) {
             screen = SDL_SetVideoMode(screenW, screenH, 8,
                                       SDL_RESIZABLE | SDL_DOUBLEBUF |
                                       SDL_HWSURFACE | SDL_HWPALETTE  );
-            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0,
+            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
                            256);
             SDL_ShowCursor(SDL_ENABLE);
 
@@ -410,7 +562,8 @@ int loop (void) {
 
       case SDL_VIDEOEXPOSE:
 
-        SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, realPalette, 0, 256);
+        SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
+                       256);
 
         break;
 
@@ -431,9 +584,9 @@ int loop (void) {
   // If the palette is being used directly, apply all palette effects directly
   if (fakePalette) {
 
-    memcpy(shownPalette, realPalette, sizeof(SDL_Color) * 256);
+    memcpy(shownPalette, currentPalette, sizeof(SDL_Color) << 8);
 
-    while (currentPE != NULL) {
+    while (currentPE) {
 
       switch (currentPE->type) {
 
@@ -444,11 +597,11 @@ int loop (void) {
             for (count = currentPE->first;
                  count < currentPE->first + currentPE->amount; count++) {
 
-              shownPalette[count].r = realPalette[count].r *
+              shownPalette[count].r = currentPalette[count].r *
                                       currentPE->position;
-              shownPalette[count].g = realPalette[count].g *
+              shownPalette[count].g = currentPalette[count].g *
                                       currentPE->position;
-              shownPalette[count].b = realPalette[count].b *
+              shownPalette[count].b = currentPalette[count].b *
                                       currentPE->position;
 
             }
@@ -477,7 +630,7 @@ int loop (void) {
           for (count = 0; count < currentPE->amount; count++) {
 
             memcpy(shownPalette + currentPE->first + count,
-                   realPalette + currentPE->first +
+                   currentPalette + currentPE->first +
                    ((count + (int)(currentPE->position)) % currentPE->amount),
                    sizeof(SDL_Color));
 
@@ -495,14 +648,15 @@ int loop (void) {
 
           if (count > 255 - currentPE->amount) {
 
-            memcpy(shownPalette + currentPE->first, bgPalette + count,
+            memcpy(shownPalette + currentPE->first, levelBGPalette + count,
                    sizeof(SDL_Color) * (255 - count));
-            memcpy(shownPalette + currentPE->first + (255 - count), bgPalette,
+            memcpy(shownPalette + currentPE->first + (255 - count),
+                   levelBGPalette,
                    sizeof(SDL_Color) * (count + currentPE->amount - 255));
 
           } else {
 
-            memcpy(shownPalette + currentPE->first, bgPalette + count,
+            memcpy(shownPalette + currentPE->first, levelBGPalette + count,
                    sizeof(SDL_Color) * currentPE->amount);
 
           }
@@ -523,7 +677,7 @@ int loop (void) {
             for (j = 0; j < 8; j++) {
 
               memcpy(shownPalette + currentPE->first + (count << 3) + j,
-                     realPalette + currentPE->first +
+                     currentPalette + currentPE->first +
                      (((count + y) % 8) << 3) + ((j + x) % 8),
                      sizeof(SDL_Color));
 
@@ -544,12 +698,11 @@ int loop (void) {
 
     }
 
-    if (firstPE != NULL)
-    SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+    if (firstPE) SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
   } else {
 
-    while (currentPE != NULL) {
+    while (currentPE) {
 
       switch (currentPE->type) {
 
@@ -560,11 +713,11 @@ int loop (void) {
             for (count = currentPE->first;
                  count < currentPE->first + currentPE->amount; count++) {
 
-              shownPalette[count].r = realPalette[count].r *
+              shownPalette[count].r = currentPalette[count].r *
                                       currentPE->position;
-              shownPalette[count].g = realPalette[count].g *
+              shownPalette[count].g = currentPalette[count].g *
                                       currentPE->position;
-              shownPalette[count].b = realPalette[count].b *
+              shownPalette[count].b = currentPalette[count].b *
                                       currentPE->position;
 
             }
@@ -596,7 +749,7 @@ int loop (void) {
           for (count = 0; count < currentPE->amount; count++) {
 
             memcpy(shownPalette + currentPE->first + count,
-                   realPalette + currentPE->first +
+                   currentPalette + currentPE->first +
                    ((count + (int)(currentPE->position)) % currentPE->amount),
                    sizeof(SDL_Color));
 
@@ -618,15 +771,15 @@ int loop (void) {
 
           if (count > 255 - currentPE->amount) {
 
-            SDL_SetPalette(screen, SDL_PHYSPAL, bgPalette + count,
+            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette + count,
                            currentPE->first, 255 - count);
-            SDL_SetPalette(screen, SDL_PHYSPAL, bgPalette,
+            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette,
                            currentPE->first + (255 - count),
                            count + currentPE->amount - 255);
 
           } else {
 
-            SDL_SetPalette(screen, SDL_PHYSPAL, bgPalette + count,
+            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette + count,
                            currentPE->first, currentPE->amount);
 
           }
@@ -647,7 +800,7 @@ int loop (void) {
             for (j = 0; j < 8; j++) {
 
               memcpy(shownPalette + currentPE->first + (count << 3) + j,
-                     realPalette + currentPE->first +
+                     currentPalette + currentPE->first +
                      (((count + y) % 8) << 3) + ((j + x) % 8),
                      sizeof(SDL_Color));
 
@@ -682,8 +835,25 @@ int loop (void) {
 void quit (void) {
 
   SDL_FreeSurface(panel);
+
   SDL_FreeSurface(panelBigFont.pixels);
+  free(panelBigFont.w);
+
   SDL_FreeSurface(panelSmallFont.pixels);
+  free(panelSmallFont.w);
+
+  freeFont(font2);
+  freeFont(fontbig);
+  freeFont(fontiny);
+  freeFont(fontmn1);
+  freeFont(fontmn2);
+  freeFont(redFontmn2);
+
+  SDL_FreeSurface(panelAmmo[0]);
+  SDL_FreeSurface(panelAmmo[1]);
+  SDL_FreeSurface(panelAmmo[2]);
+  SDL_FreeSurface(panelAmmo[3]);
+  SDL_FreeSurface(panelAmmo[4]);
 
   free(path);
 
@@ -752,23 +922,28 @@ int main(int argc, char *argv[]) {
   keys[K_RIGHT].key   = SDLK_RIGHT;
 #ifdef WIN32
   keys[K_JUMP].key    = SDLK_RALT;
-#else
-  keys[K_JUMP].key    = SDLK_LALT;
-#endif
   keys[K_FIRE].key    = SDLK_SPACE;
-  keys[K_CHANGE].key  = SDLK_RCTRL;
+#else
+  keys[K_JUMP].key    = SDLK_SPACE;
+  keys[K_FIRE].key    = SDLK_LALT;
+#endif
+  keys[K_CHANGE].key  = SDLK_RETURN;
 
   cutscene.pixels = NULL;
   firstPE = NULL;
+  firstBullet = NULL;
+  unusedBullet = NULL;
+  firstEvent = NULL;
+  unusedEvent = NULL;
 
-  // Todo: Different resolutions
+  // To do: Load resolution from config file
   screenW = 320;
   screenH = 200;
   fullscreen = 0;
   bgScale = 2;
 
   spf = 0.02f;
-  fps = 50.0f;   // Arbitrarily chosen starting speed
+  fps = 50.0f; // Arbitrarily chosen starting speed
 
   // Initialise SDL
   if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
@@ -812,6 +987,7 @@ int main(int argc, char *argv[]) {
 
   nextworld = 0;
   nextlevel = 0;
+  difficulty = 1;
   if (loadMenu() == -1) quit();
 
   // Establish timing
