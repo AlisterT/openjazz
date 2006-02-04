@@ -24,16 +24,49 @@
  */
 
 
-#include "OpenJazz.h"
+#include "player.h"
+#include <time.h>
+
+
+SDL_Surface *menuScreens[15];
+SDL_Color    menuPalettes[4][256];
+int          episodes;
 
 
 int loadMenu () {
 
   FILE *f;
+  time_t currentTime;
   unsigned char *buffer;
-  int count, end;
+  int count, end, colour;
+
+  f = fopen("openjazz.000", "rb");
+
+  if (f == NULL) return FAILURE;
+
+  menuScreens[14] = loadSurface(f, 64, 40);
+
+  fclose(f);
+
+  if (loadMusic("menusng.psm")) {
+
+    SDL_FreeSurface(menuScreens[14]);
+
+    return FAILURE;
+
+  }
+
 
   f = fopenFromPath("menu.000");
+
+  if (f == NULL) {
+
+    freeMusic();
+    SDL_FreeSurface(menuScreens[14]);
+
+    return FAILURE;
+
+  }
 
   fseek(f, 0, SEEK_END);
   end = ftell(f);
@@ -41,18 +74,30 @@ int loadMenu () {
 
   // Load the main menu graphics
   loadPalette(menuPalettes[0], f);
-  menuScreens[0] = loadSurface(f, menuPalettes[0], 320, 200);
-  menuScreens[1] = loadSurface(f, menuPalettes[0], 320, 200);
+  menuScreens[0] = loadSurface(f, 320, 200);
+  menuScreens[1] = loadSurface(f, 320, 200);
 
 
-  // Load the Christmas menu graphics
+  // In December, load the Christmas menu graphics
   if (end > 200000) {
 
-    SDL_FreeSurface(menuScreens[0]);
-    SDL_FreeSurface(menuScreens[1]);
-    loadPalette(menuPalettes[0], f);
-    menuScreens[0] = loadSurface(f, menuPalettes[0], 320, 200);
-    menuScreens[1] = loadSurface(f, menuPalettes[0], 320, 200);
+    time(&currentTime);
+
+    if (localtime(&currentTime)->tm_mon == 11) {
+
+      SDL_FreeSurface(menuScreens[0]);
+      SDL_FreeSurface(menuScreens[1]);
+      loadPalette(menuPalettes[0], f);
+      menuScreens[0] = loadSurface(f, 320, 200);
+      menuScreens[1] = loadSurface(f, 320, 200);
+
+    } else {
+
+      skipRLE(f);
+      skipRLE(f);
+      skipRLE(f);
+
+    }
 
   }
 
@@ -61,27 +106,42 @@ int loadMenu () {
 
   // Load the difficulty graphics
   loadPalette(menuPalettes[1], f);
-  menuScreens[2] = loadSurface(f, menuPalettes[1], 320, 200);
+  menuScreens[2] = loadSurface(f, 320, 200);
   SDL_SetColorKey(menuScreens[2], SDL_SRCCOLORKEY, 0);
 
   // Load the episode pictures (max. 10 episodes + bonus level)
 
+  // Load their palette
   loadPalette(menuPalettes[2], f);
+
+  // Generate a greyscale mapping
+  for (count = 0; count < 256; count++) {
+
+    colour = ((menuPalettes[2][count].r >> 1) +
+              (menuPalettes[2][count].g << 1) +
+              (menuPalettes[2][count].b >> 1)  ) / 8;
+
+    if (colour > 79) colour = 79;
+
+    menuPalettes[3][count].r = menuPalettes[3][count].g =
+    menuPalettes[3][count].b = colour;
+
+  }
 
   for (count = 0; count < 11; count++) {
 
-    menuScreens[count + 3] = loadSurface(f, menuPalettes[2], 134, 110);
+    menuScreens[count + 3] = loadSurface(f, 134, 110);
 
     if (ftell(f) >= end) {
 
       episodes = ++count;
 
       for (; count < 11; count++)
-        menuScreens[count + 3] = createBlankSurface(menuPalettes[2]);
+        menuScreens[count + 3] = createBlankSurface();
 
       fclose(f);
 
-      return CONTINUE;
+      return SUCCESS;
 
     }
 
@@ -93,7 +153,7 @@ int loadMenu () {
 
   fclose(f);
 
-  return CONTINUE;
+  return SUCCESS;
 
 }
 
@@ -102,6 +162,8 @@ void freeMenu (void) {
 
   int count;
 
+  freeMusic();
+
   for (count = 0; count < 14; count++) SDL_FreeSurface(menuScreens[count]);
 
   return;
@@ -109,7 +171,7 @@ void freeMenu (void) {
 }
 
 
-void newGameDifficultyMenuLoop (void) {
+int newGameDifficultyMenuLoop (void) {
 
   char *options[4] = {"Easy", "Medium", "Hard", "Turbo"};
   SDL_Rect src, dst;
@@ -119,19 +181,28 @@ void newGameDifficultyMenuLoop (void) {
 
   while (1) {
 
-    DORETURN(loop(), )
+    if (loop() == QUIT) return QUIT;
 
-    SDL_FillRect(screen, NULL, 16);
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
 
     for (count = 0; count < 4; count++) {
 
       if (count == difficulty)
-        showString(options[count], screenW >> 2,
-                   (screenH >> 1) + (count << 4) - 32, redFontmn2);
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
 
-      else
-        showString(options[count], screenW >> 2,
-                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == difficulty)
+        restorePalette(fontmn2->pixels);
 
     }
 
@@ -143,25 +214,25 @@ void newGameDifficultyMenuLoop (void) {
     dst.y = (screenH >> 1) - 50;
     SDL_BlitSurface(menuScreens[2], &src, screen, &dst);
 
-    if (keys[K_UP].state == SDL_PRESSED) {
+    if (controls[C_UP].state == SDL_PRESSED) {
 
-      keys[K_UP].state = SDL_RELEASED;
+      releaseControl(C_UP);
       difficulty = (difficulty + 3) % 4;
 
     }
 
-    if (keys[K_DOWN].state == SDL_PRESSED) {
+    if (controls[C_DOWN].state == SDL_PRESSED) {
 
-      keys[K_DOWN].state = SDL_RELEASED;
+      releaseControl(C_DOWN);
       difficulty = (difficulty + 1) % 4;
 
     }
 
-    if ((keys[K_FIRE].state == SDL_PRESSED) ||
-        (keys[K_CHANGE].state == SDL_PRESSED) ) {
+    if (controls[C_ENTER].state == SDL_PRESSED) {
 
-      keys[K_FIRE].state = SDL_RELEASED;
-      keys[K_CHANGE].state = SDL_RELEASED;
+      releaseControl(C_ENTER);
+
+      freeMusic();
 
       // Create the player
       nPlayers = 1;
@@ -176,119 +247,131 @@ void newGameDifficultyMenuLoop (void) {
       localPlayer->ammo[1] = 0;
       localPlayer->ammo[2] = 0;
       localPlayer->ammo[3] = 0;
-
-      // Load the level
-      loadNextLevel();
+      localPlayer->fireSpeed = 0;
 
       // Play the level(s)
-      levelLoop();
+      if (runLevel(nextLevel) == QUIT) {
 
-      // Free the player(s)
+        free(players);
+        localPlayer = NULL;
+
+        return QUIT;
+
+      }
+
       free(players);
+      localPlayer = NULL;
 
-      return;
+      loadMusic("menusng.psm");
+
+      return SUCCESS;
 
     }
 
   }
 
-  return;
+  return SUCCESS;
 
 }
 
 
-void newGameLevelMenuLoop (void) {
-
-  // Temporary menu initialisation
+int newGameLevelMenuLoop (void) {
 
   int option;
+  SDL_Color palette[256];
 
   for (option = 0; option < 16; option++) {
 
-    menuPalettes[1][option].r = (15 - option) * 8;
-    menuPalettes[1][option].g = (15 - option) * 17;
-    menuPalettes[1][option].b = (15 - option) * 8;
+    palette[option].r = (15 - option) * 12;
+    palette[option].g = (15 - option) * 17;
+    palette[option].b = (15 - option) * 12;
 
   }
 
-  usePalette(menuPalettes[1]);
+  memset(palette + 16, 0, sizeof(SDL_Color) * 240);
 
-  option = 0;
+  usePalette(palette);
+
+  world = level = option = 0;
 
   while (1) {
 
-    DORETURN(loop(), )
+    if (loop()) return QUIT;
 
-    // To do
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
 
-    // Temporary menu
+      releaseControl(C_ESCAPE);
 
-    SDL_FillRect(screen, NULL, 16);
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 15);
 
     showString("Choose world:", 32, screenH / 3, &panelBigFont);
-    showNumber(nextworld, 208, screenH / 3, &panelBigFont);
+    showNumber(world, 208, screenH / 3, &panelBigFont);
     showString("Choose level:", 32, (screenH << 1) / 3, &panelBigFont);
-    showNumber(nextlevel, 208, (screenH << 1) / 3, &panelBigFont);
-    showString("*", 16, (screenH * (option + 1)) / 3, &panelBigFont);
+    showNumber(level, 208, (screenH << 1) / 3, &panelBigFont);
+    showString(".", 16, (screenH * (option + 1)) / 3, &panelBigFont);
 
-    if (keys[K_UP].state == SDL_PRESSED) {
+    if (controls[C_UP].state == SDL_PRESSED) {
 
-      keys[K_UP].state = SDL_RELEASED;
-
-      option ^= 1;
-
-    }
-
-    if (keys[K_DOWN].state == SDL_PRESSED) {
-
-      keys[K_DOWN].state = SDL_RELEASED;
+      releaseControl(C_UP);
 
       option ^= 1;
 
     }
 
-    if (keys[K_LEFT].state == SDL_PRESSED) {
+    if (controls[C_DOWN].state == SDL_PRESSED) {
 
-      keys[K_LEFT].state = SDL_RELEASED;
+      releaseControl(C_DOWN);
 
-      if (option) nextlevel = (nextlevel + 9) % 10;
-      else nextworld = (nextworld + 999) % 1000;
-
-    }
-
-    if (keys[K_RIGHT].state == SDL_PRESSED) {
-
-      keys[K_RIGHT].state = SDL_RELEASED;
-
-      if (option) nextlevel = (nextlevel + 1) % 10;
-      else nextworld = (nextworld + 1) % 1000;
+      option ^= 1;
 
     }
 
-    if ((keys[K_FIRE].state == SDL_PRESSED) ||
-        (keys[K_CHANGE].state == SDL_PRESSED) ) {
+    if (controls[C_LEFT].state == SDL_PRESSED) {
 
-      keys[K_FIRE].state = SDL_RELEASED;
-      keys[K_CHANGE].state = SDL_RELEASED;
+      releaseControl(C_LEFT);
 
-      newGameDifficultyMenuLoop();
+      if (option) level = (level + 9) % 10;
+      else world = (world + 999) % 1000;
 
-      // This won't actually load the level, but will set nextlevel and
-      // nextworld to their correct values
-      if (nextlevel == 99) loadNextLevel();
+    }
 
-      usePalette(menuPalettes[1]);
+    if (controls[C_RIGHT].state == SDL_PRESSED) {
+
+      releaseControl(C_RIGHT);
+
+      if (option) level = (level + 1) % 10;
+      else world = (world + 1) % 1000;
+
+    }
+
+    if (controls[C_ENTER].state == SDL_PRESSED) {
+
+      releaseControl(C_ENTER);
+
+      restorePalette(fontmn2->pixels);
+
+      free(nextLevel);
+      nextLevel = malloc(11);
+      sprintf(nextLevel, "level%1i.%03i", level, world);
+
+      if (newGameDifficultyMenuLoop() == QUIT) return QUIT;
+
+      usePalette(palette);
 
     }
 
   }
 
-  return;
+  return SUCCESS;
 
 }
 
 
-void newGameMenuLoop (void) {
+int newGameMenuLoop (void) {
 
   char *options[12] = {"Episode one",
                        "Episode two",
@@ -302,32 +385,47 @@ void newGameMenuLoop (void) {
                        "Episode X",
                        "Bonus stage",
                        "Specific level"};
+  int exists[12];
+  char check[11];
   SDL_Rect dst;
   int episode, count;
 
-  for (count = 0; count < 8; count++) {
+  usePalette(menuPalettes[2]);
 
-    // red fontmn2 colours
-    menuPalettes[2][count + 120].r = count * 36;
-    menuPalettes[2][count + 120].g = 0;
-    menuPalettes[2][count + 120].b = 0;
+  for (count = 0; count < 10; count++) {
 
-    // fontmn2 colours
-    menuPalettes[2][count + 240].r = count * 36;
-    menuPalettes[2][count + 240].g = count * 36;
-    menuPalettes[2][count + 240].b = count * 36;
+    if (count < 6) world = count * 3;
+    else if ((count >= 6) && (count < 9)) world = (count + 4) * 3;
+    else world = 50;
+
+    sprintf(check, "level0.%03i", world);
+
+    exists[count] = fileExists(check);
+
+    if (exists[count]) restorePalette(menuScreens[count + 3]);
+    else SDL_SetPalette(menuScreens[count + 3], SDL_LOGPAL, menuPalettes[3], 0,
+                        256);
 
   }
 
-  usePalette(menuPalettes[2]);
+  exists[10] = 0;
+  exists[11] = 1;
 
   episode = 0;
 
   while (1) {
 
-    DORETURN(loop(), )
+    if (loop() == QUIT) return QUIT;
 
-    SDL_FillRect(screen, NULL, 16);
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
 
     if ((episode < episodes - 1) || (episode < 6)) {
 
@@ -349,81 +447,108 @@ void newGameMenuLoop (void) {
 
     for (count = 0; count < 12; count++) {
 
-      if (count == episode)
-        showString(options[count], screenW >> 3,
-                   (screenH >> 1) + (count << 4) - 92, redFontmn2);
+      if (count == episode) {
 
-      else
-        showString(options[count], screenW >> 3,
-                   (screenH >> 1) + (count << 4) - 92, fontmn2);
+        scalePalette(fontmn2->pixels, -F10, (-240 * -10) + 79);
+        dst.x = (screenW >> 3) - 4;
+        dst.y = (screenH >> 1) + (count << 4) - 94;
+        dst.w = 136;
+        dst.h = 15;
+        SDL_FillRect(screen, &dst, 79);
+
+      } else if (!exists[count])
+        scalePalette(fontmn2->pixels, -F2, (-240 * -2) + 94);
+
+      showString(options[count], screenW >> 3,
+                 (screenH >> 1) + (count << 4) - 92, fontmn2);
+
+      if ((count == episode) || (!exists[count]))
+        scalePalette(fontmn2->pixels, F10, (-240 * 10) + 9);
 
     }
 
-    if (keys[K_UP].state == SDL_PRESSED) {
+    if (controls[C_UP].state == SDL_PRESSED) {
 
-      keys[K_UP].state = SDL_RELEASED;
+      releaseControl(C_UP);
 
       episode = (episode + 11) % 12;
 
     }
 
-    if (keys[K_DOWN].state == SDL_PRESSED) {
+    if (controls[C_DOWN].state == SDL_PRESSED) {
 
-      keys[K_DOWN].state = SDL_RELEASED;
+      releaseControl(C_DOWN);
 
       episode = (episode + 1) % 12;
 
     }
 
-    if ((keys[K_FIRE].state == SDL_PRESSED) ||
-        (keys[K_CHANGE].state == SDL_PRESSED) ) {
+    if (controls[C_ENTER].state == SDL_PRESSED) {
 
-      keys[K_FIRE].state = SDL_RELEASED;
-      keys[K_CHANGE].state = SDL_RELEASED;
+      releaseControl(C_ENTER);
 
-      if (episode < 6) nextworld = episode * 3;
-      else if ((episode >= 6) && (episode < 9)) nextworld = (episode + 1) * 3;
-      else if (episode == 9) nextworld = 50;
-      else nextworld = 0;
-      nextlevel = 0;
+      if (exists[episode]) {
 
-      if (episode < 10) newGameDifficultyMenuLoop();
+        if (episode < 10) {
 
-      if (episode == 11) newGameLevelMenuLoop();
+          if (episode < 6) world = episode * 3;
+          else if ((episode >= 6) && (episode < 9)) world = (episode + 4) * 3;
+          else world = 50;
+          level = 0;
 
-      usePalette(menuPalettes[2]);
+          free(nextLevel);
+          nextLevel = malloc(11);
+          sprintf(nextLevel, "level0.%03i", world);
+
+          if (newGameDifficultyMenuLoop() == QUIT) return QUIT;
+
+        } else if (episode == 10) {
+
+          // To do
+
+        } else {
+
+          if (newGameLevelMenuLoop() == QUIT) return QUIT;
+
+        }
+
+        usePalette(menuPalettes[2]);
+
+      }
 
     }
 
   }
 
-  return;
+  return SUCCESS;
 
 }
 
 
-void loadGameMenuLoop (void) {
+int loadGameMenuLoop (void) {
 
   // To do
 
-  return;
+  return SUCCESS;
 
 }
 
 
-void setupMenuLoop (void) {
+int setupMenuLoop (void) {
 
   // To do
 
-  return;
+  return SUCCESS;
 
 }
 
 
-void menuLoop (void) {
+int runMenu (void) {
 
   int option;
   SDL_Rect src, dst;
+
+  if (loadMenu()) return FAILURE;
 
   option = 0;
 
@@ -431,9 +556,29 @@ void menuLoop (void) {
 
   while (1) {
 
-    DORETURN(loop(), freeMenu();)
+    if (loop() == QUIT) {
 
-    SDL_FillRect(screen, NULL, 0);
+      freeMenu();
+
+      return QUIT;
+
+    }
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      freeMenu();
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 28);
+
+    dst.x = (screenW >> 2) - 72;
+    dst.y = screenH - (screenH >> 2);
+    SDL_BlitSurface(menuScreens[14], NULL, screen, &dst);
 
     dst.x = (screenW - 320) >> 1;
     dst.y = (screenH - 200) >> 1;
@@ -502,68 +647,94 @@ void menuLoop (void) {
     SDL_BlitSurface(menuScreens[1], &src, screen, &dst);
 
 
-    if (keys[K_UP].state == SDL_PRESSED) {
+    if (controls[C_UP].state == SDL_PRESSED) {
 
-      keys[K_UP].state = SDL_RELEASED;
+      releaseControl(C_UP);
 
       option = (option + 5) % 6;
 
     }
 
-    if (keys[K_DOWN].state == SDL_PRESSED) {
+    if (controls[C_DOWN].state == SDL_PRESSED) {
 
-      keys[K_DOWN].state = SDL_RELEASED;
+      releaseControl(C_DOWN);
 
       option = (option + 1) % 6;
 
     }
 
 
-    if ((keys[K_FIRE].state == SDL_PRESSED) ||
-        (keys[K_CHANGE].state == SDL_PRESSED) ) {
+    if (controls[C_ENTER].state == SDL_PRESSED) {
 
-      keys[K_FIRE].state = SDL_RELEASED;
-      keys[K_CHANGE].state = SDL_RELEASED;
+      releaseControl(C_ENTER);
 
       switch(option) {
 
         case 0: // New game
 
-          newGameMenuLoop();
+          if (newGameMenuLoop() == QUIT) {
+
+            freeMenu();
+
+            return QUIT;
+
+          }
 
           break;
 
         case 1: // Load game
 
-          loadGameMenuLoop();
+          if (loadGameMenuLoop() == QUIT) {
+
+            freeMenu();
+
+            return QUIT;
+
+          }
 
          break;
 
         case 2: // Instructions
 
-          DORETURN(loadScene("instruct.0sc"), freeLevel();)
-          sceneLoop();
-          freeScene();
+          if (runScene("instruct.0sc") == QUIT) {
+
+            freeMenu();
+
+            return QUIT;
+
+          }
 
           break;
 
         case 3: // Setup options
 
-          setupMenuLoop();
+          if (setupMenuLoop() == QUIT) {
+
+            freeMenu();
+
+            return QUIT;
+
+          }
 
           break;
 
         case 4: // Order info
 
-          DORETURN(loadScene("order.0sc"), freeLevel();)
-          sceneLoop();
-          freeScene();
+          if (runScene("order.0sc") == QUIT) {
+
+            freeMenu();
+
+            return QUIT;
+
+          }
 
           break;
 
         case 5: // Exit
 
-          return;
+          freeMenu();
+
+          return SUCCESS;
 
       }
 
@@ -573,7 +744,7 @@ void menuLoop (void) {
 
   }
 
-  return;
+  return SUCCESS;
 
 }
 

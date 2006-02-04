@@ -33,11 +33,13 @@ int loadBonus (char * fn) {
 
   f = fopenFromPath(fn);
 
+  if (f == NULL) return FAILURE;
+
   // To do
 
   fclose(f);
 
-  return -1;
+  return SUCCESS;
 
 }
 
@@ -51,14 +53,34 @@ void freeBonus (void) {
 }
 
 
-void bonusLoop (void) {
+int runBonus (char * fn) {
+
+  if (loadBonus(fn)) return FAILURE;
 
   while (1) {
 
-    DORETURN(loop(), freeBonus();)
+    if (loop() == QUIT) {
+
+      freeBonus();
+
+      return QUIT;
+
+    }
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      freeBonus();
+
+      return SUCCESS;
+
+    }
 
     // To do
 
   }
+
+  return SUCCESS;
 
 }

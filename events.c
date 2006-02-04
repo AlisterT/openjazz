@@ -24,7 +24,7 @@
  */
 
 
-#include "OpenJazz.h"
+#include "level.h"
 
 
 void createPlayerBullet (player *source, int ticks) {
@@ -83,20 +83,20 @@ void createPlayerBullet (player *source, int ticks) {
 
     }
 
-    bul->x = source->x + 6 + (20 * source->facing);
-    bul->y = source->y - 8;
+    bul->x = source->x + F6 + (F20 * source->facing);
+    bul->y = source->y - F8;
 
     if ((bul->type == B_LMISSILE) || (bul->type == B_RMISSILE)) {
 
       if (source->facing) {
 
-        bul->dx = 500;
-        bul->dy = -100;
+        bul->dx = 500 * F1;
+        bul->dy = -100 * F1;
 
       } else {
 
-        bul->dx = -500;
-        bul->dy = -100;
+        bul->dx = -500 * F1;
+        bul->dy = -100 * F1;
 
       }
 
@@ -116,18 +116,18 @@ void createPlayerBullet (player *source, int ticks) {
       if (source->facing) bul->type = B_RMISSILE;
       else bul->type = B_LMISSILE;
 
-      bul->x = source->x + 6 + (20 * source->facing);
-      bul->y = source->y - 16;
+      bul->x = source->x + F6 + (F20 * source->facing);
+      bul->y = source->y - F8;
 
       if (source->facing) {
 
-        bul->dx = 500;
-        bul->dy = 100;
+        bul->dx = 500 * F1;
+        bul->dy = 100 * F1;
 
       } else {
 
-        bul->dx = -500;
-        bul->dy = 100;
+        bul->dx = -500 * F1;
+        bul->dy = 100 * F1;
 
       }
 
@@ -138,11 +138,11 @@ void createPlayerBullet (player *source, int ticks) {
 
         if (!source->facing) {
 
-          bul->dx = -500;
+          bul->dx = -500 * F1;
 
         } else {
 
-          bul->dx = 500;
+          bul->dx = 500 * F1;
 
         }
 
@@ -152,7 +152,7 @@ void createPlayerBullet (player *source, int ticks) {
 
     }
 
-    bul->time = ticks + 1000;
+    bul->time = ticks + 3000;
     firstBullet = bul;
 
   }
@@ -228,8 +228,8 @@ void createEvent (int x, int y) {
 
   evt->gridX = x;
   evt->gridY = y;
-  evt->x = x << 5;
-  evt->y = (y + 1) << 5;
+  evt->x = x << 15;
+  evt->y = (y + 1) << 15;
   evt->anim = 0;
 
   if (firstEvent) firstEvent->prev = evt;
@@ -294,11 +294,15 @@ void freeEvents (void) {
 
 void processEvent (event * evt, int ticks) {
 
-  SDL_Rect pos;
+  struct {
+    fixed x, y, w, h;
+  } pos;
+  SDL_Rect dst;
   bullet *bul, *prevBul;
   gridElement *ge;
-  unsigned char *set;
+  signed char *set;
   int frame;
+  fixed startX;
 
   // Get the grid element at the given coordinates
   ge = grid[evt->gridY] + evt->gridX;
@@ -310,7 +314,7 @@ void processEvent (event * evt, int ticks) {
 
 
   // Find frame and dimensions
-  if (evt->anim && (set[evt->anim] < ANIMS)) {
+  if (evt->anim && (set[evt->anim] >= 0)) {
 
     if (evt->anim == E_FINISHANIM)
       frame = ((ticks + 200 - ge->time) / 40) % animSet[set[evt->anim]].frames;
@@ -318,23 +322,25 @@ void processEvent (event * evt, int ticks) {
       frame = (ticks / (set[E_ANIMSP] * 40)) % animSet[set[evt->anim]].frames;
     else frame = (ticks / 40) % animSet[set[evt->anim]].frames;
 
-    pos.x = (int)evt->x + animSet[set[evt->anim]].sprites[frame].x;
-    pos.y = (int)evt->y + animSet[set[evt->anim]].sprites[frame].y +
-            animSet[set[evt->anim]].y[frame] -
-            animSet[set[evt->anim]].sprites[0].pixels->h;
-    pos.w = animSet[set[evt->anim]].sprites[frame].pixels->w;
-    pos.h = animSet[set[evt->anim]].sprites[frame].pixels->h;
+    pos.x = evt->x + (animSet[set[evt->anim]].sprites[frame].x << 10);
+    pos.y = evt->y +
+            ((animSet[set[evt->anim]].sprites[frame].y +
+              animSet[set[evt->anim]].y[frame] -
+              animSet[set[evt->anim]].sprites[0].pixels->h) << 10);
+    pos.w = animSet[set[evt->anim]].sprites[0].pixels->w << 10;
+    pos.h = evt->y - pos.y;
 
-    // Blank sprites
-    if (pos.w == 1) pos.w = 0;
-    if (pos.h == 1) pos.h = 0;
+    if (pos.h > F256) pos.h = F16;
+
+    // Blank sprites for e.g. invisible springs
+    if ((pos.w == F1) && (pos.h == F1)) pos.w = F32;
 
   } else {
 
     pos.x = evt->x;
-    pos.y = evt->y - 32;
-    pos.w = 32;
-    pos.h = 32;
+    pos.y = evt->y - F32;
+    pos.w = F32;
+    pos.h = F32;
 
   }
 
@@ -365,6 +371,8 @@ void processEvent (event * evt, int ticks) {
   }
 
 
+  startX = evt->x;
+
   // Handle behaviour
   if (evt->anim != E_FINISHANIM) {
 
@@ -372,7 +380,7 @@ void processEvent (event * evt, int ticks) {
 
       case 0: // Face the player
 
-        if (localPlayer->x + 16 < pos.x + (pos.w >> 1))
+        if (localPlayer->x + F16 < pos.x + (pos.w >> 1))
           evt->anim = E_LEFTANIM;
         else evt->anim = E_RIGHTANIM;
 
@@ -380,11 +388,11 @@ void processEvent (event * evt, int ticks) {
 
       case 1: // Sink down
 
-        if (localPlayer->x + 16 < pos.x + (pos.w >> 1))
+        if (localPlayer->x + F16 < pos.x + (pos.w >> 1))
           evt->anim = E_LEFTANIM;
         else evt->anim = E_RIGHTANIM;
 
-        evt->y += 200 * spf / set[E_MOVEMENTSP];
+        evt->y += 320 * mspf / set[E_MOVEMENTSP];
 
         break;
 
@@ -393,19 +401,19 @@ void processEvent (event * evt, int ticks) {
         // Walk from side to side
         if (evt->anim == E_LEFTANIM) {
 
-          if (!checkMask(pos.x, pos.y + pos.h + 1) ||
-              checkMask(pos.x - 1, pos.y + (pos.h >> 1)))
+          if (!checkMaskDown(pos.x, pos.y + pos.h + F4) ||
+              checkMaskDown(pos.x - F4, pos.y + (pos.h >> 1)))
             evt->anim = E_RIGHTANIM;
 
-          evt->x -= 200 * spf / set[E_MOVEMENTSP];
+          evt->x -= 320 * mspf / set[E_MOVEMENTSP];
 
         } else if (evt->anim == E_RIGHTANIM) {
 
-          if (!checkMask(pos.x + pos.w, pos.y + pos.h + 1) ||
-              checkMask(pos.x + pos.w + 1, pos.y + (pos.h >> 1)))
+          if (!checkMaskDown(pos.x + pos.w, pos.y + pos.h + F4) ||
+              checkMaskDown(pos.x + pos.w + F4, pos.y + (pos.h >> 1)))
             evt->anim = E_LEFTANIM;
 
-          evt->x += 200 * spf / set[E_MOVEMENTSP];
+          evt->x += 320 * mspf / set[E_MOVEMENTSP];
 
         } else evt->anim = E_LEFTANIM;
 
@@ -413,15 +421,15 @@ void processEvent (event * evt, int ticks) {
 
       case 3: // Seek jazz
 
-        if (localPlayer->x + 26 < pos.x) {
+        if (localPlayer->x + F26 < pos.x) {
 
           evt->anim = E_LEFTANIM;
-          evt->x -= 200 * spf;
+          evt->x -= 320 * mspf / set[E_MOVEMENTSP];
 
-        } else if (localPlayer->x + 6 > pos.x + pos.w) {
+        } else if (localPlayer->x + F6 > pos.x + pos.w) {
 
           evt->anim = E_RIGHTANIM;
-          evt->x += 200 * spf;
+          evt->x += 320 * mspf / set[E_MOVEMENTSP];
 
         } else if (!evt->anim) evt->anim = E_RIGHTANIM;
 
@@ -429,27 +437,27 @@ void processEvent (event * evt, int ticks) {
 
       case 4: // Walk from side to side and down hills
 
-        if (!checkMask(pos.x + (pos.w >> 1), pos.y + pos.h)) {
+        if (!checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h)) {
 
           // Fall downwards
-          evt->y += 200 * spf / set[E_MOVEMENTSP];
+          evt->y += 320 * mspf / set[E_MOVEMENTSP];
 
         } else {
 
           // Walk from side to side
           if (evt->anim == E_LEFTANIM) {
 
-            if (checkMask(pos.x - 1, pos.y + (pos.h >> 1)))
+            if (checkMaskDown(pos.x - F4, pos.y + (pos.h >> 1)))
               evt->anim = E_RIGHTANIM;
 
-            evt->x -= 200 * spf / set[E_MOVEMENTSP];
+            evt->x -= 320 * mspf / set[E_MOVEMENTSP];
 
           } else if (evt->anim == E_RIGHTANIM) {
 
-            if (checkMask(pos.x + pos.w + 1, pos.y + (pos.h >> 1)))
+            if (checkMaskDown(pos.x + pos.w + F4, pos.y + (pos.h >> 1)))
               evt->anim = E_LEFTANIM;
 
-            evt->x += 200 * spf / set[E_MOVEMENTSP];
+            evt->x += 320 * mspf / set[E_MOVEMENTSP];
 
           } else evt->anim = E_LEFTANIM;
 
@@ -468,15 +476,15 @@ void processEvent (event * evt, int ticks) {
 
         if (evt->anim == E_LEFTANIM) {
 
-          evt->x -= 100 * spf;
+          evt->x -= 80 * mspf / set[E_MOVEMENTSP];
 
-          if (evt->x < evt->gridX << 5) evt->anim = E_RIGHTANIM;
+          if (evt->x < evt->gridX << 15) evt->anim = E_RIGHTANIM;
 
         } else if (evt->anim == E_RIGHTANIM) {
 
-          evt->x += 100 * spf;
+          evt->x += 80 * mspf / set[E_MOVEMENTSP];
 
-          if (evt->x > (evt->gridX << 5) + 100) evt->anim = E_LEFTANIM;
+          if (evt->x > (evt->gridX << 15) + 100 * F1) evt->anim = E_LEFTANIM;
 
         } else evt->anim = E_LEFTANIM;
 
@@ -484,36 +492,35 @@ void processEvent (event * evt, int ticks) {
 
       case 8: // Bird-esque following
 
-        if (localPlayer->facing) {
+        if (localPlayer->dx > 0) {
 
           evt->anim = E_RIGHTANIM;
 
-          if (evt->x < localPlayer->x + 64)
-            evt->x += 200 * spf / set[E_MOVEMENTSP];
+          if (evt->x < localPlayer->x) evt->x += 320 * mspf / set[E_MOVEMENTSP];
 
-        } else {
+        } else if (localPlayer->dx < 0) {
 
           evt->anim = E_LEFTANIM;
 
-          if (evt->x > localPlayer->x - 64)
-            evt->x -= 200 * spf / set[E_MOVEMENTSP];
+          if (evt->x > localPlayer->x) evt->x -= 320 * mspf / set[E_MOVEMENTSP];
 
-        }
+        } else evt->anim = E_LEFTANIM + localPlayer->facing;
 
-        if (evt->y > localPlayer->y - 64)
-          evt->y -= 200 * spf / set[E_MOVEMENTSP];
-        else evt->y += 200 * spf / set[E_MOVEMENTSP];
+        if (evt->y > localPlayer->y - F64)
+          evt->y -= 320 * mspf / set[E_MOVEMENTSP];
+        else if (evt->y < localPlayer->y - F64)
+          evt->y += 320 * mspf / set[E_MOVEMENTSP];
 
         break;
 
       case 11: // Sink to ground
 
-        if (localPlayer->x + 16 < pos.x + (pos.w >> 1))
+        if (localPlayer->x + F16 < pos.x + (pos.w >> 1))
           evt->anim = E_LEFTANIM;
         else evt->anim = E_RIGHTANIM;
 
-        if (!checkMask(pos.x + (pos.w >> 1), pos.y))
-          evt->y += 200 * spf / set[E_MOVEMENTSP];
+        if (!checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h))
+          evt->y += 320 * mspf / set[E_MOVEMENTSP];
 
         break;
 
@@ -521,17 +528,17 @@ void processEvent (event * evt, int ticks) {
 
         if (evt->anim == E_LEFTANIM) {
 
-          if (checkMask(pos.x - 1, pos.y + (pos.h >> 1)))
+          if (checkMaskDown(pos.x - F4, pos.y + (pos.h >> 1)))
             evt->anim = E_RIGHTANIM;
 
-          evt->x -= 100 * spf;
+          evt->x -= 80 * mspf / set[E_MOVEMENTSP];
 
         } else if (evt->anim == E_RIGHTANIM) {
 
-          if (checkMask(pos.x + pos.w + 1, pos.y + (pos.h >> 1)))
+          if (checkMaskDown(pos.x + pos.w + F4, pos.y + (pos.h >> 1)))
             evt->anim = E_LEFTANIM;
 
-          evt->x += 100 * spf;
+          evt->x += 80 * mspf / set[E_MOVEMENTSP];
 
         } else evt->anim = E_LEFTANIM;
 
@@ -541,17 +548,17 @@ void processEvent (event * evt, int ticks) {
 
         if (evt->anim == E_LEFTANIM) {
 
-          if (checkMask(pos.x + (pos.w >> 1), pos.y - 1))
+          if (checkMaskDown(pos.x + (pos.w >> 1), pos.y - F4))
             evt->anim = E_RIGHTANIM;
 
-          evt->y -= 100 * spf;
+          evt->y -= 80 * mspf / set[E_MOVEMENTSP];
 
         } else if (evt->anim == E_RIGHTANIM) {
 
-          if (checkMask(pos.x + (pos.w >> 1), pos.y + pos.h + 1))
+          if (checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h + F4))
             evt->anim = E_LEFTANIM;
 
-          evt->y += 100 * spf;
+          evt->y += 80 * mspf / set[E_MOVEMENTSP];
 
         } else evt->anim = E_LEFTANIM;
 
@@ -573,8 +580,7 @@ void processEvent (event * evt, int ticks) {
 
       case 16: // Move across level to the left or right
 
-        evt->x += ((signed char *)set)[E_MAGNITUDE] *
-                  80 * spf / set[E_MOVEMENTSP];
+        evt->x += set[E_MAGNITUDE] * 80 * mspf / set[E_MOVEMENTSP];
         evt->anim = E_LEFTANIM;
 
         break;
@@ -602,7 +608,25 @@ void processEvent (event * evt, int ticks) {
       case 28: // Bridge
       case 29: // Nonmoving object with jazz
       case 30: // Nonmoving object with jazz
-      case 31: // Nonmoving object (no)
+
+        // Temporary
+        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
+        else evt->anim = E_RIGHTANIM;
+        break;
+
+      case 31: // Moving platform
+
+        if (evt->x < (evt->gridX << 15) - (set[E_BRIDGELENGTH] << 14))
+          evt->anim = E_RIGHTANIM;
+        else if ((evt->x > ((evt->gridX + set[E_BRIDGELENGTH]) << 15)) ||
+                 (evt->anim == 0)                                     )
+          evt->anim = E_LEFTANIM;
+
+        if (evt->anim == E_LEFTANIM) evt->x -= 320 * mspf / set[E_MOVEMENTSP];
+        else evt->x += 320 * mspf / set[E_MOVEMENTSP];
+
+        break;
+
       case 32: // Nonmoving object
 
         // Temporary
@@ -614,25 +638,25 @@ void processEvent (event * evt, int ticks) {
 
         if (localPlayer->facing && (pos.x + pos.w < localPlayer->x)) {
 
-          evt->x += 200 * spf / set[E_MOVEMENTSP];
+          evt->x += 320 * mspf / set[E_MOVEMENTSP];
           evt->anim = E_RIGHTANIM;
 
-          if (pos.y + pos.h < localPlayer->y - 20)
-            evt->y += 40 * spf / set[E_MOVEMENTSP];
+          if (pos.y + pos.h < localPlayer->y - F20)
+            evt->y += 80 * mspf / set[E_MOVEMENTSP];
 
           else if (pos.y > localPlayer->y)
-            evt->y -= 40 * spf / set[E_MOVEMENTSP];
+            evt->y -= 80 * mspf / set[E_MOVEMENTSP];
 
-        } else if (!localPlayer->facing && (pos.x > localPlayer->x + 32)) {
+        } else if (!localPlayer->facing && (pos.x > localPlayer->x + F32)) {
 
-          evt->x += -200 * spf / set[E_MOVEMENTSP];
+          evt->x -= 320 * mspf / set[E_MOVEMENTSP];
           evt->anim = E_LEFTANIM;
 
-          if (pos.y + pos.h < localPlayer->y - 20)
-            evt->y += 40 * spf / set[E_MOVEMENTSP];
+          if (pos.y + pos.h < localPlayer->y - F20)
+            evt->y += 80 * mspf / set[E_MOVEMENTSP];
 
           else if (pos.y > localPlayer->y)
-            evt->y -= 40 * spf / set[E_MOVEMENTSP];
+            evt->y -= 80 * mspf / set[E_MOVEMENTSP];
 
         } else if (!evt->anim) evt->anim = E_LEFTANIM;
 
@@ -689,20 +713,32 @@ void processEvent (event * evt, int ticks) {
 
       case 41: // Bonus level
 
-        nextlevel = set[E_MULTIPURPOSE];
-        nextworld = set[E_YAXIS];
+        if (localPlayer->reaction != PR_KILLED) {
+
+          free(nextLevel);
+          nextLevel = malloc(11);
+          sprintf(nextLevel, "level%1i.%03i", set[E_MULTIPURPOSE], set[E_YAXIS]);
+
+        }
 
         // The lack of a break statement is intentional
 
       case 8: // Boss
       case 27: // End of level
 
-        localPlayer->reaction = PR_WON;
-        localPlayer->reactionTime = ticks + 1000;
+        if (localPlayer->reaction != PR_KILLED) {
+
+          checkX = evt->gridX;
+          checkY = evt->gridY;
+
+          localPlayer->reaction = PR_WON;
+          localPlayer->reactionTime = ticks + 2000;
+
+        }
 
         break;
 
-      case 10:
+      case 10: // Checkpoint
 
         checkX = evt->gridX;
         checkY = evt->gridY;
@@ -711,8 +747,8 @@ void processEvent (event * evt, int ticks) {
 
       case 13: // Warp
 
-        localPlayer->x = set[E_MULTIPURPOSE] << 5;
-        localPlayer->y = set[E_YAXIS] << 5;
+        localPlayer->x = set[E_MULTIPURPOSE] << 15;
+        localPlayer->y = (set[E_YAXIS] + 1) << 15;
         ge->time = 0;
 
         break;
@@ -760,11 +796,16 @@ void processEvent (event * evt, int ticks) {
   }
 
 
+  if ((eventSet[localPlayer->event][E_MODIFIER] != 6) &&
+      (localPlayer->jumpTime < ticks)                    )
+    localPlayer->event = 0;
+
+
   // Handle contact events
   if ((evt->anim != E_FINISHANIM) &&
-      (localPlayer->x + 6 <= pos.x + pos.w) &&
-      (localPlayer->x + 26 >= pos.x) &&
-      (localPlayer->y - 20 <= pos.y + pos.h) &&
+      (localPlayer->x + F6 <= pos.x + pos.w) &&
+      (localPlayer->x + F26 >= pos.x) &&
+      (localPlayer->y - F20 <= pos.y + pos.h) &&
       (localPlayer->y >= pos.y)   ) {
 
     // Handle behaviour which takes effect on contact
@@ -776,18 +817,38 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
-      case 25: // Float up
+      case 25: // Float up / Belt
 
-        localPlayer->dy -= set[E_MULTIPURPOSE] * 200 * spf;
+        if (set[E_YAXIS]) {
+ 
+//          if ((localPlayer->dy > 0) &&
+//              checkMaskDown(localPlayer->x + F16, localPlayer->y + F4))
+//            localPlayer->dy = set[E_MULTIPURPOSE] * -F40;
+
+//          if (localPlayer->dy > set[E_MULTIPURPOSE] * -F40)
+//            localPlayer->dy -= set[E_MULTIPURPOSE] * 320 * mspf;
+          localPlayer->event = ge->event;
+          localPlayer->jumpTime = ticks + 200;
+
+        }
+
+        if (set[E_MAGNITUDE] < 0)
+          localPlayer->dx += set[E_MAGNITUDE] * 4 * mspf;
+        else localPlayer->dx += set[E_MAGNITUDE] * 40 * mspf;
 
         break;
 
       case 38: // Sucker tubes
 
-        if (set[E_YAXIS]) localPlayer->dy = set[E_MULTIPURPOSE] * -20;
+        if (set[E_YAXIS]) {
 
-        if (set[E_MAGNITUDE] < 128) localPlayer->dx = set[E_MAGNITUDE] * 40;
-        else localPlayer->dx = (set[E_MAGNITUDE] - 256) * 40;
+//        localPlayer->dy = set[E_MULTIPURPOSE] * -F20;
+          localPlayer->event = ge->event;
+          localPlayer->jumpTime = ticks + (set[E_MULTIPURPOSE] * 40);
+
+        }
+
+        localPlayer->dx = set[E_MAGNITUDE] * F40;
 
         break;
 
@@ -807,7 +868,7 @@ void processEvent (event * evt, int ticks) {
           if (localPlayer->energy) {
 
             localPlayer->reaction = PR_HURT;
-            localPlayer->reactionTime = ticks + 2000;
+            localPlayer->reactionTime = ticks + 1000;
 
             if (localPlayer->dx < 0) {
 
@@ -834,12 +895,17 @@ void processEvent (event * evt, int ticks) {
 
       case 1: // Invincibility
 
-        localPlayer->reaction = PR_INVINCIBLE;
-        localPlayer->reactionTime = ticks + 10000;
+        if ((localPlayer->reaction == PR_NONE) ||
+            (localPlayer->reaction == PR_INVINCIBLE)) {
 
-        localPlayer->score += set[E_ADDEDSCORE] * 10;
-        ge->time = ticks + 200;
-        evt->anim = E_FINISHANIM;
+          localPlayer->reaction = PR_INVINCIBLE;
+          localPlayer->reactionTime = ticks + 10000;
+
+          localPlayer->score += set[E_ADDEDSCORE] * 10;
+          ge->time = ticks + 200;
+          evt->anim = E_FINISHANIM;
+
+        }
 
         break;
 
@@ -854,7 +920,7 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
-      case 4: // extra life
+      case 4: // Extra life
 
         if (localPlayer->lives < 99) localPlayer->lives++;
 
@@ -872,9 +938,40 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
+      case 6: // Platform
+
+        if ((localPlayer->y > pos.y) && (localPlayer->y < pos.y + F4) &&
+            !checkMaskDown(localPlayer->x + F16, pos.y - F20)           ) {
+
+          localPlayer->event = ge->event;
+          localPlayer->y = pos.y;
+          localPlayer->x += evt->x - startX;
+
+        } else if (eventSet[localPlayer->event][E_MODIFIER] == 6)
+          localPlayer->event = 0;
+
+        break;
+
+      case 9: // Sand timer
+
+        endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+        localPlayer->score += set[E_ADDEDSCORE] * 10;
+        ge->time = ticks + 200;
+        evt->anim = E_FINISHANIM;
+
+        break;
+
       case 11: // Item
 
         localPlayer->score += set[E_ADDEDSCORE] * 10;
+        ge->time = ticks + 200;
+        evt->anim = E_FINISHANIM;
+
+        break;
+
+      case 12: // Rapid fire
+
+        localPlayer->fireSpeed++;
         ge->time = ticks + 200;
         evt->anim = E_FINISHANIM;
 
@@ -918,7 +1015,8 @@ void processEvent (event * evt, int ticks) {
 
       case 29: // Upwards spring
 
-        localPlayer->dy = (set[E_MAGNITUDE] - 256) * 80;
+        localPlayer->event = ge->event;
+        localPlayer->jumpTime = ticks + (set[E_MAGNITUDE] * -20);
 
         break;
 
@@ -938,38 +1036,40 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
-      case 43: // Downwards spring
-
-        localPlayer->dy = set[E_MAGNITUDE] * 80;
-
-        break;
-
     }
 
   }
 
   // Show events
   // Note: 7 and 28 will need additional stuff
-  if (evt->anim && (set[evt->anim] < ANIMS)) {
+  if (evt->anim && (set[evt->anim] >= 0)) {
 
     if (evt->anim == E_FINISHANIM)
       frame = ((ticks + 200 - ge->time) / 40) % animSet[set[evt->anim]].frames;
     else if (set[E_ANIMSP])
       frame = (ticks / (set[E_ANIMSP] * 40)) % animSet[set[evt->anim]].frames;
-    else frame = (ticks / 40) % animSet[set[evt->anim]].frames;
+    else frame = (ticks / 20) % animSet[set[evt->anim]].frames;
 
-    pos.x = (int)evt->x - localPlayer->viewX +
+    dst.x = (evt->x >> 10) - (localPlayer->viewX >> 10) +
             animSet[set[evt->anim]].sprites[frame].x;
-    pos.y = (int)evt->y - localPlayer->viewY +
+    dst.y = (evt->y >> 10) - (localPlayer->viewY >> 10) +
             animSet[set[evt->anim]].sprites[frame].y +
             animSet[set[evt->anim]].y[frame] -
             animSet[set[evt->anim]].sprites[0].pixels->h;
 
     // Draw the event
     SDL_BlitSurface(animSet[set[evt->anim]].sprites[frame].pixels, NULL, screen,
-                    &pos);
+                    &dst);
 
-  }
+  }/* else {
+
+    dst.x = (pos.x - localPlayer->viewX) >> 10;
+    dst.y = (pos.y - localPlayer->viewY) >> 10;
+    dst.w = pos.w >> 10;
+    dst.h = pos.h >> 10;
+    SDL_FillRect(screen, &dst, 88);
+
+  }*/
 
   return;
 

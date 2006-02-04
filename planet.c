@@ -34,11 +34,13 @@ int loadPlanet (char * fn) {
 
   f = fopenFromPath(fn);
 
+  if (f == NULL) return FAILURE;
+
   // To do
 
   fclose(f);
 
-  return -1;
+  return SUCCESS;
 
 }
 
@@ -52,16 +54,34 @@ void freePlanet (void) {
 }
 
 
-void planetLoop (void) {
+int runPlanet (char * fn) {
+
+  if (loadPlanet(fn)) return FAILURE;
 
   while (1) {
 
-    DORETURN(loop(), freePlanet();)
+    if (loop() == QUIT) {
+
+      freePlanet();
+
+      return QUIT;
+
+    }
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      freePlanet();
+
+      return SUCCESS;
+
+    }
 
     // To do
 
   }
 
-  return;
+  return SUCCESS;
 
 }

@@ -8,6 +8,7 @@
  *
  *
  * Copyright (c) 2005 Alister Thomson
+ * Dreamcast code by Troy(GPF)
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -61,12 +62,14 @@ int loadMusic (char * fn) {
 #ifdef USE_MODPLUG
 
   FILE *f;
-  SDL_AudioSpec audioSpec;
+  SDL_AudioSpec asDesired, asObtained;
   ModPlug_Settings settings;
   int size;
 
 
   f = fopenFromPath(fn);
+
+  if (f == NULL) return FAILURE;
 
   // Find the size of the file
   fseek(f, 0, SEEK_END);
@@ -81,15 +84,42 @@ int loadMusic (char * fn) {
 
   fclose(f);
 
+  // Set up SDL audio
+
+  asDesired.freq = 44100;
+  asDesired.format = AUDIO_S16;
+#ifdef _arch_dreamcast
+  asDesired.channels = 1;
+#else
+  asDesired.channels = 2;
+#endif
+  asDesired.samples = 2048;
+  asDesired.callback = audioCallback;
+  asDesired.userdata = NULL;
+
+  if (SDL_OpenAudio(&asDesired, &asObtained) < 0) {
+
+    fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
+
+    ModPlug_Unload(musicFile);
+    free(psmData);
+
+    return FAILURE;
+
+  }
+
   // Set up libmodplug
 
-  settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING |
-                    MODPLUG_ENABLE_NOISE_REDUCTION |
+  settings.mFlags = MODPLUG_ENABLE_NOISE_REDUCTION |
                     MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS |
                     MODPLUG_ENABLE_SURROUND;
-  settings.mChannels = 2;
-  settings.mBits = 16;
-  settings.mFrequency = 22050;
+  settings.mChannels = asObtained.channels;
+
+  if ((asObtained.format == AUDIO_U8) || (asObtained.format == AUDIO_S8))
+    settings.mBits = 8;
+  else settings.mBits = 16;
+
+  settings.mFrequency = asObtained.freq;
   settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
   settings.mReverbDepth = 25;
   settings.mReverbDelay = 40;
@@ -104,28 +134,12 @@ int loadMusic (char * fn) {
   // Load the file into libmodplug
   musicFile = ModPlug_Load(psmData, size);
 
-  // Set up SDL audio
-
-  audioSpec.freq = 22050;
-  audioSpec.format = AUDIO_S16;
-  audioSpec.channels = 2;
-  audioSpec.samples = 512;
-  audioSpec.callback = audioCallback;
-  audioSpec.userdata = NULL;
-
-  if (SDL_OpenAudio(&audioSpec, NULL) < 0) {
-
-      fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
-      return RETURN;
-
-  }
-
   // Start the music playing
   SDL_PauseAudio(0);
 
 #endif
 
-  return CONTINUE;
+  return SUCCESS;
 
 }
 
@@ -137,7 +151,6 @@ void freeMusic (void) {
   SDL_CloseAudio();
 
   ModPlug_Unload(musicFile);
-
   free(psmData);
 
 #endif
@@ -153,11 +166,13 @@ int loadSounds (char *fn) {
 
   f = fopenFromPath(fn);
 
+  if (f == NULL) return FAILURE;
+
   // To do
 
   fclose(f);
 
-  return -1;
+  return SUCCESS;
 
 }
 

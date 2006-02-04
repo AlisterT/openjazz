@@ -24,7 +24,8 @@
  */
 
 
-#include "OpenJazz.h"
+#define Lextern
+#include "level.h"
 #include <string.h>
 
 
@@ -40,9 +41,19 @@ int loadSprites (char * fn) {
   // Open fn
   sf = fopenFromPath(fn);
 
+  if (f == NULL) return FAILURE;
+
   // This function loads all the sprites, not fust those in fn
   // Note: Lower case is necessary for Unix support
   mf = fopenFromPath("mainchar.000");
+
+  if (f == NULL) {
+
+    fclose(sf);
+
+    return FAILURE;
+
+  }
 
   sprites = fgetc(sf);
   sprites += fgetc(sf) << 8; // Not that the sprite set can ever be larger than
@@ -82,7 +93,7 @@ int loadSprites (char * fn) {
       mposition += 2;
 
       // Create a blank sprite
-      spriteSet[i].pixels = createBlankSurface(levelPalette);
+      spriteSet[i].pixels = createBlankSurface();
       i++;
 
     }
@@ -240,7 +251,7 @@ int loadSprites (char * fn) {
 
 
     // Convert the sprite to an SDL surface
-    spriteSet[i].pixels = createSurface(sorted, levelPalette, w, h);
+    spriteSet[i].pixels = createSurface(sorted, w, h);
     SDL_SetColorKey(spriteSet[i].pixels, SDL_SRCCOLORKEY, SKEY);
 
     // Free redundant data
@@ -254,7 +265,7 @@ int loadSprites (char * fn) {
 
       for (i++; i < sprites; i++) {
 
-        spriteSet[i].pixels = createBlankSurface(levelPalette);
+        spriteSet[i].pixels = createBlankSurface();
 
       }
 
@@ -268,11 +279,11 @@ int loadSprites (char * fn) {
 
   // Include a blank sprite at the end
 
-  spriteSet[sprites].pixels = createBlankSurface(levelPalette);
+  spriteSet[sprites].pixels = createBlankSurface();
   spriteSet[sprites].x = 0;
   spriteSet[sprites].y = 0;
 
-  return CONTINUE;
+  return SUCCESS;
 
 }
 
@@ -287,6 +298,8 @@ int loadTiles (char * fn) {
 
   f = fopenFromPath(fn);
 
+  if (f == NULL) return 0;
+
 
   // Load the palette
 
@@ -298,7 +311,7 @@ int loadTiles (char * fn) {
 
   // Load the background palette
 
-  loadPalette(levelBGPalette, f);
+  loadPalette(skyPalette, f);
 
 
   // Skip the second, identical, background palette
@@ -353,7 +366,7 @@ int loadTiles (char * fn) {
   // Should be a multiple of 60
   nTiles = pos / (TW * TH);
 
-  tileSet = createSurface(buffer, levelPalette, TW, TH * nTiles);
+  tileSet = createSurface(buffer, TW, TH * nTiles);
   SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
 
   return nTiles;
@@ -365,6 +378,7 @@ int loadTiles (char * fn) {
 int loadLevel (char * fn) {
 
   FILE *f;
+  char *subFN;
   unsigned char *buffer;
   paletteEffect *pe;
   unsigned char birdEvent[ELENGTH] = {0, 0, 0, 0, 8, 51, 52, 0,
@@ -377,7 +391,10 @@ int loadLevel (char * fn) {
 
   f = fopenFromPath(fn);
 
-  if (!strncasecmp(fn + 6, ".j1l", 4)) {
+  if (f == NULL) return FAILURE;
+
+
+  if (!strncasecmp(fn + strlen(fn) - 4, ".j1l", 4)) {
 
     // Load level data from a *.j1l file
 
@@ -388,22 +405,25 @@ int loadLevel (char * fn) {
 
     // Load level data from an original Level#.### file
 
-    char *subFN;
-
     subFN = malloc(12);
+
+    // Feline says this byte gives the correct tileset extension. All I get is
+    // the level extension.
+    fseek(f, -15, SEEK_END);
+    x = fgetc(f) ^ 4;
 
     // Load tile set from corresponding blocks.###
     // Note: Lower case is required for Unix support
 
     // Boss levels are special cases
-    if (world == 18) nTiles = loadTiles("blocks.002");
-    else if (world == 19) nTiles = loadTiles("blocks.005");
-    else if (world == 20) nTiles = loadTiles("blocks.008");
-    else if (world == 21) nTiles = loadTiles("blocks.011");
-    else if (world == 22) nTiles = loadTiles("blocks.014");
-    else if (world == 39) nTiles = loadTiles("blocks.032");
-    else if (world == 40) nTiles = loadTiles("blocks.035");
-    else if (world == 41) nTiles = loadTiles("blocks.038");
+    if (x == 18) nTiles = loadTiles("blocks.002");
+    else if (x == 19) nTiles = loadTiles("blocks.005");
+    else if (x == 20) nTiles = loadTiles("blocks.008");
+    else if (x == 21) nTiles = loadTiles("blocks.011");
+    else if (x == 22) nTiles = loadTiles("blocks.014");
+    else if (x == 39) nTiles = loadTiles("blocks.032");
+    else if (x == 40) nTiles = loadTiles("blocks.035");
+    else if (x == 41) nTiles = loadTiles("blocks.038");
     else {
 
       // Construct and use file name for non-boss levels
@@ -412,16 +432,28 @@ int loadLevel (char * fn) {
 
     }
 
-    // Feline says this byte gives the correct tileset extension. All I get is
-    // the level extension.
-    fseek(f, -15, SEEK_END);
-    x = fgetc(f) ^ 4;
+    if (!nTiles) {
 
+      free(subFN);
+      fclose(f);
+
+      return FAILURE;
+
+    }
 
     // Load sprite set from corresponding Sprites.###
     // Note: Lower case is required for Unix support
     sprintf(subFN, "sprites.%3s", fn + 7);
-    loadSprites(subFN);
+
+    if (loadSprites(subFN)) {
+
+      free(subFN);
+      SDL_FreeSurface(tileSet);
+      fclose(f);
+
+      return FAILURE;
+
+    }
 
     free(subFN);
 
@@ -506,8 +538,12 @@ int loadLevel (char * fn) {
   // Set event 0
   memset(*eventSet, 0, ELENGTH);
 
-  for (count = 1; count < EVENTS; count++)
+  for (count = 1; count < EVENTS; count++) {
+
     memcpy(eventSet[count], buffer + (count * ELENGTH), ELENGTH);
+    eventSet[count][E_MOVEMENTSP]++;
+
+  }
 
   free(buffer);
 
@@ -570,39 +606,55 @@ int loadLevel (char * fn) {
   fseek(f, 505, SEEK_CUR);
 
   // Music file
-  x = fgetc(f);
-  buffer = malloc(x + 1);
-  for (y = 0; y < x; y++) buffer[y] = fgetc(f);
-  buffer[x] = 0;
-  loadMusic(buffer); // It's not as if this even does anything yet
-  free(buffer);
+  buffer = loadString(f);
+  loadMusic(buffer);
 
   // 25 bytes of undiscovered usefulness, less the music file name
-  fseek(f, 25 - x, SEEK_CUR);
+  fseek(f, 25 - strlen(buffer), SEEK_CUR);
+  free(buffer);
 
-  x = fgetc(f);
-  if (!x) x = 9;
-  sceneFile = malloc(x + 1);
-  for (y = 0; y < x; y++) sceneFile[y] = fgetc(f);
-  sceneFile[x] = 0;
+  // End of episode cutscene
+  sceneFile = loadString(f);
 
   // 51 bytes of undiscovered usefulness, less the cutscene file name
-  fseek(f, 51 - x, SEEK_CUR);
+  fseek(f, 51 - strlen(sceneFile), SEEK_CUR);
 
   // Finally, some data I know how to use!
 
   // First up, the player's coordinates
-  // These are grid coordiantes, so they must be shifted into real coordinates
+  // These are grid coordinates, so they must be shifted into real coordinates
   checkX = fgetc(f);
   checkX += fgetc(f) << 8;
   checkY = fgetc(f);
   checkY += fgetc(f) << 8;
-  localPlayer->x = checkX << 5;
-  localPlayer->y = checkY << 5;
+  localPlayer->x = checkX << 15;
+  localPlayer->y = checkY << 15;
+
+  // The level being loaded is now the current level
+  if (fn != currentLevel) {
+
+    free(currentLevel);
+    currentLevel = malloc(strlen(fn) + 1);
+    strcpy(currentLevel, fn);
+
+  }
 
   // Next level
-  nextlevel = fgetc(f);
-  nextworld = fgetc(f);
+  free(nextLevel);
+  x = fgetc(f);
+  y = fgetc(f);
+
+  if (x != 99) {
+
+    nextLevel = malloc(11);
+    sprintf(nextLevel, "level%1i.%03i", x, y);
+
+  } else {
+
+    nextLevel = malloc(8);
+    sprintf(nextLevel, "endepis"); // Just like Jazz 2
+
+  }
 
   // Thanks to Feline and the JCS94 team for the next bits:
 
@@ -647,8 +699,8 @@ int loadLevel (char * fn) {
       bgPE->first = 156;
       bgPE->amount = 100;
       bgPE->type = PE_SKY;
-      bgPE->speed = 0.5;
-      bgPE->position = 0.0;
+      bgPE->speed = FH;
+      bgPE->position = 0;
 
       break;
 
@@ -660,8 +712,8 @@ int loadLevel (char * fn) {
       bgPE->first = 128;
       bgPE->amount = 64;
       bgPE->type = PE_2D;
-      bgPE->speed = 0.125;
-      bgPE->position = 0.0;
+      bgPE->speed = FE;
+      bgPE->position = 0;
 
       break;
 
@@ -673,8 +725,8 @@ int loadLevel (char * fn) {
       bgPE->first = 128;
       bgPE->amount = 32;
       bgPE->type = PE_1D;
-      bgPE->speed = 0.5;
-      bgPE->position = 0.0;
+      bgPE->speed = FH;
+      bgPE->position = 0;
 
       break;
 
@@ -686,7 +738,7 @@ int loadLevel (char * fn) {
       bgPE->first = 255;
       bgPE->amount = 1;
       bgPE->type = PE_ROTATE;
-      bgPE->speed = 1.0;
+      bgPE->speed = F1;
       bgPE->position = 0.0;
 
       break;
@@ -714,8 +766,8 @@ int loadLevel (char * fn) {
   pe->first = 112;
   pe->amount = 4;
   pe->type = PE_ROTATE;
-  pe->speed = 32.0;
-  pe->position = 0.0;
+  pe->speed = F32;
+  pe->position = 0;
   firstPE = pe;
 
   // In Diamondus: The waterfall palette animation
@@ -724,8 +776,8 @@ int loadLevel (char * fn) {
   pe->first = 116;
   pe->amount = 8;
   pe->type = PE_ROTATE;
-  pe->speed = 16.0;
-  pe->position = 0.0;
+  pe->speed = F16;
+  pe->position = 0;
   firstPE = pe;
 
   // The following were discoverd by Unknown/Violet
@@ -735,8 +787,8 @@ int loadLevel (char * fn) {
   pe->first = 124;
   pe->amount = 3;
   pe->type = PE_ROTATE;
-  pe->speed = 16.0;
-  pe->position = 0.0;
+  pe->speed = F16;
+  pe->position = 0;
   firstPE = pe;
 
   if ((bgPE->type != PE_1D) && (bgPE->type != PE_2D)) {
@@ -746,8 +798,8 @@ int loadLevel (char * fn) {
     pe->first = 132;
     pe->amount = 8;
     pe->type = PE_ROTATE;
-    pe->speed = 16.0;
-    pe->position = 0.0;
+    pe->speed = F16;
+    pe->position = 0;
     firstPE = pe;
 
   }
@@ -759,8 +811,8 @@ int loadLevel (char * fn) {
     pe->first = 160;
     pe->amount = 32;
     pe->type = PE_ROTATE;
-    pe->speed = -16.0;
-    pe->position = 0.0;
+    pe->speed = -F16;
+    pe->position = 0;
     firstPE = pe;
 
   }
@@ -772,8 +824,8 @@ int loadLevel (char * fn) {
     pe->first = 192;
     pe->amount = 32;
     pe->type = PE_ROTATE;
-    pe->speed = -32.0;
-    pe->position = 0.0;
+    pe->speed = F32;
+    pe->position = 0;
     firstPE = pe;
 
     pe = malloc(sizeof(paletteEffect));
@@ -781,8 +833,8 @@ int loadLevel (char * fn) {
     pe->first = 224;
     pe->amount = 16;
     pe->type = PE_ROTATE;
-    pe->speed = 16.0;
-    pe->position = 0.0;
+    pe->speed = F16;
+    pe->position = 0;
     firstPE = pe;
 
   }
@@ -793,117 +845,27 @@ int loadLevel (char * fn) {
   localPlayer->facing = 1;
   localPlayer->dx = 0;
   localPlayer->dy = 0;
-  localPlayer->jumpDuration = 300;
+  localPlayer->jumpDuration = 256;
   localPlayer->jumpTime = 0;
   localPlayer->energy = 4;
   localPlayer->energyBar = 0;
   localPlayer->reaction = 0;
   localPlayer->reactionTime = 0;
   localPlayer->floating = 0;
+  localPlayer->event = 0;
 
 
   // Set the time at which the level will end
-  time = SDL_GetTicks() + ((5 - difficulty) * 2 * 60 * 1000);
+  endTime = SDL_GetTicks() + ((5 - difficulty) * 2 * 60 * 1000);
 
 
-  return CONTINUE;
-
-}
-
-
-int loadNextLevel () {
-
-  FILE *f;
-  char *fn;
-  int count;
-
-  if (nextlevel == 99) {
-
-    // End of episode
-
-    // Tell our makeshift menu which level to go for next
-    if (world == 18) nextworld = 3;
-    if (world == 19) nextworld = 6;
-    if (world == 20) nextworld = 9;
-    if (world == 21) nextworld = 12;
-    if (world == 22) nextworld = 15;
-    if (world == 23) nextworld = 30;
-    if (world == 39) nextworld = 33;
-    if (world == 40) nextworld = 36;
-    if (world == 41) nextworld = 50;
-    if (world == 51) nextworld = 0; // Holiday Hare
-    if (world == 52) nextworld = 0; // Christmas Edition
-    nextlevel = 0;
-
-    // Tell levelLoop to return to the menu
-    return RETURN;
-
-  } else {
-
-    world = nextworld;
-    level = nextlevel;
-
-  }
-
-  fn = malloc(11);
-
-  // Load whichever level nextlevel and nextworld refer to
-  sprintf(fn, "level%1d.%03d", level, world);
-  f = fopenFromPath(fn);
-
-  // If that didn't work, scan for level
-  for (count = 0; (count < 156) && !f; count++) {
-
-    if (level >= 2) {
-
-      world++;
-      if (world == 53) world = 0;
-      level = 0;
-
-    } else level++;
-
-    if (count == 30) {
-
-      world = 50;
-      level = 0;
-
-    }
-
-    sprintf(fn, "level%1d.%03d", level, world);
-    f = fopenFromPath(fn);
-
-  }
-
-  if (f) {
-
-    // if the scan was successful
-
-    fclose(f);
-    count = loadLevel(fn);
-    free(fn);
-
-  } else {
-
-    // if the scan was unsuccessful
-
-    free(fn);
-    fprintf(stderr, "Could not find any levels in %s\n", path);
-
-    return RETURN;
-
-  }
-
-  // Return the return value from loadLevel()
-  return count;
-
-}
+  firstBullet = NULL;
+  unusedBullet = NULL;
+  firstEvent = NULL;
+  unusedEvent = NULL;
 
 
-int loadMacro (char * fn) {
-
-  // To do
-
-  return -1;
+  return SUCCESS;
 
 }
 
@@ -932,8 +894,6 @@ void freeLevel (void) {
 
   free(spriteSet);
 
-  free(sceneFile);
-
   freeMusic();
 
   return;
@@ -942,27 +902,63 @@ void freeLevel (void) {
 
 
 
-int checkMask (int x, int y) {
+int loadMacro (char * fn) {
 
-  // Anything off the edge of the map is solid
-  if ((x < 0) || (y < 0) || (x > LW * TW) || (y > LH * TH)) return 1;
+  // To do
 
-  // Check the mask in the tile in question
-  return mask[grid[y >> 5][x >> 5].tile]
-             [(((y & 31) >> 2) << 3) + ((x & 31) >> 2)];
+  return SUCCESS;
 
 }
 
 
-void levelLoop (void) {
+void freeMacro () {
+
+  // To do
+
+  return;
+
+}
+
+
+int checkMask (fixed x, fixed y) {
+
+  // Anything off the edge of the map is solid
+  if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
+    return 1;
+
+  // Event 122 is one-way
+  if (grid[y >> 15][x >> 15].event == 122) return 0;
+
+  // Check the mask in the tile in question
+  return mask[grid[y >> 15][x >> 15].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+
+}
+
+
+int checkMaskDown (fixed x, fixed y) {
+
+  // Anything off the edge of the map is solid
+  if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
+    return 1;
+
+  // Check the mask in the tile in question
+  return mask[grid[y >> 15][x >> 15].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+
+}
+
+
+int runLevel (char * fn) {
 
   gridElement *ge;
   bullet *bul, *prevBul;
   event *evt, *nextEvt;
   SDL_Rect src, dst;
-  float dx, dy;
+  fixed dx, dy;
   int x, y, ticks, frame;
   float smoothfps;
+
+
+  if (loadLevel(fn)) return FAILURE;
 
   // To do: Authentic physics, macro handling, other stuff
 
@@ -972,7 +968,31 @@ void levelLoop (void) {
   while (1) {
 
     // Do general processing
-    DORETURN(loop(), freeLevel();)
+    if (loop() == QUIT) {
+
+      freeLevel();
+      free(sceneFile);
+
+      return QUIT;
+
+    }
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      freeLevel();
+      free(sceneFile);
+
+      return SUCCESS;
+
+    }
+
+
+    // Apply controls to local player
+    for (x = 0; x < PCONTROLS; x++)
+      localPlayer->controls[x] = controls[x].state;
+
 
     if (fps) {
 
@@ -988,7 +1008,7 @@ void levelLoop (void) {
          been around for years. */
 
       // Ignore outlandish values
-      if (smoothfps > 999) smoothfps = 999;
+      if (smoothfps > 9999) smoothfps = 9999;
       if (smoothfps < 1) smoothfps = 1;
 
     }
@@ -1004,20 +1024,20 @@ void levelLoop (void) {
 
     // Determine the player's trajectory
 
-    if (keys[K_LEFT].state == SDL_PRESSED) {
+    if (localPlayer->controls[C_LEFT] == SDL_PRESSED) {
 
-      if (localPlayer->dx > 0) localPlayer->dx -= 600 * spf;
-      if (localPlayer->dx > -PS_WALK) localPlayer->dx -= 300 * spf;
-      if (localPlayer->dx > -PS_RUN) localPlayer->dx -= 150 * spf;
+      if (localPlayer->dx > 0) localPlayer->dx -= 600 * mspf;
+      if (localPlayer->dx > -PS_WALK) localPlayer->dx -= 300 * mspf;
+      if (localPlayer->dx > -PS_RUN) localPlayer->dx -= 150 * mspf;
       if (localPlayer->dx < -PS_RUN) localPlayer->dx = -PS_RUN;
 
       localPlayer->facing = 0;
 
-    } else if (keys[K_RIGHT].state == SDL_PRESSED) {
+    } else if (localPlayer->controls[C_RIGHT] == SDL_PRESSED) {
     
-      if (localPlayer->dx < 0) localPlayer->dx += 600 * spf;
-      if (localPlayer->dx < PS_WALK) localPlayer->dx += 300 * spf;
-      if (localPlayer->dx < PS_RUN) localPlayer->dx += 150 * spf;
+      if (localPlayer->dx < 0) localPlayer->dx += 600 * mspf;
+      if (localPlayer->dx < PS_WALK) localPlayer->dx += 300 * mspf;
+      if (localPlayer->dx < PS_RUN) localPlayer->dx += 150 * mspf;
       if (localPlayer->dx > PS_RUN) localPlayer->dx = PS_RUN;
 
       localPlayer->facing = 1;
@@ -1026,15 +1046,15 @@ void levelLoop (void) {
 
       if (localPlayer->dx > 0) {
 
-        if (localPlayer->dx < 1000 * spf) localPlayer->dx = 0;
-        else localPlayer->dx -= 1000 * spf;
+        if (localPlayer->dx < 1000 * mspf) localPlayer->dx = 0;
+        else localPlayer->dx -= 1000 * mspf;
 
       }
 
       if (localPlayer->dx < 0) {
 
-        if (localPlayer->dx > -1000 * spf) localPlayer->dx = 0;
-        else localPlayer->dx += 1000 * spf;
+        if (localPlayer->dx > -1000 * mspf) localPlayer->dx = 0;
+        else localPlayer->dx += 1000 * mspf;
 
       }
 
@@ -1043,98 +1063,132 @@ void levelLoop (void) {
 
     if (localPlayer->floating) {
     
-      if (keys[K_UP].state == SDL_PRESSED) {
+      if (localPlayer->controls[C_UP] == SDL_PRESSED) {
 
-        if (localPlayer->dy > 0) localPlayer->dy -= 600 * spf;
-        if (localPlayer->dy > -PS_WALK) localPlayer->dy -= 300 * spf;
-        if (localPlayer->dy > -PS_RUN) localPlayer->dy -= 150 * spf;
+        if (localPlayer->dy > 0) localPlayer->dy -= 600 * mspf;
+        if (localPlayer->dy > -PS_WALK) localPlayer->dy -= 300 * mspf;
+        if (localPlayer->dy > -PS_RUN) localPlayer->dy -= 150 * mspf;
         if (localPlayer->dy < -PS_RUN) localPlayer->dy = -PS_RUN;
 
-        localPlayer->facing = 0;
-
-      } else if (keys[K_DOWN].state == SDL_PRESSED) {
+      } else if (localPlayer->controls[C_DOWN] == SDL_PRESSED) {
     
-        if (localPlayer->dy < 0) localPlayer->dy += 600 * spf;
-        if (localPlayer->dy < PS_WALK) localPlayer->dy += 300 * spf;
-        if (localPlayer->dy < PS_RUN) localPlayer->dy += 150 * spf;
+        if (localPlayer->dy < 0) localPlayer->dy += 600 * mspf;
+        if (localPlayer->dy < PS_WALK) localPlayer->dy += 300 * mspf;
+        if (localPlayer->dy < PS_RUN) localPlayer->dy += 150 * mspf;
         if (localPlayer->dy > PS_RUN) localPlayer->dy = PS_RUN;
-
-        localPlayer->facing = 1;
 
       } else {
 
         if (localPlayer->dy > 0) {
 
-          if (localPlayer->dy < 1000 * spf) localPlayer->dy = 0;
-          else localPlayer->dy -= 1000 * spf;
+          if (localPlayer->dy < 1000 * mspf) localPlayer->dy = 0;
+          else localPlayer->dy -= 1000 * mspf;
 
         }
 
         if (localPlayer->dy < 0) {
 
-          if (localPlayer->dy > -1000 * spf) localPlayer->dy = 0;
-          else localPlayer->dy += 1000 * spf;
+          if (localPlayer->dy > -1000 * mspf) localPlayer->dy = 0;
+          else localPlayer->dy += 1000 * mspf;
 
         }
 
       }
 
+      if (eventSet[localPlayer->event][E_MODIFIER] == 29)
+        localPlayer->dy = eventSet[localPlayer->event][E_MULTIPURPOSE] * -F20;
+
+      if (eventSet[localPlayer->event][E_BEHAVIOUR] == 38)
+        localPlayer->dy = eventSet[localPlayer->event][E_MULTIPURPOSE] * -F20;
+
     } else {
 
-      if (keys[K_JUMP].state == SDL_PRESSED) {
+      if (eventSet[localPlayer->event][E_MODIFIER] == 29)
+        localPlayer->dy = eventSet[localPlayer->event][E_MULTIPURPOSE] * -F20;
+
+      if (eventSet[localPlayer->event][E_BEHAVIOUR] == 25) {
+
+        if ((localPlayer->dy > 0) &&
+            checkMaskDown(localPlayer->x + F16, localPlayer->y + F4))
+          localPlayer->dy = eventSet[localPlayer->event][E_MULTIPURPOSE] *
+                              -F40;
+
+        if (localPlayer->dy >
+            eventSet[localPlayer->event][E_MULTIPURPOSE] * -F40)
+          localPlayer->dy -= eventSet[localPlayer->event][E_MULTIPURPOSE] *
+                             320 * mspf;
+
+      }
+
+      if (eventSet[localPlayer->event][E_BEHAVIOUR] == 38)
+        localPlayer->dy = eventSet[localPlayer->event][E_MULTIPURPOSE] * -F20;
+
+
+      else if (localPlayer->controls[C_JUMP] == SDL_PRESSED) {
 
         if (localPlayer->jumpTime > ticks) {
 
           localPlayer->dy = PS_JUMP;
 
-        } else if ((checkMask(localPlayer->x + 12, localPlayer->y + 1) ||
-                    checkMask(localPlayer->x + 16, localPlayer->y + 1) ||
-                    checkMask(localPlayer->x + 20, localPlayer->y + 1)   ) &&
-                   (!checkMask(localPlayer->x + 16, localPlayer->y - 33) ||
-                    (grid[(int)(localPlayer->y - 21) >> 5]
-                         [(int)(localPlayer->x + 16) >> 5].event == 122)   ) ) {
+        } else if (((eventSet[localPlayer->event][E_MODIFIER] == 6) ||
+                    checkMaskDown(localPlayer->x + F12, localPlayer->y + F4) ||
+                    checkMaskDown(localPlayer->x + F16, localPlayer->y + F4) ||
+                    checkMaskDown(localPlayer->x + F20, localPlayer->y + F4)   )
+                    && !checkMask(localPlayer->x + F16, localPlayer->y - F36)) {
 
           localPlayer->jumpTime = ticks + localPlayer->jumpDuration;
           localPlayer->dy = PS_JUMP;
+          if (localPlayer->dx < 0) localPlayer->dy -= localPlayer->dx / 4;
+          else localPlayer->dy += localPlayer->dx / 4;
+          localPlayer->event = 0;
 
         }
 
       }
 
-      if (keys[K_JUMP].state == SDL_RELEASED) localPlayer->jumpTime = 0;
+      if ((localPlayer->controls[C_JUMP] == SDL_RELEASED) &&
+          (eventSet[localPlayer->event][E_MODIFIER] != 29) &&
+          (eventSet[localPlayer->event][E_BEHAVIOUR] != 25) &&
+          (eventSet[localPlayer->event][E_BEHAVIOUR] != 38)   )
+        localPlayer->jumpTime = 0;
 
-      if (checkMask(localPlayer->x + 16, localPlayer->y - 21) &&
-          (grid[(int)(localPlayer->y - 21) >> 5]
-               [(int)(localPlayer->x + 16) >> 5].event != 122)  ) {
+      if (checkMask(localPlayer->x + F16, localPlayer->y - F24) &&
+          (eventSet[localPlayer->event][E_BEHAVIOUR] != 25)       ) {
 
         localPlayer->jumpTime = 0;
         localPlayer->dy = 0;
 
+        if (eventSet[localPlayer->event][E_MODIFIER] != 6)
+          localPlayer->event = 0;
+
       }
     
-      localPlayer->dy += 3000 * spf;
+      localPlayer->dy += 2750 * mspf;
       if (localPlayer->dy > PS_FALL) localPlayer->dy = PS_FALL;
 
     }
 
     // Apply as much of that trajectory as possible, without going into the
     // scenery
-    
-    dx = localPlayer->dx * spf;
-    dy = localPlayer->dy * spf;
 
-    x = (int)dx;
-    y = (int)dy;
+    dx = (localPlayer->dx * mspf) >> 10;
+    dy = (localPlayer->dy * mspf) >> 10;
+
+    if (dx >= 0) x = dx >> 12;
+    else x = -((-dx) >> 12);
+
+    if (dy >= 0) y = dy >> 12;
+    else y = -((-dy) >> 12);
 
     // First for the vertical component of the trajectory
 
     while (y > 0) {
 
-      if (checkMask(localPlayer->x + 12, localPlayer->y + 1) ||
-          checkMask(localPlayer->x + 16, localPlayer->y + 1) ||
-          checkMask(localPlayer->x + 20, localPlayer->y + 1)   ) break;
+      if (checkMaskDown(localPlayer->x + F12, localPlayer->y + F4) ||
+          checkMaskDown(localPlayer->x + F16, localPlayer->y + F4) ||
+          checkMaskDown(localPlayer->x + F20, localPlayer->y + F4)   ) break;
 
-      localPlayer->y++;
+      localPlayer->y += F4;
       y--;
 
     }
@@ -1142,58 +1196,57 @@ void levelLoop (void) {
 
     while (y < 0) {
 
-      if (checkMask(localPlayer->x + 16, localPlayer->y - 21) &&
-          (grid[(int)(localPlayer->y - 21) >> 5]
-               [(int)(localPlayer->x + 16) >> 5].event != 122)  ) break;
+      if (checkMask(localPlayer->x + F16, localPlayer->y - F24)) break;
 
-      localPlayer->y--;
+      localPlayer->y -= F4;
       y++;
 
     }
 
-    dy -= (int)dy;
+    if (dy >= 0) dy &= 4095;
+    else dy = -((-dy) & 4095);
 
     if (((dy > 0) &&
-        !(checkMask(localPlayer->x + 12, localPlayer->y + dy) ||
-          checkMask(localPlayer->x + 16, localPlayer->y + dy) ||
-          checkMask(localPlayer->x + 20, localPlayer->y + dy)   )) ||
+        !(checkMaskDown(localPlayer->x + F12, localPlayer->y + dy) ||
+          checkMaskDown(localPlayer->x + F16, localPlayer->y + dy) ||
+          checkMaskDown(localPlayer->x + F20, localPlayer->y + dy)   )) ||
         ((dy < 0) &&
-         (!checkMask(localPlayer->x + 16, localPlayer->y + dy - 20) ||
-          (grid[(int)(localPlayer->y + dy - 20) >> 5]
-               [(int)(localPlayer->x + 16) >> 5].event == 122)        )))
+         !checkMask(localPlayer->x + F16, localPlayer->y + dy - F20)       ))
       localPlayer->y += dy;
 
     // Then for the horizontal component of the trajectory
 
     while (x < 0) {
 
-      if (checkMask(localPlayer->x + 5, localPlayer->y - 19)) break;
+      if (checkMask(localPlayer->x + F2, localPlayer->y - F19)) break;
 
-      localPlayer->x--;
+      localPlayer->x -= F4;
       x++;
 
     }
 
     while (x > 0) {
 
-      if (checkMask(localPlayer->x + 27, localPlayer->y - 19)) break;
+      if (checkMask(localPlayer->x + F30, localPlayer->y - F19)) break;
 
-      localPlayer->x++;
+      localPlayer->x += F4;
       x--;
 
     }
 
-    dx -= (int)dx;
+    if (dx >= 0) dx &= 4095;
+    else dx = -((-dx) & 4095);
 
     if (((dx < 0) &&
-         !checkMask(localPlayer->x + 6 + dx, localPlayer->y - 19)) ||
+         !checkMask(localPlayer->x + F6 + dx, localPlayer->y - F19)) ||
         ((dx > 0) &&
-         !checkMask(localPlayer->x + 26 + dx, localPlayer->y - 19))  )
+         !checkMask(localPlayer->x + F26 + dx, localPlayer->y - F19))  )
       localPlayer->x += dx;
 
     // If on an uphill slope, push the player upwards
-    while (checkMask(localPlayer->x + 16, localPlayer->y))
-      localPlayer->y--;
+    while (checkMask(localPlayer->x + F16, localPlayer->y) &&
+           !checkMask(localPlayer->x + F16, localPlayer->y - F24))
+      localPlayer->y -= F1;
 
 
     // Choose animation
@@ -1201,17 +1254,22 @@ void levelLoop (void) {
     if (localPlayer->reaction == PR_KILLED)
       localPlayer->anim = localPlayer->anims[PA_LDIE + localPlayer->facing];
 
+    else if ((localPlayer->reaction == PR_HURT) &&
+             (localPlayer->reactionTime - ticks > 800))
+      localPlayer->anim = localPlayer->anims[PA_LHURT + localPlayer->facing];
+
     else if (localPlayer->floating)
       localPlayer->anim = localPlayer->anims[PA_LBOARD + localPlayer->facing];
 
     else if (localPlayer->dy >= 0) {
 
-      if (checkMask(localPlayer->x + 12, localPlayer->y + 4) ||
-          checkMask(localPlayer->x + 16, localPlayer->y + 4) ||
-          checkMask(localPlayer->x + 20, localPlayer->y + 4) ||
-          checkMask(localPlayer->x + 12, localPlayer->y + 12) ||
-          checkMask(localPlayer->x + 16, localPlayer->y + 12) ||
-          checkMask(localPlayer->x + 20, localPlayer->y + 12)   ) {
+      if ((eventSet[localPlayer->event][E_MODIFIER] == 6) ||
+          checkMaskDown(localPlayer->x + F12, localPlayer->y + F4) ||
+          checkMaskDown(localPlayer->x + F16, localPlayer->y + F4) ||
+          checkMaskDown(localPlayer->x + F20, localPlayer->y + F4) ||
+          checkMaskDown(localPlayer->x + F12, localPlayer->y + F12) ||
+          checkMaskDown(localPlayer->x + F16, localPlayer->y + F12) ||
+          checkMaskDown(localPlayer->x + F20, localPlayer->y + F12)   ) {
 
         if (localPlayer->dx) {
 
@@ -1229,13 +1287,15 @@ void levelLoop (void) {
 
         } else {
 
-          if (!checkMask(localPlayer->x + 12, localPlayer->y + 12) &&
-              !checkMask(localPlayer->x + 8, localPlayer->y + 8))
+          if (!checkMaskDown(localPlayer->x + F12, localPlayer->y + F12) &&
+              !checkMaskDown(localPlayer->x + F8, localPlayer->y + F8) &&
+              (eventSet[localPlayer->event][E_MODIFIER] != 6)            )
             localPlayer->anim = localPlayer->anims[PA_LEDGE];
-          else if (!checkMask(localPlayer->x + 20, localPlayer->y + 12) &&
-                   !checkMask(localPlayer->x + 24, localPlayer->y + 8))
+          else if (!checkMaskDown(localPlayer->x + F20, localPlayer->y + F12) &&
+                   !checkMaskDown(localPlayer->x + F24, localPlayer->y + F8) &&
+                   (eventSet[localPlayer->event][E_MODIFIER] != 6)            )
             localPlayer->anim = localPlayer->anims[PA_REDGE];
-          else if (keys[K_FIRE].state == SDL_PRESSED)
+          else if (localPlayer->controls[C_FIRE] == SDL_PRESSED)
             localPlayer->anim = localPlayer->anims[PA_LSHOOT +
                                                    localPlayer->facing];
           else
@@ -1247,11 +1307,10 @@ void levelLoop (void) {
       } else localPlayer->anim = localPlayer->anims[PA_LFALL +
                                                   localPlayer->facing];
 
-    } else if (localPlayer->dy >= PS_JUMP)
-      localPlayer->anim = localPlayer->anims[PA_LJUMP + localPlayer->facing];
-
-    else
+    } else if (eventSet[localPlayer->event][E_MODIFIER] == 29)
       localPlayer->anim = localPlayer->anims[PA_LSPRING - localPlayer->facing];
+    
+    else localPlayer->anim = localPlayer->anims[PA_LJUMP + localPlayer->facing];
 
 
     // Calculate viewport dimensions
@@ -1261,18 +1320,44 @@ void levelLoop (void) {
     else localPlayer->viewH = screenH - 33;
     localPlayer->viewW = screenW;
 
-    localPlayer->viewX = localPlayer->x + 8 - (localPlayer->viewW / 2);
-    localPlayer->viewY = localPlayer->y - 24 - (localPlayer->viewH / 2);
+    dst.x = 0;
+    dst.y = 0;
+    dst.w = localPlayer->viewW;
+    dst.h = localPlayer->viewH;
+    SDL_SetClipRect(screen, &dst);
+
+    if (localPlayer->reaction != PR_WON) {
+
+      localPlayer->viewX = localPlayer->x + F8 - (localPlayer->viewW << 9);
+      localPlayer->viewY = localPlayer->y - F24 - (localPlayer->viewH << 9);
+
+    } else {
+
+      if (checkX << 15 >
+            localPlayer->viewX + (localPlayer->viewW << 9) + (160 * mspf))
+        localPlayer->viewX += 160 * mspf;
+      else if (checkX << 15 <
+                 localPlayer->viewX + (localPlayer->viewW << 9) - (160 * mspf))
+        localPlayer->viewX -= 160 * mspf;
+
+      if (checkY << 15 >
+            localPlayer->viewY + (localPlayer->viewH << 9) + (160 * mspf))
+        localPlayer->viewY += 160 * mspf;
+      else if (checkY << 15 <
+                 localPlayer->viewY + (localPlayer->viewH << 9) - (160 * mspf))
+        localPlayer->viewY -= 160 * mspf;
+
+    }
 
     if (localPlayer->viewX < 0) localPlayer->viewX = 0;
 
-    if (localPlayer->viewX + localPlayer->viewW >= LW * TW)
-      localPlayer->viewX = (LW * TW) - localPlayer->viewW;
+    if ((localPlayer->viewX >> 10) + localPlayer->viewW >= LW * TW)
+      localPlayer->viewX = ((LW * TW) - localPlayer->viewW) << 10;
 
     if (localPlayer->viewY < 0) localPlayer->viewY = 0;
 
-    if (localPlayer->viewY + localPlayer->viewH >= LH * TH)
-      localPlayer->viewY = (LH * TH) - localPlayer->viewH;
+    if ((localPlayer->viewY >> 10) + localPlayer->viewH >= LH * TH)
+      localPlayer->viewY = ((LH * TH) - localPlayer->viewH) << 10;
 
 
     // Set tile drawing dimensions
@@ -1290,8 +1375,8 @@ void levelLoop (void) {
       dst.y = 0;
       SDL_FillRect(screen, &dst, 156);
 
-      for (y = ((int)(localPlayer->viewY) % bgScale);
-           y < localPlayer->viewH; y += bgScale    ) {
+      for (y = ((localPlayer->viewY >> 10) % bgScale);
+           y < localPlayer->viewH; y += bgScale       ) {
 
         dst.y = y;
         SDL_FillRect(screen, &dst, 157 + (y / bgScale));
@@ -1299,13 +1384,13 @@ void levelLoop (void) {
       }
 
       // Assign the correct portion of the sky palette
-      bgPE->position = localPlayer->viewY + (localPlayer->viewH / 2) - 4;
+      bgPE->position = localPlayer->viewY + (localPlayer->viewH << 9) - F4;
 
       // Show sun / moon / etc.
       if (skyOrb) {
 
-        dst.x = localPlayer->viewW * 0.8f;
-        dst.y = localPlayer->viewH * 0.12f;
+        dst.x = (localPlayer->viewW * 4) / 5;
+        dst.y = (localPlayer->viewH * 3) / 25;
         src.y = skyOrb << 5;
         SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1329,8 +1414,8 @@ void levelLoop (void) {
     // Tell the parallaxing background where it should be
     if (bgPE->type == PE_2D) {
 
-      ((short int *)&(bgPE->position))[0] = localPlayer->viewX;
-      ((short int *)&(bgPE->position))[1] = localPlayer->viewY;
+      ((short int *)&(bgPE->position))[0] = localPlayer->viewX >> 10;
+      ((short int *)&(bgPE->position))[1] = localPlayer->viewY >> 10;
 
     }
 
@@ -1342,14 +1427,14 @@ void levelLoop (void) {
       for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
 
         // Get the grid element from the given coordinates
-        ge = grid[y + ((int)localPlayer->viewY >> 5)] + x +
-             ((int)localPlayer->viewX >> 5);
+        ge = grid[y + (localPlayer->viewY >> 15)] + x +
+             (localPlayer->viewX >> 15);
 
         // If this tile uses a black background, draw it
         if (ge->bg) {
 
-          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
-          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
+          dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
+          dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
           dst.w = dst.h = TW;
           SDL_FillRect(screen, &dst, 31);
 
@@ -1359,8 +1444,8 @@ void levelLoop (void) {
         if ((eventSet[ge->event][E_BEHAVIOUR] != 38) &&
             ((ge->event < 124) || (ge->event > 125))  ) {
 
-          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
-          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
+          dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
+          dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
           src.y = ge->tile << 5;
           SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1371,11 +1456,13 @@ void levelLoop (void) {
     }
 
     // Search for active events
-    for (y = ((int)localPlayer->viewY >> 5) - 5;
-         y < ((int)(localPlayer->viewY + localPlayer->viewH) >> 5) + 5; y++) {
+    for (y = (localPlayer->viewY >> 15) - 5;
+         y < (((localPlayer->viewY >> 10) + localPlayer->viewH) >> 5) + 5;
+         y++                                                              ) {
 
-      for (x = ((int)localPlayer->viewX >> 5) - 5;
-           x < ((int)(localPlayer->viewX + localPlayer->viewW) >> 5) + 5; x++) {
+      for (x = (localPlayer->viewX >> 15) - 5;
+           x < (((localPlayer->viewX >> 10) + localPlayer->viewW) >> 5) + 5;
+           x++                                                              ) {
 
         if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) && grid[y][x].event) {
 
@@ -1404,6 +1491,14 @@ void levelLoop (void) {
 
     }
 
+    if (checkMask(localPlayer->x + F16, localPlayer->y - F24) &&
+        (eventSet[localPlayer->event][E_BEHAVIOUR] == 25)       ) {
+
+      localPlayer->jumpTime = 0;
+      localPlayer->event = 0;
+
+    }
+
     // Process active events
     evt = firstEvent;
 
@@ -1411,16 +1506,18 @@ void levelLoop (void) {
 
       if ((evt->anim != E_FINISHANIM) &&
           (grid[evt->gridY][evt->gridX].event != 121) &&
-          ((evt->x < localPlayer->viewX - 160) ||
-           (evt->x > localPlayer->viewX + localPlayer->viewW + 160) ||
-           (evt->y < localPlayer->viewY - 160) ||
-           (evt->y > localPlayer->viewY + localPlayer->viewH + 160)   ) &&
-          ((evt->gridX < ((int)localPlayer->viewX >> 5) - 1) ||
+          ((evt->x < localPlayer->viewX - F160) ||
+           (evt->x > localPlayer->viewX +
+                     (localPlayer->viewW << 10) + F160) ||
+           (evt->y < localPlayer->viewY - F160) ||
+           (evt->y > localPlayer->viewY +
+                     (localPlayer->viewH << 10) + F160)   ) &&
+          ((evt->gridX < (localPlayer->viewX >> 15) - 1) ||
            (evt->gridX >
-            ((int)(localPlayer->viewX + localPlayer->viewW) >> 5) + 1) ||
-           (evt->gridY < ((int)localPlayer->viewY >> 5) - 1) ||
+            (((localPlayer->viewX >> 10) + localPlayer->viewW) >> 5) + 1) ||
+           (evt->gridY < (localPlayer->viewY >> 15) - 1) ||
            (evt->gridY >
-            ((int)(localPlayer->viewY + localPlayer->viewH) >> 5) + 1)   )     ) {
+            (((localPlayer->viewY >> 10) + localPlayer->viewH) >> 5) + 1)   )) {
 
         // If the event and its origin are off-screen, and the event is not
         // in the process of self-destruction, remove it
@@ -1441,25 +1538,33 @@ void levelLoop (void) {
 
     // Handle spikes
     if ((localPlayer->reaction == PR_NONE) &&
-        (((grid[(int)(localPlayer->y - 20) >> 5]
-               [(int)(localPlayer->x + 16) >> 5].event == 126) &&
-          checkMask(localPlayer->x + 16, localPlayer->y - 21)  ) || /* Above */
-         ((grid[(int)(localPlayer->y) >> 5]
-               [(int)(localPlayer->x + 16) >> 5].event == 126) &&
-          checkMask(localPlayer->x + 16, localPlayer->y + 1)  ) || /* Below */
-         ((grid[(int)(localPlayer->y - 10) >> 5]
-               [(int)(localPlayer->x + 6) >> 5].event == 126) &&
-          checkMask(localPlayer->x + 5, localPlayer->y - 10)  ) || /* To left*/
-         ((grid[(int)(localPlayer->y - 10) >> 5]
-               [(int)(localPlayer->x + 26) >> 5].event == 126) && /* To right*/
-          checkMask(localPlayer->x + 27, localPlayer->y - 10)  )   )) {
+
+        /* Above */
+        (((grid[(localPlayer->y - F20) >> 15]
+               [(localPlayer->x + F16) >> 15].event == 126) &&
+          checkMask(localPlayer->x + F16, localPlayer->y - F24)  ) ||
+
+         /* Below */
+         ((grid[localPlayer->y >> 15]
+               [(localPlayer->x + F16) >> 15].event == 126) &&
+          checkMaskDown(localPlayer->x + F16, localPlayer->y + F4)  ) ||
+
+         /* To left*/
+         ((grid[(localPlayer->y - F10) >> 15]
+               [(localPlayer->x + F6) >> 15].event == 126) &&
+          checkMask(localPlayer->x + F2, localPlayer->y - F10)  ) ||
+
+         /* To right*/
+         ((grid[(localPlayer->y - F10) >> 15]
+               [(localPlayer->x + F26) >> 15].event == 126) &&
+          checkMask(localPlayer->x + F30, localPlayer->y - F10)  )      )) {
 
           localPlayer->energy--;
 
           if (localPlayer->energy) {
 
             localPlayer->reaction = PR_HURT;
-            localPlayer->reactionTime = ticks + 2000;
+            localPlayer->reactionTime = ticks + 1000;
 
             if (localPlayer->dx < 0) {
 
@@ -1476,7 +1581,7 @@ void levelLoop (void) {
           } else {
 
             localPlayer->reaction = PR_KILLED;
-            localPlayer->reactionTime = ticks + 2000;
+            localPlayer->reactionTime = ticks + 1000;
 
           }
 
@@ -1485,42 +1590,50 @@ void levelLoop (void) {
 
     // Show the player
 
-    if (!((localPlayer->reaction == PR_HURT) && (frame & 1))) {
+    if ((localPlayer->reaction == PR_HURT) && (!((ticks / 30) & 3)))
+      scalePalette(animSet[localPlayer->anim].
+                    sprites[frame % animSet[localPlayer->anim].frames].pixels,
+                   0, 36                                                      );
 
-      dst.x = localPlayer->x - localPlayer->viewX +
-              animSet[localPlayer->anim].
-               sprites[frame % animSet[localPlayer->anim].frames].x;
-      dst.y = localPlayer->y + 4 - localPlayer->viewY +
-              animSet[localPlayer->anim].
-               sprites[frame % animSet[localPlayer->anim].frames].y +
-              animSet[localPlayer->anim].
-               y[frame % animSet[localPlayer->anim].frames] -
-              animSet[localPlayer->anim].sprites[0].pixels->h;
-      SDL_BlitSurface(animSet[localPlayer->anim].
-                       sprites[frame % animSet[localPlayer->anim].frames].
-                       pixels, NULL, screen, &dst);
+    dst.x = ((localPlayer->x - localPlayer->viewX) >> 10) +
+            animSet[localPlayer->anim].
+             sprites[frame % animSet[localPlayer->anim].frames].x;
+    dst.y = ((localPlayer->y + F4 - localPlayer->viewY) >> 10) +
+            animSet[localPlayer->anim].
+             sprites[frame % animSet[localPlayer->anim].frames].y +
+            animSet[localPlayer->anim].
+             y[frame % animSet[localPlayer->anim].frames] -
+            animSet[localPlayer->anim].sprites[0].pixels->h;
+    SDL_BlitSurface(animSet[localPlayer->anim].
+                     sprites[frame % animSet[localPlayer->anim].frames].
+                     pixels, NULL, screen, &dst);
 
-    }
+    if ((localPlayer->reaction == PR_HURT) && (!((ticks / 30) & 3)))
+      restorePalette(animSet[localPlayer->anim].
+                      sprites[frame % animSet[localPlayer->anim].frames].
+                      pixels                                             );
+
+    // Show invincibility stars
 
     if (localPlayer->reaction == PR_INVINCIBLE) {
 
-      dst.x = localPlayer->x + 6 - localPlayer->viewX;
-      dst.y = localPlayer->y - 32 - localPlayer->viewY;
+      dst.x = (localPlayer->x + F6 - localPlayer->viewX) >> 10;
+      dst.y = (localPlayer->y - F32 - localPlayer->viewY) >> 10;
       SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
                       NULL, screen, &dst);
 
-      dst.x = localPlayer->x + 16 - localPlayer->viewX;
-      dst.y = localPlayer->y - 32 - localPlayer->viewY;
+      dst.x = (localPlayer->x + F16 - localPlayer->viewX) >> 10;
+      dst.y = (localPlayer->y - F32 - localPlayer->viewY) >> 10;
       SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
                       NULL, screen, &dst);
 
-      dst.x = localPlayer->x + 6 - localPlayer->viewX;
-      dst.y = localPlayer->y - 16 - localPlayer->viewY;
+      dst.x = (localPlayer->x + F6 - localPlayer->viewX) >> 10;
+      dst.y = (localPlayer->y - F16 - localPlayer->viewY) >> 10;
       SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
                       NULL, screen, &dst);
 
-      dst.x = localPlayer->x + 16 - localPlayer->viewX;
-      dst.y = localPlayer->y - 16 - localPlayer->viewY;
+      dst.x = (localPlayer->x + F16 - localPlayer->viewX) >> 10;
+      dst.y = (localPlayer->y - F16 - localPlayer->viewY) >> 10;
       SDL_BlitSurface(animSet[122].sprites[frame % animSet[122].frames].pixels,
                       NULL, screen, &dst);
 
@@ -1528,14 +1641,18 @@ void levelLoop (void) {
 
     // Handle firing
 
-    if (keys[K_FIRE].state == SDL_PRESSED) {
+    if (localPlayer->controls[C_FIRE] == SDL_PRESSED) {
 
-      keys[K_FIRE].state = SDL_RELEASED; // Fix: This is going to make rapid-
-                                         // fire somewhat difficult
+      if (ticks > localPlayer->fireTime) {
 
-      createPlayerBullet(localPlayer, ticks);
+        createPlayerBullet(localPlayer, ticks);
+        if (localPlayer->fireSpeed)
+          localPlayer->fireTime = ticks + (1000 / localPlayer->fireSpeed);
+        else localPlayer->fireTime = 0x7FFFFFFF;
 
-    }
+      }
+
+    } else localPlayer->fireTime = 0;
 
 
     // Process and show bullets
@@ -1557,21 +1674,21 @@ void levelLoop (void) {
 
         if (bul->type == B_BOUNCER) {
 
-          if (checkMask(bul->x, bul->y - 4)) bul->dy = 0;
-          else if (checkMask(bul->x, bul->y + 4)) bul->dy = -600;
-          else if (checkMask(bul->x - 4, bul->y)) bul->dx = 500;
-          else if (checkMask(bul->x + 4, bul->y)) bul->dx = -500;
-          else bul->dy += 3000 * spf;
+          if (checkMaskDown(bul->x, bul->y - 4) && (bul->dy < 0)) bul->dy = 0;
+          else if (checkMaskDown(bul->x, bul->y + 4)) bul->dy = -600 * F1;
+          else if (checkMaskDown(bul->x - 4, bul->y)) bul->dx = 500 * F1;
+          else if (checkMaskDown(bul->x + 4, bul->y)) bul->dx = -500 * F1;
+          else bul->dy += 3200 * mspf;
 
         }
 
-        bul->x += bul->dx * spf;
-        bul->y += bul->dy * spf;
+        bul->x += (bul->dx * mspf) >> 10;
+        bul->y += (bul->dy * mspf) >> 10;
 
-        dst.x = bul->x - (spriteSet[bul->type].pixels->w >> 1) -
-                localPlayer->viewX;
-        dst.y = bul->y - (spriteSet[bul->type].pixels->h >> 1) -
-                localPlayer->viewY;
+        dst.x = (bul->x >> 10) - (spriteSet[bul->type].pixels->w >> 1) -
+                (localPlayer->viewX >> 10);
+        dst.y = (bul->y >> 10) - (spriteSet[bul->type].pixels->h >> 1) -
+                (localPlayer->viewY >> 10);
 
         // Show the bullet
         SDL_BlitSurface(spriteSet[bul->type].pixels, NULL, screen, &dst);
@@ -1591,14 +1708,14 @@ void levelLoop (void) {
       for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
 
         // Get the grid element from the given coordinates
-        ge = grid[y + ((int)localPlayer->viewY >> 5)] + x +
-             ((int)localPlayer->viewX >> 5);
+        ge = grid[y + (localPlayer->viewY >> 15)] + x +
+             (localPlayer->viewX >> 15);
 
         // If this is an "animated" foreground tile, draw it
         if (ge->event == 123) {
 
-          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
-          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
+          dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
+          dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
           if (frame & 1) src.y = eventSet[ge->event][E_YAXIS] << 5;
           else src.y = eventSet[ge->event][E_MULTIPURPOSE] << 5;
           SDL_BlitSurface(tileSet, &src, screen, &dst);
@@ -1609,8 +1726,8 @@ void levelLoop (void) {
         if ((ge->event == 124) || (ge->event == 125) ||
             (eventSet[ge->event][E_BEHAVIOUR] == 38)   ) {
 
-          dst.x = (x << 5) - ((int)localPlayer->viewX & 31);
-          dst.y = (y << 5) - ((int)localPlayer->viewY & 31);
+          dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
+          dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
           src.y = ge->tile << 5;
           SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -1620,6 +1737,7 @@ void levelLoop (void) {
 
     }
 
+    SDL_SetClipRect(screen, NULL);
 
     // The panel
     // Design decision: When the width of the player's viewport is greater than
@@ -1632,9 +1750,9 @@ void levelLoop (void) {
     // the panel down the middle.
 
     // Check for a change in ammo
-    if (keys[K_CHANGE].state == SDL_PRESSED) {
+    if (controls[C_CHANGE].state == SDL_PRESSED) {
 
-      keys[K_CHANGE].state = SDL_RELEASED;
+      releaseControl(C_CHANGE);
 
       localPlayer->ammoType = ((localPlayer->ammoType + 2) % 5) - 1;
 
@@ -1676,7 +1794,8 @@ void levelLoop (void) {
                &panelSmallFont);
 
     // Show time remaining
-    x = time - ticks;
+    if (endTime > ticks) x = endTime - ticks;
+    else x = 0;
     y = x / (60 * 1000);
     showNumber(y, 116, localPlayer->viewH - 27, &panelSmallFont);
     x -= (y * 60 * 1000);
@@ -1712,23 +1831,23 @@ void levelLoop (void) {
     dst.y = localPlayer->viewH - 13;
     dst.h = 7;
 
-    if ((int)(localPlayer->energyBar) < (localPlayer->energy << 4)) {
+    if ((localPlayer->energyBar >> 10) < (localPlayer->energy << 4)) {
 
-      if ((localPlayer->energy << 4) - localPlayer->energyBar < spf * 64)
-        localPlayer->energyBar = localPlayer->energy << 4;
-      else localPlayer->energyBar += spf * 64;
+      if ((localPlayer->energy << 14) - localPlayer->energyBar < mspf * 40)
+        localPlayer->energyBar = localPlayer->energy << 14;
+      else localPlayer->energyBar += mspf * 40;
 
-    } else if ((int)(localPlayer->energyBar) > (localPlayer->energy << 4)) {
+    } else if ((localPlayer->energyBar >> 10) > (localPlayer->energy << 4)) {
 
-      if (localPlayer->energyBar - (localPlayer->energy << 4) < spf * 64)
-        localPlayer->energyBar = localPlayer->energy << 4;
-      else localPlayer->energyBar -= spf * 64;
+      if (localPlayer->energyBar - (localPlayer->energy << 14) < mspf * 40)
+        localPlayer->energyBar = localPlayer->energy << 14;
+      else localPlayer->energyBar -= mspf * 40;
 
     }
 
-    if (localPlayer->energyBar > 1) {
+    if (localPlayer->energyBar > F1) {
 
-      dst.w = localPlayer->energyBar - 1;
+      dst.w = (localPlayer->energyBar >> 10) - 1;
 
       // Choose energy bar colour
       if (localPlayer->energy == 4) x = 24;
@@ -1749,17 +1868,18 @@ void levelLoop (void) {
 
 
     // Temp: FPS and screen resolution
-    showString("FPS", 252, 27, &panelBigFont);
-    showNumber((short int)smoothfps, 308, 27, &panelBigFont);
-    showNumber(screenW, 276, 15, &panelBigFont);
+    showString("FPS", 244, 27, &panelBigFont);
+    showNumber(smoothfps, 308, 27, &panelBigFont);
+    showNumber(screenW, 268, 15, &panelBigFont);
     showNumber(screenH, 308, 15, &panelBigFont);
 
 
     // Check if time has run out
-    if (ticks > time) {
+    if ((ticks > endTime) && (localPlayer->reaction != PR_KILLED) &&
+        (localPlayer->reaction != PR_WON)) {
 
       localPlayer->reaction = PR_KILLED;
-      localPlayer->reactionTime = ticks + 2000;
+      localPlayer->reactionTime = endTime + 2000;
 
     }
 
@@ -1771,36 +1891,39 @@ void levelLoop (void) {
 
         case PR_KILLED:
 
-          nextlevel = level;
-          nextworld = world;
           localPlayer->lives--;
 
           freeLevel();
+          free(sceneFile);
+
+          if (!localPlayer->lives) return SUCCESS; // Not really a success...
 
           x = checkX;
           y = checkY;
 
-          DORETURN(loadNextLevel(), )
+          if (loadLevel(currentLevel)) return FAILURE;
 
-          localPlayer->x = x << 5;
-          localPlayer->y = y << 5;
+          localPlayer->x = x << 15;
+          localPlayer->y = y << 15;
 
           break;
 
         case PR_WON:
 
-          if (nextlevel == 99) DORETURN(loadScene(sceneFile), freeLevel();)
+          if (!strcmp(nextLevel, "endepis")) {
 
-          freeLevel();
+            freeLevel();
+            runScene(sceneFile);
+            free(sceneFile);
 
-          if (nextlevel == 99) {
-
-            sceneLoop();
-            freeScene();
+            return SUCCESS;
 
           }
 
-          DORETURN(loadNextLevel(), )
+          freeLevel();
+          free(sceneFile);
+
+          if (loadLevel(nextLevel)) return FAILURE;
 
           break;
 
@@ -1812,7 +1935,7 @@ void levelLoop (void) {
 
   }
 
-  return;
+  return SUCCESS;
 
 }
 

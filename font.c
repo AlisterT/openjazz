@@ -28,7 +28,7 @@
 #include <string.h>
 
 
-font * loadFont (char * fn, SDL_Color *palette) {
+font * loadFont (char * fn) {
 
   font *ret;
   FILE *f;
@@ -37,6 +37,8 @@ font * loadFont (char * fn, SDL_Color *palette) {
   int chr, width, height, y;
 
   f = fopenFromPath(fn);
+
+  if (f == NULL) return NULL;
 
   fseek(f, 19, SEEK_SET);
 
@@ -110,7 +112,7 @@ font * loadFont (char * fn, SDL_Color *palette) {
 
   }
 
-  ret->pixels = createSurface(pixels, palette, width, ret->h * 27);
+  ret->pixels = createSurface(pixels, width, ret->h * 27);
   SDL_SetColorKey(ret->pixels, SDL_SRCCOLORKEY, 0);
 
   for (count = 0; count < 65; count++) ret->map[count] = 0;

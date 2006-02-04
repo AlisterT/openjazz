@@ -8,6 +8,10 @@
  *
  *
  * Copyright (c) 2005 Alister Thomson
+ * MacOSX code by Mark Spear (Ice M A N)
+ * Dreamcast code by Troy(GPF)
+ * GP2X code by Israel López Fernández (Puck2099)
+ * GP32 code by A600
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -24,9 +28,34 @@
  */
 
 
+// Uncomment the following line to compile on the GP2X
+//#define __GP2X__
+
 #define Extern
 #include "OpenJazz.h"
 #include <string.h>
+
+#ifdef _arch_dreamcast
+  #include <SDL_dreamcast.h>
+  #include <kos.h>
+  #include <arch/gdb.h> 
+#endif
+
+#ifdef __GP2X__
+  #include "minimal.h"
+#endif
+
+#ifdef GP32
+  #include <x_gp32.h>
+#endif 
+
+// Functions in font.c
+extern font * loadFont   (char * fn);
+extern void   freeFont   (font * f);
+
+// Functions in sound.c
+extern int  loadSounds (char * fn);
+extern void freeSounds (void);
 
 
 int oldTicks;
@@ -58,7 +87,24 @@ FILE * fopenFromPath (char * fileName) {
 }
 
 
-unsigned char * loadRLE (FILE *f, int size) {
+int fileExists (char * fileName) {
+
+  FILE *f;
+
+  printf("Check: ");
+
+  f = fopenFromPath(fileName);
+
+  if (f == NULL) return 0;
+
+  fclose(f);
+
+  return 1;
+
+}
+
+
+unsigned char * loadRLE (FILE *f, int length) {
 
   char *buffer;
   int rle, pos, byte, count, next;
@@ -69,11 +115,11 @@ unsigned char * loadRLE (FILE *f, int size) {
   next += ftell(f);
 
   // Allocate memory for the decompressed data
-  buffer = malloc(size);
+  buffer = malloc(length);
 
   pos = 0;
 
-  while (pos < size) {
+  while (pos < length) {
 
     rle = fgetc(f);
 
@@ -84,7 +130,7 @@ unsigned char * loadRLE (FILE *f, int size) {
       for (count = 0; count < (rle & 127); count++) {
 
         buffer[pos++] = byte;
-        if (pos >= size) break;
+        if (pos >= length) break;
 
       }
 
@@ -93,7 +139,7 @@ unsigned char * loadRLE (FILE *f, int size) {
       for (count = 0; count < rle; count++) {
 
         buffer[pos++] = fgetc(f);
-        if (pos >= size) break;
+        if (pos >= length) break;
 
       }
 
@@ -122,8 +168,42 @@ void skipRLE (FILE *f) {
 }
 
 
-SDL_Surface * createSurface (unsigned char * pixels, SDL_Color *palette,
-                             int width, int height                      ) {
+char * loadString (FILE *f) {
+
+  char *string;
+  int length, count;
+
+  length = fgetc(f);
+
+  if (length) {
+
+    string = malloc(length + 1);
+    for (count = 0; count < length; count++) string[count] = fgetc(f);
+    string[length] = 0;
+
+  } else {
+
+    // If the length is not given, assume it is an 8.3 (or 7.3, etc) file name
+    string = malloc(13);
+    for (count = 0; (count < 8) && (!length); count++) {
+
+      string[count] = fgetc(f);
+      if (string[count] == '.') length = ~0;
+
+    }
+    string[count++] = fgetc(f);
+    string[count++] = fgetc(f);
+    string[count++] = fgetc(f);
+    string[count] = 0;
+
+  }
+
+  return string;
+
+}
+
+
+SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
   SDL_Surface *ret;
   int y;
@@ -132,7 +212,7 @@ SDL_Surface * createSurface (unsigned char * pixels, SDL_Color *palette,
   ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
   // Set the surface's palette
-  SDL_SetPalette(ret, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(ret, SDL_LOGPAL, logicalPalette, 0, 256);
 
   // Upload pixel data to the surface
   if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
@@ -148,15 +228,15 @@ SDL_Surface * createSurface (unsigned char * pixels, SDL_Color *palette,
 }
 
 
-SDL_Surface * createBlankSurface (SDL_Color *palette) {
+SDL_Surface * createBlankSurface (void) {
 
   SDL_Surface *ret;
   unsigned char *pixels;
 
   pixels = malloc(1);
-  *pixels = SKEY;
-  ret = createSurface(pixels, palette, 1, 1);
-  SDL_SetColorKey(ret, SDL_SRCCOLORKEY, SKEY);
+  *pixels = 0;
+  ret = createSurface(pixels, 1, 1);
+  SDL_SetColorKey(ret, SDL_SRCCOLORKEY, 0);
 
   return ret;
 
@@ -170,15 +250,20 @@ void loadPalette (SDL_Color *palette, FILE *f) {
 
   buffer = loadRLE(f, 768);
 
+//  printf("JASC-PAL\n0100\n256\n");
+
   for (count = 0; count < 256; count++) {
 
     // Palette entries are 6-bit
     // Shift them upwards to 8-bit, and fill in the lower 2 bits
-    palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 6);
+    palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
     palette[count].g = (buffer[(count * 3) + 1] << 2) +
-                       (buffer[(count * 3) + 1] >> 6);
+                       (buffer[(count * 3) + 1] >> 4);
     palette[count].b = (buffer[(count * 3) + 2] << 2) +
-                       (buffer[(count * 3) + 2] >> 6);
+                       (buffer[(count * 3) + 2] >> 4);
+
+//    printf("%i %i %i\n", palette[count].r, palette[count].g,
+//           palette[count].b);
 
   }
 
@@ -192,33 +277,52 @@ void loadPalette (SDL_Color *palette, FILE *f) {
 int loadMain (void) {
 
   FILE *f;
-  SDL_Color palette[256];
   unsigned char *pixels, *sorted;
   int rle, pos, index, count, x, y;
 
 
-  // Generate a placeholder palette
-
+  // Generate the logical palette
   for (count = 0; count < 256; count++) {
 
-    palette[count].r = count;
-    palette[count].g = count;
-    palette[count].b = count;
+    logicalPalette[count].r = count;
+    logicalPalette[count].g = count;
+    logicalPalette[count].b = count;
 
   }
 
-  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
+  SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 
 
-  f = fopenFromPath("panel.000");
+  // Default level & difficulty settings
+
+  currentLevel = malloc(11);
+  strcpy(currentLevel, "level0.000");
+
+  nextLevel = malloc(11);
+  strcpy(nextLevel, "level0.000");
+
+  difficulty = 1;
+
 
   // Load the panel
 
-  panel = loadSurface(f, palette, 320, 32);
+  f = fopenFromPath("panel.000");
+
+  if (f == NULL) {
+
+    free(currentLevel);
+    free(nextLevel);
+
+    return FAILURE;
+
+  }
+
+  // Load the panel background
+  panel = loadSurface(f, 320, 32);
 
 
   // Load the large panel font
-  // Starts at 4691 and goes 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:*
+  // Starts at 4691 and goes 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:.
 
   pixels = malloc(320 * 8);
   
@@ -260,11 +364,10 @@ int loadMain (void) {
   }
 
   // Create ASCII->font map
-  for (count = 0; count < 42; count++) panelBigFont.map[count] = 39;
-  panelBigFont.map[42] = 38;
-  for (count = 43; count < 91; count++) panelBigFont.map[count] = count - 55;
+  for (count = 0; count < 45; count++) panelBigFont.map[count] = 39;
   panelBigFont.map[45] = 36;
-  for (count = 46; count < 48; count++) panelBigFont.map[count] = 39;
+  panelBigFont.map[46] = 38;
+  for (count = 47; count < 48; count++) panelBigFont.map[count] = 39;
   for (; count < 58; count++) panelBigFont.map[count] = count - 48;
   panelBigFont.map[58] = 37;
   for (count = 59; count < 65; count++) panelBigFont.map[count] = 39;
@@ -278,7 +381,7 @@ int loadMain (void) {
   for (count = 0; count < 40; count++) panelBigFont.w[count] = 8;
   panelBigFont.h = 8;
 
-  panelBigFont.pixels = createSurface(pixels, palette, 8, 320);
+  panelBigFont.pixels = createSurface(pixels, 8, 320);
 
 
   // Load the small panel font
@@ -332,7 +435,7 @@ int loadMain (void) {
   for (count = 0; count < 13; count++) panelSmallFont.w[count] = 8;
   panelSmallFont.h = 7;
 
-  panelSmallFont.pixels = createSurface(pixels, palette, 8, 280);
+  panelSmallFont.pixels = createSurface(pixels, 8, 280);
 
   // Load the panel's ammo graphics
 
@@ -347,7 +450,7 @@ int loadMain (void) {
 
   }
 
-  panelAmmo[0] = createSurface(sorted, palette, 64, 27);
+  panelAmmo[0] = createSurface(sorted, 64, 27);
   sorted = pixels; // Re-use the allocated memory
 
   fseek(f, 8264, SEEK_SET);
@@ -360,7 +463,7 @@ int loadMain (void) {
 
   }
 
-  panelAmmo[1] = createSurface(sorted, palette, 64, 27);
+  panelAmmo[1] = createSurface(sorted, 64, 27);
   sorted = pixels; // Re-use the allocated memory
 
   fseek(f, 9550, SEEK_SET);
@@ -373,7 +476,7 @@ int loadMain (void) {
 
   }
 
-  panelAmmo[2] = createSurface(sorted, palette, 64, 27);
+  panelAmmo[2] = createSurface(sorted, 64, 27);
   sorted = pixels; // Re-use the allocated memory
 
   fseek(f, 11060, SEEK_SET);
@@ -386,7 +489,7 @@ int loadMain (void) {
 
   }
 
-  panelAmmo[3] = createSurface(sorted, palette, 64, 27);
+  panelAmmo[3] = createSurface(sorted, 64, 27);
   sorted = pixels; // Re-use the allocated memory
 
   fseek(f, 12258, SEEK_SET);
@@ -399,66 +502,72 @@ int loadMain (void) {
 
   }
 
-  panelAmmo[4] = createSurface(sorted, palette, 64, 27);
+  panelAmmo[4] = createSurface(sorted, 64, 27);
   free(pixels);
 
   fclose(f);
 
   // Load real fonts
-  font2 = loadFont("font2.0fn", palette);
-  fontbig = loadFont("fontbig.0fn", palette);
-  fontiny = loadFont("fontiny.0fn", palette);
-  fontmn1 = loadFont("fontmn1.0fn", palette);
-  fontmn2 = loadFont("fontmn2.0fn", palette);
-  redFontmn2 = loadFont("fontmn2.0fn", palette);
+  font2 = loadFont("font2.0fn");
+  fontbig = loadFont("fontbig.0fn");
+  fontiny = loadFont("fontiny.0fn");
+  fontmn1 = loadFont("fontmn1.0fn");
+  fontmn2 = loadFont("fontmn2.0fn");
 
-  if (SDL_MUSTLOCK(redFontmn2->pixels)) SDL_LockSurface(redFontmn2->pixels);
+  firstPE = NULL;
 
-  for (y = 0; y < redFontmn2->pixels->h; y++) {
-
-    for (x = 0; x < redFontmn2->pixels->w; x++){
-
-      if (((unsigned char *)redFontmn2->pixels->pixels)
-           [(y * redFontmn2->pixels->pitch) + x])
-        ((unsigned char *)redFontmn2->pixels->pixels)
-         [(y * redFontmn2->pixels->pitch) + x] -= 120;
-
-    }
-
-  }
-
-  if (SDL_MUSTLOCK(redFontmn2->pixels)) SDL_UnlockSurface(redFontmn2->pixels);
-
-  return 0;
+  return SUCCESS;
 
 }
 
 
 void usePalette (SDL_Color *palette) {
 
-  // Make palette changes invisible until the next draw
-  SDL_FillRect(screen, NULL, 31);
+  // Make palette changes invisible until the next draw. Hopefully.
+  SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
   SDL_Flip(screen);
 
-  SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panel, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelAmmo[0], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelAmmo[1], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelAmmo[2], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelAmmo[3], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelAmmo[4], SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(font2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(fontbig->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(fontiny->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(fontmn1->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(fontmn2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(redFontmn2->pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0, 256);
-  SDL_SetPalette(panelBigFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, palette, 0,
-                 256);
-  SDL_SetPalette(panelSmallFont.pixels, SDL_LOGPAL | SDL_PHYSPAL, palette,
-                 0, 256);
-
+  SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
   currentPalette = palette;
+
+  return;
+
+}
+
+
+void scalePalette (SDL_Surface *surface, fixed scale, signed int offset) {
+
+  SDL_Color palette[256];
+  int count;
+
+  for (count = 0; count < 256; count++) {
+
+    palette[count].r = ((count * scale) >> 10) + offset;
+    palette[count].g = ((count * scale) >> 10) + offset;
+    palette[count].b = ((count * scale) >> 10) + offset;
+
+  }
+
+  SDL_SetPalette(surface, SDL_LOGPAL, palette, 0, 256);
+
+  return;
+
+}
+
+
+void restorePalette (SDL_Surface *surface) {
+
+  SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
+
+  return;
+
+}
+
+
+void releaseControl (int control) {
+
+  controls[control].time = oldTicks + 500;
+  controls[control].state = SDL_RELEASED;
 
   return;
 
@@ -472,16 +581,23 @@ int loop (void) {
   SDL_Color shownPalette[256];
   int count, x, y;
 
+#ifdef __GP2X__
+  unsigned long pad;
+#endif
 
   // Show everything that has been drawn so far
   SDL_Flip(screen);
 
-  // Calculate frame rate
+  // Calculate frame rate and key timing
   count = SDL_GetTicks();
-  fps = 1000.0/((float)(count - oldTicks));
+  fps = 1000.0f / ((float)(count - oldTicks));
   if (count - oldTicks > 100) oldTicks = count - 100;
-  spf = ((float)(count - oldTicks))/1000.0;
+  mspf = count - oldTicks;
   oldTicks = count;
+
+#ifdef __GP2X__
+  pad = gp2x_joystick_read();
+#endif
 
 
   // Process system events
@@ -491,6 +607,7 @@ int loop (void) {
 
       case SDL_KEYDOWN:
 
+#ifndef FULLSCREEN_ONLY
         // If Alt + Enter has been pressed, go to full screen
         if ((event.key.keysym.sym == SDLK_RETURN) &&
             (event.key.keysym.mod & KMOD_ALT)        ) {
@@ -503,8 +620,8 @@ int loop (void) {
             screen = SDL_SetVideoMode(screenW, screenH, 8,
                                       SDL_FULLSCREEN | SDL_DOUBLEBUF |
                                       SDL_HWSURFACE | SDL_HWPALETTE);
-            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
-                           256);
+            SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+            SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 
             // A real 8-bit display is quite likely if the user has the right
             // video card, the right video drivers, the right version of
@@ -523,8 +640,8 @@ int loop (void) {
             screen = SDL_SetVideoMode(screenW, screenH, 8,
                                       SDL_RESIZABLE | SDL_DOUBLEBUF |
                                       SDL_HWSURFACE | SDL_HWPALETTE  );
-            SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
-                           256);
+            SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+            SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
             SDL_ShowCursor(SDL_ENABLE);
 
             // Assume that in windowed mode the palette is being emulated
@@ -536,18 +653,73 @@ int loop (void) {
 
         }
 
-        if (event.key.keysym.sym == SDLK_ESCAPE) return RETURN;
-
         // The absence of a break statement is intentional
+#endif
 
       case SDL_KEYUP:
 
-        for (count = 0; count < KEYS; count++)
+        for (count = 0; count < CONTROLS; count++)
           if (event.key.keysym.sym == keys[count].key)
             keys[count].state = event.key.state;
 
         break;
 
+#ifdef __GP2X__
+      case SDL_JOYBUTTONDOWN:
+
+        if (pad & GP2X_DOWN) keys[K_DOWN].state = SDL_PRESSED;
+        if (pad & GP2X_UP) keys[K_UP].state = SDL_PRESSED;
+        if (pad & GP2X_LEFT) keys[K_LEFT].state = SDL_PRESSED;
+        if (pad & GP2X_RIGHT) keys[K_RIGHT].state = SDL_PRESSED;
+        if (pad & GP2X_A) keys[K_JUMP].state = SDL_PRESSED;
+        if (pad & GP2X_B) keys[K_FIRE].state = SDL_PRESSED;
+        if (pad & GP2X_Y) keys[K_CHANGE].state = SDL_PRESSED;
+        if (pad & GP2X_START) keys[K_ESCAPE].state = SDL_PRESSED;
+
+        break;
+
+      case SDL_JOYBUTTONUP:
+
+        if (!(pad & GP2X_DOWN)) keys[K_DOWN].state = SDL_RELEASED;
+        if (!(pad & GP2X_UP)) keys[K_UP].state = SDL_RELEASED;
+        if (!(pad & GP2X_LEFT)) keys[K_LEFT].state = SDL_RELEASED;
+        if (!(pad & GP2X_RIGHT)) keys[K_RIGHT].state = SDL_RELEASED;
+        if (!(pad & GP2X_A)) keys[K_JUMP].state = SDL_RELEASED;
+        if (!(pad & GP2X_B)) keys[K_FIRE].state = SDL_RELEASED;
+        if (!(pad & GP2X_Y)) keys[K_CHANGE].state = SDL_RELEASED;
+
+        break;
+#endif
+
+#if !defined(__GP2X__) && !defined(_arch_dreamcast)
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+
+        for (count = 0; count < CONTROLS; count++)
+          if (event.jbutton.button == buttons[count].button)
+            buttons[count].state = event.jbutton.state;
+
+        break;
+
+      case SDL_JOYAXISMOTION:
+
+        for (count = 0; count < CONTROLS; count++)
+          if (event.jaxis.axis == axes[count].axis) {
+
+            if (!axes[count].direction && (event.jaxis.value < -16384))
+              axes[count].state = SDL_PRESSED;
+
+            else if (axes[count].direction && (event.jaxis.value > 16384))
+              axes[count].state = SDL_PRESSED;
+
+            else axes[count].state = SDL_RELEASED;
+
+          }
+
+      break;
+#endif
+
+#ifndef FULLSCREEN_ONLY
       case SDL_VIDEORESIZE:
 
         screenW = event.resize.w;
@@ -562,10 +734,11 @@ int loop (void) {
 
       case SDL_VIDEOEXPOSE:
 
-        SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, currentPalette, 0,
-                       256);
+        SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+        SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 
         break;
+#endif
 
       case SDL_QUIT:
 
@@ -574,6 +747,25 @@ int loop (void) {
     }
 
   }
+
+  // Apply controls to universal control tracking
+  for (count = 0; count < CONTROLS; count++) {
+
+    if ((keys[count].state == SDL_PRESSED) ||
+        (buttons[count].state == SDL_PRESSED) || 
+        (axes[count].state == SDL_PRESSED)      ) {
+
+      if (controls[count].time < oldTicks) controls[count].state = SDL_PRESSED;
+
+    } else {
+
+      controls[count].time = 0;
+      controls[count].state = SDL_RELEASED;
+
+    }
+
+  }
+
 
   // Apply palette effects
 
@@ -597,16 +789,16 @@ int loop (void) {
             for (count = currentPE->first;
                  count < currentPE->first + currentPE->amount; count++) {
 
-              shownPalette[count].r = currentPalette[count].r *
-                                      currentPE->position;
-              shownPalette[count].g = currentPalette[count].g *
-                                      currentPE->position;
-              shownPalette[count].b = currentPalette[count].b *
-                                      currentPE->position;
+              shownPalette[count].r = (currentPalette[count].r *
+                                       currentPE->position) >> 10;
+              shownPalette[count].g = (currentPalette[count].g *
+                                       currentPE->position) >> 10;
+              shownPalette[count].b = (currentPalette[count].b *
+                                       currentPE->position) >> 10;
 
             }
 
-            currentPE->position -= spf / currentPE->speed;
+            currentPE->position -= (mspf << 10) / currentPE->speed;
 
           } else {
 
@@ -620,7 +812,8 @@ int loop (void) {
         case PE_1D:
 
           currentPE->position = currentPE->amount - 1 -
-                                ((int)(currentPE->position * currentPE->speed)
+                                (((currentPE->position * currentPE->speed) >>
+                                  10)
                                  % currentPE->amount                          );
 
           // The lack of a break statement is intentional
@@ -631,32 +824,32 @@ int loop (void) {
 
             memcpy(shownPalette + currentPE->first + count,
                    currentPalette + currentPE->first +
-                   ((count + (int)(currentPE->position)) % currentPE->amount),
+                   ((count + (currentPE->position >> 10)) % currentPE->amount),
                    sizeof(SDL_Color));
 
           }
 
-          currentPE->position -= spf * currentPE->speed;
+          currentPE->position -= (mspf * currentPE->speed) >> 10;
           while (currentPE->position < 0)
-            currentPE->position += currentPE->amount;
+            currentPE->position += currentPE->amount << 10;
 
           break;
 
         case PE_SKY:
 
-          count = (int)((currentPE->position * currentPE->speed) / bgScale) % 255;
+          count = (((currentPE->position * currentPE->speed) / bgScale) >> 20) %
+                  255;
 
           if (count > 255 - currentPE->amount) {
 
-            memcpy(shownPalette + currentPE->first, levelBGPalette + count,
+            memcpy(shownPalette + currentPE->first, skyPalette + count,
                    sizeof(SDL_Color) * (255 - count));
-            memcpy(shownPalette + currentPE->first + (255 - count),
-                   levelBGPalette,
+            memcpy(shownPalette + currentPE->first + (255 - count), skyPalette,
                    sizeof(SDL_Color) * (count + currentPE->amount - 255));
 
           } else {
 
-            memcpy(shownPalette + currentPE->first, levelBGPalette + count,
+            memcpy(shownPalette + currentPE->first, skyPalette + count,
                    sizeof(SDL_Color) * currentPE->amount);
 
           }
@@ -665,10 +858,10 @@ int loop (void) {
 
         case PE_2D:
 
-          x = ((LW * TW) - *((short int *)&(currentPE->position))) *
-              currentPE->speed;
-          y = ((LH * TH) - *((short int *)&(currentPE->position) + 1)) *
-              currentPE->speed;
+          x = (((256 * 32) - *((short int *)&(currentPE->position))) *
+               currentPE->speed) >> 10;
+          y = (((64 * 32) - *((short int *)&(currentPE->position) + 1)) *
+               currentPE->speed) >> 10;
 
           for (count = 0; count < currentPE->amount >> 3; count++) {
 
@@ -713,16 +906,16 @@ int loop (void) {
             for (count = currentPE->first;
                  count < currentPE->first + currentPE->amount; count++) {
 
-              shownPalette[count].r = currentPalette[count].r *
-                                      currentPE->position;
-              shownPalette[count].g = currentPalette[count].g *
-                                      currentPE->position;
-              shownPalette[count].b = currentPalette[count].b *
-                                      currentPE->position;
+              shownPalette[count].r = (currentPalette[count].r *
+                                       currentPE->position) >> 10;
+              shownPalette[count].g = (currentPalette[count].g *
+                                       currentPE->position) >> 10;
+              shownPalette[count].b = (currentPalette[count].b *
+                                       currentPE->position) >> 10;
 
             }
 
-            currentPE->position -= spf / currentPE->speed;
+            currentPE->position -= (mspf << 10) / currentPE->speed;
 
           } else {
 
@@ -739,7 +932,8 @@ int loop (void) {
         case PE_1D:
 
           currentPE->position = currentPE->amount - 1 -
-                                ((int)(currentPE->position * currentPE->speed)
+                                (((currentPE->position * currentPE->speed) >>
+                                  10)
                                  % currentPE->amount                          );
 
           // The lack of a break statement is intentional
@@ -750,14 +944,14 @@ int loop (void) {
 
             memcpy(shownPalette + currentPE->first + count,
                    currentPalette + currentPE->first +
-                   ((count + (int)(currentPE->position)) % currentPE->amount),
+                   ((count + (currentPE->position >> 10)) % currentPE->amount),
                    sizeof(SDL_Color));
 
           }
 
-          currentPE->position -= spf * currentPE->speed;
+          currentPE->position -= (mspf * currentPE->speed) >> 10;
           while (currentPE->position < 0)
-            currentPE->position += currentPE->amount;
+            currentPE->position += currentPE->amount << 10;
 
           SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + currentPE->first,
                          currentPE->first, currentPE->amount);
@@ -766,20 +960,20 @@ int loop (void) {
 
         case PE_SKY:
 
-          count = (int)((currentPE->position * currentPE->speed) / bgScale) %
+          count = (((currentPE->position * currentPE->speed) / bgScale) >> 20) %
                   255;
 
           if (count > 255 - currentPE->amount) {
 
-            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette + count,
+            SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette + count,
                            currentPE->first, 255 - count);
-            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette,
+            SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette,
                            currentPE->first + (255 - count),
                            count + currentPE->amount - 255);
 
           } else {
 
-            SDL_SetPalette(screen, SDL_PHYSPAL, levelBGPalette + count,
+            SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette + count,
                            currentPE->first, currentPE->amount);
 
           }
@@ -788,10 +982,10 @@ int loop (void) {
 
         case PE_2D:
 
-          x = ((LW * TW) - *((short int *)&(currentPE->position))) *
-              currentPE->speed;
-          y = ((LH * TH) - *((short int *)&(currentPE->position) + 1)) *
-              currentPE->speed;
+          x = (((256 * 32) - *((short int *)&(currentPE->position))) *
+               currentPE->speed) >> 10;
+          y = (((64 * 32) - *((short int *)&(currentPE->position) + 1)) *
+               currentPE->speed) >> 10;
 
           for (count = 0; count < currentPE->amount >> 3; count++) {
 
@@ -827,12 +1021,12 @@ int loop (void) {
   }
 
 
-  return CONTINUE;
+  return SUCCESS;
 
 }
 
 
-void quit (void) {
+void freeMain (void) {
 
   SDL_FreeSurface(panel);
 
@@ -847,7 +1041,6 @@ void quit (void) {
   freeFont(fontiny);
   freeFont(fontmn1);
   freeFont(fontmn2);
-  freeFont(redFontmn2);
 
   SDL_FreeSurface(panelAmmo[0]);
   SDL_FreeSurface(panelAmmo[1]);
@@ -855,29 +1048,41 @@ void quit (void) {
   SDL_FreeSurface(panelAmmo[3]);
   SDL_FreeSurface(panelAmmo[4]);
 
+  free(currentLevel);
+  free(nextLevel);
   free(path);
 
-  SDL_Quit();
-
-  exit(0);
+  return;
 
 }
 
 
 int main(int argc, char *argv[]) {
 
-  // Temp: Load level given on command line
+  int count;
+
+#ifdef GP32
+  x_gp32_SetCPUSpeed_133();
+#endif
+
+  // Find path
+
+#if !defined(_arch_dreamcast) && !defined(GP32)
   if (argc < 2) {
 
     int count;
 
     count = strlen(argv[0]) - 1;
 
-#ifdef WIN32
+  #ifdef WIN32
     while ((argv[0][count] != '\\') && (count >= 0)) count--;
-#else
+  #else
+    #ifdef __MACH__
+    count = (unsigned int)(strstr(argv[0], "app/Contents/MacOS") - argv[0]);
+    #endif
+
     while ((argv[0][count] != '/') && (count >= 0)) count--;
-#endif
+  #endif
 
     path = malloc(count + 2);
     if (count >= 0) {
@@ -889,20 +1094,20 @@ int main(int argc, char *argv[]) {
 
   } else {
 
-#ifdef WIN32
+  #ifdef WIN32
     if (argv[1][strlen(argv[1]) - 1] != '\\') {
-#else
+  #else
     if (argv[1][strlen(argv[1]) - 1] != '/') {
-#endif
+  #endif
 
       path = malloc(strlen(argv[1]) + 2);
       strcpy(path, argv[1]);
 
-#ifdef WIN32
+  #ifdef WIN32
       strcat(path, "\\");
-#else
+  #else
       strcat(path, "/");
-#endif
+  #endif
 
     } else {
 
@@ -912,41 +1117,97 @@ int main(int argc, char *argv[]) {
     }
 
   }
+#endif
+#ifdef _arch_dreamcast
+  path = malloc(5);
+  strcpy(path, "/cd/");
+#endif
+#ifdef GP32
+  path = malloc(12);
+  strcpy(path, DATA_PREFIX);
+#endif
+
 
   // Initialise global variables
 
-  // To do: Load keys from config file
-  keys[K_UP].key      = SDLK_UP;
-  keys[K_DOWN].key    = SDLK_DOWN;
-  keys[K_LEFT].key    = SDLK_LEFT;
-  keys[K_RIGHT].key   = SDLK_RIGHT;
-#ifdef WIN32
-  keys[K_JUMP].key    = SDLK_RALT;
-  keys[K_FIRE].key    = SDLK_SPACE;
-#else
-  keys[K_JUMP].key    = SDLK_SPACE;
-  keys[K_FIRE].key    = SDLK_LALT;
-#endif
-  keys[K_CHANGE].key  = SDLK_RETURN;
+  keys[C_ENTER].key  = SDLK_RETURN;
+  keys[C_ESCAPE].key = SDLK_ESCAPE;
 
-  cutscene.pixels = NULL;
-  firstPE = NULL;
-  firstBullet = NULL;
-  unusedBullet = NULL;
-  firstEvent = NULL;
-  unusedEvent = NULL;
+  // To do: Load controls from config file
+
+#ifdef GP32
+  keys[C_UP].key     = SDLK_UP;
+  keys[C_DOWN].key   = SDLK_DOWN;
+  keys[C_LEFT].key   = SDLK_LEFT;
+  keys[C_RIGHT].key  = SDLK_RIGHT;
+  keys[C_JUMP].key   = SDLK_LCTRL;
+  keys[C_FIRE].key   = SDLK_LALT;
+  keys[C_CHANGE].key = SDLK_SPACE;
+#else
+  keys[C_UP].key     = SDLK_UP;
+  keys[C_DOWN].key   = SDLK_DOWN;
+  keys[C_LEFT].key   = SDLK_LEFT;
+  keys[C_RIGHT].key  = SDLK_RIGHT;
+  #ifdef WIN32
+  keys[C_JUMP].key   = SDLK_RALT;
+  keys[C_FIRE].key   = SDLK_SPACE;
+  #else
+  keys[C_JUMP].key   = SDLK_SPACE;
+  keys[C_FIRE].key   = SDLK_LALT;
+  #endif
+  keys[C_CHANGE].key = SDLK_RCTRL;
+#endif
+
+  buttons[C_UP].button = -1;
+  buttons[C_DOWN].button = -1;
+  buttons[C_LEFT].button = -1;
+  buttons[C_RIGHT].button = -1;
+  buttons[C_JUMP].button = 1;
+  buttons[C_FIRE].button = 0;
+  buttons[C_CHANGE].button = 3;
+  buttons[C_ENTER].button = 0;
+  buttons[C_ESCAPE].button = -1;
+
+  axes[C_UP].axis = 1;
+  axes[C_UP].direction = 0;
+  axes[C_DOWN].axis = 1;
+  axes[C_DOWN].direction = 1;
+  axes[C_LEFT].axis = 0;
+  axes[C_LEFT].direction = 0;
+  axes[C_RIGHT].axis = 0;
+  axes[C_RIGHT].direction = 1;
+  axes[C_JUMP].axis = -1;
+  axes[C_FIRE].axis = -1;
+  axes[C_CHANGE].axis = -1;
+  axes[C_ENTER].axis = -1;
+  axes[C_ESCAPE].axis = -1;
+
+  for (count = 0; count < CONTROLS; count++) {
+
+    controls[count].time = 0;
+    controls[count].state= SDL_RELEASED;
+
+  }
 
   // To do: Load resolution from config file
   screenW = 320;
   screenH = 200;
+#ifndef FULLSCREEN_ONLY
   fullscreen = 0;
+#endif
   bgScale = 2;
 
-  spf = 0.02f;
+  mspf = 20;
   fps = 50.0f; // Arbitrarily chosen starting speed
 
+#ifdef __GP2X__
+  gp2x_init(1000, 16, 11025, 16, 1, 60, 1);
+#endif
+
   // Initialise SDL
-  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
+
+  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
+              SDL_INIT_TIMER                                       ) < 0) {
 
     fprintf(stderr, "Could not start SDL: %s\n", SDL_GetError());
 
@@ -955,15 +1216,48 @@ int main(int argc, char *argv[]) {
   }
 
   // Create the game's window
+
+#ifdef FULLSCREEN_ONLY
+  #ifdef __GP2X__
+  if ((screen = SDL_SetVideoMode(screenW, screenH, 8, SDL_SWSURFACE)) == NULL) {
+  #else
+  if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                 SDL_FULLSCREEN | SDL_DOUBLEBUF |
+                                 SDL_HWSURFACE | SDL_HWPALETTE   )) == NULL) {
+  #endif
+#else
   if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
                                  SDL_HWSURFACE | SDL_HWPALETTE  )) == NULL) {
-
+#endif
     fprintf(stderr, "Could not set video mode: %s\n", SDL_GetError());
 
     return -1;
 
   }
+
+  if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
+
+#ifdef _arch_dreamcast	
+  // Map dreamcast controls to the keyboard
+  SDL_DC_SetVideoDriver(SDL_DC_DIRECT_VIDEO);
+  SDL_DC_VerticalWait(SDL_FALSE);
+  SDL_DC_EmulateKeyboard(SDL_TRUE);
+  SDL_DC_MapKey(0, SDL_DC_LEFT, SDLK_LEFT);
+  SDL_DC_MapKey(0, SDL_DC_RIGHT, SDLK_RIGHT);
+  SDL_DC_MapKey(0, SDL_DC_UP, SDLK_UP);
+  SDL_DC_MapKey(0, SDL_DC_DOWN, SDLK_DOWN);
+  SDL_DC_MapKey(0, SDL_DC_START, SDLK_RETURN);
+  SDL_DC_MapKey(0, SDL_DC_A, SDLK_SPACE);
+  SDL_DC_MapKey(0, SDL_DC_X, SDLK_LALT);
+  SDL_DC_MapKey(0, SDL_DC_Y, SDLK_LALT);
+  SDL_DC_MapKey(0, SDL_DC_B, SDLK_SPACE);
+#endif
+
+#ifdef __GP2X__
+  SDL_ShowCursor(0);
+#endif
+
 
   // Assume that in windowed mode the palette is being emulated
   // This is extremely likely
@@ -975,27 +1269,38 @@ int main(int argc, char *argv[]) {
 
   // Load universal game data
 
-  if (loadMain() == -1) {
+  if (loadMain()) {
 
     SDL_Quit();
+
     return -1;
 
   }
 
-
-  // Temp: Load the first level
-
-  nextworld = 0;
-  nextlevel = 0;
-  difficulty = 1;
-  if (loadMenu() == -1) quit();
-
   // Establish timing
   oldTicks = SDL_GetTicks() - 20;
 
-  menuLoop();
+  // Show the startup cutscene
+//  if (runScene("startup.0sc") != QUIT) {
 
-  quit();
+    // Run the menu
+    if (runMenu() != QUIT) {
+
+      // Show the ending cutscene
+//      runScene("end.0sc");
+
+    }
+
+//  }
+
+  freeMain();
+
+  SDL_Quit();
+
+#ifdef __GP2X__
+  chdir("/usr/gp2x");
+  execl("/usr/gp2x/gp2xmenu", "/usr/gp2x/gp2xmenu", NULL);
+#endif
 
   return 0;
 
