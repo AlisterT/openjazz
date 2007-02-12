@@ -37,7 +37,7 @@ int loadScene (char * fn) {
 
   FILE *f;
   unsigned char *buffer;
-  int count, next, type;
+  int type;
 
   sceneMusic = 0;
 
@@ -45,16 +45,9 @@ int loadScene (char * fn) {
 
   if (f == NULL) return FAILURE;
 
-  // Skip header text
-  fseek(f, 19, SEEK_SET);
-
-  next = fgetc(f);
-  next += fgetc(f) << 8;
-
+  // Skip to files
   fseek(f, 25, SEEK_SET);
   fseek(f, fgetc(f), SEEK_SET);
-
-  next += ftell(f) - 15;
 
   // At this point, next bytes should be 0x50 0x01 0x00 0x00 0x00
   // Then, (0x3f 0x02)
@@ -133,7 +126,14 @@ int loadScene (char * fn) {
 //  printf("Initial search reached %d\n", ftell(f));
 
   // Skip to the palette
-  fseek(f, next, SEEK_SET);
+  fseek(f, 23, SEEK_SET);
+  type = fgetc(f);
+
+  fseek(f, 19, SEEK_SET);
+
+  skipRLE(f);
+
+  fseek(f, (type * 4) - 11, SEEK_CUR);
 
   // Load the palette
 

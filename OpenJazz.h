@@ -26,10 +26,6 @@
   #define Extern extern
 #endif
 
-#if defined(_arch_dreamcast) || defined(__GP2X__) || defined(GP32)
-  #define FULLSCREEN_ONLY
-#endif
-
 /* "Tile" is a flexible term. Here it is used to refer specifically to the
    individual elements of the tile set.
    "Tiles" in the context of level units are referred to as grid elements. */
@@ -58,6 +54,7 @@
 #define F36  36864
 #define F40  40960
 #define F64  65536
+#define F100 102400
 #define F160 163840
 #define F256 262144
 
@@ -70,18 +67,20 @@
 #define PE_2D     4 /* Real parallaxing background */
 #define PE_WATER  5 /* After a threshold, fades to black, then remains black */
 
-// Indexes for the keys / buttons / axes / player.controls arrays
-#define C_UP     1
-#define C_DOWN   2
-#define C_LEFT   3
-#define C_RIGHT  4
-#define C_JUMP   5
-#define C_FIRE   6
-#define C_CHANGE 7 /* Change weapon */
-#define C_ENTER  8
-#define C_ESCAPE 9
+// Indexes for the keys / buttons / axes player controls arrays
+#define C_UP      0
+#define C_DOWN    1
+#define C_LEFT    2
+#define C_RIGHT   3
+#define C_JUMP    4
+#define C_FIRE    5
+#define C_CHANGE  6 /* Change weapon */
+#define C_ENTER   7
+#define C_ESCAPE  8
+#define C_STATS   9
+#define C_PAUSE  10
 // Size of those arrays
-#define CONTROLS 10
+#define CONTROLS 11
 
 // Return values
 #define SUCCESS  0

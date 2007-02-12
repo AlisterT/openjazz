@@ -92,38 +92,41 @@
 
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
-#define PCONTROLS   8  /* Number of player animations. Is probably higher. */
+#define PCONTROLS   7 /* Number of player controls. */
 
 
 // Datatype
 
 typedef struct {
 
-    char  anims[PANIMS];
-    int   anim;
-    int   facing;
-    fixed viewX, viewY;
-    int   viewW, viewH;
-    fixed x, y;
-    fixed dx, dy;
-    int   jumpDuration;
-    int   jumpTime;
-    int   score;
-    int   energy;
-    fixed energyBar;
-    int   lives;
-    int   reaction;
-    int   reactionTime;
-    int   ammo[4];
-    int   ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer
+    char  *name;
+    char   anims[PANIMS];
+    int    anim;
+    int    facing;
+    fixed  viewX, viewY;
+    int    viewW, viewH;
+    fixed  x, y;
+    fixed  dx, dy;
+    int    jumpHeight;
+    int    jumpY;
+    int    score;
+    int    energy;
+    fixed  energyBar;
+    int    lives;
+    int    reaction;
+    int    reactionTime;
+    int    ammo[4];
+    int    ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer
                        3 = TNT */
-    int   shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange,
+    int    shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange,
                      4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-    int   floating; // 0 = normal, 1 = boarding/birding/whatever
-    int   event; // Indexes the event set (spring, float up, belt, platform)
-    Uint8 controls[PCONTROLS];
-    int   fireSpeed;
-    int   fireTime;
+    int    floating; // 0 = normal, 1 = boarding/birding/whatever
+    int    event; // Indexes the event set (spring, float up, belt, platform)
+    Uint8  controls[PCONTROLS];
+    int    fireSpeed;
+    int    fireTime;
+    int    lookTime; /* Negative if looking up, positive if looking down, 0 if
+                        neither */
 
 } player;
 

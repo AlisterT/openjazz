@@ -8,10 +8,6 @@
  *
  *
  * Copyright (c) 2005 Alister Thomson
- * MacOSX code by Mark Spear (Ice M A N)
- * Dreamcast code by Troy(GPF)
- * GP2X code by Israel López Fernández (Puck2099)
- * GP32 code by A600
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -28,26 +24,11 @@
  */
 
 
-// Uncomment the following line to compile on the GP2X
-//#define __GP2X__
 
 #define Extern
 #include "OpenJazz.h"
 #include <string.h>
 
-#ifdef _arch_dreamcast
-  #include <SDL_dreamcast.h>
-  #include <kos.h>
-  #include <arch/gdb.h> 
-#endif
-
-#ifdef __GP2X__
-  #include "minimal.h"
-#endif
-
-#ifdef GP32
-  #include <x_gp32.h>
-#endif 
 
 // Functions in font.c
 extern font * loadFont   (char * fn);
@@ -250,8 +231,6 @@ void loadPalette (SDL_Color *palette, FILE *f) {
 
   buffer = loadRLE(f, 768);
 
-//  printf("JASC-PAL\n0100\n256\n");
-
   for (count = 0; count < 256; count++) {
 
     // Palette entries are 6-bit
@@ -261,9 +240,6 @@ void loadPalette (SDL_Color *palette, FILE *f) {
                        (buffer[(count * 3) + 1] >> 4);
     palette[count].b = (buffer[(count * 3) + 2] << 2) +
                        (buffer[(count * 3) + 2] >> 4);
-
-//    printf("%i %i %i\n", palette[count].r, palette[count].g,
-//           palette[count].b);
 
   }
 
@@ -581,9 +557,6 @@ int loop (void) {
   SDL_Color shownPalette[256];
   int count, x, y;
 
-#ifdef __GP2X__
-  unsigned long pad;
-#endif
 
   // Show everything that has been drawn so far
   SDL_Flip(screen);
@@ -594,10 +567,6 @@ int loop (void) {
   if (count - oldTicks > 100) oldTicks = count - 100;
   mspf = count - oldTicks;
   oldTicks = count;
-
-#ifdef __GP2X__
-  pad = gp2x_joystick_read();
-#endif
 
 
   // Process system events
@@ -664,34 +633,6 @@ int loop (void) {
 
         break;
 
-#ifdef __GP2X__
-      case SDL_JOYBUTTONDOWN:
-
-        if (pad & GP2X_DOWN) keys[K_DOWN].state = SDL_PRESSED;
-        if (pad & GP2X_UP) keys[K_UP].state = SDL_PRESSED;
-        if (pad & GP2X_LEFT) keys[K_LEFT].state = SDL_PRESSED;
-        if (pad & GP2X_RIGHT) keys[K_RIGHT].state = SDL_PRESSED;
-        if (pad & GP2X_A) keys[K_JUMP].state = SDL_PRESSED;
-        if (pad & GP2X_B) keys[K_FIRE].state = SDL_PRESSED;
-        if (pad & GP2X_Y) keys[K_CHANGE].state = SDL_PRESSED;
-        if (pad & GP2X_START) keys[K_ESCAPE].state = SDL_PRESSED;
-
-        break;
-
-      case SDL_JOYBUTTONUP:
-
-        if (!(pad & GP2X_DOWN)) keys[K_DOWN].state = SDL_RELEASED;
-        if (!(pad & GP2X_UP)) keys[K_UP].state = SDL_RELEASED;
-        if (!(pad & GP2X_LEFT)) keys[K_LEFT].state = SDL_RELEASED;
-        if (!(pad & GP2X_RIGHT)) keys[K_RIGHT].state = SDL_RELEASED;
-        if (!(pad & GP2X_A)) keys[K_JUMP].state = SDL_RELEASED;
-        if (!(pad & GP2X_B)) keys[K_FIRE].state = SDL_RELEASED;
-        if (!(pad & GP2X_Y)) keys[K_CHANGE].state = SDL_RELEASED;
-
-        break;
-#endif
-
-#if !defined(__GP2X__) && !defined(_arch_dreamcast)
       case SDL_JOYBUTTONDOWN:
       case SDL_JOYBUTTONUP:
 
@@ -717,7 +658,6 @@ int loop (void) {
           }
 
       break;
-#endif
 
 #ifndef FULLSCREEN_ONLY
       case SDL_VIDEORESIZE:
@@ -1061,28 +1001,19 @@ int main(int argc, char *argv[]) {
 
   int count;
 
-#ifdef GP32
-  x_gp32_SetCPUSpeed_133();
-#endif
-
   // Find path
 
-#if !defined(_arch_dreamcast) && !defined(GP32)
   if (argc < 2) {
 
     int count;
 
     count = strlen(argv[0]) - 1;
 
-  #ifdef WIN32
+#ifdef WIN32
     while ((argv[0][count] != '\\') && (count >= 0)) count--;
-  #else
-    #ifdef __MACH__
-    count = (unsigned int)(strstr(argv[0], "app/Contents/MacOS") - argv[0]);
-    #endif
-
+#else
     while ((argv[0][count] != '/') && (count >= 0)) count--;
-  #endif
+#endif
 
     path = malloc(count + 2);
     if (count >= 0) {
@@ -1094,20 +1025,20 @@ int main(int argc, char *argv[]) {
 
   } else {
 
-  #ifdef WIN32
+#ifdef WIN32
     if (argv[1][strlen(argv[1]) - 1] != '\\') {
-  #else
+#else
     if (argv[1][strlen(argv[1]) - 1] != '/') {
-  #endif
+#endif
 
       path = malloc(strlen(argv[1]) + 2);
       strcpy(path, argv[1]);
 
-  #ifdef WIN32
+#ifdef WIN32
       strcat(path, "\\");
-  #else
+#else
       strcat(path, "/");
-  #endif
+#endif
 
     } else {
 
@@ -1117,33 +1048,17 @@ int main(int argc, char *argv[]) {
     }
 
   }
-#endif
-#ifdef _arch_dreamcast
-  path = malloc(5);
-  strcpy(path, "/cd/");
-#endif
-#ifdef GP32
-  path = malloc(12);
-  strcpy(path, DATA_PREFIX);
-#endif
 
 
   // Initialise global variables
 
   keys[C_ENTER].key  = SDLK_RETURN;
   keys[C_ESCAPE].key = SDLK_ESCAPE;
+  keys[C_STATS].key  = SDLK_F9;
+  keys[C_PAUSE].key  = SDLK_p;
 
   // To do: Load controls from config file
 
-#ifdef GP32
-  keys[C_UP].key     = SDLK_UP;
-  keys[C_DOWN].key   = SDLK_DOWN;
-  keys[C_LEFT].key   = SDLK_LEFT;
-  keys[C_RIGHT].key  = SDLK_RIGHT;
-  keys[C_JUMP].key   = SDLK_LCTRL;
-  keys[C_FIRE].key   = SDLK_LALT;
-  keys[C_CHANGE].key = SDLK_SPACE;
-#else
   keys[C_UP].key     = SDLK_UP;
   keys[C_DOWN].key   = SDLK_DOWN;
   keys[C_LEFT].key   = SDLK_LEFT;
@@ -1156,7 +1071,6 @@ int main(int argc, char *argv[]) {
   keys[C_FIRE].key   = SDLK_LALT;
   #endif
   keys[C_CHANGE].key = SDLK_RCTRL;
-#endif
 
   buttons[C_UP].button = -1;
   buttons[C_DOWN].button = -1;
@@ -1167,6 +1081,8 @@ int main(int argc, char *argv[]) {
   buttons[C_CHANGE].button = 3;
   buttons[C_ENTER].button = 0;
   buttons[C_ESCAPE].button = -1;
+  buttons[C_STATS].button = -1;
+  buttons[C_PAUSE].button = -1;
 
   axes[C_UP].axis = 1;
   axes[C_UP].direction = 0;
@@ -1181,6 +1097,8 @@ int main(int argc, char *argv[]) {
   axes[C_CHANGE].axis = -1;
   axes[C_ENTER].axis = -1;
   axes[C_ESCAPE].axis = -1;
+  axes[C_STATS].axis = -1;
+  axes[C_PAUSE].axis = -1;
 
   for (count = 0; count < CONTROLS; count++) {
 
@@ -1200,10 +1118,6 @@ int main(int argc, char *argv[]) {
   mspf = 20;
   fps = 50.0f; // Arbitrarily chosen starting speed
 
-#ifdef __GP2X__
-  gp2x_init(1000, 16, 11025, 16, 1, 60, 1);
-#endif
-
   // Initialise SDL
 
   if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
@@ -1218,13 +1132,9 @@ int main(int argc, char *argv[]) {
   // Create the game's window
 
 #ifdef FULLSCREEN_ONLY
-  #ifdef __GP2X__
-  if ((screen = SDL_SetVideoMode(screenW, screenH, 8, SDL_SWSURFACE)) == NULL) {
-  #else
   if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
                                  SDL_FULLSCREEN | SDL_DOUBLEBUF |
                                  SDL_HWSURFACE | SDL_HWPALETTE   )) == NULL) {
-  #endif
 #else
   if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
@@ -1237,26 +1147,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
-
-#ifdef _arch_dreamcast	
-  // Map dreamcast controls to the keyboard
-  SDL_DC_SetVideoDriver(SDL_DC_DIRECT_VIDEO);
-  SDL_DC_VerticalWait(SDL_FALSE);
-  SDL_DC_EmulateKeyboard(SDL_TRUE);
-  SDL_DC_MapKey(0, SDL_DC_LEFT, SDLK_LEFT);
-  SDL_DC_MapKey(0, SDL_DC_RIGHT, SDLK_RIGHT);
-  SDL_DC_MapKey(0, SDL_DC_UP, SDLK_UP);
-  SDL_DC_MapKey(0, SDL_DC_DOWN, SDLK_DOWN);
-  SDL_DC_MapKey(0, SDL_DC_START, SDLK_RETURN);
-  SDL_DC_MapKey(0, SDL_DC_A, SDLK_SPACE);
-  SDL_DC_MapKey(0, SDL_DC_X, SDLK_LALT);
-  SDL_DC_MapKey(0, SDL_DC_Y, SDLK_LALT);
-  SDL_DC_MapKey(0, SDL_DC_B, SDLK_SPACE);
-#endif
-
-#ifdef __GP2X__
-  SDL_ShowCursor(0);
-#endif
 
 
   // Assume that in windowed mode the palette is being emulated
@@ -1297,10 +1187,6 @@ int main(int argc, char *argv[]) {
 
   SDL_Quit();
 
-#ifdef __GP2X__
-  chdir("/usr/gp2x");
-  execl("/usr/gp2x/gp2xmenu", "/usr/gp2x/gp2xmenu", NULL);
-#endif
 
   return 0;
 

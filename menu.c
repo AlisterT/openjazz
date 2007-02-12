@@ -37,7 +37,6 @@ int loadMenu () {
 
   FILE *f;
   time_t currentTime;
-  unsigned char *buffer;
   int count, end, colour;
 
   f = fopen("openjazz.000", "rb");
@@ -173,7 +172,7 @@ void freeMenu (void) {
 
 int newGameDifficultyMenuLoop (void) {
 
-  char *options[4] = {"Easy", "Medium", "Hard", "Turbo"};
+  char *options[4] = {"EASY", "MEDIUM", "HARD", "TURBO"};
   SDL_Rect src, dst;
   int count;
 
@@ -240,6 +239,7 @@ int newGameDifficultyMenuLoop (void) {
       localPlayer = players + 0;
 
       // Set the player's defaults
+      localPlayer->name = "Jazz";
       localPlayer->score = 0;
       localPlayer->lives = 3;
       localPlayer->ammoType = -1;
@@ -278,21 +278,10 @@ int newGameDifficultyMenuLoop (void) {
 int newGameLevelMenuLoop (void) {
 
   int option;
-  SDL_Color palette[256];
-
-  for (option = 0; option < 16; option++) {
-
-    palette[option].r = (15 - option) * 12;
-    palette[option].g = (15 - option) * 17;
-    palette[option].b = (15 - option) * 12;
-
-  }
-
-  memset(palette + 16, 0, sizeof(SDL_Color) * 240);
-
-  usePalette(palette);
 
   world = level = option = 0;
+
+  usePalette(menuPalettes[1]);
 
   while (1) {
 
@@ -308,11 +297,17 @@ int newGameLevelMenuLoop (void) {
 
     SDL_FillRect(screen, NULL, 15);
 
-    showString("Choose world:", 32, screenH / 3, &panelBigFont);
-    showNumber(world, 208, screenH / 3, &panelBigFont);
-    showString("Choose level:", 32, (screenH << 1) / 3, &panelBigFont);
-    showNumber(level, 208, (screenH << 1) / 3, &panelBigFont);
-    showString(".", 16, (screenH * (option + 1)) / 3, &panelBigFont);
+    if (option == 0) scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+    showString("CHOOSE WORLD:", 32, screenH / 3, fontmn2);
+    showNumber(world, 208, screenH / 3, fontmn2);
+
+    if (option == 0) restorePalette(fontmn2->pixels);
+    else scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+    showString("CHOOSE LEVEL:", 32, (screenH << 1) / 3, fontmn2);
+    showNumber(level, 208, (screenH << 1) / 3, fontmn2);
+
+    if (option != 0) restorePalette(fontmn2->pixels);
 
     if (controls[C_UP].state == SDL_PRESSED) {
 
@@ -360,7 +355,7 @@ int newGameLevelMenuLoop (void) {
 
       if (newGameDifficultyMenuLoop() == QUIT) return QUIT;
 
-      usePalette(palette);
+      usePalette(menuPalettes[1]);
 
     }
 
@@ -373,18 +368,18 @@ int newGameLevelMenuLoop (void) {
 
 int newGameMenuLoop (void) {
 
-  char *options[12] = {"Episode one",
-                       "Episode two",
-                       "Episode three",
-                       "Episode four",
-                       "Episode five",
-                       "Episode six",
-                       "Episode A",
-                       "Episode B",
-                       "Episode C",
-                       "Episode X",
-                       "Bonus stage",
-                       "Specific level"};
+  char *options[12] = {"EPISODE 1",
+                       "EPISODE 2",
+                       "EPISODE 3",
+                       "EPISODE 4",
+                       "EPISODE 5",
+                       "EPISODE 6",
+                       "EPISODE A",
+                       "EPISODE B",
+                       "EPISODE C",
+                       "EPISODE X",
+                       "BONUS STAGE",
+                       "SPECIFIC LEVEL"};
   int exists[12];
   char check[11];
   SDL_Rect dst;
@@ -421,7 +416,7 @@ int newGameMenuLoop (void) {
 
       releaseControl(C_ESCAPE);
 
-      return;
+      return SUCCESS;
 
     }
 
@@ -534,9 +529,594 @@ int loadGameMenuLoop (void) {
 }
 
 
+int setupJoystickMenuLoop (void) {
+
+  char *options[7] = {"UP",
+                      "DOWN",
+                      "LEFT",
+                      "RIGHT",
+                      "JUMP",
+                      "FIRE",
+                      "WEAPON"};
+  SDL_Event event;
+  int progress, count, used;
+
+  progress = 0;
+
+  while (1) {
+
+    while (SDL_PollEvent(&event)) {
+
+      used = 0;
+
+      switch (event.type) {
+
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.key.keysym.sym == keys[count].key)
+              keys[count].state = event.key.state;
+
+          break;
+
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.jbutton.button == buttons[count].button) {
+              buttons[count].state = event.jbutton.state;
+              if (count != progress) used = 1;
+
+            }
+
+          if (!used) {
+
+            buttons[progress].button = event.jbutton.button;
+            progress++;
+
+            if (progress == 7) return SUCCESS;
+
+          }
+
+          break;
+
+        case SDL_JOYAXISMOTION:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.jaxis.axis == axes[count].axis) {
+
+              if (!axes[count].direction && (event.jaxis.value < -16384)) {
+
+                axes[count].state = SDL_PRESSED;
+                if (count != progress) used = 1;
+
+              } else if (axes[count].direction && (event.jaxis.value > 16384)) {
+
+                axes[count].state = SDL_PRESSED;
+                if (count != progress) used = 1;
+
+              } else axes[count].state = SDL_RELEASED;
+
+            }
+
+          if (!used &&
+              ((event.jaxis.value < -16384) || (event.jaxis.value > 16384))) {
+
+            axes[progress].axis = event.jaxis.axis;
+            if (event.jaxis.value < -16384) axes[progress].direction = 0;
+            else axes[progress].direction = 1;
+            progress++;
+
+            if (progress == 7) return SUCCESS;
+
+          }
+
+          break;
+
+#ifndef FULLSCREEN_ONLY
+        case SDL_VIDEORESIZE:
+
+          screenW = event.resize.w;
+          screenH = event.resize.h;
+          if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
+          else bgScale = ((screenH - 34) / 100) + 1;
+          screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                    SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                    SDL_HWSURFACE | SDL_HWPALETTE  );
+
+          // The absence of a break statement is intentional
+
+        case SDL_VIDEOEXPOSE:
+
+          SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+          SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+          break;
+#endif
+
+        case SDL_QUIT:
+
+          return QUIT;
+
+      }
+
+    }
+
+    // Apply controls to universal control tracking
+    for (count = 0; count < CONTROLS; count++) {
+
+      if ((keys[count].state == SDL_PRESSED) ||
+          (buttons[count].state == SDL_PRESSED) || 
+          (axes[count].state == SDL_PRESSED)      ) {
+
+        if (controls[count].time < SDL_GetTicks())
+          controls[count].state = SDL_PRESSED;
+
+      } else {
+
+        controls[count].time = 0;
+        controls[count].state = SDL_RELEASED;
+
+      }
+
+    }
+
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
+
+    for (count = 0; count < 7; count++) {
+
+      if (count < progress)
+        showString("OKAY", (screenW >> 2) + 176,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      else if (count == progress)
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == progress) {
+
+        showString("PRESS CONTROL", (screenW >> 2) + 112,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+        restorePalette(fontmn2->pixels);
+
+      }
+
+    }
+
+    SDL_Flip(screen);
+
+  }
+
+  return SUCCESS;
+
+}
+
+
+int setupKeyboardMenuLoop (void) {
+
+  char *options[7] = {"UP",
+                      "DOWN",
+                      "LEFT",
+                      "RIGHT",
+                      "JUMP",
+                      "FIRE",
+                      "WEAPON"};
+  SDL_Event event;
+  int progress, count, used;
+
+  progress = 0;
+
+  while (1) {
+
+    while (SDL_PollEvent(&event)) {
+
+      used = 0;
+
+      switch (event.type) {
+
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.key.keysym.sym == keys[count].key) {
+
+              keys[count].state = event.key.state;
+              if (count != progress) used = 1;
+
+            }
+
+          if (!used) {
+
+            keys[progress].key = event.key.keysym.sym;
+            progress++;
+
+            if (progress == 7) return SUCCESS;
+
+          }
+
+          break;
+
+#ifndef FULLSCREEN_ONLY
+        case SDL_VIDEORESIZE:
+
+          screenW = event.resize.w;
+          screenH = event.resize.h;
+          if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
+          else bgScale = ((screenH - 34) / 100) + 1;
+          screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                    SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                    SDL_HWSURFACE | SDL_HWPALETTE  );
+
+          // The absence of a break statement is intentional
+
+        case SDL_VIDEOEXPOSE:
+
+          SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+          SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+          break;
+#endif
+
+        case SDL_QUIT:
+
+          return QUIT;
+
+      }
+
+    }
+
+    // Apply controls to universal control tracking
+    for (count = 0; count < CONTROLS; count++) {
+
+      if ((keys[count].state == SDL_PRESSED) ||
+          (buttons[count].state == SDL_PRESSED) || 
+          (axes[count].state == SDL_PRESSED)      ) {
+
+        if (controls[count].time < SDL_GetTicks())
+          controls[count].state = SDL_PRESSED;
+
+      } else {
+
+        controls[count].time = 0;
+        controls[count].state = SDL_RELEASED;
+
+      }
+
+    }
+
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
+
+    for (count = 0; count < 7; count++) {
+
+      if (count < progress)
+        showString("OKAY", (screenW >> 2) + 176,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      else if (count == progress)
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == progress) {
+
+        showString("PRESS KEY", (screenW >> 2) + 112,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+        restorePalette(fontmn2->pixels);
+
+      }
+
+    }
+
+    SDL_Flip(screen);
+
+  }
+
+  return SUCCESS;
+
+}
+
+
+int setupResolutionMenuLoop (void) {
+
+#ifndef FULLSCREEN_ONLY
+
+  int widthOptions[] = {320, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
+                        1280, 1440, 1600, 1920};
+  int heightOptions[] = {200, 240, 300, 384, 400, 480, 576, 600, 720, 768, 800,
+                         864, 900, 960, 1024, 1080, 1200};
+  SDL_Rect **resolutions;
+  SDL_Rect dst;
+  int dimension, count, maxW, maxH;
+
+  dimension = 0;
+
+  if (fullscreen)
+    resolutions = SDL_ListModes(NULL, SDL_FULLSCREEN | SDL_DOUBLEBUF |
+                                      SDL_HWSURFACE | SDL_HWPALETTE   );
+  else 
+    resolutions = SDL_ListModes(NULL, SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                      SDL_HWSURFACE | SDL_HWPALETTE  );
+
+  if (resolutions == (SDL_Rect **)(-1)) {
+
+    maxW = 1920;
+    maxH = 1200;
+
+  } else {
+
+    maxW = 320;
+    maxH = 200;
+
+    for (count = 0; resolutions[count] != NULL; count++) {
+
+      if (resolutions[count]->w > maxW) maxW = resolutions[count]->w;
+      if (resolutions[count]->h > maxH) maxH = resolutions[count]->h;
+
+    }
+
+  }
+
+  while (1) {
+
+    if (loop() == QUIT) return QUIT;
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    if (controls[C_ENTER].state == SDL_PRESSED) {
+
+      releaseControl(C_ENTER);
+
+      return SUCCESS;
+
+    }
+
+    count = 0;
+
+    SDL_FillRect(screen, NULL, 0);
+
+
+    // Show screen corners
+    dst.w = 32;
+    dst.h = 32;
+    dst.x = 0;
+    dst.y = 0;
+    SDL_FillRect(screen, &dst, 79);
+    dst.x = screenW - 32;
+    SDL_FillRect(screen, &dst, 79);
+    dst.y = screenH - 32;
+    SDL_FillRect(screen, &dst, 79);
+    dst.x = 0;
+    SDL_FillRect(screen, &dst, 79);
+
+
+    showString("X", (screenW >> 2) + 40, screenH >> 1, fontmn2);
+
+    if (dimension == 0)
+      scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+    showNumber(screenW, (screenW >> 2) + 32, screenH >> 1, fontmn2);
+
+    if (dimension == 0)
+      restorePalette(fontmn2->pixels);
+    else
+      scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+    showNumber(screenH, (screenW >> 2) + 104, screenH >> 1, fontmn2);
+
+    if (dimension != 0)
+      restorePalette(fontmn2->pixels);
+
+
+    if (controls[C_LEFT].state == SDL_PRESSED) {
+
+      releaseControl(C_LEFT);
+
+      dimension = !dimension;
+
+    }
+
+    if (controls[C_RIGHT].state == SDL_PRESSED) {
+
+      releaseControl(C_RIGHT);
+
+      dimension = !dimension;
+
+    }
+
+    if (controls[C_UP].state == SDL_PRESSED) {
+
+      releaseControl(C_UP);
+
+      if ((dimension == 0) && (screenW < maxW)) {
+
+        while (screenW >= widthOptions[count]) count++;
+
+        screenW = widthOptions[count];
+
+      }
+
+      if ((dimension == 1) && (screenH < maxH)) {
+
+        while (screenH >= heightOptions[count]) count++;
+
+        screenH = heightOptions[count];
+
+      }
+
+    }
+
+    if (controls[C_DOWN].state == SDL_PRESSED) {
+
+      releaseControl(C_DOWN);
+
+      if ((dimension == 0) && (screenW > 320)) {
+
+        count = 13;
+
+        while (screenW <= widthOptions[count]) count--;
+
+        screenW = widthOptions[count];
+        count = -1;
+
+      }
+
+      if ((dimension == 1) && (screenH > 200)) {
+
+        count = 16;
+
+        while (screenH <= heightOptions[count]) count--;
+
+        screenH = heightOptions[count];
+        count = -1;
+
+      }
+
+    }
+
+    // Check for a resolution change
+    if (count != 0) {
+
+      if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
+      else bgScale = ((screenH - 34) / 100) + 1;
+
+      if (fullscreen) {
+
+        screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                  SDL_FULLSCREEN | SDL_DOUBLEBUF |
+                                  SDL_HWSURFACE | SDL_HWPALETTE);
+
+      } else {
+
+        screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                  SDL_HWSURFACE | SDL_HWPALETTE  );
+
+      }
+
+    }
+
+  }
+
+#endif
+
+  return SUCCESS;
+
+}
+
+
 int setupMenuLoop (void) {
 
-  // To do
+  char *options[3] = {"JOYSTICK",
+                      "KEYBOARD",
+                      "RESOLUTION"};
+  int option, count;
+
+  usePalette(menuPalettes[1]);
+
+  option = 0;
+
+  while (1) {
+
+    if (loop() == QUIT) return QUIT;
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
+
+    for (count = 0; count < 3; count++) {
+
+      if (count == option)
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == option)
+        restorePalette(fontmn2->pixels);
+
+    }
+
+    if (controls[C_UP].state == SDL_PRESSED) {
+
+      releaseControl(C_UP);
+
+      option = (option + 2) % 3;
+
+    }
+
+    if (controls[C_DOWN].state == SDL_PRESSED) {
+
+      releaseControl(C_DOWN);
+
+      option = (option + 1) % 3;
+
+    }
+
+    if (controls[C_ENTER].state == SDL_PRESSED) {
+
+      releaseControl(C_ENTER);
+
+      switch (option) {
+
+        case 0:
+
+          setupJoystickMenuLoop();
+
+          break;
+
+        case 1:
+
+          setupKeyboardMenuLoop();
+
+          break;
+
+        case 2:
+
+          setupResolutionMenuLoop();
+
+          break;
+
+      }
+
+    }
+
+  }
 
   return SUCCESS;
 
@@ -645,7 +1225,6 @@ int runMenu (void) {
     dst.x = ((screenW - 320) >> 1) + src.x;
     dst.y = ((screenH - 200) >> 1) + src.y;
     SDL_BlitSurface(menuScreens[1], &src, screen, &dst);
-
 
     if (controls[C_UP].state == SDL_PRESSED) {
 

@@ -231,6 +231,7 @@ void createEvent (int x, int y) {
   evt->x = x << 15;
   evt->y = (y + 1) << 15;
   evt->anim = 0;
+  evt->flashTime = 0;
 
   if (firstEvent) firstEvent->prev = evt;
   evt->next = firstEvent;
@@ -292,17 +293,17 @@ void freeEvents (void) {
 }
 
 
-void processEvent (event * evt, int ticks) {
+void playEventFrame (event * evt, int ticks) {
 
   struct {
     fixed x, y, w, h;
   } pos;
-  SDL_Rect dst;
   bullet *bul, *prevBul;
   gridElement *ge;
   signed char *set;
   int frame;
-  fixed startX;
+  fixed startX, targetH;
+  int midpoint;
 
   // Get the grid element at the given coordinates
   ge = grid[evt->gridY] + evt->gridX;
@@ -329,8 +330,7 @@ void processEvent (event * evt, int ticks) {
               animSet[set[evt->anim]].sprites[0].pixels->h) << 10);
     pos.w = animSet[set[evt->anim]].sprites[0].pixels->w << 10;
     pos.h = evt->y - pos.y;
-
-    if (pos.h > F256) pos.h = F16;
+    targetH = animSet[set[evt->anim]].sprites[0].pixels->h << 10;
 
     // Blank sprites for e.g. invisible springs
     if ((pos.w == F1) && (pos.h == F1)) pos.w = F32;
@@ -341,6 +341,7 @@ void processEvent (event * evt, int ticks) {
     pos.y = evt->y - F32;
     pos.w = F32;
     pos.h = F32;
+    targetH = F32;
 
   }
 
@@ -353,9 +354,10 @@ void processEvent (event * evt, int ticks) {
     while (bul) {
 
       if ((bul->x > pos.x) && (bul->x < pos.x + pos.w) &&
-          (bul->y > pos.y) && (bul->y < pos.y + pos.h)   ) {
+          (bul->y > pos.y) && (bul->y < pos.y + targetH)   ) {
 
         ge->hits++;
+        evt->flashTime = ticks + FLASHTIME;
         bul = bul->next;
         removeBullet(prevBul);
 
@@ -465,13 +467,6 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
-      case 6: // Special behaviour
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
-        break;
-
       case 7: // Move back and forth horizontally with tail
 
         if (evt->anim == E_LEFTANIM) {
@@ -564,20 +559,6 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
-      case 14: // Move back and forth rapidly
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
-        break;
-
-      case 15: // Rise or lower to meet jazz
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
-        break;
-
       case 16: // Move across level to the left or right
 
         evt->x += set[E_MAGNITUDE] * 80 * mspf / set[E_MOVEMENTSP];
@@ -590,28 +571,10 @@ void processEvent (event * evt, int ticks) {
         if (ge->hits >= set[E_HITSTOKILL]) ge->tile = set[E_MULTIPURPOSE];
         break;
 
-      case 22: // Fall down in random spot and repeat
-      case 24: // Crawl along ground and go downstairs
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
-        break;
-
       case 26: // Flip animation
 
         evt->anim = E_RIGHTANIM;
 
-        break;
-
-      case 27: // Face jazz
-      case 28: // Bridge
-      case 29: // Nonmoving object with jazz
-      case 30: // Nonmoving object with jazz
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
         break;
 
       case 31: // Moving platform
@@ -625,13 +588,6 @@ void processEvent (event * evt, int ticks) {
         if (evt->anim == E_LEFTANIM) evt->x -= 320 * mspf / set[E_MOVEMENTSP];
         else evt->x += 320 * mspf / set[E_MOVEMENTSP];
 
-        break;
-
-      case 32: // Nonmoving object
-
-        // Temporary
-        if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
-        else evt->anim = E_RIGHTANIM;
         break;
 
       case 33: // Sparks-esque following
@@ -662,6 +618,18 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
+      /* As yet unhandled event behaviours follow */
+
+      case 6: // Special behaviour
+      case 14: // Move back and forth rapidly
+      case 15: // Rise or lower to meet jazz
+      case 22: // Fall down in random spot and repeat
+      case 24: // Crawl along ground and go downstairs
+      case 27: // Face jazz
+      case 28: // Bridge
+      case 29: // Nonmoving object with jazz
+      case 30: // Nonmoving object with jazz
+      case 32: // Nonmoving object
       case 34: // Launching platform
       case 36: // Crawl along ground with jazz seek AI
       case 39: // Collapsing floor
@@ -683,9 +651,9 @@ void processEvent (event * evt, int ticks) {
       case 62:
       case 65:
 
-        // Temporary
         if (localPlayer->x < pos.x) evt->anim = E_LEFTANIM;
         else evt->anim = E_RIGHTANIM;
+
         break;
 
     }
@@ -796,11 +764,6 @@ void processEvent (event * evt, int ticks) {
   }
 
 
-  if ((eventSet[localPlayer->event][E_MODIFIER] != 6) &&
-      (localPlayer->jumpTime < ticks)                    )
-    localPlayer->event = 0;
-
-
   // Handle contact events
   if ((evt->anim != E_FINISHANIM) &&
       (localPlayer->x + F6 <= pos.x + pos.w) &&
@@ -821,14 +784,15 @@ void processEvent (event * evt, int ticks) {
 
         if (set[E_YAXIS]) {
  
-//          if ((localPlayer->dy > 0) &&
-//              checkMaskDown(localPlayer->x + F16, localPlayer->y + F4))
-//            localPlayer->dy = set[E_MULTIPURPOSE] * -F40;
+          if ((localPlayer->dy > 0) &&
+              checkMaskDown(localPlayer->x + F16, localPlayer->y + F4))
+            localPlayer->dy = set[E_MULTIPURPOSE] * -F40;
 
-//          if (localPlayer->dy > set[E_MULTIPURPOSE] * -F40)
-//            localPlayer->dy -= set[E_MULTIPURPOSE] * 320 * mspf;
+          if (localPlayer->dy > set[E_MULTIPURPOSE] * -F40)
+            localPlayer->dy -= set[E_MULTIPURPOSE] * 320 * mspf;
+
           localPlayer->event = ge->event;
-          localPlayer->jumpTime = ticks + 200;
+          localPlayer->jumpY = localPlayer->y - (8 * F16);
 
         }
 
@@ -840,13 +804,7 @@ void processEvent (event * evt, int ticks) {
 
       case 38: // Sucker tubes
 
-        if (set[E_YAXIS]) {
-
-//        localPlayer->dy = set[E_MULTIPURPOSE] * -F20;
-          localPlayer->event = ge->event;
-          localPlayer->jumpTime = ticks + (set[E_MULTIPURPOSE] * 40);
-
-        }
+        if (set[E_YAXIS]) localPlayer->dy = set[E_MULTIPURPOSE] * -F20;
 
         localPlayer->dx = set[E_MAGNITUDE] * F40;
 
@@ -932,7 +890,7 @@ void processEvent (event * evt, int ticks) {
 
       case 5: // High-jump feet
 
-        localPlayer->jumpDuration += 40;
+        localPlayer->jumpHeight += F16;
         ge->time = ticks + 200;
         evt->anim = E_FINISHANIM;
 
@@ -940,8 +898,8 @@ void processEvent (event * evt, int ticks) {
 
       case 6: // Platform
 
-        if ((localPlayer->y > pos.y) && (localPlayer->y < pos.y + F4) &&
-            !checkMaskDown(localPlayer->x + F16, pos.y - F20)           ) {
+        if ((localPlayer->y <= pos.y + F4) &&
+            !checkMaskDown(localPlayer->x + F16, pos.y - F20)) {
 
           localPlayer->event = ge->event;
           localPlayer->y = pos.y;
@@ -954,7 +912,7 @@ void processEvent (event * evt, int ticks) {
 
       case 9: // Sand timer
 
-        endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+        endTicks += 2 * 60 * 1000; // 2 minutes. Is this right?
         localPlayer->score += set[E_ADDEDSCORE] * 10;
         ge->time = ticks + 200;
         evt->anim = E_FINISHANIM;
@@ -1013,10 +971,18 @@ void processEvent (event * evt, int ticks) {
 
         break;
 
+      case 30:
+
+        localPlayer->ammo[3]++;
+        ge->time = ticks + 200;
+        evt->anim = E_FINISHANIM;
+
+        break;
+
       case 29: // Upwards spring
 
         localPlayer->event = ge->event;
-        localPlayer->jumpTime = ticks + (set[E_MAGNITUDE] * -20);
+        localPlayer->jumpY = evt->y + (set[E_MAGNITUDE] * F20);
 
         break;
 
@@ -1040,8 +1006,72 @@ void processEvent (event * evt, int ticks) {
 
   }
 
-  // Show events
-  // Note: 7 and 28 will need additional stuff
+  // Handle bridges
+  if (set[E_BEHAVIOUR] == 28) {
+
+    if ((localPlayer->x + F6 <=
+         pos.x + (set[E_MULTIPURPOSE] * F8) - F10) &&
+        (localPlayer->x + F26 >= pos.x - F10) &&
+        (localPlayer->y <= pos.y + F8 + F20 + (set[E_YAXIS] << 10) - F32) &&
+        (localPlayer->y >= pos.y + (set[E_YAXIS] << 10) - F32)   ) {
+
+      if (!checkMaskDown(localPlayer->x + F16,
+                         pos.y + (set[E_YAXIS] << 10) - (F32 + F20))) {
+
+        localPlayer->event = ge->event;
+        localPlayer->y = pos.y + (set[E_YAXIS] << 10) - F32;
+
+        midpoint = (localPlayer->x + F16 - pos.x) >> 13;
+
+        if (midpoint < set[E_MULTIPURPOSE] / 2) {
+
+          evt->y = ((evt->gridY + 1) << 15) + (midpoint << 10);
+          evt->anim = E_LEFTANIM;
+
+        } else {
+
+          evt->y = ((evt->gridY + 1) << 15) +
+                      ((set[E_MULTIPURPOSE] - midpoint) << 10);
+          evt->anim = E_RIGHTANIM;
+
+        }
+
+      } else if (eventSet[localPlayer->event][E_BEHAVIOUR] == 28)
+        localPlayer->event = 0;
+
+    } else {
+
+      midpoint = 0;
+      if (evt->y > (evt->gridY + 1) << 15) evt->y -= 16 * mspf;
+
+    }
+
+  }
+
+  return;
+
+}
+
+
+void drawEvent (event * evt, int ticks) {
+
+  SDL_Rect dst;
+  SDL_Surface *sprite;
+  gridElement *ge;
+  signed char *set;
+  int frame;
+  int count, dstx, dsty, midpoint;
+
+  // Get the grid element at the given coordinates
+  ge = grid[evt->gridY] + evt->gridX;
+
+  // Check whether or not the event should be processed
+  if (!ge->event || (ge->event >= 122)) return;
+
+  set = eventSet[ge->event];
+
+
+  // Note: Behaviour 7, like 28, will need additional stuff
   if (evt->anim && (set[evt->anim] >= 0)) {
 
     if (evt->anim == E_FINISHANIM)
@@ -1050,26 +1080,98 @@ void processEvent (event * evt, int ticks) {
       frame = (ticks / (set[E_ANIMSP] * 40)) % animSet[set[evt->anim]].frames;
     else frame = (ticks / 20) % animSet[set[evt->anim]].frames;
 
-    dst.x = (evt->x >> 10) - (localPlayer->viewX >> 10) +
-            animSet[set[evt->anim]].sprites[frame].x;
-    dst.y = (evt->y >> 10) - (localPlayer->viewY >> 10) +
-            animSet[set[evt->anim]].sprites[frame].y +
-            animSet[set[evt->anim]].y[frame] -
-            animSet[set[evt->anim]].sprites[0].pixels->h;
+    dst.x = dstx = (evt->x >> 10) - (localPlayer->viewX >> 10) +
+                   animSet[set[evt->anim]].sprites[frame].x;
+    dst.y = dsty = (evt->y >> 10) - (localPlayer->viewY >> 10) +
+                   animSet[set[evt->anim]].sprites[frame].y +
+                   animSet[set[evt->anim]].y[frame] -
+                   animSet[set[evt->anim]].sprites[0].pixels->h;
+
+    sprite = animSet[set[evt->anim]].sprites[frame].pixels;
+
+    if (ticks < evt->flashTime) scalePalette(sprite, 0, 0);
 
     // Draw the event
-    SDL_BlitSurface(animSet[set[evt->anim]].sprites[frame].pixels, NULL, screen,
+
+    if (set[E_BEHAVIOUR] == 28) {
+
+      dstx -= 10;
+      dsty -= 32 - set[E_YAXIS];
+
+      if (evt->y > (evt->gridY + 1) << 15) {
+
+        if (evt->anim == E_LEFTANIM)
+          midpoint = (evt->y - ((evt->gridY + 1) << 15)) >> 10;
+        else midpoint = set[E_MULTIPURPOSE] -
+                        ((evt->y - ((evt->gridY + 1) << 15)) >> 10);
+
+      } else {
+
+        midpoint = 0;
+
+      }
+
+      if (midpoint < set[E_MULTIPURPOSE] / 2) {
+
+        for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
+
+          dst.x = dstx += 8;
+          if (midpoint == 0) dst.y = dsty;
+          else if (count < midpoint)
+            dst.y = ((dsty - midpoint) * (midpoint - count) / midpoint) +
+                    (dsty * count / midpoint);
+          else
+            dst.y = ((dsty - midpoint) * (count - midpoint) /
+                     (set[E_MULTIPURPOSE] - midpoint)) +
+                    (dsty * (set[E_MULTIPURPOSE] - count) /
+                     (set[E_MULTIPURPOSE] - midpoint));
+
+          SDL_BlitSurface(sprite, NULL, screen, &dst);
+
+        }
+
+      } else {
+
+        for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
+
+          dst.x = dstx += 8;
+          if (midpoint == 0) dst.y = dsty;
+          else if (count < midpoint)
+            dst.y = ((dsty + midpoint - set[E_MULTIPURPOSE]) * (midpoint - count) / midpoint) +
+                    (dsty * count / midpoint);
+          else
+            dst.y = ((dsty + midpoint - set[E_MULTIPURPOSE]) * (count - midpoint) / (set[E_MULTIPURPOSE] - midpoint)) +
+                    (dsty * (set[E_MULTIPURPOSE] - count) / (set[E_MULTIPURPOSE] - midpoint));
+
+          SDL_BlitSurface(sprite, NULL, screen, &dst);
+
+        }
+
+      }
+
+    } else {
+
+      SDL_BlitSurface(sprite, NULL, screen, &dst);
+
+    }
+
+    if (ticks < evt->flashTime) restorePalette(sprite);
+
+    // If the event has been shot, draw an explosion
+    if (set[E_HITSTOKILL] && (evt->anim == E_FINISHANIM)) {
+
+      dst.x = dstx +
+              animSet[121].sprites[frame].x;
+      dst.y = dsty +
+              animSet[121].sprites[frame].y +
+              animSet[121].y[frame];
+
+      SDL_BlitSurface(animSet[121].sprites[frame].pixels, NULL, screen,
                     &dst);
 
-  }/* else {
+    }
 
-    dst.x = (pos.x - localPlayer->viewX) >> 10;
-    dst.y = (pos.y - localPlayer->viewY) >> 10;
-    dst.w = pos.w >> 10;
-    dst.h = pos.h >> 10;
-    SDL_FillRect(screen, &dst, 88);
-
-  }*/
+  }
 
   return;
 

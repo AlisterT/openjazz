@@ -74,6 +74,11 @@
 #define B_BOUNCER  49
 #define B_TNT      130
 
+// Displayed statistics
+#define S_NONE    0
+#define S_PLAYERS 1
+#define S_SCREEN  2
+
 // General
 #define LW        256 /* Level width */
 #define LH         64 /* Level height */
@@ -87,6 +92,7 @@
 #define TKEY      127 /* As in tileset colour key */
 #define HURTTIME 1000
 #define EOLTIME  4000
+#define FLASHTIME 100
 
 
 
@@ -114,6 +120,7 @@ struct _event {
   fixed          x, y;   // Actual position of the event
   unsigned char  gridX, gridY; // Grid position of the event
   unsigned char  anim;   // E_LEFTANIM, etc, or 0
+  int            flashTime;
 
 };
 
@@ -163,12 +170,13 @@ Lextern anim           animSet[ANIMS];
 Lextern SDL_Surface   *tileSet;
 Lextern char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
 Lextern bullet        *firstBullet, *unusedBullet;
-Lextern int            endTime;
+Lextern int            endTicks;
 Lextern int            skyOrb;
 Lextern char          *sceneFile;
 Lextern SDL_Color      levelPalette[256];
 Lextern paletteEffect *bgPE;
 Lextern unsigned char  checkX, checkY;
+Lextern int            stats;
 
 
 // Functions in events.c
@@ -180,7 +188,8 @@ Lextern void freeBullets        (void);
 Lextern void createEvent        (int x, int y);
 Lextern void removeEvent        (event * previous);
 Lextern void freeEvents         (void);
-Lextern void processEvent       (event *evt, int ticks);
+Lextern void playEventFrame     (event *evt, int ticks);
+Lextern void drawEvent          (event *evt, int ticks);
 
 
 // Functions in level.c

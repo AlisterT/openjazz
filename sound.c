@@ -88,11 +88,7 @@ int loadMusic (char * fn) {
 
   asDesired.freq = 44100;
   asDesired.format = AUDIO_S16;
-#ifdef _arch_dreamcast
-  asDesired.channels = 1;
-#else
   asDesired.channels = 2;
-#endif
   asDesired.samples = 2048;
   asDesired.callback = audioCallback;
   asDesired.userdata = NULL;
