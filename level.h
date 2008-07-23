@@ -169,6 +169,10 @@ Lextern int            sprites;
 Lextern anim           animSet[ANIMS];
 Lextern SDL_Surface   *tileSet;
 Lextern char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
+Lextern int            pathLength;
+Lextern int            pathNode;
+Lextern signed char   *pathX;
+Lextern signed char   *pathY;
 Lextern bullet        *firstBullet, *unusedBullet;
 Lextern int            endTicks;
 Lextern int            skyOrb;

@@ -133,7 +133,8 @@ typedef struct {
 
 // Variables
 
-Lextern player        *players;
-Lextern int            nPlayers;
-Lextern player        *localPlayer;
+Lextern player *players;
+Lextern int     nPlayers;
+Lextern player *localPlayer;
+
 

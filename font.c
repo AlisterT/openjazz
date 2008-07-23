@@ -194,7 +194,7 @@ void freeFont (font * f) {
 
 
 
-void showString (char * s, int x, int y, font * f) {
+int showString (char * s, int x, int y, font * f) {
 
   SDL_Rect src, dst;
   int count, offset;
@@ -225,7 +225,7 @@ void showString (char * s, int x, int y, font * f) {
 
   }
 
-  return;
+  return offset;
 
 }
 

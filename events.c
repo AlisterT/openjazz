@@ -467,6 +467,19 @@ void playEventFrame (event * evt, int ticks) {
 
         break;
 
+      case 6: // Use the path from the level file
+
+        // Check movement direction
+        if ((pathNode < 3) || (pathX[pathNode] <= pathX[pathNode - 3]))
+          evt->anim = E_LEFTANIM;
+        else evt->anim = E_RIGHTANIM;
+
+        // Choose new position
+        evt->x = (evt->gridX << 15) + F16 + (pathX[pathNode] << 12);
+        evt->y = (evt->gridY << 15) + (pathY[pathNode] << 11);
+
+        break;
+
       case 7: // Move back and forth horizontally with tail
 
         if (evt->anim == E_LEFTANIM) {
@@ -620,7 +633,39 @@ void playEventFrame (event * evt, int ticks) {
 
       /* As yet unhandled event behaviours follow */
 
-      case 6: // Special behaviour
+      case 36: // Walk from side to side and down hills, staying on-screen
+
+        if (!checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h)) {
+
+          // Fall downwards
+          evt->y += 320 * mspf / set[E_MOVEMENTSP];
+
+        } else {
+
+          // Walk from side to side, staying on-screen
+          if (evt->anim == E_LEFTANIM) {
+
+            if (checkMaskDown(pos.x - F4, pos.y + (pos.h >> 1)) ||
+                (pos.x - F4 < localPlayer->viewX))
+              evt->anim = E_RIGHTANIM;
+
+            evt->x -= 320 * mspf / set[E_MOVEMENTSP];
+
+          } else if (evt->anim == E_RIGHTANIM) {
+
+            if (checkMaskDown(pos.x + pos.w + F4, pos.y + (pos.h >> 1)) ||
+                (pos.x + pos.w + F4 >
+                 localPlayer->viewX + (localPlayer->viewW << 10)))
+              evt->anim = E_LEFTANIM;
+
+            evt->x += 320 * mspf / set[E_MOVEMENTSP];
+
+          } else evt->anim = E_LEFTANIM;
+
+        }
+
+        break;
+
       case 14: // Move back and forth rapidly
       case 15: // Rise or lower to meet jazz
       case 22: // Fall down in random spot and repeat
@@ -631,7 +676,6 @@ void playEventFrame (event * evt, int ticks) {
       case 30: // Nonmoving object with jazz
       case 32: // Nonmoving object
       case 34: // Launching platform
-      case 36: // Crawl along ground with jazz seek AI
       case 39: // Collapsing floor
       case 41: // Switch left & right anim periodically
       case 44: // Leap to greet Jazz very quickly

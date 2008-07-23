@@ -82,6 +82,9 @@
 // Size of those arrays
 #define CONTROLS 11
 
+// Standard string length
+#define STRING_LENGTH 32
+
 // Return values
 #define SUCCESS  0
 #define FAILURE  1
@@ -199,64 +202,74 @@ Extern int            level, world;
 Extern unsigned char  difficulty;
 Extern SDL_Color      skyPalette[255];
 
+Extern char *localPlayerName;
+
 
 // Function in bonus.c
 
-Extern int     runBonus  (char * fn);
+Extern int runBonus (char * fn);
 
 
 // Functions in font.c
 
-Extern void   showString (char * s, int x, int y, font * f);
-Extern void   showNumber (int n, int x, int y, font * f);
+Extern int  showString (char * s, int x, int y, font * f);
+Extern void showNumber (int n, int x, int y, font * f);
 
 
 // Function in level.c
 
-Extern int  runLevel      (char * fn);
+Extern int runLevel (char * fn);
 
 
 // Functions in main.c
 
-Extern FILE          * fopenFromPath      (char * fileName);
-Extern int             fileExists         (char * fileName);
-Extern unsigned char * loadRLE            (FILE * f, int size);
-Extern void            skipRLE            (FILE * f);
-Extern char          * loadString         (FILE * f);
-Extern SDL_Surface   * createSurface      (unsigned char * pixels, int width,
-                                           int height);
-Extern SDL_Surface   * createBlankSurface (void);
-#define loadSurface(file, width, height) \
-  createSurface(loadRLE(file, (width) * (height)), width, height)
-Extern void            loadPalette        (SDL_Color *palette, FILE *f);
-Extern void            usePalette         (SDL_Color *palette);
-Extern void            scalePalette       (SDL_Surface *surface, fixed scale,
-                                           signed int offset);
-Extern void            restorePalette     (SDL_Surface *surface);
-Extern void            releaseControl     (int control);
-Extern int             loop               (void);
+Extern void releaseControl     (int control);
+Extern void update             (void);
+Extern int  loop               (void);
 
 
-// Function in menu.c
+// Functions in menu.c
 
-Extern int  runMenu  (void);
+Extern int runMenu       (void);
+Extern int setupMenuLoop (void);
 
 
 // Function in planet.c
 
-Extern int  runPlanet  (char * fn);
+Extern int runPlanet (char * fn);
 
 
 // Function in scene.c
 
-Extern int  runScene  (char * fn);
+Extern int runScene (char * fn);
 
 
 // Functions in sound.c
 
-Extern int  loadMusic  (char * fn);
-Extern void freeMusic  (void);
-Extern void playSound  (int sound);
+Extern int  loadMusic (char * fn);
+Extern void freeMusic (void);
+Extern void playSound (int sound);
+
+
+// Functions in util.c
+
+Extern FILE             * fopenFromPath      (char * fileName);
+Extern int                fileExists         (char * fileName);
+Extern signed long int    loadInt            (FILE *f);
+Extern void               storeInt           (signed long int val, FILE *f);
+Extern unsigned char    * loadRLE            (FILE * f, int size);
+Extern void               skipRLE            (FILE * f);
+Extern char             * loadString         (FILE * f);
+Extern SDL_Surface      * createSurface      (unsigned char * pixels, int width,
+                                              int height);
+Extern SDL_Surface      * createBlankSurface (void);
+#define loadSurface(file, width, height) \
+  createSurface(loadRLE(file, (width) * (height)), width, height)
+Extern void               loadPalette        (SDL_Color *palette, FILE *f);
+Extern void               usePalette         (SDL_Color *palette);
+Extern void               scalePalette       (SDL_Surface *surface, fixed scale,
+                                              signed int offset);
+Extern void               restorePalette     (SDL_Surface *surface);
 
 
 

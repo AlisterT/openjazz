@@ -25,6 +25,7 @@
 
 
 #include "player.h"
+#include <string.h>
 #include <time.h>
 
 
@@ -170,6 +171,223 @@ void freeMenu (void) {
 }
 
 
+int textInputMenuLoop (char * request, char ** text) {
+
+  char *input;
+  SDL_Event event;
+  SDL_Rect dst;
+  int count, cursor, terminate;
+
+  input = malloc(sizeof(char) * (STRING_LENGTH + 1));
+  if (*text != NULL) strcpy(input, *text);
+  else input[0] = 0;
+
+  cursor = strlen(input);
+
+  while (1) {
+
+    update();
+
+
+    // Process system events
+    while (SDL_PollEvent(&event)) {
+
+      switch (event.type) {
+
+        case SDL_KEYDOWN:
+
+          // Ensure there is space for another character
+          if (cursor < STRING_LENGTH) {
+
+            terminate = (input[cursor] == 0);
+
+            if ((event.key.keysym.sym == ' ') ||
+                ((event.key.keysym.sym >= '0') &&
+                 (event.key.keysym.sym <= '9')) ||
+                ((event.key.keysym.sym >= 'A') &&
+                 (event.key.keysym.sym <= 'Z'))) {
+
+              input[cursor] = event.key.keysym.sym;
+              cursor++;
+              if (terminate != 0) input[cursor] = 0;
+
+            } else if ((event.key.keysym.sym >= 'a') &&
+                       (event.key.keysym.sym <= 'z')) {
+
+              input[cursor] = event.key.keysym.sym - 32;
+              cursor++;
+              if (terminate != 0) input[cursor] = 0;
+
+            }
+
+          }
+
+          if ((event.key.keysym.sym == SDLK_DELETE) &&
+              (cursor < strlen(input))) {
+
+            for (count = cursor; count < STRING_LENGTH; count++)
+              input[count] = input[count + 1];
+
+          }
+
+          if ((event.key.keysym.sym == SDLK_BACKSPACE) && (cursor > 0)) {
+
+              for (count = cursor - 1; count < STRING_LENGTH; count++)
+                input[count] = input[count + 1];
+
+              cursor--;
+
+          }
+
+          // The absence of a break statement is intentional
+
+        case SDL_KEYUP:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.key.keysym.sym == keys[count].key)
+              keys[count].state = event.key.state;
+
+          break;
+
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.jbutton.button == buttons[count].button)
+              buttons[count].state = event.jbutton.state;
+
+          break;
+
+        case SDL_JOYAXISMOTION:
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.jaxis.axis == axes[count].axis) {
+
+              if (!axes[count].direction && (event.jaxis.value < -16384))
+                axes[count].state = SDL_PRESSED;
+
+              else if (axes[count].direction && (event.jaxis.value > 16384))
+                axes[count].state = SDL_PRESSED;
+
+              else axes[count].state = SDL_RELEASED;
+
+            }
+
+        break;
+
+#ifndef FULLSCREEN_ONLY
+        case SDL_VIDEORESIZE:
+
+          screenW = event.resize.w;
+          screenH = event.resize.h;
+          if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
+          else bgScale = ((screenH - 34) / 100) + 1;
+          screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                    SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                    SDL_HWSURFACE | SDL_HWPALETTE  );
+
+          // The absence of a break statement is intentional
+
+        case SDL_VIDEOEXPOSE:
+
+          SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+          SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+          break;
+#endif
+
+        case SDL_QUIT:
+
+          return QUIT;
+
+      }
+
+    }
+
+    // Apply controls to universal control tracking
+    for (count = 0; count < CONTROLS; count++) {
+
+      if ((keys[count].state == SDL_PRESSED) ||
+          (buttons[count].state == SDL_PRESSED) || 
+          (axes[count].state == SDL_PRESSED)      ) {
+
+        if (controls[count].time < SDL_GetTicks())
+          controls[count].state = SDL_PRESSED;
+
+      } else {
+
+        controls[count].time = 0;
+        controls[count].state = SDL_RELEASED;
+
+      }
+
+    }
+
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 15);
+
+    // Draw the prompt
+    showString(request, 32, (screenH / 2) - 16, fontmn2);
+
+    // Draw the section of the text before the cursor
+    scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+    terminate = input[cursor];
+    input[cursor] = 0;
+    dst.x = showString(input, 40, screenH / 2, fontmn2);
+
+    // Draw the cursor
+    dst.w = 8;
+    dst.h = 2;
+    dst.y = (screenH / 2) + 10;
+    SDL_FillRect(screen, &dst, 79);
+
+    // Draw the section of text after the cursor
+    input[cursor] = terminate;
+    showString(input + cursor, dst.x, screenH / 2, fontmn2);
+    restorePalette(fontmn2->pixels);
+
+
+    if (controls[C_LEFT].state == SDL_PRESSED) {
+
+      releaseControl(C_LEFT);
+
+      if (cursor > 0) cursor--;
+
+    }
+
+    if (controls[C_RIGHT].state == SDL_PRESSED) {
+
+      releaseControl(C_RIGHT);
+
+      if (cursor < strlen(input)) cursor++;
+
+    }
+
+    if (controls[C_ENTER].state == SDL_PRESSED) {
+
+      releaseControl(C_ENTER);
+
+      *text = input;
+
+      return SUCCESS;
+
+    }
+
+  }
+
+  return SUCCESS;
+
+}
+
+
 int newGameDifficultyMenuLoop (void) {
 
   char *options[4] = {"EASY", "MEDIUM", "HARD", "TURBO"};
@@ -236,10 +454,10 @@ int newGameDifficultyMenuLoop (void) {
       // Create the player
       nPlayers = 1;
       players = malloc(sizeof(player) * nPlayers);
-      localPlayer = players + 0;
+      localPlayer = players;
 
       // Set the player's defaults
-      localPlayer->name = "Jazz";
+      localPlayer->name = localPlayerName;
       localPlayer->score = 0;
       localPlayer->lives = 3;
       localPlayer->ammoType = -1;
@@ -346,8 +564,6 @@ int newGameLevelMenuLoop (void) {
     if (controls[C_ENTER].state == SDL_PRESSED) {
 
       releaseControl(C_ENTER);
-
-      restorePalette(fontmn2->pixels);
 
       free(nextLevel);
       nextLevel = malloc(11);
@@ -529,6 +745,225 @@ int loadGameMenuLoop (void) {
 }
 
 
+int setupCharacterMenuLoop (void) {
+
+  char *options[1] = {"NAME"};
+  char *result;
+  int option, count;
+
+  option = 0;
+
+  while (1) {
+
+    if (loop() == QUIT) return QUIT;
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
+
+    for (count = 0; count < 1; count++) {
+
+      if (count == option)
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == option)
+        restorePalette(fontmn2->pixels);
+
+    }
+
+    if (controls[C_UP].state == SDL_PRESSED) {
+
+      releaseControl(C_UP);
+
+      option = (option + 1) % 1;
+
+    }
+
+    if (controls[C_DOWN].state == SDL_PRESSED) {
+
+      releaseControl(C_DOWN);
+
+      option = (option + 1) % 1;
+
+    }
+
+    if (controls[C_ENTER].state == SDL_PRESSED) {
+
+      releaseControl(C_ENTER);
+
+      switch (option) {
+
+        case 0:
+
+          result = localPlayerName;
+          textInputMenuLoop("CHARACTER NAME:", &result);
+
+          if (result != localPlayerName) {
+
+            free(localPlayerName);
+            localPlayerName = result;
+
+          }
+
+          break;
+
+      }
+
+    }
+
+  }
+
+  return SUCCESS;
+
+}
+
+
+int setupKeyboardMenuLoop (void) {
+
+  char *options[7] = {"UP",
+                      "DOWN",
+                      "LEFT",
+                      "RIGHT",
+                      "JUMP",
+                      "FIRE",
+                      "WEAPON"};
+  SDL_Event event;
+  int progress, count, used;
+
+  progress = 0;
+
+  while (1) {
+
+    update();
+
+
+    // Process system events
+    while (SDL_PollEvent(&event)) {
+
+      switch (event.type) {
+
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+
+          used = 0;
+
+          for (count = 0; count < CONTROLS; count++)
+            if (event.key.keysym.sym == keys[count].key) {
+
+              keys[count].state = event.key.state;
+              if (count != progress) used = 1;
+
+            }
+
+          if (!used) {
+
+            keys[progress].key = event.key.keysym.sym;
+            progress++;
+
+            if (progress == 7) return SUCCESS;
+
+          }
+
+          break;
+
+#ifndef FULLSCREEN_ONLY
+        case SDL_VIDEORESIZE:
+
+          screenW = event.resize.w;
+          screenH = event.resize.h;
+          if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
+          else bgScale = ((screenH - 34) / 100) + 1;
+          screen = SDL_SetVideoMode(screenW, screenH, 8,
+                                    SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                    SDL_HWSURFACE | SDL_HWPALETTE  );
+
+          // The absence of a break statement is intentional
+
+        case SDL_VIDEOEXPOSE:
+
+          SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+          SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+          break;
+#endif
+
+        case SDL_QUIT:
+
+          return QUIT;
+
+      }
+
+    }
+
+    // Apply controls to universal control tracking
+    for (count = 0; count < CONTROLS; count++) {
+
+      if ((keys[count].state == SDL_PRESSED) ||
+          (buttons[count].state == SDL_PRESSED) || 
+          (axes[count].state == SDL_PRESSED)      ) {
+
+        if (controls[count].time < SDL_GetTicks())
+          controls[count].state = SDL_PRESSED;
+
+      } else {
+
+        controls[count].time = 0;
+        controls[count].state = SDL_RELEASED;
+
+      }
+
+    }
+
+
+    if (controls[C_ESCAPE].state == SDL_PRESSED) {
+
+      releaseControl(C_ESCAPE);
+
+      return SUCCESS;
+
+    }
+
+    SDL_FillRect(screen, NULL, 0);
+
+    for (count = 0; count < 7; count++) {
+
+      if (count < progress)
+        showString("OKAY", (screenW >> 2) + 176,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      else if (count == progress)
+        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
+
+      showString(options[count], screenW >> 2,
+                 (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+      if (count == progress) {
+
+        showString("PRESS KEY", (screenW >> 2) + 112,
+                   (screenH >> 1) + (count << 4) - 32, fontmn2);
+
+        restorePalette(fontmn2->pixels);
+
+      }
+
+    }
+
+  }
+
+  return SUCCESS;
+
+}
+
+
 int setupJoystickMenuLoop (void) {
 
   char *options[7] = {"UP",
@@ -545,9 +980,11 @@ int setupJoystickMenuLoop (void) {
 
   while (1) {
 
-    while (SDL_PollEvent(&event)) {
+    update();
 
-      used = 0;
+
+    // Process system events
+    while (SDL_PollEvent(&event)) {
 
       switch (event.type) {
 
@@ -562,6 +999,8 @@ int setupJoystickMenuLoop (void) {
 
         case SDL_JOYBUTTONDOWN:
         case SDL_JOYBUTTONUP:
+
+          used = 0;
 
           for (count = 0; count < CONTROLS; count++)
             if (event.jbutton.button == buttons[count].button) {
@@ -582,6 +1021,8 @@ int setupJoystickMenuLoop (void) {
           break;
 
         case SDL_JOYAXISMOTION:
+
+          used = 0;
 
           for (count = 0; count < CONTROLS; count++)
             if (event.jaxis.axis == axes[count].axis) {
@@ -695,143 +1136,6 @@ int setupJoystickMenuLoop (void) {
       }
 
     }
-
-    SDL_Flip(screen);
-
-  }
-
-  return SUCCESS;
-
-}
-
-
-int setupKeyboardMenuLoop (void) {
-
-  char *options[7] = {"UP",
-                      "DOWN",
-                      "LEFT",
-                      "RIGHT",
-                      "JUMP",
-                      "FIRE",
-                      "WEAPON"};
-  SDL_Event event;
-  int progress, count, used;
-
-  progress = 0;
-
-  while (1) {
-
-    while (SDL_PollEvent(&event)) {
-
-      used = 0;
-
-      switch (event.type) {
-
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-
-          for (count = 0; count < CONTROLS; count++)
-            if (event.key.keysym.sym == keys[count].key) {
-
-              keys[count].state = event.key.state;
-              if (count != progress) used = 1;
-
-            }
-
-          if (!used) {
-
-            keys[progress].key = event.key.keysym.sym;
-            progress++;
-
-            if (progress == 7) return SUCCESS;
-
-          }
-
-          break;
-
-#ifndef FULLSCREEN_ONLY
-        case SDL_VIDEORESIZE:
-
-          screenW = event.resize.w;
-          screenH = event.resize.h;
-          if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
-          else bgScale = ((screenH - 34) / 100) + 1;
-          screen = SDL_SetVideoMode(screenW, screenH, 8,
-                                    SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                    SDL_HWSURFACE | SDL_HWPALETTE  );
-
-          // The absence of a break statement is intentional
-
-        case SDL_VIDEOEXPOSE:
-
-          SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-          SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
-          break;
-#endif
-
-        case SDL_QUIT:
-
-          return QUIT;
-
-      }
-
-    }
-
-    // Apply controls to universal control tracking
-    for (count = 0; count < CONTROLS; count++) {
-
-      if ((keys[count].state == SDL_PRESSED) ||
-          (buttons[count].state == SDL_PRESSED) || 
-          (axes[count].state == SDL_PRESSED)      ) {
-
-        if (controls[count].time < SDL_GetTicks())
-          controls[count].state = SDL_PRESSED;
-
-      } else {
-
-        controls[count].time = 0;
-        controls[count].state = SDL_RELEASED;
-
-      }
-
-    }
-
-
-    if (controls[C_ESCAPE].state == SDL_PRESSED) {
-
-      releaseControl(C_ESCAPE);
-
-      return SUCCESS;
-
-    }
-
-    SDL_FillRect(screen, NULL, 0);
-
-    for (count = 0; count < 7; count++) {
-
-      if (count < progress)
-        showString("OKAY", (screenW >> 2) + 176,
-                   (screenH >> 1) + (count << 4) - 32, fontmn2);
-
-      else if (count == progress)
-        scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
-
-      showString(options[count], screenW >> 2,
-                 (screenH >> 1) + (count << 4) - 32, fontmn2);
-
-      if (count == progress) {
-
-        showString("PRESS KEY", (screenW >> 2) + 112,
-                   (screenH >> 1) + (count << 4) - 32, fontmn2);
-
-        restorePalette(fontmn2->pixels);
-
-      }
-
-    }
-
-    SDL_Flip(screen);
 
   }
 
@@ -1036,8 +1340,9 @@ int setupResolutionMenuLoop (void) {
 
 int setupMenuLoop (void) {
 
-  char *options[3] = {"JOYSTICK",
+  char *options[4] = {"CHARACTER",
                       "KEYBOARD",
+                      "JOYSTICK",
                       "RESOLUTION"};
   int option, count;
 
@@ -1059,7 +1364,7 @@ int setupMenuLoop (void) {
 
     SDL_FillRect(screen, NULL, 0);
 
-    for (count = 0; count < 3; count++) {
+    for (count = 0; count < 4; count++) {
 
       if (count == option)
         scalePalette(fontmn2->pixels, F2, (-240 * 2) + 114);
@@ -1076,7 +1381,7 @@ int setupMenuLoop (void) {
 
       releaseControl(C_UP);
 
-      option = (option + 2) % 3;
+      option = (option + 3) % 4;
 
     }
 
@@ -1084,7 +1389,7 @@ int setupMenuLoop (void) {
 
       releaseControl(C_DOWN);
 
-      option = (option + 1) % 3;
+      option = (option + 1) % 4;
 
     }
 
@@ -1096,7 +1401,7 @@ int setupMenuLoop (void) {
 
         case 0:
 
-          setupJoystickMenuLoop();
+          setupCharacterMenuLoop();
 
           break;
 
@@ -1107,6 +1412,12 @@ int setupMenuLoop (void) {
           break;
 
         case 2:
+
+          setupJoystickMenuLoop();
+
+          break;
+
+        case 3:
 
           setupResolutionMenuLoop();
 
