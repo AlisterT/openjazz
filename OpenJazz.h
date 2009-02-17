@@ -2,12 +2,13 @@
 /*
  *
  * OpenJazz.h
+ *
  * Created on the 23rd of August 2005
  *
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005 Alister Thomson
+ * Copyright (c) 2005-2009 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -19,7 +20,6 @@
  */
 
 
-#include <stdlib.h>
 #include <SDL/SDL.h>
 
 #ifndef Extern
@@ -40,32 +40,19 @@
 #define F1   1024
 #define F2   2048
 #define F4   4096
-#define F6   6144
 #define F8   8192
 #define F10  10240
 #define F12  12288
 #define F16  16384
-#define F19  19456
 #define F20  20480
 #define F24  24576
-#define F26  26624
-#define F30  30720
 #define F32  32768
 #define F36  36864
 #define F40  40960
 #define F64  65536
 #define F100 102400
 #define F160 163840
-#define F256 262144
 
-// Types of palette effect
-#define PE_FADE   0 /* Fades to black, then remains black */
-#define PE_ROTATE 1 /* Cyclical colour animation */
-#define PE_SKY    2 /* Transfers the appropriate section of the background
-                       palette to the main palette */
-#define PE_1D     3 /* Diagonal lines parallaxing background */
-#define PE_2D     4 /* Real parallaxing background */
-#define PE_WATER  5 /* After a threshold, fades to black, then remains black */
 
 // Indexes for the keys / buttons / axes player controls arrays
 #define C_UP      0
@@ -86,88 +73,63 @@
 #define STRING_LENGTH 32
 
 // Return values
-#define SUCCESS  0
-#define FAILURE  1
 #define QUIT    -1 /* Only loop() and functions which call loop() can return
                       this */
+#define SUCCESS  0
+#define FAILURE  1
+#define WON      2
+#define LOST     3
 
 
 
-// Datatypes
+// Datatype
 
 typedef int fixed;
 
-typedef struct _paletteEffect paletteEffect;
 
-struct _paletteEffect {
+// Includes
 
-  paletteEffect *next;     // Next effect to use
-  unsigned char  first;    // The first palette index affected by the effect
-  unsigned char  amount;   /* The number of (consecutive) palette indices
-                              affected by the effect */
-  unsigned char  type;     /* Type of effect, see PE constants */
-  fixed          speed;    /* When type is:
-                              PE_FADE - Number of seconds the fade lasts
-                              PE_ROTATE - Rotations per second
-                              PE_SKY - Relative Y speed - as in Jazz 2
-                              PE_1D - Relative X & Y speed - as in Jazz 2
-                              PE_2D - Relative X & Y speed - as in Jazz 2
-                              PE_WATER - Number of pixels between water surface
-                                         and total darkness
-                             */
-  fixed          position; /* When type is:
-                              PE_FADE - Brightness of palette in 0-1 range
-                              PE_ROTATE - Number of colours rotated
-                              PE_SKY - Position taken from player's viewport
-                                       coordinates, in pixels
-                              PE_1D, PE_2D - Position taken from player's
-                                             viewport coordinates as short ints
-                                             (in pixels), then packed into the
-                                             fixed's 4 bytes
-                              PE_WATER - Position of the water surface in pixels
-                              */
-
-};
-
-
-typedef struct {
-
-  SDL_Surface   *pixels;
-  unsigned char *w;
-  unsigned char  h; // Dimensions of the letters
-  char           map[128]; // Maps ASCII values to letter positions
-
-} font;
+#include "bonus.h"
+#include "file.h"
+#include "font.h"
+#include "palette.h"
+#include "player.h"
+#include "planet.h"
+#include "scene.h"
+#include "events.h"
+#include "bullet.h"
+#include "level.h"
+#include "menu.h"
 
 
 // Variables
 
 Extern struct {
 
-  SDLKey key; // Keyboard key
-  Uint8  state;
+	SDLKey key; // Keyboard key
+	Uint8  state;
 
 } keys[CONTROLS];
 
 Extern struct {
 
-  int    button; // Joystick button
-  Uint8  state;
+	int    button; // Joystick button
+	Uint8  state;
 
 } buttons[CONTROLS];
 
 Extern struct {
 
-  int    axis; // Joystick axis
-  int    direction; // Axis direction
-  Uint8  state;
+	int    axis; // Joystick axis
+	int    direction; // Axis direction
+	Uint8  state;
 
 } axes[CONTROLS];
 
 Extern struct {
 
-  int   time; // The time from which the control will respond to being pressed
-  Uint8 state;
+	int   time; // The time from which the control will respond to being pressed
+	Uint8 state;
 
 } controls[CONTROLS];
 
@@ -176,100 +138,67 @@ Extern char *path; // Path to game data
 Extern SDL_Surface *panel;
 Extern SDL_Surface *panelAmmo[5];
 
-Extern font *font2;         /* Taken from .0FN file name */
-Extern font *fontbig;       /* Taken from .0FN file name */
-Extern font *fontiny;       /* Taken from .0FN file name */
-Extern font *fontmn1;       /* Taken from .0FN file name */
-Extern font *fontmn2;       /* Taken from .0FN file name */
-Extern font panelBigFont;   /* Not a font file, found in PANEL.000 */
-Extern font panelSmallFont; /* Not a font file, found in PANEL.000 */
+Extern Font *font2;         /* Taken from .0FN file name */
+Extern Font *fontbig;       /* Taken from .0FN file name */
+Extern Font *fontiny;       /* Taken from .0FN file name */
+Extern Font *fontmn1;       /* Taken from .0FN file name */
+Extern Font *fontmn2;       /* Taken from .0FN file name */
+Extern Font *panelBigFont;   /* Not a font file, found in PANEL.000 */
+Extern Font *panelSmallFont; /* Not a font file, found in PANEL.000 */
 
-Extern paletteEffect *firstPE;
-Extern int            bgScale;
 
-Extern SDL_Surface *screen;
-Extern SDL_Color   *currentPalette;
-Extern SDL_Color    logicalPalette[255];
-Extern int          screenW, screenH;
+Extern PaletteEffect *firstPE;
+Extern SDL_Surface   *screen;
+Extern SDL_Color     *currentPalette;
+Extern SDL_Color      logicalPalette[256];
+Extern int            screenW, screenH;
 #ifndef FULLSCREEN_ONLY
-Extern int          fullscreen;
+Extern bool           fullscreen;
 #endif
-Extern float        fps;
-Extern int          mspf;
+Extern int            mspf;
 
-Extern char          *currentLevel, *nextLevel;
-Extern int            level, world;
-Extern unsigned char  difficulty;
-Extern SDL_Color      skyPalette[255];
+Extern Menu *menuInst;
 
 Extern char *localPlayerName;
 
+Extern Player *players;
+Extern int     nPlayers;
 
-// Function in bonus.c
-
-Extern int runBonus (char * fn);
-
-
-// Functions in font.c
-
-Extern int  showString (char * s, int x, int y, font * f);
-Extern void showNumber (int n, int x, int y, font * f);
+Extern Level *levelInst;
 
 
-// Function in level.c
+// Functions in main.cpp
 
-Extern int runLevel (char * fn);
-
-
-// Functions in main.c
-
-Extern void releaseControl     (int control);
-Extern void update             (void);
-Extern int  loop               (void);
+Extern void releaseControl (int control);
+Extern void update         ();
+Extern int  loop           ();
 
 
-// Functions in menu.c
+// Functions in palette.cpp
 
-Extern int runMenu       (void);
-Extern int setupMenuLoop (void);
-
-
-// Function in planet.c
-
-Extern int runPlanet (char * fn);
+Extern void usePalette     (SDL_Color *palette);
+Extern void scalePalette   (SDL_Surface *surface, fixed scale,
+                            signed int offset);
+Extern void restorePalette (SDL_Surface *surface);
 
 
-// Function in scene.c
+// Functions in sound.cpp
 
-Extern int runScene (char * fn);
+Extern void openAudio  ();
+Extern void closeAudio ();
+Extern void playMusic  (char * fn);
+Extern void stopMusic  ();
+extern int  loadSounds (char * fn);
+extern void freeSounds ();
+Extern void playSound  (int sound);
 
 
-// Functions in sound.c
+// Functions in util.cpp
 
-Extern int  loadMusic (char * fn);
-Extern void freeMusic (void);
-Extern void playSound (int sound);
-
-
-// Functions in util.c
-
-Extern FILE             * fopenFromPath      (char * fileName);
-Extern int                fileExists         (char * fileName);
-Extern signed long int    loadInt            (FILE *f);
-Extern void               storeInt           (signed long int val, FILE *f);
-Extern unsigned char    * loadRLE            (FILE * f, int size);
-Extern void               skipRLE            (FILE * f);
-Extern char             * loadString         (FILE * f);
-Extern SDL_Surface      * createSurface      (unsigned char * pixels, int width,
-                                              int height);
-Extern SDL_Surface      * createBlankSurface (void);
-#define loadSurface(file, width, height) \
-  createSurface(loadRLE(file, (width) * (height)), width, height)
-Extern void               loadPalette        (SDL_Color *palette, FILE *f);
-Extern void               usePalette         (SDL_Color *palette);
-Extern void               scalePalette       (SDL_Surface *surface, fixed scale,
-                                              signed int offset);
-Extern void               restorePalette     (SDL_Surface *surface);
+Extern int           fileExists         (char * fileName);
+Extern SDL_Surface * createSurface      (unsigned char * pixels, int width,
+                                         int height);
+Extern SDL_Surface * createBlankSurface ();
 
 
 

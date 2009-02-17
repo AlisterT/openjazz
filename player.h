@@ -2,12 +2,13 @@
 /*
  *
  * player.h
- * Created on the 31st of January 2006
+ *
+ * Created on the 31st of January 2006 from parts of OpenJazz.h
  *
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2006 Alister Thomson
+ * Copyright (c) 2005-2009 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -22,13 +23,6 @@
 /* "Tile" is a flexible term. Here it is used to refer specifically to the
    individual elements of the tile set.
    "Tiles" in the context of level units are referred to as grid elements. */
-
-
-#include "OpenJazz.h"
-
-#ifndef Lextern
-  #define Lextern extern
-#endif
 
 
 // Constants
@@ -84,57 +78,124 @@
 #define PR_INVINCIBLE 3
 #define PR_WON        4
 
+// Player reaction times
+#define PRT_NONE       0
+#define PRT_HURT       1000
+#define PRT_KILLED     2000
+#define PRT_INVINCIBLE 10000
+#define PRT_WON        6000
+
+// Player offsets
+#define PXO_L   (F16 - F10)
+#define PXO_ML  F12
+#define PXO_MID F16
+#define PXO_MR  F20
+#define PXO_R   (F16 + F10)
+#define PYO_TOP (-F20)
+#define PYO_MID (-F10)
+
 // Player speeds
-#define PS_WALK (300 * F1)
-#define PS_RUN  (325 * F1)
-#define PS_FALL (350 * F1)
-#define PS_JUMP (-350 * F1)
+#define PXS_WALK (300 * F1)
+#define PXS_RUN  (325 * F1)
+#define PYS_FALL (350 * F1)
+#define PYS_SINK (150 * F1)
+#define PYS_JUMP (-350 * F1)
+
+// Player accelerations
+#define PXA_REVERSE 600
+#define PXA_STOP    1000
+#define PXA_WALK    300
+#define PXA_RUN     200
+#define PYA_GRAVITY 2750
+#define PYA_SINK    1000
+
 
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
 #define PCONTROLS   7 /* Number of player controls. */
 
 
-// Datatype
+// Class
 
-typedef struct {
+class Player {
 
-    char  *name;
-    char   anims[PANIMS];
-    int    anim;
-    int    facing;
-    fixed  viewX, viewY;
-    int    viewW, viewH;
-    fixed  x, y;
-    fixed  dx, dy;
-    int    jumpHeight;
-    int    jumpY;
-    int    score;
-    int    energy;
-    fixed  energyBar;
-    int    lives;
-    int    reaction;
-    int    reactionTime;
-    int    ammo[4];
-    int    ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer
-                       3 = TNT */
-    int    shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange,
-                     4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-    int    floating; // 0 = normal, 1 = boarding/birding/whatever
-    int    event; // Indexes the event set (spring, float up, belt, platform)
-    Uint8  controls[PCONTROLS];
-    int    fireSpeed;
-    int    fireTime;
-    int    lookTime; /* Negative if looking up, positive if looking down, 0 if
-                        neither */
+	private:
+		char         *name;
+		signed char  *event;    /* A member of the event set (spring, float up,
+			belt, platform) */
+		char          anims[PANIMS];
+		bool          pcontrols[PCONTROLS];
+		int           ammo[4];
+		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles,
+			2 = bouncer 3 = TNT */
+		int           score;
+		int           energy;
+		fixed         energyBar;
+		int           lives;
+		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow,
+			3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
+		bool          floating; // false = normal, true = boarding/bird/etc.
+		bool          facing;
+		int           lookTime; /* Negative if looking up, positive if looking
+			down, 0 if neither */
+		int           reaction;
+		int           reactionTime;
+		int           fireSpeed;
+		int           fireTime;
+		fixed         jumpHeight;
+		int           jumpY;
+		fixed         x, y, dx, dy;
+		unsigned char checkX, checkY;
 
-} player;
+	public:
+		fixed viewX, viewY;
+		int   viewW, viewH;
+		int   enemies, items;
 
+		Player               ();
+		~Player              ();
 
-// Variables
+		void   setAnim       (int index, char anim);
+		void   setName       (char * playerName);
+		char * getName       ();
+		void   reset         ();
+		void   setCheckpoint (unsigned char newX, unsigned char newY);
+		void   setControl    (int control, bool state);
+		void   addScore      (int addedScore);
+		int    getScore      ();
+		void   addCarrot     ();
+		void   hit           (int ticks);
+		int    getEnergy     ();
+		int    getEnergyBar  ();
+		void   addLife       ();
+		void   kill          (int ticks);
+		int    getLives      ();
+		void   addAmmo       (int type, int amount);
+		void   changeAmmo    ();
+		void   fire          (int ticks);
+		int    getAmmo       (bool amount);
+		void   addRapidFire  ();
+		void   addFeet       ();
+		void   addStar       (int ticks);
+		void   addShield     (bool four);
+		void   win           (int ticks);
+		fixed  getX          ();
+		fixed  getY          ();
+		bool   isIn          (fixed left, fixed top, fixed width, fixed height);
+		void   setPosition   (fixed newX, fixed newY);
+		void   setSpeed      (fixed newDx, fixed newDy);
+		void   setFloating   (bool newFloating);
+		bool   getFacing     ();
+		void   floatUp       (signed char *newEvent);
+		void   belt          (int speed);
+		void   setEvent      (signed char *newEvent);
+		void   clearEvent    (signed char *newEvent, unsigned char property);
+		void   control       (int ticks);
+		void   move          (int ticks);
+		void   view          (int ticks);
+		void   draw          (int ticks);
+		int    reacted       (int ticks);
 
-Lextern player *players;
-Lextern int     nPlayers;
-Lextern player *localPlayer;
+};
 
 
