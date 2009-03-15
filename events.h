@@ -50,6 +50,15 @@
 #define E_LSHOOTANIM   30
 #define E_RSHOOTANIM   31
 
+// Delays
+#define T_FLASH  100
+#define T_FINISH 200
+#define T_WARP   1000
+
+// Speed factors
+#define ES_SLOW 80
+#define ES_FAST 240
+
 
 // Class
 
@@ -67,6 +76,7 @@ class Event {
 		Event                   (unsigned char gX, unsigned char gY,
 			Event *nextEvent);
 		~Event                  ();
+
 		Event *     getNext     ();
 		void        removeNext  ();
 		bool        isFrom      (unsigned char gX, unsigned char gY);

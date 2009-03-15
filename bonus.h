@@ -27,6 +27,7 @@ class Bonus {
 	public:
 		Bonus   (char * fn);
 		~Bonus  ();
+
 		int run ();
 
 };

@@ -22,8 +22,9 @@
 
 #include <SDL/SDL.h>
 
+
 #ifndef Extern
-  #define Extern extern
+	#define Extern extern
 #endif
 
 /* "Tile" is a flexible term. Here it is used to refer specifically to the
@@ -49,10 +50,15 @@
 #define F32  32768
 #define F36  36864
 #define F40  40960
+#define F80  81920
 #define F64  65536
 #define F100 102400
 #define F160 163840
 
+// File names
+#define CONFIG_FILE "openjazz.cfg"
+#define LOGO_FILE   "openjazz.000"
+#define LEVEL_FILE  "openjazz.tmp"
 
 // Indexes for the keys / buttons / axes player controls arrays
 #define C_UP      0
@@ -73,13 +79,27 @@
 #define STRING_LENGTH 32
 
 // Return values
-#define QUIT    -1 /* Only loop() and functions which call loop() can return
-                      this */
-#define SUCCESS  0
-#define FAILURE  1
-#define WON      2
-#define LOST     3
+#define E_DATA      -14
+#define E_VERSION   -13
+#define E_TIMEOUT   -12
+#define E_S_OTHER   -11
+#define E_S_CONNECT -10
+#define E_S_ADDRESS -9
+#define E_S_LISTEN  -8
+#define E_S_BIND    -7
+#define E_S_SOCKET  -6
+#define E_DEMOTYPE  -5
+#define E_FILE      -4
+#define E_VIDEO     -3
+#define E_UNUSED    -2
+#define E_QUIT      -1
+#define E_NONE       0
+#define WON          1
+#define LOST         2
 
+// Time intervals
+#define T_FRAME 20
+#define T_KEY   500
 
 
 // Datatype
@@ -93,13 +113,25 @@ typedef int fixed;
 #include "file.h"
 #include "font.h"
 #include "palette.h"
+#include "bird.h"
 #include "player.h"
 #include "planet.h"
 #include "scene.h"
 #include "events.h"
 #include "bullet.h"
+#include "game.h"
 #include "level.h"
 #include "menu.h"
+
+
+// Defaults
+#define NET_ADDRESS "192.168.0.1"
+#define NET_PORT    10052
+#define CHAR_NAME   "jazz"
+#define CHAR_FUR    PC_LGREEN
+#define CHAR_BAND   PC_RED
+#define CHAR_GUN    PC_BLUE
+#define CHAR_WBAND  PC_ORANGE
 
 
 // Variables
@@ -128,43 +160,54 @@ Extern struct {
 
 Extern struct {
 
-	int   time; // The time from which the control will respond to being pressed
-	Uint8 state;
+	int  time; // The time from which the control will respond to being pressed
+	bool state;
 
 } controls[CONTROLS];
 
-Extern char *path; // Path to game data
 
+// Path to game data
+Extern char *path;
+
+// Panel
 Extern SDL_Surface *panel;
 Extern SDL_Surface *panelAmmo[5];
 
-Extern Font *font2;         /* Taken from .0FN file name */
-Extern Font *fontbig;       /* Taken from .0FN file name */
-Extern Font *fontiny;       /* Taken from .0FN file name */
-Extern Font *fontmn1;       /* Taken from .0FN file name */
-Extern Font *fontmn2;       /* Taken from .0FN file name */
+// Fonts
+Extern Font *font2;          /* Taken from .0FN file name */
+Extern Font *fontbig;        /* Taken from .0FN file name */
+Extern Font *fontiny;        /* Taken from .0FN file name */
+Extern Font *fontmn1;        /* Taken from .0FN file name */
+Extern Font *fontmn2;        /* Taken from .0FN file name */
 Extern Font *panelBigFont;   /* Not a font file, found in PANEL.000 */
 Extern Font *panelSmallFont; /* Not a font file, found in PANEL.000 */
 
-
+// Graphics
 Extern PaletteEffect *firstPE;
 Extern SDL_Surface   *screen;
 Extern SDL_Color     *currentPalette;
 Extern SDL_Color      logicalPalette[256];
-Extern int            screenW, screenH;
+Extern fixed          viewX, viewY;
+Extern int            viewW, viewH, screenW, screenH;
 #ifndef FULLSCREEN_ONLY
 Extern bool           fullscreen;
 #endif
 Extern int            mspf;
 
-Extern Menu *menuInst;
+// Menu & gameplay
+Extern Menu          *menu;
+Extern Game          *game;
+Extern Player        *players;
+Extern Player        *localPlayer;
+Extern int            nPlayers;
+Extern Level         *level;
+Extern unsigned char  checkX, checkY;
 
-Extern char *localPlayerName;
+// Configuration data
+Extern char          *characterName;
+Extern unsigned char  characterCols[4];
+Extern char          *netAddress;
 
-Extern Player *players;
-Extern int     nPlayers;
-
-Extern Level *levelInst;
 
 
 // Functions in main.cpp
@@ -177,8 +220,8 @@ Extern int  loop           ();
 // Functions in palette.cpp
 
 Extern void usePalette     (SDL_Color *palette);
-Extern void scalePalette   (SDL_Surface *surface, fixed scale,
-                            signed int offset);
+Extern void mapPalette     (SDL_Surface *surface, int start, int length,
+	int newStart, int newLength);
 Extern void restorePalette (SDL_Surface *surface);
 
 
@@ -186,19 +229,20 @@ Extern void restorePalette (SDL_Surface *surface);
 
 Extern void openAudio  ();
 Extern void closeAudio ();
-Extern void playMusic  (char * fn);
+Extern void playMusic  (char *fn);
 Extern void stopMusic  ();
-extern int  loadSounds (char * fn);
+extern int  loadSounds (char *fn);
 extern void freeSounds ();
 Extern void playSound  (int sound);
 
 
 // Functions in util.cpp
 
-Extern int           fileExists         (char * fileName);
-Extern SDL_Surface * createSurface      (unsigned char * pixels, int width,
+Extern bool          fileExists         (char *fileName);
+Extern SDL_Surface * createSurface      (unsigned char *pixels, int width,
                                          int height);
 Extern SDL_Surface * createBlankSurface ();
+Extern char        * cloneString        (char *string);
 
 
 

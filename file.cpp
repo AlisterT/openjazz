@@ -56,7 +56,7 @@ File::File (char * fileName, bool write) {
 
 		delete[] filePath;
 
-		throw FAILURE;
+		throw E_FILE;
 
 	}
 
@@ -180,7 +180,6 @@ unsigned char * File::loadBlock (int length) {
 
 	unsigned char *buffer;
 
-	// Allocate memory for the data
 	buffer = new unsigned char[length];
 
 	fread(buffer, 1, length, f);
@@ -195,12 +194,12 @@ unsigned char * File::loadRLE (int length) {
 	unsigned char *buffer;
 	int rle, pos, byte, count, next;
 
-	// Determine the byte that follows the block
+	// Determine the offset that follows the block
 	next = fgetc(f);
 	next += fgetc(f) << 8;
 	next += ftell(f);
 
-	// Allocate memory for the decompressed data
+
 	buffer = new unsigned char[length];
 
 	pos = 0;

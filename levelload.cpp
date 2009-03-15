@@ -44,7 +44,7 @@ int Level::loadSprites (char * fn) {
 
 	} catch (int e) {
 
-		return FAILURE;
+		return e;
 
 	}
 
@@ -58,7 +58,7 @@ int Level::loadSprites (char * fn) {
 
 		delete sf;
 
-		return FAILURE;
+		return e;
 
 	}
 
@@ -299,7 +299,7 @@ int Level::loadSprites (char * fn) {
 	spriteSet[sprites].x = 0;
 	spriteSet[sprites].y = 0;
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
@@ -318,13 +318,13 @@ int Level::loadTiles (char * fn) {
 
 	} catch (int e) {
 
-		return 0;
+		return e;
 
 	}
 
 
 	// Load the palette
-	f->loadPalette(levelPalette);
+	f->loadPalette(palette);
 
 
 	// Load the background palette
@@ -391,89 +391,13 @@ int Level::loadTiles (char * fn) {
 }
 
 
-void Level::createPEs (int bgType) {
-
-	switch (bgType) {
-
-		case 2:
-
-			// Sky background effect
-			bgPE = new PaletteEffect(PE_SKY, 156, 100, FH, NULL);
-
-			break;
-
-		case 8:
-
-			// Parallaxing background effect
-			bgPE = new PaletteEffect(PE_2D, 128, 64, FE, NULL);
-
-			break;
-
-		case 9:
-
-			// Diagonal stripes "parallaxing" background effect
-			bgPE = new PaletteEffect(PE_1D, 128, 32, FH, NULL);
-
-			break;
-
-		case 11:
-
-			// The deeper below water, the darker it gets
-			bgPE = new PaletteEffect(PE_WATER, 1, 250, F32 * 32, NULL);
-
-			break;
-
-		default:
-
-			// No effect, but bgPE must exist so here is a dummy animation
-			bgPE = new PaletteEffect(PE_ROTATE, 255, 1, F1, NULL);
-
-			break;
-
-	}
-
-	// Palette animations
-	// These are applied to every level without a conflicting background effect
-	// As a result, there are a few levels with things animated that shouldn't
-	// be
-
-	// In Diamondus: The red/yellow palette animation
-	firstPE = new PaletteEffect(PE_ROTATE, 112, 4, F32, bgPE);
-
-	// In Diamondus: The waterfall palette animation
-	firstPE = new PaletteEffect(PE_ROTATE, 116, 8, F16, firstPE);
-
-	// The following were discoverd by Unknown/Violet
-
-	firstPE = new PaletteEffect(PE_ROTATE, 124, 3, F16, firstPE);
-
-	if ((bgType != PE_1D) && (bgType != PE_2D))
-		firstPE = new PaletteEffect(PE_ROTATE, 132, 8, F16, firstPE);
-
-	if ((bgType != PE_SKY) && (bgType != PE_2D))
-		firstPE = new PaletteEffect(PE_ROTATE, 160, 32, -F16, firstPE);
-
-	if (bgType != PE_SKY) {
-
-		firstPE = new PaletteEffect(PE_ROTATE, 192, 32, F32, firstPE);
-		firstPE = new PaletteEffect(PE_ROTATE, 224, 16, F16, firstPE);
-
-	}
-
-	return;
-
-}
-
-
-Level::Level (char *fn, unsigned char diff, bool checkpoint) {
+void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	File *f;
 	unsigned char *buffer;
 	char *string, *ext;
-	unsigned char birdEvent[ELENGTH] = {0, 0, 0, 0, 8, 51, 52, 0, 0, 0, 7, 0,
-		30, 25, 1, 1, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 52};
-	unsigned char tiles;
-	int count, x, y;
+	int tiles;
+	int count, x, y, bgType;
 
 
 	difficulty = diff;
@@ -483,63 +407,75 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Open planet.### file
 
-	string = new char[11];
+	if (!strcmp(fn, LEVEL_FILE)) {
 
-	sprintf(string, "planet.%3s", fn + strlen(fn) - 3);
+		string = cloneString("DOWNLOADED");
 
-	try {
+	} else {
 
-		f = new File(string, false);
+		string = new char[11];
+		sprintf(string, "planet.%3s", fn + strlen(fn) - 3);
 
-	} catch (int e) {
+		try {
+
+			f = new File(string, false);
+
+		} catch (int e) {
+
+			delete[] string;
+
+			throw e;
+
+		}
 
 		delete[] string;
 
-		throw FAILURE;
+		f->seek(2, true);
+		string = f->loadString();
+
+		delete f;
 
 	}
 
-	delete[] string;
-
-	f->seek(2, true);
-	string = f->loadString();
-
-	for (count = 0; string[count]; count++) string[count] |= 32;
-
-
-	SDL_FillRect(screen, NULL, 0);
-	fontmn2->showString("loading", (screenW >> 1) - 96, (screenH >> 1) - 16);
-	fontmn2->showString(string, (screenW >> 1) - 16, (screenH >> 1) - 32);
-
-	delete[] string;
-
 	switch (fn[5]) {
 
-		case 48:
+		case '0':
 
-			string = "level one";
+			ext = " LEVEL ONE";
 
 			break;
 
-		case 49:
+		case '1':
 
-			string = "level two";
+			ext = " LEVEL TWO";
+
+			break;
+
+		case '2':
+
+			string[0] = 0;
+			ext = "SECRET LEVEL";
 
 			break;
 
 		default:
 
-			string = "secret level";
+			ext = " LEVEL";
 
 			break;
 
 	}
 
-	fontmn2->showString(string, (screenW >> 1) - 16, screenH >> 1);
+	SDL_FillRect(screen, NULL, 0);
+
+	x = (screenW >> 1) - ((strlen(string) + strlen(ext)) << 2);
+	x = fontmn2->showString("LOADING ", x - 60, (screenH >> 1) - 16);
+	x = fontmn2->showString(string, x, (screenH >> 1) - 16);
+	fontmn2->showString(ext, x, (screenH >> 1) - 16);
+
+	delete[] string;
 
 	update();
-
-	delete f;
 
 
 
@@ -551,76 +487,89 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 	} catch (int e) {
 
-		throw FAILURE;
+		throw e;
 
 	}
 
-	localPlayer = players;
 
 	// Load level data from a Level#.### file
 
 	// Load the blocks.### extension
-	// Thanks to Doubble Dutch for this bit
-	f->seek(f->getSize() - 6, true);
-	while (f->loadChar() != 3) f->seek(-2, false);
-	f->seek(-1, false);
-	ext = f->loadString();
-	worldNum = (ext[0] * 100) + (ext[1] * 10) + ext[0] - (4800 + 480 + 48);
 
+	// Skip past all level data
+	f->seek(39, true);
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->skipRLE();
+	f->seek(598, false);
+	f->skipRLE();
+	f->seek(4, false);
+	f->skipRLE();
+	f->skipRLE();
+	f->seek(25, false);
+	f->skipRLE();
+	f->seek(3, false);
 
-	// Get the level number from the file name
-	levelNum = fn[strlen(fn) - 5];
-	if (levelNum < 48 || levelNum > 57) levelNum = 0;
-	else levelNum -= 48;
+	// Load the level number
+	levelNum = f->loadChar() ^ 210;
 
-
-	// Allocate space for file names
-	string = new char[12];
+	// Load the world number
+	worldNum = f->loadChar() ^ 4;
 
 
 	// Load tile set from appropriate blocks.###
 	// Note: Lower case is required for Unix support
 
-	if (worldNum == 999) {
+	// Load tile set extension
+	f->seek(8, false);
+	ext = f->loadString();
 
+	if (!strcmp(ext, "999")) {
+
+		// Use the level file's extension instead
 		delete[] ext;
-
-		ext = fn + strlen(fn) - 3;
-		worldNum = (ext[0] * 100) + (ext[1] * 10) + ext[0];
-
-		sprintf(string, "blocks.%3s", ext);
-
-	} else {
-
-		sprintf(string, "blocks.%3s", ext);
-
-		delete[] ext;
+		ext = cloneString(fn + strlen(fn) - 3);
 
 	}
 
+	// Allocate space for file names
+	string = new char[12];
+
+	sprintf(string, "blocks.%3s", ext);
+
+	delete[] ext;
+
 	tiles = loadTiles(string);
 
-	if (!tiles) {
+	if (tiles < 0) {
 
 		delete[] string;
 		delete f;
 
-		throw FAILURE;
+		throw tiles;
 
 	}
 
 
 	// Load sprite set from corresponding Sprites.###
 	// Note: Lower case is required for Unix support
-	sprintf(string, "sprites.%3s", fn + strlen(fn) - 3);
 
-	if (loadSprites(string) == FAILURE) {
+	sprintf(string, "sprites.%03i", worldNum);
+
+	count = loadSprites(string);
+
+	if (count < 0) {
 
 		SDL_FreeSurface(tileSet);
 		delete[] string;
 		delete f;
 
-		throw FAILURE;
+		throw count;
 
 	}
 
@@ -719,11 +668,8 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 	buffer = f->loadRLE(EVENTS * ELENGTH);
 
-	// Set event 0
-	memset(eventSet[0], 0, ELENGTH);
-
 	// Fill event set with data
-	for (count = 1; count < EVENTS; count++) {
+	for (count = 0; count < EVENTS; count++) {
 
 		memcpy(eventSet[count], buffer + (count * ELENGTH), ELENGTH);
 		eventSet[count][E_MOVEMENTSP]++;
@@ -731,9 +677,6 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 	}
 
 	delete[] buffer;
-
-	// Create the bird
-	memcpy(eventSet[121], birdEvent, ELENGTH);
 
 
 	// Process grid
@@ -814,37 +757,26 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 	// 51 bytes of undiscovered usefulness, less the cutscene file name
 	f->seek(51 - strlen(sceneFile), false);
 
-	// Finally, some data I know how to use!
+	// The players' coordinates
+	if (!checkpoint) {
 
-	// First up, the player's coordinates
-	x = f->loadShort();
-	y = f->loadShort() + 1;
+		checkX = f->loadShort();
+		checkY = f->loadShort() + 1;
 
-	if (!checkpoint) localPlayer->setCheckpoint(x, y);
+	} else f->seek(4, false);
 
-	// Set the player's initial values
-	localPlayer->reset();
+	// Set the players' initial values
+	for (count = 0; count < nPlayers; count++) {
 
+		players[count].reset();
+		players[count].setPosition(checkX << 15, checkY << 15);
 
-	// Store fn, as it is about to become invalid
-	currentFile = new char[strlen(fn) + 1];
-	strcpy(currentFile, fn);
+	}
 
 	// Next level
 	x = f->loadChar();
 	y = f->loadChar();
-
-	if (x != 99) {
-
-		setNext(x, y);
-
-	} else {
-
-		string = new char[8];
-		sprintf(string, "endepis"); // Just like Jazz 2
-		menuInst->setNextLevel(string);
-
-	}
+	setNext(x, y);
 
 
 	// Thanks to Doubble Dutch for this next bit
@@ -862,16 +794,28 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 	// Load player's animation set references
 
 	buffer = f->loadRLE(PANIMS * 2);
+	string = new char[PANIMS + 3];
 
-	for (count = 0; count < PANIMS; count++)
-		localPlayer->setAnim(count, buffer[count << 1]);
+	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
 
+	for (x = 0; x < nPlayers; x++) players[x].setAnims(string + 3);
+
+	if (gameMode != M_SINGLE) {
+
+		string[0] = MTL_P_ANIMS;
+		string[1] = MT_P_ANIMS;
+		string[2] = 0;
+		game->send((unsigned char *)string);
+
+	}
+
+	delete[] string;
 	delete[] buffer;
 
 
 	// Now at "Section 16"
 
-	// Skip to "Section 17" - .atk
+	// Skip to bullet set
 	f->seek(4, false);
 
 
@@ -890,8 +834,80 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Now at "Section 19," THE MAGIC SECTION
 
-	// First byte should be the bg mode
-	createPEs(f->loadChar());
+	// First byte is the background palette effect type
+	bgType = f->loadChar();
+
+	sky = false;
+
+	switch (bgType) {
+
+		case 2:
+
+			sky = true;
+
+			// Sky background effect
+			bgPE = new SkyPaletteEffect(156, 100, FH, skyPalette, NULL);
+
+			break;
+
+		case 8:
+
+			// Parallaxing background effect
+			bgPE = new P2DPaletteEffect(128, 64, FE, NULL);
+
+			break;
+
+		case 9:
+
+			// Diagonal stripes "parallaxing" background effect
+			bgPE = new P1DPaletteEffect(128, 32, FH, NULL);
+
+			break;
+
+		case 11:
+
+			// The deeper below water, the darker it gets
+			bgPE = new WaterPaletteEffect(1, 250, F32 * 32, NULL);
+
+			break;
+
+		default:
+
+			// No effect, but bgPE must exist so here is a dummy animation
+			bgPE = new PaletteEffect(255, 1, F1, NULL);
+
+			break;
+
+	}
+
+	// Palette animations
+	// These are applied to every level without a conflicting background effect
+	// As a result, there are a few levels with things animated that shouldn't
+	// be
+
+	// In Diamondus: The red/yellow palette animation
+	firstPE = new RotatePaletteEffect(112, 4, F32, bgPE);
+
+	// In Diamondus: The waterfall palette animation
+	firstPE = new RotatePaletteEffect(116, 8, F16, firstPE);
+
+	// The following were discoverd by Unknown/Violet
+
+	firstPE = new RotatePaletteEffect(124, 3, F16, firstPE);
+
+	if ((bgType != PE_1D) && (bgType != PE_2D))
+		firstPE = new RotatePaletteEffect(132, 8, F16, firstPE);
+
+	if ((bgType != PE_SKY) && (bgType != PE_2D))
+		firstPE = new RotatePaletteEffect(160, 32, -F16, firstPE);
+
+	if (bgType != PE_SKY) {
+
+		firstPE = new RotatePaletteEffect(192, 32, F32, firstPE);
+		firstPE = new RotatePaletteEffect(224, 16, F16, firstPE);
+
+	}
+
 
 	f->seek(1, false);
 
@@ -905,10 +921,10 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Apply the palette to surfaces that already exist, e.g. fonts
-	usePalette(levelPalette);
+	usePalette(palette);
 
 	// Adjust fontmn1 to use level palette
-	fontmn1->scalePalette(-F2, (16 * -2) + 240);
+	fontmn1->mapPalette(224, 8, 14, -16);
 
 
 	// Set the tick at which the level will end
@@ -919,6 +935,36 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 	firstBullet = NULL;
 	firstEvent = NULL;
 
+
+	return;
+
+}
+
+
+Level::Level () {
+
+	// Do nothing
+
+	return;
+
+}
+
+
+Level::Level (char *fn, unsigned char diff, bool checkpoint) {
+
+	gameMode = game->getMode();
+
+	// Load level data
+
+	try {
+
+		load(fn, diff, checkpoint);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
 
 	return;
 
@@ -975,7 +1021,62 @@ Level::~Level () {
 
 	delete[] sceneFile;
 
-	delete[] currentFile;
+	return;
+
+}
+
+
+DemoLevel::DemoLevel (char *fn) {
+
+	File *f;
+	char levelFile[11];
+	int lNum, wNum, diff;
+
+	gameMode = M_SINGLE;
+
+	try {
+
+		f = new File(fn, false);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
+	// Check this is a normal level
+	if (f->loadShort() == 0) throw E_DEMOTYPE;
+
+	// Level file to load
+	lNum = f->loadShort();
+	wNum = f->loadShort();
+	sprintf(levelFile, "level%1i.%03i", lNum, wNum);
+
+	// Difficulty
+	diff = f->loadShort();
+
+	macro = f->loadBlock(1024);
+
+	// Load level data
+
+	try {
+
+		load(levelFile, diff, false);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
+	return;
+
+}
+
+
+DemoLevel::~DemoLevel () {
+
+	delete[] macro;
 
 	return;
 

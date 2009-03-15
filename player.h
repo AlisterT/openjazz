@@ -79,11 +79,14 @@
 #define PR_WON        4
 
 // Player reaction times
-#define PRT_NONE       0
 #define PRT_HURT       1000
+#define PRT_HURTANIM   200
 #define PRT_KILLED     2000
 #define PRT_INVINCIBLE 10000
-#define PRT_WON        6000
+#define PRT_WON        (6000 + (5 * 2 * 60 * 1000))
+
+// Other time periods
+#define T_FASTFEET 25000
 
 // Player offsets
 #define PXO_L   (F16 - F10)
@@ -95,20 +98,37 @@
 #define PYO_MID (-F10)
 
 // Player speeds
-#define PXS_WALK (300 * F1)
-#define PXS_RUN  (325 * F1)
-#define PYS_FALL (350 * F1)
-#define PYS_SINK (150 * F1)
-#define PYS_JUMP (-350 * F1)
+#define PXS_WALK  (300 * F1)
+#define PXS_RUN   (325 * F1)
+#define PXS_FFRUN (500 * F1)
+#define PYS_FALL  (350 * F1)
+#define PYS_SINK  (150 * F1)
+#define PYS_JUMP  (-350 * F1)
 
 // Player accelerations
-#define PXA_REVERSE 600
+#define PXA_REVERSE 900
 #define PXA_STOP    1000
-#define PXA_WALK    300
+#define PXA_WALK    500
 #define PXA_RUN     200
+#define PXA_FFRUN   200
 #define PYA_GRAVITY 2750
 #define PYA_SINK    1000
 
+// Player colours
+#define PC_WHITE     0
+#define PC_SGREEN    16
+#define PC_BLUE      23
+#define PC_RED       32
+#define PC_LGREEN    48
+#define PC_LEVEL1    64
+#define PC_YELLOW    75
+#define PC_LEVEL2    80
+#define PC_ORANGE    88
+#define PC_LEVEL3    96
+#define PC_LEVEL4    104
+#define PC_SANIM     112
+#define PC_LANIM     116
+#define PC_LEVEL5    124
 
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
@@ -120,11 +140,14 @@
 class Player {
 
 	private:
+		Bird         *bird;
 		char         *name;
 		signed char  *event;    /* A member of the event set (spring, float up,
 			belt, platform) */
 		char          anims[PANIMS];
 		bool          pcontrols[PCONTROLS];
+		SDL_Color     palette[256];
+		unsigned char cols[4];
 		int           ammo[4];
 		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles,
 			2 = bouncer 3 = TNT */
@@ -143,58 +166,63 @@ class Player {
 		int           fireSpeed;
 		int           fireTime;
 		fixed         jumpHeight;
-		int           jumpY;
+		fixed         jumpY;
+		int           fastFeetTime;
 		fixed         x, y, dx, dy;
-		unsigned char checkX, checkY;
+		int           enemies, items;
+		unsigned char team;
+
+		void setCheckpoint (unsigned char gridX, unsigned char gridY);
+		void addAmmo       (int type, int amount);
 
 	public:
-		fixed viewX, viewY;
-		int   viewW, viewH;
-		int   enemies, items;
+		int teamScore;
 
-		Player               ();
-		~Player              ();
+		Player                       ();
+		~Player                      ();
 
-		void   setAnim       (int index, char anim);
-		void   setName       (char * playerName);
-		char * getName       ();
-		void   reset         ();
-		void   setCheckpoint (unsigned char newX, unsigned char newY);
-		void   setControl    (int control, bool state);
-		void   addScore      (int addedScore);
-		int    getScore      ();
-		void   addCarrot     ();
-		void   hit           (int ticks);
-		int    getEnergy     ();
-		int    getEnergyBar  ();
-		void   addLife       ();
-		void   kill          (int ticks);
-		int    getLives      ();
-		void   addAmmo       (int type, int amount);
-		void   changeAmmo    ();
-		void   fire          (int ticks);
-		int    getAmmo       (bool amount);
-		void   addRapidFire  ();
-		void   addFeet       ();
-		void   addStar       (int ticks);
-		void   addShield     (bool four);
-		void   win           (int ticks);
-		fixed  getX          ();
-		fixed  getY          ();
-		bool   isIn          (fixed left, fixed top, fixed width, fixed height);
-		void   setPosition   (fixed newX, fixed newY);
-		void   setSpeed      (fixed newDx, fixed newDy);
-		void   setFloating   (bool newFloating);
-		bool   getFacing     ();
-		void   floatUp       (signed char *newEvent);
-		void   belt          (int speed);
-		void   setEvent      (signed char *newEvent);
-		void   clearEvent    (signed char *newEvent, unsigned char property);
-		void   control       (int ticks);
-		void   move          (int ticks);
-		void   view          (int ticks);
-		void   draw          (int ticks);
-		int    reacted       (int ticks);
+		void            init         (char *playerName, unsigned char *cols,
+			unsigned char newTeam);
+		void            deinit       ();
+		void            setAnims     (char *newAnims);
+		char *          getName      ();
+		unsigned char * getCols      ();
+		void            reset        ();
+		void            setControl   (int control, bool state);
+		void            shootEvent   (unsigned char gridX, unsigned char gridY,
+			int ticks);
+		bool            touchEvent   (unsigned char gridX, unsigned char gridY,
+			int ticks);
+		bool            hit          (int ticks);
+		void            kill         (int ticks);
+		void            addScore     (int addedScore);
+		int             getScore     ();
+		int             getEnergy    ();
+		int             getEnergyBar ();
+		int             getLives     ();
+		int             getAmmo      (bool amount);
+		int             getEnemies   ();
+		int             getItems     ();
+		fixed           getX         ();
+		fixed           getY         ();
+		bool            isIn         (fixed left, fixed top, fixed width,
+			fixed height);
+		void            setPosition  (fixed newX, fixed newY);
+		void            setSpeed     (fixed newDx, fixed newDy);
+		bool            getFacing    ();
+		unsigned char   getTeam      ();
+		void            floatUp      (signed char *newEvent);
+		void            belt         (int speed);
+		void            setEvent     (signed char *newEvent);
+		void            clearEvent   (signed char *newEvent,
+			unsigned char property);
+		void            send         (unsigned char *data);
+		void            receive      (unsigned char *buffer);
+		void            control      (int ticks);
+		void            move         (int ticks);
+		void            view         (int ticks);
+		void            draw         (int ticks);
+		int             reacted      (int ticks);
 
 };
 

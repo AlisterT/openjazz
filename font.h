@@ -34,9 +34,11 @@ class Font {
 		Font                (char *fn);
 		Font                (File *f, bool big);
 		~Font               ();
+
 		int  showString     (char *s, int x, int y);
 		void showNumber     (int n, int x, int y);
-		void scalePalette   (fixed scale, signed int offset);
+		void mapPalette     (int start, int length, int newStart,
+			int newLength);
 		void restorePalette ();
 
 };

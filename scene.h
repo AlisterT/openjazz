@@ -31,6 +31,7 @@ class Scene {
 	public:
 		Scene   (char * fn);
 		~Scene  ();
+
 		int run ();
 
 };

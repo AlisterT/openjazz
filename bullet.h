@@ -33,7 +33,9 @@
 #define B_BEHAVIOR    18
 #define B_STARTSOUND  19
 
-
+// Survival time
+#define T_BULLET 1000
+#define T_TNT    3000
 
 // Class
 
@@ -51,7 +53,10 @@ class Bullet {
 		Bullet              (Player *sourcePlayer, bool lower, int ticks,
 			Bullet *next);
 		Bullet              (Event *sourceEvent, int ticks, Bullet *next);
+		Bullet              (Bird *sourceBird, bool lower, int ticks,
+			Bullet *nextBullet);
 		~Bullet             ();
+
 		Bullet * getNext    ();
 		void     removeNext ();
 		Player * getSource  ();

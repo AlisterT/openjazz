@@ -38,38 +38,103 @@
 
 class PaletteEffect {
 
-	private:
+	protected:
 		PaletteEffect *next;     // Next effect to use
-		unsigned char  type;     /* Type of effect, see PE constants */
 		unsigned char  first;    /* The first palette index affected by the
 			effect */
 		unsigned char  amount;   /* The number of (consecutive) palette indices
 			affected by the effect */
-		fixed          speed;    /* When type is:
-			PE_FADE - Number of seconds the fade lasts
-			PE_ROTATE - Rotations per second
-			PE_SKY - Relative Y speed - as in Jazz 2
-			PE_1D - Relative X & Y speed - as in Jazz 2
-			PE_2D - Relative X & Y speed - as in Jazz 2
-			PE_WATER - Number of pixels between water surface and total darkness
+		fixed          speed;    /* When class is:
+			FadePaletteEffect - Number of seconds the fade lasts
+			RotatePaletteEffect - Rotations per second
+			SkyPaletteEffect - Relative Y speed - as in Jazz 2
+			P1DPaletteEffect - Relative X & Y speed - as in Jazz 2
+			P2DPaletteEffect - Relative X & Y speed - as in Jazz 2
+			WaterPaletteEffect - Number of pixels between water surface and
+				total darkness
 			*/
-		fixed          position; /* When type is:
-			PE_FADE - Brightness of palette in 0-1 range
-			PE_ROTATE - Number of colours rotated
-			PE_SKY - Position taken from player's viewport coordinates, in
-				pixels
-			PE_1D, PE_2D - Position taken from player's viewport coordinates as
-				short ints (in pixels), then packed into the fixed's 4 bytes
-			PE_WATER - Position of the water surface in pixels */
 
 	public:
-		PaletteEffect             (unsigned char newType,
-			unsigned char newFirst, unsigned char newAmount, fixed newSpeed,
-			PaletteEffect * nextPE);
-		~PaletteEffect            ();
-		unsigned char getType     ();
-		void          setPosition (fixed newPosition);
-		void          apply       (SDL_Color *shownPalette, bool direct);
+		PaletteEffect            (unsigned char newFirst,
+			unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE);
+		virtual ~PaletteEffect   ();
+
+		virtual void apply       (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class FadePaletteEffect : public PaletteEffect {
+
+	private:
+		fixed          position;
+
+	public:
+		FadePaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply        (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class RotatePaletteEffect : public PaletteEffect {
+
+	private:
+		fixed          position;
+
+	public:
+		RotatePaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply          (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class SkyPaletteEffect : public PaletteEffect {
+
+	private:
+		SDL_Color *skyPalette;
+
+	public:
+		SkyPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, SDL_Color *newSkyPalette, PaletteEffect * nextPE);
+
+		void apply       (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class P2DPaletteEffect : public PaletteEffect {
+
+	public:
+		P2DPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply       (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class P1DPaletteEffect : public PaletteEffect {
+
+	public:
+		P1DPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply       (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class WaterPaletteEffect : public PaletteEffect {
+
+	public:
+		WaterPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply         (SDL_Color *shownPalette, bool direct);
 
 };
 

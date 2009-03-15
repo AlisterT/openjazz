@@ -30,7 +30,7 @@
 #include <string.h>
 
 
-int fileExists (char * fileName) {
+bool fileExists (char * fileName) {
 
 	File *f;
 
@@ -42,13 +42,13 @@ int fileExists (char * fileName) {
 
 	} catch (int e) {
 
-		return 0;
+		return false;
 
 	}
 
 	delete f;
 
-	return 1;
+	return true;
 
 }
 
@@ -95,5 +95,16 @@ SDL_Surface * createBlankSurface () {
 
 }
 
+
+char * cloneString (char *string) {
+
+	char *cloned;
+
+	cloned = new char[strlen(string) + 1];
+	strcpy(cloned, string);
+
+	return cloned;
+
+}
 
 

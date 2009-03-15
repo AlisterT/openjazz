@@ -35,11 +35,14 @@
 
 
 ModPlugFile   *musicFile;
+#endif
+
 SDL_AudioSpec  audioSpec;
 
 
 void audioCallback (void * userdata, unsigned char * stream, int len) {
 
+#ifdef USE_MODPLUG
 	unsigned char *musicData;
 
 	if (musicFile) {
@@ -57,19 +60,20 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 		delete[] musicData;
 
 	}
+#endif
 
 	return;
 
 }
-
-#endif
 
 
 void openAudio () {
 
 	SDL_AudioSpec asDesired;
 
+#ifdef USE_MODPLUG
 	musicFile = NULL;
+#endif
 
 
 	// Set up SDL audio
@@ -215,7 +219,7 @@ int loadSounds (char *fn) {
 
 	} catch (int e) {
 
-		return FAILURE;
+		return e;
 
 	}
 
@@ -223,7 +227,7 @@ int loadSounds (char *fn) {
 
 	delete f;
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 

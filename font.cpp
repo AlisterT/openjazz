@@ -37,13 +37,15 @@ Font::Font (char * fn) {
 	int rle, pos, byte, count, next;
 	int chr, width, height, y;
 
+	// Load font from a font file
+
 	try {
 
 		f = new File(fn, false);
 
 	} catch (int e) {
 
-		throw FAILURE;
+		throw e;
 
 	}
 
@@ -125,6 +127,9 @@ Font::Font (char * fn) {
 	surface = createSurface(pixels, width, h * 128);
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, 0);
 
+
+	// Create ASCII->font map
+
 	if (!strcmp(fn, "fontmn1.0fn")) {
 
 		for (count = 0; count < 48; count++) map[count] = 0;
@@ -156,9 +161,9 @@ Font::Font (char * fn) {
 		map[63] = 85;
 		map[64] = 0;
 		count = 65;
-		for (; count < 91; count++) map[count] = count - 64;
+		for (; count < 91; count++) map[count] = count - 38;
 		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 70;
+		for (; count < 123; count++) map[count] = count - 96;
 		for (; count < 128; count++) map[count] = 0;
 
 	} else {
@@ -190,6 +195,8 @@ Font::Font (File *f, bool big) {
 
 	unsigned char *pixels;
 	int rle, pos, index, count;
+
+	// Load font from panel.000
 
 	if (big) h = 8;
 	else h = 7;
@@ -305,35 +312,45 @@ int Font::showString (char * s, int x, int y) {
 
 	SDL_Rect src, dst;
 	unsigned int count;
-	int offset;
+	int xoffset, yoffset;
 
 	// Determine the characters' dimensions
 	src.x = 0;
 	src.h = h;
 
 	// Determine the position at which to draw the first character
-	offset = x;
+	xoffset = x;
+	yoffset = y;
 
 	// Go through each character of the string
 	for (count = 0; count < strlen(s); count++) {
 
-		// Determine the character's position on the screen
-		src.w = w[(int)(map[(int)(s[count])])];
-		dst.y = y;
-		dst.x = offset;
+		if (s[count] == '\n') {
 
-		// Determine the character's position in the font
-		if (s[count] >= 0) src.y = map[(int)(s[count])] * h;
-		else src.y = 0;
+			xoffset = x;
+			yoffset += h;
 
-		// Draw the character to the screen
-		SDL_BlitSurface(surface, &src, screen, &dst);
+		} else {
 
-		offset += w[(int)(map[(int)(s[count])])];
+			// Determine the character's position on the screen
+			src.w = w[(int)(map[(int)(s[count])])];
+			dst.y = yoffset;
+			dst.x = xoffset;
+
+			// Determine the character's position in the font
+			if (s[count] >= 0) src.y = map[(int)(s[count])] * h;
+			else src.y = 0;
+
+			// Draw the character to the screen
+			SDL_BlitSurface(surface, &src, screen, &dst);
+
+			xoffset += w[(int)(map[(int)(s[count])])];
+
+		}
 
 	}
 
-	return offset;
+	return xoffset;
 
 }
 
@@ -413,9 +430,9 @@ void Font::showNumber (int n, int x, int y) {
 }
 
 
-void Font::scalePalette (fixed scale, signed int offset) {
+void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
-	::scalePalette(surface, scale, offset);
+	::mapPalette(surface, start, length, newStart, newLength);
 
 	return;
 

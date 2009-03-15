@@ -40,7 +40,7 @@ Planet::Planet (char * fn) {
 
 	} catch (int e) {
 
-		throw FAILURE;
+		throw e;
 
 	}
 
@@ -64,15 +64,15 @@ Planet::~Planet () {
 
 int Planet::run () {
 
-	while (1) {
+	while (true) {
 
-		if (loop() == QUIT) return QUIT;
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
@@ -80,7 +80,7 @@ int Planet::run () {
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 

@@ -25,19 +25,9 @@
 
 Player::Player () {
 
-	name = new char[5];
-	strcpy(name, "JAZZ");
+	bird = NULL;
 
-	score = 0;
-	lives = 3;
-	ammoType = -1;
-	ammo[0] = 0;
-	ammo[1] = 0;
-	ammo[2] = 0;
-	ammo[3] = 0;
-	fireSpeed = 0;
-	checkX = 0;
-	checkY = 65;
+	name = NULL;
 
 	return;
 
@@ -46,27 +36,126 @@ Player::Player () {
 
 Player::~Player () {
 
-	delete[] name;
+	deinit();
 
 	return;
 
 }
 
 
-void Player::setAnim (int index, char anim) {
+void Player::init (char *playerName, unsigned char *playerCols,
+	unsigned char newTeam) {
 
-	anims[index] = anim;
+	int offsets[15] = {PC_WHITE, PC_SGREEN, PC_BLUE, PC_RED, PC_LGREEN,
+		PC_LEVEL1, PC_YELLOW, PC_LEVEL2, PC_ORANGE, PC_LEVEL3, PC_LEVEL4,
+		PC_SANIM, PC_LANIM, PC_LEVEL5, 256};
+	int count, start, length;
+
+	// Clear existing player
+	deinit();
+
+	// Assign name
+	name = cloneString(playerName);
+
+	// Assign initial values
+	memset(anims, 0, PANIMS);
+	score = 0;
+	lives = 3;
+	ammoType = -1;
+	ammo[0] = 0;
+	ammo[1] = 0;
+	ammo[2] = 0;
+	ammo[3] = 0;
+	fireSpeed = 0;
+	team = newTeam;
+
+
+	// Create the player's palette
+
+	for (count = 0; count < 256; count++)
+		palette[count].r = palette[count].g = palette[count].b = count;
+
+	if (playerCols == NULL) return;
+
+	memcpy(cols, playerCols, 4);
+
+	// Fur colours
+
+	count = 0;
+
+	while (cols[0] >= offsets[count + 1]) count++;
+
+	start = offsets[count];
+	length = offsets[count + 1] - start;
+
+	for (count = 0; count < 16; count++)
+		palette[count + 48].r = palette[count + 48].g = palette[count + 48].b =
+			(count * length / 16) + start;
+
+
+	// Bandana colours
+
+	count = 0;
+
+	while (cols[1] >= offsets[count + 1]) count++;
+
+	start = offsets[count];
+	length = offsets[count + 1] - start;
+
+	for (count = 0; count < 16; count++)
+		palette[count + 32].r = palette[count + 32].g = palette[count + 32].b =
+ 			(count * length / 16) + start;
+
+
+	// Gun colours
+
+	count = 0;
+
+	while (cols[2] >= offsets[count + 1]) count++;
+
+	start = offsets[count];
+	length = offsets[count + 1] - start;
+
+	for (count = 0; count < 9; count++)
+		palette[count + 23].r = palette[count + 23].g = palette[count + 23].b =
+			(count * length / 9) + start;
+
+
+	// Wristband colours
+
+	count = 0;
+
+	while (cols[3] >= offsets[count + 1]) count++;
+
+	start = offsets[count];
+	length = offsets[count + 1] - start;
+
+	for (count = 0; count < 8; count++)
+		palette[count + 88].r = palette[count + 88].g = palette[count + 88].b =
+			(count * length / 8) + start;
+
 
 	return;
 
 }
 
 
-void Player::setName (char * playerName) {
+void Player::deinit () {
 
-	delete[] name;
-	name = new char[strlen(playerName) + 1];
-	strcpy(name, playerName);
+	if (bird) delete bird;
+	bird = NULL;
+
+	if (name) delete[] name;
+	name = NULL;
+
+	return;
+
+}
+
+
+void Player::setAnims (char *newAnims) {
+
+	memcpy(anims, newAnims, PANIMS);
 
 	return;
 
@@ -80,34 +169,37 @@ char * Player::getName () {
 }
 
 
-void Player::reset () {
+unsigned char * Player::getCols () {
 
-	facing = true;
-	x = checkX << 15;
-	y = checkY << 15;
-	dx = 0;
-	dy = 0;
-	jumpHeight = 92 * F1;
-	jumpY = 65 * F32;
-	energy = 4;
-	energyBar = 0;
-	reaction = PR_NONE;
-	reactionTime = PRT_NONE;
-	floating = false;
-	event = NULL;
-	shield = 0;
-	enemies = 0;
-	items = 0;
-
-	return;
+	return cols;
 
 }
 
 
-void Player::setCheckpoint (unsigned char newX, unsigned char newY) {
+void Player::reset () {
 
-	checkX = newX;
-	checkY = newY;
+	int count;
+
+	if (bird) bird->reset();
+
+	event = NULL;
+
+	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
+
+	energy = 4;
+	energyBar = 0;
+	shield = 0;
+	floating = false;
+	facing = true;
+	reaction = PR_NONE;
+	reactionTime = 0;
+	jumpHeight = 92 * F1;
+	jumpY = 65 * F32;
+	fastFeetTime = 0;
+	dx = 0;
+	dy = 0;
+	enemies = items = 0;
+	teamScore = 0;
 
 	return;
 
@@ -123,36 +215,245 @@ void Player::setControl (int control, bool state) {
 }
 
 
-void Player::addScore (int addedScore) {
+void Player::shootEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
-	score += addedScore * 10;
+	signed char *set;
+
+	set = level->getEvent(gridX, gridY);
+
+	addScore(set[E_ADDEDSCORE]);
+
+	switch (set[E_MODIFIER]) {
+
+		case 41: // Bonus level
+
+			if (getEnergy()) level->setNext(set[E_MULTIPURPOSE], set[E_YAXIS]);
+
+			// The lack of a break statement is intentional
+
+		case 8: // Boss
+		case 27: // End of level
+
+			if (getEnergy()) {
+
+				setCheckpoint(gridX, gridY);
+				reaction = PR_WON;
+				reactionTime = ticks + PRT_WON;
+
+				level->win();
+
+			}
+
+			break;
+
+		case 10: // Checkpoint
+
+			setCheckpoint(gridX, gridY);
+
+			break;
+
+		case 15:
+
+			addAmmo(0, 15);
+
+			break;
+
+		case 16:
+
+			addAmmo(1, 15);
+
+			break;
+
+		case 17:
+
+			addAmmo(2, 15);
+
+			break;
+
+		case 26:
+
+			fastFeetTime = ticks + T_FASTFEET;
+
+			break;
+
+		case 33:
+
+			shield = 2;
+
+			break;
+
+		case 34: // Bird
+
+			if (!bird) bird = new Bird(this, gridX, gridY);
+
+			break;
+
+		case 36:
+
+			shield = 6;
+
+			break;
+
+	}
+
+	// Add to player's enemy/item tally
+	// If the event hurts and can be killed, it is an enemy
+	// Anything else that scores is an item
+	if ((set[E_MODIFIER] == 0) && set[E_HITSTOKILL]) enemies++;
+	else if (set[E_ADDEDSCORE]) items++;
 
 	return;
 
 }
 
-int Player::getScore () {
 
-	return score;
+bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
+
+	signed char *set;
+
+	set = level->getEvent(gridX, gridY);
+
+	switch (set[E_MODIFIER]) {
+
+		case 0: // Hurt
+		case 8: // Boss
+
+			if ((set[E_BEHAVIOUR] < 37) || (set[E_BEHAVIOUR] > 44)) hit(ticks);
+
+			break;
+
+		case 1: // Invincibility
+
+			if (getEnergy()) {
+
+				reaction = PR_INVINCIBLE;
+				reactionTime = ticks + PRT_INVINCIBLE;
+				addScore(set[E_ADDEDSCORE]);
+
+				return true;
+
+			}
+
+			break;
+
+		case 2:
+		case 3: // Health
+
+			if (energy < 4) energy++;
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 4: // Extra life
+
+			if (lives < 99) lives++;
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 5: // High-jump feet
+
+			jumpHeight += F16;
+
+			return true;
+
+		case 9: // Sand timer
+
+			level->addTimer();
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 11: // Item
+
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 12: // Rapid fire
+
+			fireSpeed++;
+
+			return true;
+
+		case 13: // Warp
+
+			level->setEventTime(gridX, gridY, ticks + T_WARP);
+
+			break;
+
+		case 18:
+
+			addAmmo(0, 2);
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 19:
+
+			addAmmo(1, 2);
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 20:
+
+			addAmmo(2, 2);
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 29: // Upwards spring
+
+			setEvent(set);
+
+			break;
+
+		case 30:
+
+			addAmmo(3, 1);
+
+			return true;
+
+		case 31: // Water level
+
+			if (!set[E_HITSTOKILL]) level->setWaterLevel(gridY);
+
+			break;
+
+		case 35: // Airboard, etc.
+
+			floating = true;
+			addScore(set[E_ADDEDSCORE]);
+
+			return true;
+
+		case 38: // Airboard, etc. off
+
+			floating = false;
+
+			break;
+
+	}
+
+	return false;
 
 }
 
-void Player::addCarrot () {
 
-	if (energy < 4) energy++;
+bool Player::hit (int ticks) {
 
-	return;
-
-}
-
-
-void Player::hit (int ticks) {
-
-	if (reaction != PR_NONE) return;
+	if (reaction != PR_NONE) return false;
 
 	if (shield == 3) shield = 0;
 	else if (shield) shield--;
-	else energy--;
+	else {
+
+		energy--;
+
+		if (bird) bird->hit();
+
+	}
 
 	if (energy) {
 
@@ -177,7 +478,36 @@ void Player::hit (int ticks) {
 
 	}
 
+	return true;
+
+}
+
+
+void Player::kill (int ticks) {
+
+	if (reaction == PR_WON) return;
+
+	lives--;
+
+	reaction = PR_KILLED;
+	reactionTime = ticks + PRT_KILLED;
+
 	return;
+
+}
+
+
+void Player::addScore (int addedScore) {
+
+	score += addedScore * 10;
+
+	return;
+
+}
+
+int Player::getScore () {
+
+	return score;
 
 }
 
@@ -208,76 +538,40 @@ int Player::getEnergyBar () {
 }
 
 
-void Player::addLife () {
-
-	if (lives < 99) lives++;
-
-	return;
-
-}
-
-
-void Player::kill (int ticks) {
-
-	if (reaction == PR_WON) return;
-
-	lives--;
-
-	reaction = PR_KILLED;
-	reactionTime = ticks + PRT_KILLED;
-
-	return;
-
-}
-
-
 int Player::getLives () {
 
 	return lives;
 
 }
 
+
+void Player::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+
+	unsigned char buffer[MTL_G_CHECK];
+
+	checkX = gridX;
+	checkY = gridY;
+
+	if (game && (game->getMode() != M_SINGLE)) {
+
+		buffer[0] = MTL_G_CHECK;
+		buffer[1] = MT_G_CHECK;
+		buffer[2] = gridX;
+		buffer[3] = gridY;
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
 void Player::addAmmo (int type, int amount) {
 
 	if (!ammo[type]) ammoType = type;
 	ammo[type] += amount;
-
-	return;
-
-}
-
-void Player::changeAmmo () {
-
-	ammoType = ((ammoType + 2) % 5) - 1;
-
-	// If there is no ammo of this type, go to the next type that has ammo
-	while ((ammoType > -1) && !ammo[ammoType])
-		ammoType = ((ammoType + 2) % 5) - 1;
-
-	return;
-
-}
-
-
-void Player::fire (int ticks) {
-
-	// If a bullet has been fired too recently, do nothing
-	if (ticks <= fireTime) return;
-
-	// Create new bullet
-	levelInst->firstBullet = new Bullet(this, false, ticks,
-		levelInst->firstBullet);
-
-	// Set when the next bullet can be fired
-	if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);
-	else fireTime = 0x7FFFFFFF;
-
-	// Remove the bullet from the arsenal
-	if (ammoType != -1) ammo[ammoType]--;
-
-	// If the current ammo has been exhausted, go to the previous type that
-	// has ammo
-	while ((ammoType > -1) && !ammo[ammoType]) ammoType--;
 
 	return;
 
@@ -291,50 +585,16 @@ int Player::getAmmo (bool amount) {
 }
 
 
-void Player::addRapidFire () {
+int Player::getEnemies () {
 
-	fireSpeed++;
-
-	return;
+	return enemies;
 
 }
 
 
-void Player::addFeet () {
+int Player::getItems () {
 
-	jumpHeight += F16;
-
-	return;
-
-}
-
-
-void Player::addStar (int ticks) {
-
-	reaction = PR_INVINCIBLE;
-	reactionTime = ticks + PRT_INVINCIBLE;
-
-	return;
-
-}
-
-void Player::addShield (bool four) {
-
-	if (four) shield = 6;
-	else shield = 2;
-
-	return;
-
-}
-
-void Player::win (int ticks) {
-
-	reaction = PR_WON;
-	reactionTime = ticks + PRT_WON;
-
-	levelInst->win(ticks);
-
-	return;
+	return items;
 
 }
 
@@ -374,16 +634,7 @@ void Player::setPosition (fixed newX, fixed newY) {
 void Player::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
-	dy = newDy;
-
-	return;
-
-}
-
-
-void Player::setFloating (bool newFloating) {
-
-	floating = newFloating;
+	if (newDy < 0) dy = newDy;
 
 	return;
 
@@ -397,11 +648,18 @@ bool Player::getFacing () {
 }
 
 
+unsigned char Player::getTeam () {
+
+	return team;
+
+}
+
+
 void Player::floatUp (signed char *newEvent) {
 
 	event = newEvent;
 
-	if ((dy > 0) && levelInst->checkMaskDown(x + PXO_MID, y + F4))
+	if ((dy > 0) && level->checkMaskDown(x + PXO_MID, y + F4))
 		dy = event[E_MULTIPURPOSE] * -F40;
 
 	if (dy > event[E_MULTIPURPOSE] * -F40)
@@ -447,6 +705,110 @@ void Player::clearEvent (signed char *newEvent, unsigned char property) {
 }
 
 
+void Player::send (unsigned char *data) {
+
+	// Copy data to be sent to clients/server
+
+	data[0] = pcontrols[C_UP];
+	data[1] = pcontrols[C_DOWN];
+	data[2] = pcontrols[C_LEFT];
+	data[3] = pcontrols[C_RIGHT];
+	data[4] = pcontrols[C_JUMP];
+	data[5] = pcontrols[C_FIRE];
+	data[6] = pcontrols[C_CHANGE];
+	data[7] = ammo[0] >> 8;
+	data[8] = ammo[0] & 255;
+	data[9] = ammo[1] >> 8;
+	data[10] = ammo[1] & 255;
+	data[11] = ammo[2] >> 8;
+	data[12] = ammo[2] & 255;
+	data[13] = ammo[3] >> 8;
+	data[14] = ammo[3] & 255;
+	data[15] = ammoType + 1;
+	data[16] = score >> 24;
+	data[17] = (score >> 16) & 255;
+	data[18] = (score >> 8) & 255;
+	data[19] = score & 255;
+	data[20] = energy;
+	data[21] = lives;
+	data[22] = shield;
+	data[23] = floating;
+	data[24] = facing;
+	data[25] = fireSpeed;
+	data[26] = jumpHeight >> 24;
+	data[27] = (jumpHeight >> 16) & 255;
+	data[28] = (jumpHeight >> 8) & 255;
+	data[29] = jumpHeight & 255;
+	data[30] = jumpY >> 24;
+	data[31] = (jumpY >> 16) & 255;
+	data[32] = (jumpY >> 8) & 255;
+	data[33] = jumpY & 255;
+	data[34] = x >> 24;
+	data[35] = (x >> 16) & 255;
+	data[36] = (x >> 8) & 255;
+	data[37] = x & 255;
+	data[38] = y >> 24;
+	data[39] = (y >> 16) & 255;
+	data[40] = (y >> 8) & 255;
+	data[41] = y & 255;
+
+	return;
+
+}
+
+
+void Player::receive (unsigned char *buffer) {
+
+	// Interpret data recieved from client/server
+
+	switch (buffer[1]) {
+
+		case MT_P_ANIMS:
+
+			setAnims((char *)buffer + 3);
+
+			break;
+
+		case MT_P_TEMP:
+
+			pcontrols[C_UP] = buffer[3];
+			pcontrols[C_DOWN] = buffer[4];
+			pcontrols[C_LEFT] = buffer[5];
+			pcontrols[C_RIGHT] = buffer[6];
+			pcontrols[C_JUMP] = buffer[7];
+			pcontrols[C_FIRE] = buffer[8];
+			pcontrols[C_CHANGE] = buffer[9];
+			ammo[0] = (buffer[10] << 8) + buffer[11];
+			ammo[1] = (buffer[12] << 8) + buffer[13];
+			ammo[2] = (buffer[14] << 8) + buffer[15];
+			ammo[3] = (buffer[16] << 8) + buffer[17];
+			ammoType = buffer[18] - 1;
+			score = (buffer[19] << 24) + (buffer[20] << 16) +
+				(buffer[21] << 8) + buffer[22];
+			energy = buffer[23];
+			lives = buffer[24];
+			shield = buffer[25];
+			floating = buffer[26];
+			facing = buffer[27];
+			fireSpeed = buffer[28];
+			jumpHeight = (buffer[29] << 24) + (buffer[30] << 16) +
+				(buffer[31] << 8) + buffer[32];
+			jumpY = (buffer[33] << 24) + (buffer[34] << 16) +
+				(buffer[35] << 8) + buffer[36];
+			x = (buffer[37] << 24) + (buffer[38] << 16) + (buffer[39] << 8) +
+				buffer[40];
+			y = (buffer[41] << 24) + (buffer[42] << 16) + (buffer[43] << 8) +
+				buffer[44];
+
+			break;
+
+	}
+
+	return;
+
+}
+
+
 void Player::control (int ticks) {
 
 	// Respond to controls, unless the player has been killed
@@ -468,25 +830,25 @@ void Player::control (int ticks) {
 
 	}
 
-	if (pcontrols[C_LEFT]) {
-
-		// Wlak/run left
-
-		if (dx > 0) dx -= PXA_REVERSE * mspf;
-		if (dx > -PXS_WALK) dx -= PXA_WALK * mspf;
-		if (dx > -PXS_RUN) dx -= PXA_RUN * mspf;
-
-		facing = false;
-
-	} else if (pcontrols[C_RIGHT]) {
+	if (pcontrols[C_RIGHT]) {
 
 		// Walk/run right
 
 		if (dx < 0) dx += PXA_REVERSE * mspf;
-		if (dx < PXS_WALK) dx += PXA_WALK * mspf;
-		if (dx < PXS_RUN) dx += PXA_RUN * mspf;
+		else if (dx < PXS_WALK) dx += PXA_WALK * mspf;
+		else if (dx < PXS_RUN) dx += PXA_RUN * mspf;
 
 		facing = true;
+
+	} else if (pcontrols[C_LEFT]) {
+
+		// Walk/run left
+
+		if (dx > 0) dx -= PXA_REVERSE * mspf;
+		else if (dx > -PXS_WALK) dx -= PXA_WALK * mspf;
+		else if (dx > -PXS_RUN) dx -= PXA_RUN * mspf;
+
+		facing = false;
 
 	} else {
 
@@ -519,16 +881,16 @@ void Player::control (int ticks) {
 			// Fly upwards
 
 			if (dy > 0) dy -= PXA_REVERSE * mspf;
-			if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
-			if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
 
 		} else if (pcontrols[C_DOWN]) {
 
 			// Fly downwards
 
 			if (dy < 0) dy += PXA_REVERSE * mspf;
-			if (dy < PXS_WALK) dy += PXA_WALK * mspf;
-			if (dy < PXS_RUN) dy += PXA_RUN * mspf;
+			else if (dy < PXS_WALK) dy += PXA_WALK * mspf;
+			else if (dy < PXS_RUN) dy += PXA_RUN * mspf;
 
 		} else {
 
@@ -560,19 +922,19 @@ void Player::control (int ticks) {
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		if (dy > PXS_RUN) dy = PXS_RUN;
 
-	} else if (y > levelInst->getWaterLevel(ticks)) {
+	} else if (y > level->getWaterLevel(ticks)) {
 
 		if (pcontrols[C_JUMP]) {
 
 			// Swim upwards
 
 			if (dy > 0) dy -= PXA_REVERSE * mspf;
-			if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
-			if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
 
 			// Prepare to jump upon leaving the water
 
-			if (!levelInst->checkMask(x + PXO_MID, y - F36)) {
+			if (!level->checkMask(x + PXO_MID, y - F36)) {
 
 				jumpY = y -
 					(jumpHeight + (4928 * F1 * mspf / (1000 + (136 * mspf))));
@@ -589,8 +951,8 @@ void Player::control (int ticks) {
 			// Swim downwards
 
 			if (dy < 0) dy += PXA_REVERSE * mspf;
-			if (dy < PXS_WALK) dy += PXA_WALK * mspf;
-			if (dy < PXS_RUN) dy += PXA_RUN * mspf;
+			else if (dy < PXS_WALK) dy += PXA_WALK * mspf;
+			else if (dy < PXS_RUN) dy += PXA_RUN * mspf;
 
 		} else {
 
@@ -611,14 +973,13 @@ void Player::control (int ticks) {
 
 		if ((event && ((event[E_MODIFIER] == 6) ||
 			(event[E_BEHAVIOUR] == 28))) ||
-			levelInst->checkMaskDown(x + PXO_ML, y + F8) ||
-			levelInst->checkMaskDown(x + PXO_MID, y + F8) ||
-			levelInst->checkMaskDown(x + PXO_MR, y + F8)) {
+			level->checkMaskDown(x + PXO_ML, y + F8) ||
+			level->checkMaskDown(x + PXO_MID, y + F8) ||
+			level->checkMaskDown(x + PXO_MR, y + F8)) {
 
 			// Mask/platform/bridge below player
 
-			if (pcontrols[C_JUMP] &&
-				!levelInst->checkMask(x + PXO_MID, y - F36)) {
+			if (pcontrols[C_JUMP] && !level->checkMask(x + PXO_MID, y - F36)) {
 
 				// Jump
 
@@ -664,10 +1025,11 @@ void Player::control (int ticks) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (levelInst->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) &&
+	if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) &&
 		(!event || event[E_BEHAVIOUR] != 25)) {
 
 		jumpY = 65 * F32;
+		if (dy < 0) dy = 0;
 
 		if (event && (event[E_MODIFIER] != 6) && (event[E_BEHAVIOUR] != 28))
 			event = NULL;
@@ -684,9 +1046,57 @@ void Player::control (int ticks) {
 
 	}
 
+
 	// Handle firing
-	if (pcontrols[C_FIRE]) fire(ticks);
-	else fireTime = 0;
+	if (pcontrols[C_FIRE]) {
+
+		// If a bullet has been fired too recently, do nothing
+		if (ticks <= fireTime) return;
+
+		// Create new bullet
+		level->firstBullet = new Bullet(this, false, ticks, level->firstBullet);
+
+			// Set when the next bullet can be fired
+		if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);
+		else fireTime = 0x7FFFFFFF;
+
+		// Remove the bullet from the arsenal
+		if (ammoType != -1) ammo[ammoType]--;
+
+		// If the current ammo has been exhausted, go to the previous type that
+		// has ammo
+		while ((ammoType > -1) && !ammo[ammoType]) ammoType--;
+
+	} else fireTime = 0;
+
+
+	// Check for a change in ammo
+	if (pcontrols[C_CHANGE]) {
+
+		releaseControl(C_CHANGE);
+
+		ammoType = ((ammoType + 2) % 5) - 1;
+
+		// If there is no ammo of this type, go to the next type that has ammo
+		while ((ammoType > -1) && !ammo[ammoType])
+			ammoType = ((ammoType + 2) % 5) - 1;
+
+	}
+
+
+	// Deal with the bird
+
+	if (bird) {
+
+		if (bird->playFrame(ticks)) {
+
+			delete bird;
+			bird = NULL;
+
+		}
+
+	}
+
 
 	return;
 
@@ -695,16 +1105,23 @@ void Player::control (int ticks) {
 
 void Player::move (int ticks) {
 
-	Bullet *bul, *prevBul;
 	fixed pdx, pdy;
 	int count;
 
 	// Apply as much of the trajectory as possible, without going into the
 	// scenery
 
-	pdx = (dx * mspf) >> 10;
-	pdy = (dy * mspf) >> 10;
+	if (fastFeetTime > ticks) {
 
+		pdx = (dx * mspf * 3) >> 11;
+		pdy = (dy * mspf * 3) >> 11;
+
+	} else {
+
+		pdx = (dx * mspf) >> 10;
+		pdy = (dy * mspf) >> 10;
+
+	}
 
 	// First for the vertical component of the trajectory
 
@@ -713,9 +1130,9 @@ void Player::move (int ticks) {
 
 	while (count > 0) {
 
-		if (levelInst->checkMaskDown(x + PXO_ML, y + F4) ||
-			levelInst->checkMaskDown(x + PXO_MID, y + F4) ||
-			levelInst->checkMaskDown(x + PXO_MR, y + F4)) break;
+		if (level->checkMaskDown(x + PXO_ML, y + F4) ||
+			level->checkMaskDown(x + PXO_MID, y + F4) ||
+			level->checkMaskDown(x + PXO_MR, y + F4)) break;
 
 		y += F4;
 		count--;
@@ -725,7 +1142,7 @@ void Player::move (int ticks) {
 
 	while (count < 0) {
 
-		if (levelInst->checkMask(x + PXO_MID, y + PYO_TOP - F4)) break;
+		if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) break;
 
 		y -= F4;
 		count++;
@@ -735,10 +1152,10 @@ void Player::move (int ticks) {
 	if (pdy >= 0) pdy &= 4095;
 	else pdy = -((-pdy) & 4095);
 
-	if (((pdy > 0) && !(levelInst->checkMaskDown(x + PXO_ML, y + pdy) ||
-		levelInst->checkMaskDown(x + PXO_MID, y + pdy) ||
-		levelInst->checkMaskDown(x + PXO_MR, y + pdy))) || ((pdy < 0) &&
-		!levelInst->checkMask(x + PXO_MID, y + pdy + PYO_TOP))) y += pdy;
+	if (((pdy > 0) && !(level->checkMaskDown(x + PXO_ML, y + pdy) ||
+		level->checkMaskDown(x + PXO_MID, y + pdy) ||
+		level->checkMaskDown(x + PXO_MR, y + pdy))) || ((pdy < 0) &&
+		!level->checkMask(x + PXO_MID, y + pdy + PYO_TOP))) y += pdy;
 
 
 	// Then for the horizontal component of the trajectory
@@ -748,7 +1165,7 @@ void Player::move (int ticks) {
 
 	while (count < 0) {
 
-		if (levelInst->checkMask(x + PXO_L - F4, y + PYO_MID)) break;
+		if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) break;
 
 		x -= F4;
 		count++;
@@ -757,7 +1174,7 @@ void Player::move (int ticks) {
 
 	while (count > 0) {
 
-		if (levelInst->checkMask(x + PXO_R + F4, y + PYO_MID)) break;
+		if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) break;
 
 		x += F4;
 		count--;
@@ -767,22 +1184,22 @@ void Player::move (int ticks) {
 	if (pdx >= 0) pdx &= 4095;
 	else pdx = -((-pdx) & 4095);
 
-	if (((pdx < 0) && !levelInst->checkMask(x + PXO_L + pdx, y + PYO_MID)) ||
-		((pdx > 0) && !levelInst->checkMask(x + PXO_R + pdx, y + PYO_MID)))
+	if (((pdx < 0) && !level->checkMask(x + PXO_L + pdx, y + PYO_MID)) ||
+		((pdx > 0) && !level->checkMask(x + PXO_R + pdx, y + PYO_MID)))
 		x += pdx;
 
 	// If on an uphill slope, push the player upwards
 	if (pdx < 0)
-		while (levelInst->checkMask(x + PXO_ML, y) &&
-			!levelInst->checkMask(x + PXO_ML, y + PYO_TOP)) y -= F1;
+		while (level->checkMask(x + PXO_ML, y) &&
+			!level->checkMask(x + PXO_ML, y + PYO_TOP)) y -= F1;
 	else
-		while (levelInst->checkMask(x + PXO_MR, y) &&
-			!levelInst->checkMask(x + PXO_MR, y + PYO_TOP)) y -= F1;
+		while (level->checkMask(x + PXO_MR, y) &&
+			!level->checkMask(x + PXO_MR, y + PYO_TOP)) y -= F1;
 
 
 	// If using a float up event and have hit a ceiling, ignore event
 	if (event && (event[E_BEHAVIOUR] == 25) &&
-		levelInst->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
+		level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
 
 		jumpY = 65 * F32;
 		event = NULL;
@@ -791,62 +1208,11 @@ void Player::move (int ticks) {
 
 
 	// Handle spikes
-	if (
-		/* Above */
-		((levelInst->getGrid((x + PXO_MID) >> 15,
-		(y + PYO_TOP) >> 15)->event == 126) &&
-		levelInst->checkMask(x + PXO_MID, y + PYO_TOP - F4)) ||
+	if (level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
+		level->checkSpikes(x + PXO_MID, y + F4) ||
+		level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
+		level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(ticks);
 
-		/* Below */
-		((levelInst->getGrid((x + PXO_MID) >> 15, y >> 15)->event == 126) &&
-		levelInst->checkMaskDown(x + PXO_MID, y + F4)) ||
-
-		/* To left*/
-		((levelInst->getGrid((x + PXO_L) >> 15,
-		(y + PYO_MID) >> 15)->event == 126) &&
-		levelInst->checkMask(x + PXO_L - F4, y + PYO_MID)) ||
-
-		/* To right*/
-		((levelInst->getGrid((x + PXO_R) >> 15,
-		(y + PYO_MID) >> 15)->event == 126) &&
-		levelInst->checkMask(x + PXO_R + F4, y + PYO_MID)))
-
-		hit(ticks);
-
-
-	// Deal with bullet collisions
-
-	bul = levelInst->firstBullet;
-	prevBul = NULL;
-
-	while (bul) {
-
-		if ((bul->getSource() != this) &&
-			bul->isIn(x + PXO_L, y + PYO_TOP, PXO_R - PXO_L, -PYO_TOP)) {
-
-			hit(ticks);
-
-			if (!prevBul) {
-
-				bul = bul->getNext();
-				delete levelInst->firstBullet;
-				levelInst->firstBullet = bul;
-
-			} else {
-
-				bul = bul->getNext();
-				prevBul->removeNext();
-
-			}
-
-		} else {
-
-			prevBul = bul;
-			bul = bul->getNext();
-
-		}
-
-	}
 
 	return;
 
@@ -869,42 +1235,26 @@ void Player::view (int ticks) {
 	else viewH = screenH - 33;
 
 	// Find new position
-	if (reaction != PR_WON) {
 
-		viewX = x + F8 - (viewW << 9);
+	viewX = x + F8 - (viewW << 9);
 
-		if (!lookTime || (ticks < 1000 + lookTime) ||
-			(ticks < 1000 - lookTime)) {
+	if (!lookTime || (ticks < 1000 + lookTime) || (ticks < 1000 - lookTime)) {
 
-			viewY = y - F24 - (viewH << 9);
+		viewY = y - F24 - (viewH << 9);
 
-		} else if (lookTime > 0) {
+	} else if (lookTime > 0) {
 
-			if (ticks < 2000 + lookTime)
-				viewY = y - (F24 - (64 * (ticks - (1000 + lookTime)))) -
+		if (ticks < 2000 + lookTime)
+			viewY = y - (F24 - (64 * (ticks - (1000 + lookTime)))) -
 				(viewH << 9);
-			else viewY = y - (F24 - F64) - (viewH << 9);
-
-		} else {
-
-			if (ticks < 2000 - lookTime)
-				viewY = y - (F24 + (64 * (ticks - (1000 - lookTime)))) -
-					(viewH << 9);
-			else viewY = y - (F24 + F64) - (viewH << 9);
-
-		}
+		else viewY = y - (F24 - F64) - (viewH << 9);
 
 	} else {
 
-		if (checkX << 15 > viewX + (viewW << 9) + (160 * mspf))
-			viewX += 160 * mspf;
-		else if (checkX << 15 < viewX + (viewW << 9) - (160 * mspf))
-			viewX -= 160 * mspf;
-
-		if (checkY << 15 > viewY + (viewH << 9) + (160 * mspf))
-			viewY += 160 * mspf;
-		else if (checkY << 15 < viewY + (viewH << 9) - (160 * mspf))
-			viewY -= 160 * mspf;
+		if (ticks < 2000 - lookTime)
+			viewY = y - (F24 + (64 * (ticks - (1000 - lookTime)))) -
+				(viewH << 9);
+		else viewY = y - (F24 + F64) - (viewH << 9);
 
 	}
 
@@ -920,18 +1270,13 @@ void Player::view (int ticks) {
 	}
 
 
-	// Ensure the new viewport is within the level
-	if (viewX < 0) viewX = 0;
-	if ((viewX >> 10) + viewW >= LW * TW) viewX = ((LW * TW) - viewW) << 10;
-	if (viewY < 0) viewY = 0;
-	if ((viewY >> 10) + viewH >= LH * TH)	viewY = ((LH * TH) - viewH) << 10;
-
 	return;
 
 }
 
 void Player::draw (int ticks) {
 
+	Sprite *sprite;
 	SDL_Rect dst;
 	int anim, frame;
 
@@ -940,8 +1285,8 @@ void Player::draw (int ticks) {
 	else {
 
 		frame = (ticks + PRT_KILLED - reactionTime) / 75;
-		if (frame >= levelInst->getAnim(anims[PA_LDIE])->frames)
-			frame = levelInst->getAnim(anims[PA_LDIE])->frames - 1;
+		if (frame >= level->getAnim(anims[PA_LDIE])->frames)
+			frame = level->getAnim(anims[PA_LDIE])->frames - 1;
 
 	}
 
@@ -949,10 +1294,11 @@ void Player::draw (int ticks) {
 
 	if (reaction == PR_KILLED) anim = anims[facing? PA_RDIE: PA_LDIE];
 
-	else if ((reaction == PR_HURT) && (reactionTime - ticks > 800))
+	else if ((reaction == PR_HURT) &&
+		(reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
 		anim = anims[facing? PA_RHURT: PA_LHURT];
 
-	else if (y > levelInst->getWaterLevel(ticks))
+	else if (y > level->getWaterLevel(ticks))
 		anim = anims[facing? PA_RSWIM: PA_LSWIM];
 
 	else if (floating) anim = anims[facing? PA_RBOARD: PA_LBOARD];
@@ -961,12 +1307,12 @@ void Player::draw (int ticks) {
 
 		if ((event && ((event[E_MODIFIER] == 6) ||
 		    (event[E_BEHAVIOUR] == 28))) ||
-		    levelInst->checkMaskDown(x + PXO_ML, y + F4) ||
-		    levelInst->checkMaskDown(x + PXO_MID, y + F4) ||
-		    levelInst->checkMaskDown(x + PXO_MR, y + F4) ||
-		    levelInst->checkMaskDown(x + PXO_ML, y + F12) ||
-		    levelInst->checkMaskDown(x + PXO_MID, y + F12) ||
-		    levelInst->checkMaskDown(x + PXO_MR, y + F12)   ) {
+		    level->checkMaskDown(x + PXO_ML, y + F4) ||
+		    level->checkMaskDown(x + PXO_MID, y + F4) ||
+		    level->checkMaskDown(x + PXO_MR, y + F4) ||
+		    level->checkMaskDown(x + PXO_ML, y + F12) ||
+		    level->checkMaskDown(x + PXO_MID, y + F12) ||
+		    level->checkMaskDown(x + PXO_MR, y + F12)   ) {
 
 			if (dx) {
 
@@ -978,14 +1324,14 @@ void Player::draw (int ticks) {
 
 			} else {
 
-				if (!levelInst->checkMaskDown(x + F12, y + F12) &&
-					!levelInst->checkMaskDown(x + F8, y + F8) &&
+				if (!level->checkMaskDown(x + F12, y + F12) &&
+					!level->checkMaskDown(x + F8, y + F8) &&
 					(!event || ((event[E_MODIFIER] != 6) &&
 					(event[E_BEHAVIOUR] != 28))))
 					anim = anims[PA_LEDGE];
 
-				else if (!levelInst->checkMaskDown(x + F20, y + F12) &&
-					!levelInst->checkMaskDown(x + F24, y + F8) &&
+				else if (!level->checkMaskDown(x + F20, y + F12) &&
+					!level->checkMaskDown(x + F24, y + F8) &&
 					(!event || ((event[E_MODIFIER] != 6) &&
 					(event[E_BEHAVIOUR] != 28))))
 					anim = anims[PA_REDGE];
@@ -1010,55 +1356,83 @@ void Player::draw (int ticks) {
 
 	} else if (event && (event[E_MODIFIER] == 29))
 		anim = anims[facing? PA_RSPRING: PA_LSPRING];
-    
-    else anim = anims[facing? PA_RJUMP: PA_LJUMP];
+
+	else anim = anims[facing? PA_RJUMP: PA_LJUMP];
 
 
-    // Show the player
+	// Choose sprite
 
-    // Flash red if hurt
-    if ((reaction == PR_HURT) && (!((ticks / 30) & 3)))
-    	scalePalette(levelInst->getFrame(anim, frame)->pixels, 0, 36);
+	sprite = level->getFrame(anim, frame);
 
-    dst.x = ((x - viewX) >> 10) + levelInst->getFrame(anim, frame)->x;
 
-    dst.y = ((y + F4 - viewY) >> 10) +
-    	levelInst->getFrame(anim, frame)->y +
-    	levelInst->getAnim(anim)->y[frame % levelInst->getAnim(anim)->frames] -
-    	levelInst->getFrame(anim, 0)->pixels->h;
+	// Show the player
 
-    SDL_BlitSurface(levelInst->getFrame(anim, frame)->pixels, NULL, screen,
-    	&dst);
+	// Flash red if hurt, otherwise use player colour
+	if ((reaction == PR_HURT) && (!((ticks / 30) & 3)))
+		mapPalette(sprite->pixels, 0, 256, 36, 1);
+	else {
 
-   	// Remove red flash
-    if ((reaction == PR_HURT) && (!((ticks / 30) & 3)))
-    	restorePalette(levelInst->getFrame(anim, frame)->pixels);
+		SDL_SetPalette(sprite->pixels, SDL_LOGPAL, palette + 23, 23, 41);
+		SDL_SetPalette(sprite->pixels, SDL_LOGPAL, palette + 88, 88, 8);
+
+	}
+
+	if (fastFeetTime > ticks) {
+
+		// Draw "motion blur"
+
+		dst.x = ((x - viewX) >> 10) + sprite->x - (dx >> 16);
+
+		dst.y = ((y + F4 - viewY) >> 10) +
+			sprite->y +
+			level->getAnim(anim)->y[frame % level->getAnim(anim)->frames] -
+			level->getFrame(anim, 0)->pixels->h;
+
+		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+
+	}
+
+	dst.x = ((x - viewX) >> 10) + sprite->x;
+
+	dst.y = ((y + F4 - viewY) >> 10) +
+		sprite->y +
+		level->getAnim(anim)->y[frame % level->getAnim(anim)->frames] -
+		level->getFrame(anim, 0)->pixels->h;
+
+	SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+
+
+	// Remove red flash or player colour from sprite
+	restorePalette(sprite->pixels);
+
 
 	// Show invincibility stars
 
 	if (reaction == PR_INVINCIBLE) {
 
+		sprite = level->getFrame(122, frame);
+
 		dst.x = (x + PXO_L - viewX) >> 10;
 		dst.y = (y - F32 - viewY) >> 10;
-		SDL_BlitSurface(levelInst->getFrame(122, frame)->pixels, NULL, screen,
-			&dst);
+		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
 
 		dst.x = (x + PXO_MID - viewX) >> 10;
 		dst.y = (y - F32 - viewY) >> 10;
-		SDL_BlitSurface(levelInst->getFrame(122, frame)->pixels, NULL, screen,
-			&dst);
+		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
 
 		dst.x = (x + PXO_L - viewX) >> 10;
 		dst.y = (y - F16 - viewY) >> 10;
-		SDL_BlitSurface(levelInst->getFrame(122, frame)->pixels, NULL, screen,
-			&dst);
+		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
 
 		dst.x = (x + PXO_MID - viewX) >> 10;
 		dst.y = (y - F16 - viewY) >> 10;
-		SDL_BlitSurface(levelInst->getFrame(122, frame)->pixels, NULL, screen,
-			&dst);
+		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
 
 	}
+
+
+	// Show the bird
+	if (bird) bird->draw(ticks);
 
 
 	return;

@@ -20,33 +20,38 @@
  */
 
 
+// Demo timeout
+#define T_DEMO 20000
+
 // Class
 
 class Menu {
 
 	private:
 		SDL_Surface   *screens[15];
-		SDL_Color      palettes[4][256];
-		char          *nextLevel;
 		int            episodes;
 		unsigned char  difficulty;
 
-		int textInput         (char * request, char ** text);
-		int newGameDifficulty ();
-		int newGameLevel      ();
-		int newGame           ();
+		int message           (char *text);
+		int generic           (char **optionNames, int options, int *chosen);
+		int textInput         (char *request, char **text);
+		int newGameDifficulty (int mode, int levelNum, int worldNum);
+		int newGameLevel      (int mode);
+		int newGameEpisode    (int mode);
+		int joinGame          ();
 		int loadGame          ();
-		int setupCharacter    ();
 		int setupKeyboard     ();
 		int setupJoystick     ();
 		int setupResolution   ();
 
 	public:
-		Menu              ();
-		~Menu             ();
-		int  run          ();
-		int  setup        ();
-		void setNextLevel (char *fn);
+		SDL_Color      palettes[4][256];
+
+		Menu      ();
+		~Menu     ();
+
+		int setup ();
+		int run   ();
 
 };
 

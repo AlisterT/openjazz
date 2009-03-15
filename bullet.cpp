@@ -25,23 +25,9 @@
 Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 	Bullet *nextBullet) {
 
+	// Properties based on the player
+
 	source = sourcePlayer;
-	type = source->getAmmo(false) + 1;
-	direction = source->getFacing()? 1: 0;
-	direction |= lower? 2: 0;
-	dy = levelInst->getBullet(type)[B_GRAVITY + direction] * F1;
-	time = ticks + 1000;
-	x = source->getX() + (source->getFacing()? PXO_R: PXO_L);
-	y = source->getY() - F8;
-
-	if (type == 4) {
-
-		// TNT
-		type = -1;
-		dy = 0;
-		time = ticks + 3000;
-
-	}
 
 	if (!lower && (type == 2)) {
 
@@ -54,6 +40,26 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 
 	}
 
+	type = source->getAmmo(false) + 1;
+	direction = source->getFacing()? 1: 0;
+	direction |= lower? 2: 0;
+	x = source->getX() + (source->getFacing()? PXO_R: PXO_L);
+	y = source->getY() - F8;
+
+	if (type == 4) {
+
+		// TNT
+		type = -1;
+		dy = 0;
+		time = ticks + T_TNT;
+
+	} else {
+
+		dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
+		time = ticks + T_BULLET;
+
+	}
+
 	return;
 
 }
@@ -61,21 +67,52 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 
 Bullet::Bullet (Event *sourceEvent, int ticks, Bullet *nextBullet) {
 
+	// Properties based on the event
+
 	next = nextBullet;
-
-	if (sourceEvent->getProperty(E_LEFTANIM) == 51) source = players;
-	else source = NULL;
-
+	source = NULL;
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = sourceEvent->getFacing()? 1: 0;
-	dy = levelInst->getBullet(type)[B_GRAVITY + direction] * F1;
-	time = ticks + 1000;
 
 	if (sourceEvent->getFacing())
 		x = sourceEvent->getX() + sourceEvent->getWidth() + F8;
 	else x = sourceEvent->getX() - F8;
 
 	y = sourceEvent->getY() + (sourceEvent->getHeight() >> 1);
+	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
+	time = ticks + T_BULLET;
+
+
+	return;
+
+}
+
+
+Bullet::Bullet (Bird *sourceBird, bool lower, int ticks,
+	Bullet *nextBullet) {
+
+	// Properties based on the bird and its player
+
+	source = sourceBird->getPlayer();
+
+	if (!lower) {
+
+		// Create the other bullet
+		next = new Bullet(sourceBird, true, ticks, nextBullet);
+
+	} else {
+
+		next = nextBullet;
+
+	}
+
+	type = 30;
+	direction = source->getFacing()? 0: 1;
+	direction |= lower? 2: 0;
+	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
+	y = sourceBird->getY();
+	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
+	time = ticks + T_BULLET;
 
 	return;
 
@@ -130,6 +167,7 @@ bool Bullet::isIn (fixed left, fixed top, fixed width, fixed height) {
 
 bool Bullet::playFrame (int ticks) {
 
+	unsigned char buffer[MTL_G_ROAST];
 	signed char *set;
 	int cx, cy;
 
@@ -151,12 +189,8 @@ bool Bullet::playFrame (int ticks) {
 
 				for (cx = (x - F100) >> 15; cx < (x + F100) >> 15; cx++) {
 
-					if ((cy >= 0) && (cy < 64) && (cx >= 0) && (cx < 256)) {
-
-						if (levelInst->getEvent(cx, cy)[E_HITSTOKILL])
-							levelInst->getGrid(cx, cy)->hits = 254;
-
-					}
+					if ((cy >= 0) && (cy < 64) && (cx >= 0) && (cx < 256))
+						level->hitEvent(cx, cy, true);
 
 				}
 
@@ -174,31 +208,79 @@ bool Bullet::playFrame (int ticks) {
 	if (type == -1) return false;
 
 
-	set = levelInst->getBullet(type);
+	set = level->getBullet(type);
+
+	// If a player has been hit, destroy the bullet
+	for (cx = 0; cx < nPlayers; cx++) {
+
+		if (players[cx].isIn(x, y, F1, F1)) {
+
+			if (!source) {
+
+				// The bullet came from an event
+
+				// If the hit was successful, destroy the bullet
+				if (players[cx].hit(ticks)) return true;
+
+			}
+
+			if (source->getTeam() != players[cx].getTeam()) {
+
+				// The bullet came from another player or their bird
+
+				// If the hit was successful, destroy the bullet
+				if (players[cx].hit(ticks)) {
+
+					if ((players + cx == localPlayer) &&
+						!localPlayer->getEnergy()) {
+
+						// If the player has been roasted, inform server/clients
+
+						buffer[0] = MTL_G_ROAST;
+						buffer[1] = MT_G_ROAST;
+						buffer[2] = source->getTeam();
+						game->send(buffer);
+
+						// If it is the server's player, inform self
+						if (localPlayer == players) {
+
+							for (cy = 0; cy < nPlayers; cy++) {
+
+								if (players[cy].getTeam() == buffer[2])
+									players[cy].teamScore++;
+
+							}
+
+						}
+
+					}
+
+					return true;
+
+				}
+
+			}
+
+		}
+
+	}
+
 
 	// If an obstacle has been hit and this is not a bouncer, destroy the bullet
-	if (levelInst->checkMask(x, y) && (set[B_BEHAVIOUR] != 4)) return true;
+	if (level->checkMask(x, y) && (set[B_BEHAVIOUR] != 4)) return true;
 
 
 	// Calculate trajectory
 	if (set[B_BEHAVIOUR] == 4) {
 
 		// Bounce the bullet
-		if (levelInst->checkMaskDown(x, y - F4) && (dy < 0)) dy = 0;
-		else if (levelInst->checkMaskDown(x, y + F4)) dy = -600 * F1;
-		else if (levelInst->checkMaskDown(x - F4, y)) direction |= 1;
-		else if (levelInst->checkMaskDown(x + F4, y)) direction &= ~1;
-		else dy += 3200 * mspf;
+		if (level->checkMaskDown(x, y - F4) && (dy < 0)) dy = 0;
+		else if (level->checkMaskDown(x, y + F4)) dy = -600 * F1;
+		else if (level->checkMaskDown(x - F4, y)) direction |= 1;
+		else if (level->checkMaskDown(x + F4, y)) direction &= ~1;
+		else dy += 6400 * mspf * set[B_GRAVITY];
 
-	} else if (set[B_BEHAVIOUR] >= 2) {
-
-		dy += 3200 * mspf;
-
-	} else {
-
-		dy = set[B_YSPEED + direction] * 250 * F1;
-
-	}
+	} else dy += 6400 * mspf * set[B_GRAVITY];
 
 
 	// Apply trajectory
@@ -215,21 +297,17 @@ bool Bullet::playFrame (int ticks) {
 void Bullet::draw () {
 
 	SDL_Rect dst;
-	Player *localPlayer;
 	Sprite *bulletSprite;
 
 	if (next) next->draw();
 
-	localPlayer = players;
-
-	if (type == -1) bulletSprite = levelInst->getSprite(130);
-	else bulletSprite = levelInst->getSprite(levelInst->getBullet(type)
+	if (type == -1) bulletSprite = level->getSprite(130);
+	else bulletSprite =
+		level->getSprite(((unsigned char *)level->getBullet(type))
 			[B_SPRITE + direction]);
 
-	dst.x = (x >> 10) - (bulletSprite->pixels->w >> 1) -
-		(localPlayer->viewX >> 10);
-	dst.y = (y >> 10) - (bulletSprite->pixels->h >> 1) -
-		(localPlayer->viewY >> 10);
+	dst.x = (x >> 10) - (bulletSprite->pixels->w >> 1) - (viewX >> 10);
+	dst.y = (y >> 10) - (bulletSprite->pixels->h >> 1) - (viewY >> 10);
 
 	// Show the bullet
 	SDL_BlitSurface(bulletSprite->pixels, NULL, screen, &dst);

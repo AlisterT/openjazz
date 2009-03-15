@@ -35,11 +35,11 @@ Menu::Menu () {
 
 	File *f;
 	time_t currentTime;
-	int count, colour;
+	int count, col;
 
 	try {
 
-		f = new File("openjazz.000", false);
+		f = new File(LOGO_FILE, false);
 
 	} catch (int e) {
 
@@ -61,7 +61,7 @@ Menu::Menu () {
 
 		SDL_FreeSurface(screens[14]);
 
-		throw FAILURE;
+		throw e;
 
 	}
 
@@ -117,14 +117,13 @@ Menu::Menu () {
 	// Generate a greyscale mapping
 	for (count = 0; count < 256; count++) {
 
-		colour = ((palettes[2][count].r >> 1) +
-		          (palettes[2][count].g << 1) +
-		          (palettes[2][count].b >> 1)  ) / 8;
+		col = ((palettes[2][count].r >> 1) + (palettes[2][count].g << 1) +
+			(palettes[2][count].b >> 1)  ) / 8;
 
-		if (colour > 79) colour = 79;
+		if (col > 79) col = 79;
 
-		palettes[3][count].r = palettes[3][count].g =
-		palettes[3][count].b = colour;
+		palettes[3][count].r = palettes[3][count].g = palettes[3][count].b =
+			col;
 
 	}
 
@@ -147,6 +146,9 @@ Menu::Menu () {
 
 	delete f;
 
+	localPlayer = NULL;
+	game = NULL;
+
 	playMusic("menusng.psm");
 
 	return;
@@ -158,11 +160,106 @@ Menu::~Menu () {
 
 	int count;
 
-	stopMusic();
-
 	for (count = 0; count < 15; count++) SDL_FreeSurface(screens[count]);
 
 	return;
+
+}
+
+
+int Menu::message (char *text) {
+
+	usePalette(palettes[1]);
+
+	while (true) {
+
+		if (loop() == E_QUIT) return E_QUIT;
+
+		if (controls[C_ENTER].state || controls[C_ESCAPE].state) {
+
+			releaseControl(C_ENTER);
+			releaseControl(C_ESCAPE);
+
+			return E_NONE;
+
+		}
+
+		SDL_Delay(T_FRAME);
+
+		SDL_FillRect(screen, NULL, 15);
+
+		// Draw the message
+		fontmn2->showString(text, screenW >> 2, (screenH >> 1) - 16);
+
+	}
+
+	return E_NONE;
+
+}
+
+
+int Menu::generic (char **optionNames, int options, int *chosen) {
+
+	int count;
+
+	usePalette(palettes[1]);
+
+	if (*chosen >= options) *chosen = 0;
+
+	while (true) {
+
+		if (loop() == E_QUIT) return E_QUIT;
+
+		if (controls[C_ESCAPE].state) {
+
+			releaseControl(C_ESCAPE);
+
+			return E_UNUSED;
+
+		}
+
+		SDL_Delay(T_FRAME);
+
+		SDL_FillRect(screen, NULL, 0);
+
+		for (count = 0; count < options; count++) {
+
+			if (count == *chosen) fontmn2->mapPalette(240, 8, 114, 16);
+
+			fontmn2->showString(optionNames[count], screenW >> 2,
+				(screenH >> 1) + (count << 4) - (options << 3));
+
+			if (count == *chosen) fontmn2->restorePalette();
+
+		}
+
+		if (controls[C_UP].state) {
+
+			releaseControl(C_UP);
+
+			*chosen = (*chosen + options - 1) % options;
+
+		}
+
+		if (controls[C_DOWN].state) {
+
+			releaseControl(C_DOWN);
+
+			*chosen = (*chosen + 1) % options;
+
+		}
+
+		if (controls[C_ENTER].state) {
+
+			releaseControl(C_ENTER);
+
+			return E_NONE;
+
+		}
+
+	}
+
+	return E_NONE;
 
 }
 
@@ -175,13 +272,13 @@ int Menu::textInput (char * request, char ** text) {
 	int count, terminate;
 	unsigned int cursor;
 
+	// Create input string
 	input = new char[STRING_LENGTH + 1];
-	if (*text) strcpy(input, *text);
-	else input[0] = 0;
+	strcpy(input, *text);
 
 	cursor = strlen(input);
 
-	while (1) {
+	while (true) {
 
 		update();
 
@@ -199,19 +296,20 @@ int Menu::textInput (char * request, char ** text) {
 						terminate = (input[cursor] == 0);
 
 						if ((event.key.keysym.sym == ' ') ||
+							(event.key.keysym.sym == '.') ||
 							((event.key.keysym.sym >= '0') &&
 							(event.key.keysym.sym <= '9')) ||
-							((event.key.keysym.sym >= 'A') &&
-							(event.key.keysym.sym <= 'Z'))) {
+							((event.key.keysym.sym >= 'a') &&
+							(event.key.keysym.sym <= 'z'))) {
 
 							input[cursor] = event.key.keysym.sym;
 							cursor++;
 							if (terminate) input[cursor] = 0;
 
-						} else if ((event.key.keysym.sym >= 'a') &&
-							(event.key.keysym.sym <= 'z')) {
+						} else if ((event.key.keysym.sym >= 'A') &&
+							(event.key.keysym.sym <= 'Z')) {
 
-							input[cursor] = event.key.keysym.sym - 32;
+							input[cursor] = event.key.keysym.sym | 32;
 							cursor++;
 							if (terminate) input[cursor] = 0;
 
@@ -298,7 +396,7 @@ int Menu::textInput (char * request, char ** text) {
 
 					delete[] input;
 
-					return QUIT;
+					return E_QUIT;
 
 			}
 
@@ -312,52 +410,54 @@ int Menu::textInput (char * request, char ** text) {
 				(axes[count].state == SDL_PRESSED)      ) {
 
 				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = SDL_PRESSED;
+					controls[count].state = true;
 
 			} else {
 
 				controls[count].time = 0;
-				controls[count].state = SDL_RELEASED;
+				controls[count].state = false;
 
 			}
 
 		}
 
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
 			delete[] input;
 
-			return SUCCESS;
+			return E_UNUSED;
 
 		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 15);
 
 		// Draw the prompt
-		fontmn2->showString(request, 32, (screenH / 2) - 16);
+		fontmn2->showString(request, screenW >> 2, (screenH >> 1) - 16);
 
 		// Draw the section of the text before the cursor
-		fontmn2->scalePalette(F2, (-240 * 2) + 114);
+		fontmn2->mapPalette(240, 8, 114, 16);
 		terminate = input[cursor];
 		input[cursor] = 0;
-		dst.x = fontmn2->showString(input, 40, screenH / 2);
+		dst.x = fontmn2->showString(input, (screenW >> 2) + 8, screenH >> 1);
 
 		// Draw the cursor
 		dst.w = 8;
 		dst.h = 2;
-		dst.y = (screenH / 2) + 10;
+		dst.y = (screenH >> 1) + 10;
 		SDL_FillRect(screen, &dst, 79);
 
 		// Draw the section of text after the cursor
 		input[cursor] = terminate;
-		fontmn2->showString(input + cursor, dst.x, screenH / 2);
+		fontmn2->showString(input + cursor, dst.x, screenH >> 1);
 		fontmn2->restorePalette();
 
 
-		if (controls[C_LEFT].state == SDL_PRESSED) {
+		if (controls[C_LEFT].state) {
 
 			releaseControl(C_LEFT);
 
@@ -365,7 +465,7 @@ int Menu::textInput (char * request, char ** text) {
 
 		}
 
-		if (controls[C_RIGHT].state == SDL_PRESSED) {
+		if (controls[C_RIGHT].state) {
 
 			releaseControl(C_RIGHT);
 
@@ -373,13 +473,15 @@ int Menu::textInput (char * request, char ** text) {
 
 		}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
 
+			// Replace the original string with the input string
+			delete[] *text;
 			*text = input;
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
@@ -387,41 +489,39 @@ int Menu::textInput (char * request, char ** text) {
 
 	delete[] input;
 
-	return SUCCESS;
+	return E_UNUSED;
 
 }
 
 
-int Menu::newGameDifficulty () {
+int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
-	Scene * sceneInst;
-	char *options[4] = {"EASY", "MEDIUM", "HARD", "TURBO"};
+	char *options[4] = {"easy", "medium", "hard", "turbo"};
+	char firstLevel[11];
 	SDL_Rect src, dst;
 	int count;
-	bool checkpoint;
 
 	usePalette(palettes[1]);
 
-	checkpoint = false;
+	while (true) {
 
-	while (1) {
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if (loop() == QUIT) return QUIT;
-
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 0);
 
 		for (count = 0; count < 4; count++) {
 
-			if (count == difficulty)
-				fontmn2->scalePalette(F2, (-240 * 2) + 114);
+			if (count == difficulty) fontmn2->mapPalette(240, 8, 114, 16);
 
 			fontmn2->showString(options[count], screenW >> 2,
 				(screenH >> 1) + (count << 4) - 32);
@@ -438,155 +538,89 @@ int Menu::newGameDifficulty () {
 		dst.y = (screenH >> 1) - 50;
 		SDL_BlitSurface(screens[2], &src, screen, &dst);
 
-		if (controls[C_UP].state == SDL_PRESSED) {
+		if (controls[C_UP].state) {
 
 			releaseControl(C_UP);
 			difficulty = (difficulty + 3) % 4;
 
 		}
 
-		if (controls[C_DOWN].state == SDL_PRESSED) {
+		if (controls[C_DOWN].state) {
 
 			releaseControl(C_DOWN);
 			difficulty = (difficulty + 1) % 4;
 
 		}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
 
-			stopMusic();
+			sprintf(firstLevel, "level%1i.%03i", levelNum, worldNum);
 
-			// Create the player
-			nPlayers = 1;
-			players = new Player[nPlayers];
-			players[0].setName(localPlayerName);
-
-
-			// Load the level
-
-			try {
-
-				levelInst = new Level(nextLevel, difficulty, false);
-
-			} catch (int e) {
-
-				delete[] players;
-
-				return FAILURE;
-
-			}
-
-			// Play the level(s)
-			while (1) {
-
-				switch (levelInst->run()) {
-
-					case QUIT: // Quit
-
-						delete levelInst;
-						delete[] players;
-
-						return QUIT;
-
-					case SUCCESS: // Quit game
-
-						delete levelInst;
-						delete[] players;
-
-						playMusic("menusng.psm");
-
-						return SUCCESS;
-
-					case FAILURE: // Error
-
-						delete levelInst;
-						delete[] players;
-
-						return FAILURE;
-
-					case WON: // Completed level
-
-						// If there is no next level, load and run the cutscene
-						if (!strcmp(nextLevel, "endepis")) {
-
-							delete[] players;
-
-							sceneInst = levelInst->createScene();
-
-							delete levelInst;
-
-							sceneInst->run();
-
-							delete sceneInst;
-
-							return SUCCESS;
-
-						}
-
-						// Do not use old level's checkpoint coordinates
-						checkpoint = false;
-
-						break;
-
-					case LOST: // Lost level
-
-						if (!players[0].getLives()) {
-
-							delete levelInst;
-							delete[] players;
-
-							return SUCCESS; // Not really a success...
-
-						}
-
-						// Set to load the same level again
-						delete[] nextLevel;
-						nextLevel = levelInst->currentFile;
-
-						// Have something to free in the levelInst destructor
-						levelInst->currentFile = new char[1];
-
-						// Use checkpoint coordinates
-						checkpoint = true;
-
-						break;
-
-				}
-
-				// Use the menu palette for the level loading screen
-				usePalette(palettes[1]);
-
-				// Unload the previous level
-				delete levelInst;
-
-				// Load the level
+			if (mode == M_SINGLE) {
 
 				try {
 
-					levelInst = new Level(nextLevel, difficulty, checkpoint);
+					game = new Game(firstLevel, difficulty);
 
 				} catch (int e) {
 
-					delete[] players;
+					message("COULD NOT START GAME");
 
-					return FAILURE;
+					return e;
+
+				}
+
+			} else {
+
+				try {
+
+					game = new ServerGame(mode, firstLevel, difficulty);
+
+				} catch (int e) {
+
+					message("COULD NOT CREATE SERVER");
+
+					return e;
 
 				}
 
 			}
+
+
+			// Play the level(s)
+
+			switch (game->run()) {
+
+				case E_QUIT:
+
+					delete game;
+
+					return E_QUIT;
+
+				case E_FILE:
+
+					message("FILE NOT FOUND");
+
+					break;
+
+			}
+
+			delete game;
+
+			return E_NONE;
 
 		}
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
-int Menu::newGameLevel () {
+int Menu::newGameLevel (int mode) {
 
 	int option, worldNum, levelNum;
 
@@ -594,33 +628,35 @@ int Menu::newGameLevel () {
 
 	usePalette(palettes[1]);
 
-	while (1) {
+	while (true) {
 
-		if (loop()) return QUIT;
+		if (loop()) return E_QUIT;
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
+		SDL_Delay(T_FRAME);
+
 		SDL_FillRect(screen, NULL, 15);
 
-		if (option == 0) fontmn2->scalePalette(F2, (-240 * 2) + 114);
-		fontmn2->showString("CHOOSE WORLD:", 32, screenH / 3);
+		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("choose world:", 32, screenH / 3);
 		fontmn2->showNumber(worldNum, 208, screenH / 3);
 
 		if (option == 0) fontmn2->restorePalette();
-		else fontmn2->scalePalette(F2, (-240 * 2) + 114);
+		else fontmn2->mapPalette(240, 8, 114, 16);
 
-		fontmn2->showString("CHOOSE LEVEL:", 32, (screenH << 1) / 3);
+		fontmn2->showString("choose level:", 32, (screenH << 1) / 3);
 		fontmn2->showNumber(levelNum, 208, (screenH << 1) / 3);
 
 		if (option != 0) fontmn2->restorePalette();
 
-		if (controls[C_UP].state == SDL_PRESSED) {
+		if (controls[C_UP].state) {
 
 			releaseControl(C_UP);
 
@@ -628,7 +664,7 @@ int Menu::newGameLevel () {
 
 		}
 
-		if (controls[C_DOWN].state == SDL_PRESSED) {
+		if (controls[C_DOWN].state) {
 
 			releaseControl(C_DOWN);
 
@@ -636,7 +672,7 @@ int Menu::newGameLevel () {
 
 		}
 
-		if (controls[C_LEFT].state == SDL_PRESSED) {
+		if (controls[C_LEFT].state) {
 
 			releaseControl(C_LEFT);
 
@@ -645,7 +681,7 @@ int Menu::newGameLevel () {
 
 		}
 
-		if (controls[C_RIGHT].state == SDL_PRESSED) {
+		if (controls[C_RIGHT].state) {
 
 			releaseControl(C_RIGHT);
 
@@ -654,22 +690,12 @@ int Menu::newGameLevel () {
 
 		}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
 
-			nextLevel = new char[11];
-			sprintf(nextLevel, "level%1i.%03i", levelNum, worldNum);
-
-			if (newGameDifficulty() == QUIT) {
-
-				delete[] nextLevel;
-
-				return QUIT;
-
-			}
-
-			delete[] nextLevel;
+			if (newGameDifficulty(mode, levelNum, worldNum) == E_QUIT)
+				return E_QUIT;
 
 			usePalette(palettes[1]);
 
@@ -677,17 +703,17 @@ int Menu::newGameLevel () {
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
-int Menu::newGame () {
+int Menu::newGameEpisode (int mode) {
 
-	char *options[12] = {"EPISODE 1", "EPISODE 2", "EPISODE 3", "EPISODE 4",
-		"EPISODE 5", "EPISODE 6", "EPISODE A", "EPISODE B", "EPISODE C",
-		"EPISODE X", "BONUS STAGE", "SPECIFIC LEVEL"};
-	int exists[12];
+	char *options[12] = {"episode 1", "episode 2", "episode 3", "episode 4",
+		"episode 5", "episode 6", "episode a", "episode b", "episode c",
+		"episode x", "bonus stage", "specific level"};
+	bool exists[12];
 	char check[11];
 	SDL_Rect dst;
 	int episode, count, worldNum;
@@ -710,22 +736,24 @@ int Menu::newGame () {
 
 	}
 
-	exists[10] = 0;
-	exists[11] = 1;
+	exists[10] = false;
+	exists[11] = true;
 
 	episode = 0;
 
-	while (1) {
+	while (true) {
 
-		if (loop() == QUIT) return QUIT;
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 0);
 
@@ -751,7 +779,7 @@ int Menu::newGame () {
 
 			if (count == episode) {
 
-				fontmn2->scalePalette(-F10, (-240 * -10) + 79);
+				fontmn2->mapPalette(240, 8, 79, -80);
 				dst.x = (screenW >> 3) - 4;
 				dst.y = (screenH >> 1) + (count << 4) - 94;
 				dst.w = 136;
@@ -759,17 +787,17 @@ int Menu::newGame () {
 				SDL_FillRect(screen, &dst, 79);
 
 			} else if (!exists[count])
-				fontmn2->scalePalette(-F2, (-240 * -2) + 94);
+				fontmn2->mapPalette(240, 8, 94, -16);
 
 			fontmn2->showString(options[count], screenW >> 3,
 				(screenH >> 1) + (count << 4) - 92);
 
 			if ((count == episode) || (!exists[count]))
-				fontmn2->scalePalette(F10, (-240 * 10) + 9);
+				fontmn2->mapPalette(240, 8, 9, 80);
 
 		}
 
-		if (controls[C_UP].state == SDL_PRESSED) {
+		if (controls[C_UP].state) {
 
 			releaseControl(C_UP);
 
@@ -777,7 +805,7 @@ int Menu::newGame () {
 
 		}
 
-		if (controls[C_DOWN].state == SDL_PRESSED) {
+		if (controls[C_DOWN].state) {
 
 			releaseControl(C_DOWN);
 
@@ -785,7 +813,7 @@ int Menu::newGame () {
 
 		}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
 
@@ -798,18 +826,8 @@ int Menu::newGame () {
 						worldNum = (episode + 4) * 3;
 					else worldNum = 50;
 
-					nextLevel = new char[11];
-					sprintf(nextLevel, "level0.%03i", worldNum);
-
-					if (newGameDifficulty() == QUIT) {
-
-						delete[] nextLevel;
-
-						return QUIT;
-
-					}
-
-					delete[] nextLevel;
+					if (newGameDifficulty(mode, 0, worldNum) == E_QUIT)
+						return E_QUIT;
 
 				} else if (episode == 10) {
 
@@ -817,7 +835,7 @@ int Menu::newGame () {
 
 				} else {
 
-					if (newGameLevel() == QUIT) return QUIT;
+					if (newGameLevel(mode) == E_QUIT) return E_QUIT;
 
 				}
 
@@ -829,7 +847,89 @@ int Menu::newGame () {
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
+
+}
+
+
+int Menu::joinGame () {
+
+	int ret;
+
+	ret = textInput("ip address:", &netAddress);
+
+	if (ret < 0) return ret;
+
+	try {
+
+		game = new ClientGame(netAddress);
+
+	} catch (int e) {
+
+		switch (e) {
+
+			case E_S_ADDRESS:
+
+				message("INVALID ADDRESS");
+
+				break;
+
+			case E_TIMEOUT:
+
+				message("OPERATION TIMED OUT");
+
+				break;
+
+			case E_VERSION:
+
+				message("WRONG SERVER VERSION");
+
+				break;
+
+			case E_DATA:
+
+				message("INCORRECT DATA\nRECEIVED");
+
+				break;
+
+			case E_QUIT:
+
+				break;
+
+			default:
+
+				message("COULD NOT CONNECT");
+
+				break;
+
+		}
+
+		return e;
+
+	}
+
+
+	// Play the level(s)
+
+	switch (game->run()) {
+
+		case E_QUIT:
+
+			delete game;
+
+			return E_QUIT;
+
+		case E_FILE:
+
+			message("FILE NOT FOUND");
+
+			break;
+
+	}
+
+	delete game;
+
+	return E_NONE;
 
 }
 
@@ -838,101 +938,21 @@ int Menu::loadGame () {
 
 	// To do
 
-	return SUCCESS;
-
-}
-
-
-int Menu::setupCharacter () {
-
-	char *options[1] = {"NAME"};
-	char *result;
-	int option, count;
-
-	option = 0;
-
-	while (1) {
-
-		if (loop() == QUIT) return QUIT;
-
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
-
-			releaseControl(C_ESCAPE);
-
-			return SUCCESS;
-
-		}
-
-		SDL_FillRect(screen, NULL, 0);
-
-		for (count = 0; count < 1; count++) {
-
-			if (count == option) fontmn2->scalePalette(F2, (-240 * 2) + 114);
-
-			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 32);
-
-			if (count == option) fontmn2->restorePalette();
-
-		}
-
-		if (controls[C_UP].state == SDL_PRESSED) {
-
-			releaseControl(C_UP);
-
-			option = (option + 1) % 1;
-
-		}
-
-		if (controls[C_DOWN].state == SDL_PRESSED) {
-
-			releaseControl(C_DOWN);
-
-			option = (option + 1) % 1;
-
-		}
-
-		if (controls[C_ENTER].state == SDL_PRESSED) {
-
-			releaseControl(C_ENTER);
-
-			switch (option) {
-
-				case 0:
-
-					result = localPlayerName;
-					textInput("CHARACTER NAME:", &result);
-
-					if (result != localPlayerName) {
-
-						delete[] localPlayerName;
-						localPlayerName = result;
-
-					}
-
-					break;
-
-			}
-
-		}
-
-	}
-
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
 int Menu::setupKeyboard () {
 
-	char *options[7] = {"UP", "DOWN", "LEFT", "RIGHT", "JUMP", "FIRE",
-		"WEAPON"};
+	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
+		"weapon"};
 	SDL_Event event;
 	int progress, count, used;
 
 	progress = 0;
 
-	while (1) {
+	while (true) {
 
 		update();
 
@@ -960,7 +980,7 @@ int Menu::setupKeyboard () {
 						keys[progress].key = event.key.keysym.sym;
 						progress++;
 
-						if (progress == 7) return SUCCESS;
+						if (progress == 7) return E_NONE;
 
 					}
 
@@ -987,7 +1007,7 @@ int Menu::setupKeyboard () {
 
 				case SDL_QUIT:
 
-					return QUIT;
+					return E_QUIT;
 
 			}
 
@@ -1001,44 +1021,45 @@ int Menu::setupKeyboard () {
 				(axes[count].state == SDL_PRESSED)      ) {
 
 				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = SDL_PRESSED;
+					controls[count].state = true;
 
 			} else {
 
 				controls[count].time = 0;
-				controls[count].state = SDL_RELEASED;
+				controls[count].state = false;
 
 			}
 
 		}
 
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 0);
 
 		for (count = 0; count < 7; count++) {
 
 			if (count < progress)
-				fontmn2->showString("OKAY", (screenW >> 2) + 176,
-					(screenH >> 1) + (count << 4) - 32);
+				fontmn2->showString("okay", (screenW >> 2) + 176,
+					(screenH >> 1) + (count << 4) - 56);
 
-			else if (count == progress)
-				fontmn2->scalePalette(F2, (-240 * 2) + 114);
+			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
 			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 32);
+				(screenH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("PRESS KEY", (screenW >> 2) + 112,
-					(screenH >> 1) + (count << 4) - 32);
+				fontmn2->showString("press key", (screenW >> 2) + 112,
+					(screenH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
 
@@ -1048,21 +1069,21 @@ int Menu::setupKeyboard () {
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
 int Menu::setupJoystick () {
 
-	char *options[7] = {"UP", "DOWN", "LEFT", "RIGHT", "JUMP", "FIRE",
-		"WEAPON"};
+	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
+		"weapon"};
 	SDL_Event event;
 	int progress, count, used;
 
 	progress = 0;
 
-	while (1) {
+	while (true) {
 
 		update();
 
@@ -1099,7 +1120,7 @@ int Menu::setupJoystick () {
 						buttons[progress].button = event.jbutton.button;
 						progress++;
 
-						if (progress == 7) return SUCCESS;
+						if (progress == 7) return E_NONE;
 
 					}
 
@@ -1137,7 +1158,7 @@ int Menu::setupJoystick () {
 							else axes[progress].direction = 1;
 							progress++;
 
-							if (progress == 7) return SUCCESS;
+							if (progress == 7) return E_NONE;
 
 						}
 
@@ -1166,7 +1187,7 @@ int Menu::setupJoystick () {
 
 					case SDL_QUIT:
 
-						return QUIT;
+						return E_QUIT;
 
 				}
 
@@ -1180,44 +1201,45 @@ int Menu::setupJoystick () {
 				(axes[count].state == SDL_PRESSED)      ) {
 
 				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = SDL_PRESSED;
+					controls[count].state = true;
 
 			} else {
 
 				controls[count].time = 0;
-				controls[count].state = SDL_RELEASED;
+				controls[count].state = false;
 
 			}
 
 		}
 
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 0);
 
 		for (count = 0; count < 7; count++) {
 
 			if (count < progress)
-				fontmn2->showString("OKAY", (screenW >> 2) + 176,
-					(screenH >> 1) + (count << 4) - 32);
+				fontmn2->showString("okay", (screenW >> 2) + 176,
+					(screenH >> 1) + (count << 4) - 56);
 
-			else if (count == progress)
-				fontmn2->scalePalette(F2, (-240 * 2) + 114);
+			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
 			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 32);
+				(screenH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("PRESS CONTROL", (screenW >> 2) + 112,
-					(screenH >> 1) + (count << 4) - 32);
+				fontmn2->showString("press control", (screenW >> 2) + 112,
+					(screenH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
 
@@ -1227,7 +1249,7 @@ int Menu::setupJoystick () {
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
@@ -1272,27 +1294,27 @@ int Menu::setupResolution () {
 
 	}
 
-	while (1) {
+	while (true) {
 
-		if (loop() == QUIT) return QUIT;
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
-		count = 0;
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 0);
 
@@ -1311,21 +1333,23 @@ int Menu::setupResolution () {
 		SDL_FillRect(screen, &dst, 79);
 
 
-		fontmn2->showString("X", (screenW >> 2) + 40, screenH >> 1);
+		fontmn2->showString("x", (screenW >> 2) + 40, screenH >> 1);
 
-		if (dimension == 0) fontmn2->scalePalette(F2, (-240 * 2) + 114);
+		if (dimension == 0) fontmn2->mapPalette(240, 8, 114, 16);
 
 		fontmn2->showNumber(screenW, (screenW >> 2) + 32, screenH >> 1);
 
 		if (dimension == 0) fontmn2->restorePalette();
-		else fontmn2->scalePalette(F2, (-240 * 2) + 114);
+		else fontmn2->mapPalette(240, 8, 114, 16);
 
 		fontmn2->showNumber(screenH, (screenW >> 2) + 104, screenH >> 1);
 
 		if (dimension != 0) fontmn2->restorePalette();
 
 
-		if (controls[C_LEFT].state == SDL_PRESSED) {
+		count = 0;
+
+		if (controls[C_LEFT].state) {
 
 			releaseControl(C_LEFT);
 
@@ -1333,7 +1357,7 @@ int Menu::setupResolution () {
 
 		}
 
-		if (controls[C_RIGHT].state == SDL_PRESSED) {
+		if (controls[C_RIGHT].state) {
 
 			releaseControl(C_RIGHT);
 
@@ -1341,7 +1365,7 @@ int Menu::setupResolution () {
 
 		}
 
-		if (controls[C_UP].state == SDL_PRESSED) {
+		if (controls[C_UP].state) {
 
 			releaseControl(C_UP);
 
@@ -1363,7 +1387,7 @@ int Menu::setupResolution () {
 
 		}
 
-		if (controls[C_DOWN].state == SDL_PRESSED) {
+		if (controls[C_DOWN].state) {
 
 			releaseControl(C_DOWN);
 
@@ -1410,123 +1434,310 @@ int Menu::setupResolution () {
 
 #endif
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
 int Menu::setup () {
 
-	char *options[4] = {"CHARACTER", "KEYBOARD", "JOYSTICK", "RESOLUTION"};
-	int option, count;
-
-	usePalette(palettes[1]);
+	char *setupOptions[4] = {"character", "keyboard", "joystick", "resolution"};
+	char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun",
+		"wristband"};
+	char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow",
+		"green", "blue", "animation 1", "animation 2"};
+	unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
+		PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
+	int ret;
+	int option, suboption, subsuboption;
 
 	option = 0;
 
-	while (1) {
+	while (true) {
 
-		if (loop() == QUIT) return QUIT;
+		ret = generic(setupOptions, 4, &option);
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (ret == E_UNUSED) return E_NONE;
+		if (ret < 0) return ret;
 
-			releaseControl(C_ESCAPE);
+		switch (option) {
 
-			return SUCCESS;
+			case 0:
 
-		}
+				suboption = 0;
 
-		SDL_FillRect(screen, NULL, 0);
+				while (true) {
 
-		for (count = 0; count < 4; count++) {
+					ret = generic(setupCharacterOptions, 5, &suboption);
 
-			if (count == option) fontmn2->scalePalette(F2, (-240 * 2) + 114);
+					if (ret == E_QUIT) return E_QUIT;
+					if (ret < 0) break;
 
-			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 32);
+					switch (suboption) {
 
-			if (count == option) fontmn2->restorePalette();
+						case 0: // Character name
 
-		}
+							textInput("character name:", &characterName);
 
-		if (controls[C_UP].state == SDL_PRESSED) {
+							break;
 
-			releaseControl(C_UP);
+						default: // Character colour
 
-			option = (option + 3) % 4;
+							subsuboption = 0;
+							ret = generic(setupCharacterColOptions, 9,
+								&subsuboption);
 
-		}
+							if (ret == E_QUIT) return E_QUIT;
 
-		if (controls[C_DOWN].state == SDL_PRESSED) {
+							if (ret == E_NONE)
+								characterCols[suboption - 1] =
+									setupCharacterCols[subsuboption];
 
-			releaseControl(C_DOWN);
+							break;
 
-			option = (option + 1) % 4;
+					}
 
-		}
+				}
 
-		if (controls[C_ENTER].state == SDL_PRESSED) {
+				break;
 
-			releaseControl(C_ENTER);
+			case 1:
 
-			switch (option) {
+				setupKeyboard();
 
-				case 0:
+				break;
 
-					setupCharacter();
+			case 2:
 
-					break;
+				setupJoystick();
 
-				case 1:
+				break;
 
-					setupKeyboard();
+			case 3:
 
-					break;
+				setupResolution();
 
-				case 2:
-
-					setupJoystick();
-
-					break;
-
-				case 3:
-
-					setupResolution();
-
-					break;
-
-			}
+				break;
 
 		}
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
 int Menu::run () {
 
-	Scene *sceneInst;
-	int option;
+	char *newGameOptions[5] = {"new single player game", "new co-op game",
+		"new battle", "new team battle", "join game"};
+	Scene *scene;
 	SDL_Rect src, dst;
+	int option, suboption;
+	unsigned int idleTime;
+	int ret;
 
-	option = 0;
+	option = suboption = 0;
 
 	usePalette(palettes[0]);
 
-	while (1) {
+	// Demo timeout
+	idleTime = SDL_GetTicks() + T_DEMO;
 
-		if (loop() == QUIT) return QUIT;
+	while (true) {
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (loop() == E_QUIT) return E_QUIT;
+
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			option = 5;
 
 		}
+		if (controls[C_UP].state) {
+
+			releaseControl(C_UP);
+
+			option = (option + 5) % 6;
+
+		}
+
+		if (controls[C_DOWN].state) {
+
+			releaseControl(C_DOWN);
+
+			option = (option + 1) % 6;
+
+		}
+
+		if (controls[C_ENTER].state) {
+
+			releaseControl(C_ENTER);
+
+			switch(option) {
+
+				case 0: // New game
+
+					while (true) {
+
+						ret = generic(newGameOptions, 5, &suboption);
+
+						if (ret == E_QUIT) return E_QUIT;
+						if (ret < 0) break;
+
+						switch (suboption) {
+
+							case 0:
+
+								if (newGameEpisode(M_SINGLE) == E_QUIT)
+									return E_QUIT;
+
+								break;
+
+							case 1:
+
+								if (newGameEpisode(M_COOP) == E_QUIT)
+									return E_QUIT;
+
+								break;
+
+							case 2:
+
+								if (newGameEpisode(M_BATTLE) == E_QUIT)
+									return E_QUIT;
+
+								break;
+
+							case 3:
+
+								if (newGameEpisode(M_TEAMBATTLE) == E_QUIT)
+									return E_QUIT;
+
+								break;
+
+							case 4:
+
+								if (joinGame() == E_QUIT) return E_QUIT;
+
+								break;
+
+						}
+
+					}
+
+					break;
+
+				case 1: // Load game
+
+					if (loadGame() == E_QUIT) return E_QUIT;
+
+					break;
+
+				case 2: // Instructions
+
+					scene = new Scene("instruct.0sc");
+
+					if (scene->run() == E_QUIT) {
+
+						delete scene;
+
+						return E_QUIT;
+
+					}
+
+					delete scene;
+
+					break;
+
+				case 3: // Setup options
+
+					if (setup() == E_QUIT) return E_QUIT;
+
+					break;
+
+				case 4: // Order info
+
+					scene = new Scene("order.0sc");
+
+					if (scene->run() == E_QUIT) {
+
+						delete scene;
+
+						return E_QUIT;
+
+					}
+
+					delete scene;
+
+					break;
+
+				case 5: // Exit
+
+					return E_NONE;
+
+			}
+
+			// Restore the main menu palette
+			usePalette(palettes[0]);
+
+			// New demo timeout
+			idleTime = SDL_GetTicks() + T_DEMO;
+
+		}
+
+
+		if (idleTime <= SDL_GetTicks()) {
+
+			// Use the menu palette for the level loading screen
+			usePalette(palettes[1]);
+
+			// Create the player
+			nPlayers = 1;
+			localPlayer = players = new Player[1];
+			localPlayer->init(characterName, NULL, 0);
+
+
+			// Load the macro
+
+			try {
+
+				level = new DemoLevel("macro.2");
+
+			} catch (int e) {
+
+				delete[] players;
+				localPlayer = NULL;
+
+				break;
+
+			}
+
+			// Play the level
+			if (level->run() == E_QUIT) {
+
+				delete level;
+				delete[] players;
+
+				return E_QUIT;
+
+			}
+
+			delete level;
+			delete[] players;
+			localPlayer = NULL;
+
+			playMusic("menusng.psm");
+
+			// Restore the main menu palette
+			usePalette(palettes[0]);
+
+			idleTime = SDL_GetTicks() + T_DEMO;
+
+		}
+
+		SDL_Delay(T_FRAME);
 
 		SDL_FillRect(screen, NULL, 28);
 
@@ -1600,102 +1811,9 @@ int Menu::run () {
 		dst.y = ((screenH - 200) >> 1) + src.y;
 		SDL_BlitSurface(screens[1], &src, screen, &dst);
 
-		if (controls[C_UP].state == SDL_PRESSED) {
-
-			releaseControl(C_UP);
-
-			option = (option + 5) % 6;
-
-		}
-
-		if (controls[C_DOWN].state == SDL_PRESSED) {
-
-			releaseControl(C_DOWN);
-
-			option = (option + 1) % 6;
-
-		}
-
-
-		if (controls[C_ENTER].state == SDL_PRESSED) {
-
-			releaseControl(C_ENTER);
-
-			switch(option) {
-
-				case 0: // New game
-
-					if (newGame() == QUIT) return QUIT;
-
-					break;
-
-				case 1: // Load game
-
-					if (loadGame() == QUIT) return QUIT;
-
-					break;
-
-				case 2: // Instructions
-
-					sceneInst = new Scene("instruct.0sc");
-
-					if (sceneInst->run() == QUIT) {
-
-						delete sceneInst;
-
-						return QUIT;
-
-					}
-
-					delete sceneInst;
-
-					break;
-
-				case 3: // Setup options
-
-					if (setup() == QUIT) return QUIT;
-
-					break;
-
-				case 4: // Order info
-
-					sceneInst = new Scene("order.0sc");
-
-					if (sceneInst->run() == QUIT) {
-
-						delete sceneInst;
-
-						return QUIT;
-
-					}
-
-					delete sceneInst;
-
-					break;
-
-				case 5: // Exit
-
-					return SUCCESS;
-
-			}
-
-			usePalette(palettes[0]);
-
-		}
-
 	}
 
-	return SUCCESS;
-
-}
-
-
-void Menu::setNextLevel (char *fn) {
-
-	delete[] nextLevel;
-	nextLevel = fn;
-
-	return;
+	return E_NONE;
 
 }
 

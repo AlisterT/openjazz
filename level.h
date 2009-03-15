@@ -45,9 +45,10 @@
 #define TH         32 /* Tile height */
 #define SKEY      254 /* As in sprite colour key */
 #define TKEY      127 /* As in tileset colour key */
-#define HURTTIME 1000
-#define EOLTIME  4000
-#define FLASHTIME 100
+
+// Delays
+#define T_HURT 1000
+#define T_WON  6000
 
 
 
@@ -87,10 +88,9 @@ typedef struct {
 
 class Level {
 
-	private:
+	protected:
 		PaletteEffect *bgPE;
 		char          *sceneFile;
-		Player        *localPlayer;
 		Sprite        *spriteSet; // 208 of which are usually in mainchar.000
 		SDL_Surface   *tileSet;
 		Anim           animSet[ANIMS];
@@ -98,49 +98,76 @@ class Level {
 		signed char    eventSet[EVENTS][ELENGTH]; // Not all used
 		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
 		GridElement    grid[LH][LW]; // All levels are the same size
-		SDL_Color      levelPalette[256];
-		int            sprites;
+		SDL_Color      palette[256];
+		SDL_Color      skyPalette[256];
+		bool           sky;
 		unsigned char  skyOrb;
-		int            levelNum, worldNum;
+		int            sprites;
+		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char  difficulty;
 		int            pathLength;
-		int            endTime, winTime;
+		int            ticks, endTime, winTime;
 		int            enemies, items;
 		fixed          waterLevel;
+		int            gameMode;
 
-		int  loadSprites (char * fn);
-		int  loadTiles   (char * fn);
-		void createPEs   (int bgType);
-		int  playFrame   (int ticks);
-		void draw        (int ticks);
+		int  loadSprites   (char *fn);
+		int  loadTiles     (char *fn);
+
+	protected:
+		void load      (char *fn, unsigned char diff, bool checkpoint);
+		int  playFrame ();
+		void draw      ();
 
 	public:
-		char        *currentFile;
 		Event       *firstEvent;
 		Bullet      *firstBullet;
 		signed char *pathX;
 		signed char *pathY;
-		SDL_Color    skyPalette[256];
 		int          pathNode;
 
+		Level                       ();
 		Level                       (char *fn, unsigned char diff,
 			bool checkpoint);
-		~Level                      ();
-		int           run           ();
-		int           checkMask     (fixed x, fixed y);
-		int           checkMaskDown (fixed x, fixed y);
-		void          setNext       (int newLevelNum, int newWorldNum);
-		GridElement * getGrid       (unsigned char gridX, unsigned char gridY);
+		virtual ~Level              ();
+		bool          checkMask     (fixed x, fixed y);
+		bool          checkMaskDown (fixed x, fixed y);
+		bool          checkSpikes   (fixed x, fixed y);
+		void          setNext       (int nextLevel, int nextWorld);
+		void          setTile       (unsigned char gridX, unsigned char gridY,
+			unsigned char tile);
 		signed char * getEvent      (unsigned char gridX, unsigned char gridY);
+		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
+		int           getEventTime  (unsigned char gridX, unsigned char gridY);
+		void          clearEvent    (unsigned char gridX, unsigned char gridY);
+		bool          hitEvent      (unsigned char gridX, unsigned char gridY,
+			bool TNT);
+		void          setEventTime  (unsigned char gridX, unsigned char gridY,
+			int time);
 		signed char * getBullet     (unsigned char bullet);
 		Sprite *      getSprite     (unsigned char sprite);
 		Anim *        getAnim       (unsigned char anim);
 		Sprite *      getFrame      (unsigned char anim, unsigned char frame);
 		void          addTimer      ();
 		void          setWaterLevel (unsigned char gridY);
-		fixed         getWaterLevel (int ticks);
-		void          win           (int ticks);
+		fixed         getWaterLevel (int phase);
+		void          win           ();
 		Scene *       createScene   ();
+		void          receive       (unsigned char *buffer);
+		virtual int   run           ();
+
+};
+
+
+class DemoLevel : public Level {
+
+	private:
+		unsigned char *macro;
+
+	public:
+		DemoLevel  (char *fn);
+		~DemoLevel ();
+		int run    ();
 
 };
 

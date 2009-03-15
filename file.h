@@ -30,6 +30,7 @@ class File {
 	public:
 		File                           (char * fileName, bool write);
 		~File                          ();
+
 		int                getSize     ();
 		void               seek        (int offset, bool reset);
 		int                tell        ();

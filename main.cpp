@@ -30,6 +30,12 @@
 #include "OpenJazz.h"
 #include <string.h>
 
+#ifdef WIN32
+	#include <winsock.h>
+#else
+	#include <signal.h>
+#endif
+
 
 int oldTicks;
 bool fakePalette;
@@ -40,6 +46,13 @@ int loadMain () {
 	File *f;
 	unsigned char *pixels, *sorted;
 	int count, x, y;
+#ifdef WIN32
+	WSADATA WSAData;
+
+
+	// Start Windows Sockets
+	WSAStartup(MAKEWORD(1, 0), &WSAData);
+#endif
 
 
 	// Initialise video settings
@@ -103,20 +116,30 @@ int loadMain () {
 	for (count = 0; count < CONTROLS; count++) {
 
 		controls[count].time = 0;
-		controls[count].state = SDL_RELEASED;
+		controls[count].state = false;
 
 	}
 
 
 	// Create the player's name
-	localPlayerName = new char[STRING_LENGTH + 1];
-	strcpy(localPlayerName, "JAZZ");
+	characterName = new char[STRING_LENGTH + 1];
+	strcpy(characterName, CHAR_NAME);
+
+	// Assign the player's colour
+	characterCols[0] = CHAR_FUR;
+	characterCols[1] = CHAR_BAND;
+	characterCols[2] = CHAR_GUN;
+	characterCols[3] = CHAR_WBAND;
+
+
+	// Create the network address
+	netAddress = cloneString(NET_ADDRESS);
 
 
 	// Open config file
 	try {
 
-		f = new File("openjazz.cfg", false);
+		f = new File(CONFIG_FILE, false);
 
 	} catch (int e) {
 
@@ -152,9 +175,15 @@ int loadMain () {
 
 		// Read the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			localPlayerName[count] = f->loadChar();
+			characterName[count] = f->loadChar();
 
-		localPlayerName[STRING_LENGTH] = 0;
+		characterName[STRING_LENGTH] = 0;
+
+		// Read the player's colours
+		characterCols[0] = f->loadChar();
+		characterCols[1] = f->loadChar();
+		characterCols[2] = f->loadChar();
+		characterCols[3] = f->loadChar();
 
 		delete f;
 
@@ -167,19 +196,20 @@ int loadMain () {
 	// Create the game's window
 
 #ifdef FULLSCREEN_ONLY
-	if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
-	                               SDL_FULLSCREEN | SDL_DOUBLEBUF |
-	                               SDL_HWSURFACE | SDL_HWPALETTE   )) == NULL) {
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
 #else
-	if ((screen = SDL_SetVideoMode(screenW, screenH, 8,
-	                               SDL_RESIZABLE | SDL_DOUBLEBUF |
-	                               SDL_HWSURFACE | SDL_HWPALETTE  )) == NULL) {
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
 #endif
+
+	if (!screen) {
+
 		fprintf(stderr, "Could not set video mode: %s\n", SDL_GetError());
 
-		delete localPlayerName;
+		delete characterName;
 
-		return FAILURE;
+		return E_VIDEO;
 
 	}
 
@@ -190,15 +220,11 @@ int loadMain () {
 
 
 	// Generate the logical palette
-	for (count = 0; count < 256; count++) {
+	for (count = 0; count < 256; count++)
+		logicalPalette[count].r = logicalPalette[count].g =
+ 			logicalPalette[count].b = count;
 
-		logicalPalette[count].r = count;
-		logicalPalette[count].g = count;
-		logicalPalette[count].b = count;
-
-	}
-
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+	restorePalette(screen);
 
 
 	// Set up audio
@@ -216,9 +242,9 @@ int loadMain () {
 
 		closeAudio();
 
-		delete localPlayerName;
+		delete characterName;
 
-		return FAILURE;
+		return e;
 
 	}
 
@@ -332,9 +358,9 @@ int loadMain () {
 
 		closeAudio();
 
-		delete[] localPlayerName;
+		delete[] characterName;
 
-		return FAILURE;
+		return e;
 
 	}
 
@@ -347,7 +373,7 @@ int loadMain () {
 	oldTicks = SDL_GetTicks() - 20;
 
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
@@ -372,12 +398,14 @@ void freeMain () {
 	SDL_FreeSurface(panelAmmo[3]);
 	SDL_FreeSurface(panelAmmo[4]);
 
+
 	closeAudio();
+
 
 	// Open config file
 	try {
 
-		f = new File("openjazz.cfg", true);
+		f = new File(CONFIG_FILE, true);
 
 	} catch (int e) {
 
@@ -416,17 +444,30 @@ void freeMain () {
 
 		// Write the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			f->storeChar(localPlayerName[count]);
+			f->storeChar(characterName[count]);
+
+		// Write the player's colour
+		f->storeChar(characterCols[0]);
+		f->storeChar(characterCols[1]);
+		f->storeChar(characterCols[2]);
+		f->storeChar(characterCols[3]);
 
 		delete f;
 
 	} else {
 
-		printf("Could not write configuration file.\n");
+		fprintf(stderr, "Could not write configuration file.\n");
 
 	}
 
-	delete[] localPlayerName;
+	delete[] characterName;
+
+
+#ifdef WIN32
+	// Shut down Windows Sockets
+	WSACleanup();
+#endif
+
 
 	return;
 
@@ -435,8 +476,8 @@ void freeMain () {
 
 void releaseControl (int control) {
 
-	controls[control].time = oldTicks + 500;
-	controls[control].state = SDL_RELEASED;
+	controls[control].time = oldTicks + T_KEY;
+	controls[control].state = false;
 
 	return;
 
@@ -463,176 +504,195 @@ void update () {
 
 int loop () {
 
-  SDL_Event event;
-  SDL_Color shownPalette[256];
-  int count;
+	SDL_Event event;
+	SDL_Color shownPalette[256];
+	int count;
 
 
-  update();
+	update();
 
 
-  // Process system events
-  while (SDL_PollEvent(&event)) {
+	// Process system events
+	while (SDL_PollEvent(&event)) {
 
-    switch (event.type) {
+		switch (event.type) {
 
-      case SDL_KEYDOWN:
-
-#ifndef FULLSCREEN_ONLY
-        // If Alt + Enter has been pressed, go to full screen
-        if ((event.key.keysym.sym == SDLK_RETURN) &&
-            (event.key.keysym.mod & KMOD_ALT)        ) {
-
-          fullscreen = !fullscreen;
-
-          if (fullscreen) {
-
-            SDL_ShowCursor(SDL_DISABLE);
-            screen = SDL_SetVideoMode(screenW, screenH, 8,
-                                      SDL_FULLSCREEN | SDL_DOUBLEBUF |
-                                      SDL_HWSURFACE | SDL_HWPALETTE);
-            SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-            SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
-            // A real 8-bit display is quite likely if the user has the right
-            // video card, the right video drivers, the right version of
-            // DirectX/whatever, and the right version of SDL. In other words,
-            // it's not likely enough.
-            // If a real palette is assumed when
-            // a) There really is a real palette, there will be an extremely
-            // small speed gain
-            // b) The palette is emulated, there will be a HUGE speed loss
-            // Therefore, assume the palette is emulated
-            // To do: Find a better way!
-            fakePalette = true;
-
-          } else {
-
-            screen = SDL_SetVideoMode(screenW, screenH, 8,
-                                      SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                      SDL_HWSURFACE | SDL_HWPALETTE  );
-            SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-            SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-            SDL_ShowCursor(SDL_ENABLE);
-
-            // Assume that in windowed mode the palette is being emulated
-            // This is extremely likely
-            // To do: Find a better way!
-            fakePalette = true;
-
-          }
-
-        }
-
-        // The absence of a break statement is intentional
-#endif
-
-      case SDL_KEYUP:
-
-        for (count = 0; count < CONTROLS; count++)
-          if (event.key.keysym.sym == keys[count].key)
-            keys[count].state = event.key.state;
-
-        break;
-
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
-
-        for (count = 0; count < CONTROLS; count++)
-          if (event.jbutton.button == buttons[count].button)
-            buttons[count].state = event.jbutton.state;
-
-        break;
-
-      case SDL_JOYAXISMOTION:
-
-        for (count = 0; count < CONTROLS; count++)
-          if (event.jaxis.axis == axes[count].axis) {
-
-            if (!axes[count].direction && (event.jaxis.value < -16384))
-              axes[count].state = SDL_PRESSED;
-
-            else if (axes[count].direction && (event.jaxis.value > 16384))
-              axes[count].state = SDL_PRESSED;
-
-            else axes[count].state = SDL_RELEASED;
-
-          }
-
-      break;
+			case SDL_KEYDOWN:
 
 #ifndef FULLSCREEN_ONLY
-      case SDL_VIDEORESIZE:
+				// If Alt + Enter has been pressed, go to full screen
+				if ((event.key.keysym.sym == SDLK_RETURN) &&
+					(event.key.keysym.mod & KMOD_ALT)) {
 
-        screenW = event.resize.w;
-        screenH = event.resize.h;
-        screen = SDL_SetVideoMode(screenW, screenH, 8,
-                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                  SDL_HWSURFACE | SDL_HWPALETTE  );
+					fullscreen = !fullscreen;
 
-        // The absence of a break statement is intentional
+					if (fullscreen) {
 
-      case SDL_VIDEOEXPOSE:
+						SDL_ShowCursor(SDL_DISABLE);
+						screen = SDL_SetVideoMode(screenW, screenH, 8,
+							SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE |
+							SDL_HWPALETTE);
+						SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0,
+							256);
+						SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0,
+							256);
 
-        SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-        SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+						/* A real 8-bit display is quite likely if the user has
+						the right video card, the right video drivers, the right
+						version of DirectX/whatever, and the right version of
+						SDL. In other words, it's not likely enough.
+						If a real palette is assumed when
+						a) there really is a real palette, there will be an
+							extremely small speed gain.
+						b) the palette is emulated, there will be a HUGE speed
+							loss.
+						Therefore, assume the palette is emulated.
+						To do: Find a better way! */
+						fakePalette = true;
 
-        break;
+					} else {
+
+						screen = SDL_SetVideoMode(screenW, screenH, 8,
+							SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
+							SDL_HWPALETTE);
+						SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0,
+							256);
+						SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0,
+							256);
+						SDL_ShowCursor(SDL_ENABLE);
+
+						/* Assume that in windowed mode the palette is being
+						emulated.
+						This is extremely likely.
+						To do: Find a better way! */
+						fakePalette = true;
+
+					}
+
+				}
+
+				// The absence of a break statement is intentional
 #endif
 
-      case SDL_QUIT:
+			case SDL_KEYUP:
 
-        return QUIT;
+				for (count = 0; count < CONTROLS; count++)
+					if (event.key.keysym.sym == keys[count].key)
+						keys[count].state = event.key.state;
 
-    }
+				break;
 
-  }
+			case SDL_JOYBUTTONDOWN:
+			case SDL_JOYBUTTONUP:
 
-  // Apply controls to universal control tracking
-  for (count = 0; count < CONTROLS; count++) {
+				for (count = 0; count < CONTROLS; count++)
+					if (event.jbutton.button == buttons[count].button)
+						buttons[count].state = event.jbutton.state;
 
-    if ((keys[count].state == SDL_PRESSED) ||
-        (buttons[count].state == SDL_PRESSED) || 
-        (axes[count].state == SDL_PRESSED)      ) {
+				break;
 
-      if (controls[count].time < oldTicks) controls[count].state = SDL_PRESSED;
+			case SDL_JOYAXISMOTION:
 
-    } else {
+				for (count = 0; count < CONTROLS; count++)
+					if (event.jaxis.axis == axes[count].axis) {
 
-      controls[count].time = 0;
-      controls[count].state = SDL_RELEASED;
+						if (!axes[count].direction &&
+							(event.jaxis.value < -16384))
+							axes[count].state = SDL_PRESSED;
 
-    }
+						else if (axes[count].direction &&
+							(event.jaxis.value > 16384))
+							axes[count].state = SDL_PRESSED;
 
-  }
+						else axes[count].state = SDL_RELEASED;
+
+					}
+
+				break;
+
+#ifndef FULLSCREEN_ONLY
+			case SDL_VIDEORESIZE:
+
+				screenW = event.resize.w;
+				screenH = event.resize.h;
+				screen = SDL_SetVideoMode(screenW, screenH, 8,
+					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
+					SDL_HWPALETTE);
+
+				// The absence of a break statement is intentional
+
+			case SDL_VIDEOEXPOSE:
+
+				SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+				SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+				break;
+#endif
+
+			case SDL_QUIT:
+
+				return E_QUIT;
+
+		}
+
+	}
+
+	// Apply controls to universal control tracking
+	for (count = 0; count < CONTROLS; count++) {
+
+		if ((keys[count].state == SDL_PRESSED) ||
+			(buttons[count].state == SDL_PRESSED) ||
+			(axes[count].state == SDL_PRESSED)) {
+
+			if (controls[count].time < oldTicks) controls[count].state = true;
+
+		} else {
+
+			controls[count].time = 0;
+			controls[count].state = false;
+
+		}
+
+	}
 
 
-  // Apply palette effects
+	// Apply palette effects
 
-  if (firstPE) {
+	if (firstPE) {
 
-    // If the palette is being emulated, compile all palette changes and apply
-    // them all at once.
-    // If the palette is being used directly, apply all palette effects directly
-    if (fakePalette) {
+		/* If the palette is being emulated, compile all palette changes and
+		apply them all at once.
+		If the palette is being used directly, apply all palette effects
+		directly. */
 
-      memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
+		if (fakePalette) {
 
-      firstPE->apply(shownPalette, false);
+			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
 
-      SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+			firstPE->apply(shownPalette, false);
 
-    } else {
+			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
-      firstPE->apply(shownPalette, true);
+		} else {
 
-    }
+			firstPE->apply(shownPalette, true);
 
-  }
+		}
 
-  return SUCCESS;
+	}
+
+	return E_NONE;
 
 }
+
+
+#ifndef WIN32
+void pipeSignal (int val) {
+
+	return;
+
+}
+#endif
 
 
 int main(int argc, char *argv[]) {
@@ -685,8 +745,7 @@ int main(int argc, char *argv[]) {
 
 		} else {
 
-			path = new char[strlen(argv[1]) + 1];
-			strcpy(path, argv[1]);
+			path = cloneString(argv[1]);
 
 		}
 
@@ -696,7 +755,7 @@ int main(int argc, char *argv[]) {
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
-	             SDL_INIT_TIMER                                       ) < 0) {
+		SDL_INIT_TIMER) < 0) {
 
 		fprintf(stderr, "Could not start SDL: %s\n", SDL_GetError());
 
@@ -704,9 +763,14 @@ int main(int argc, char *argv[]) {
 
 	}
 
+#ifndef WIN32
+	// Prevent SIGPIPE from ending the program
+	signal(SIGPIPE, &pipeSignal);
+#endif
+
 	// Load universal game data and establish a window
 
-	if (loadMain() != SUCCESS) {
+	if (loadMain() != E_NONE) {
 
 		SDL_Quit();
 		delete[] path;
@@ -717,12 +781,12 @@ int main(int argc, char *argv[]) {
 
 
 	// Show the startup cutscene
-//	if (runScene("startup.0sc") != QUIT) {
+//	if (runScene("startup.0sc") != E_QUIT) {
 
 		// Load the menu
 		try {
 
-			menuInst = new Menu();
+			menu = new Menu();
 
 		} catch (int e) {
 
@@ -735,14 +799,14 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Run the menu
-		if (menuInst->run() == SUCCESS) {
+		if (menu->run() == E_NONE) {
 
 			// Show the ending cutscene
 //			runScene("end.0sc");
 
 		}
 
-		delete menuInst;
+		delete menu;
 
 //	}
 

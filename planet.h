@@ -27,6 +27,7 @@ class Planet {
 	public:
 		Planet  (char * fn);
 		~Planet ();
+
 		int run ();
 
 };

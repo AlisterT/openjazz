@@ -41,7 +41,7 @@ Scene::Scene (char * fn) {
 
 	} catch (int e) {
 
-		throw FAILURE;
+		throw e;
 
 	}
 
@@ -176,17 +176,16 @@ int Scene::run () {
 
 	SDL_Rect dst;
 
-	while (1) {
+	while (true) {
 
-		if (loop() == QUIT) return QUIT;
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if ((controls[C_ENTER].state == SDL_PRESSED) ||
-		    (controls[C_ESCAPE].state == SDL_PRESSED)  ) {
+		if (controls[C_ENTER].state || controls[C_ESCAPE].state) {
 
 			releaseControl(C_ENTER);
 			releaseControl(C_ESCAPE);
 
-			return SUCCESS;
+			return E_NONE;
 
 		}
 
@@ -195,11 +194,11 @@ int Scene::run () {
 		dst.x = (screenW - 320) >> 1;
 		dst.y = (screenH - 200) >> 1;
 		SDL_BlitSurface(sceneBGs[0], NULL, screen, &dst);
-		SDL_Delay(20);
+		SDL_Delay(T_FRAME);
 
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 

@@ -30,14 +30,14 @@
 #include <string.h>
 
 
-int Level::checkMask (fixed x, fixed y) {
+bool Level::checkMask (fixed x, fixed y) {
 
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
-		return 1;
+		return true;
 
 	// Event 122 is one-way
-	if (grid[y >> 15][x >> 15].event == 122) return 0;
+	if (grid[y >> 15][x >> 15].event == 122) return false;
 
 	// Check the mask in the tile in question
 	return mask[grid[y >> 15][x >> 15].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
@@ -45,11 +45,11 @@ int Level::checkMask (fixed x, fixed y) {
 }
 
 
-int Level::checkMaskDown (fixed x, fixed y) {
+bool Level::checkMaskDown (fixed x, fixed y) {
 
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
-		return 1;
+		return true;
 
 	// Check the mask in the tile in question
 	return mask[grid[y >> 15][x >> 15].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
@@ -57,24 +57,36 @@ int Level::checkMaskDown (fixed x, fixed y) {
 }
 
 
+bool Level::checkSpikes (fixed x, fixed y) {
 
-int Level::playFrame (int ticks) {
+	// Anything off the edge of the map is not spikes
+	if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
+		return false;
 
-	Event *nextEvent;
+	// Event 126 is spikes
+	if (grid[y >> 15][x >> 15].event != 126) return false;
+
+	// Check the mask in the tile in question
+	return mask[grid[y >> 15][x >> 15].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+
+}
+
+
+int Level::playFrame () {
+
 	Bullet *nextBullet;
+	Event *nextEvent;
 	int x, y;
 
 
 	// Search for active events
-	for (y = (localPlayer->viewY >> 15) - 5;
-		y < (((localPlayer->viewY >> 10) + localPlayer->viewH) >> 5) + 5; y++) {
+	for (y = (viewY >> 15) - 5; y < (((viewY >> 10) + viewH) >> 5) + 5; y++) {
 
-		for (x = (localPlayer->viewX >> 15) - 5;
-			x < (((localPlayer->viewX >> 10) + localPlayer->viewW) >> 5) + 5;
-			x++) {
+		for (x = (viewX >> 15) - 5; x < (((viewX >> 10) + viewW) >> 5) + 5; x++)
+			{
 
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
-				grid[y][x].event && (grid[y][x].event < 122)) {
+				grid[y][x].event && (grid[y][x].event < 121)) {
 
 				nextEvent = firstEvent;
 
@@ -97,12 +109,8 @@ int Level::playFrame (int ticks) {
 	}
 
 
-	// Apply controls to local player
-	for (x = 0; x < PCONTROLS; x++)
-		localPlayer->setControl(x, controls[x].state == SDL_PRESSED);
-
-	// Determine the player's trajectory
-	localPlayer->control(ticks);
+	// Determine the players' trajectories
+	for (x = 0; x < nPlayers; x++) players[x].control(ticks);
 
 
 	// Process active events
@@ -122,11 +130,6 @@ int Level::playFrame (int ticks) {
 	}
 
 
-	// Apply as much of that trajectory as possible, without going into the
-	// scenery
-	localPlayer->move(ticks);
-
-
 	// Process bullets
 
 	if (firstBullet) {
@@ -142,36 +145,48 @@ int Level::playFrame (int ticks) {
 	}
 
 
-	// Check for a change in ammo
-	if (controls[C_CHANGE].state == SDL_PRESSED) {
+	// Apply as much of those trajectories as possible, without going into the
+	// scenery
+	for (x = 0; x < nPlayers; x++) players[x].move(ticks);
 
-		releaseControl(C_CHANGE);
 
-		localPlayer->changeAmmo();
+
+
+	// Check if time has run out
+	if ((ticks > endTime) && (difficulty >= 2)) {
+
+		for (x = 0; x < nPlayers; x++) {
+
+			if (players[x].getEnergy()) players[x].kill(endTime);
+
+		}
 
 	}
 
-	// Check if time has run out
-	if ((ticks > endTime) && localPlayer->getEnergy() && (difficulty >= 2))
-		localPlayer->kill(endTime);
-
-
 	// Calculate viewport
-	localPlayer->view(ticks);
+	if (game && winTime && (ticks > winTime)) game->view();
+	else localPlayer->view(ticks);
+
+	// Ensure the new viewport is within the level
+	if (viewX < 0) viewX = 0;
+	if ((viewX >> 10) + viewW >= LW * TW) viewX = ((LW * TW) - viewW) << 10;
+	if (viewY < 0) viewY = 0;
+	if ((viewY >> 10) + viewH >= LH * TH)	viewY = ((LH * TH) - viewH) << 10;
 
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
 
-void Level::draw (int ticks) {
+void Level::draw () {
 
 	GridElement *ge;
 	Event *currentEvent;
 	Bullet *currentBullet;
 	SDL_Rect src, dst;
+	int vX, vY;
 	int x, y, bgScale;
 
 
@@ -181,16 +196,21 @@ void Level::draw (int ticks) {
 	src.x = 0;
 
 
-	// Use the player's viewport
+	// Use the local player's viewport
 	dst.x = 0;
 	dst.y = 0;
-	dst.w = localPlayer->viewW;
-	dst.h = localPlayer->viewH;
+	vX = viewX >> 10;
+	vY = viewY >> 10;
+	dst.w = viewW;
+	dst.h = viewH;
 	SDL_SetClipRect(screen, &dst);
 
 
+	if ((viewW < screenW) || (viewH < screenH)) SDL_FillRect(screen, NULL, 15);
+
+
 	// If there is a sky, draw it
-	if (bgPE->getType() == PE_SKY) {
+	if (sky) {
 
 		// Background scale
 		if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
@@ -200,21 +220,18 @@ void Level::draw (int ticks) {
 		dst.w = screenW;
 		dst.h = bgScale;
 
-		for (y = 0; y < localPlayer->viewH; y += bgScale) {
+		for (y = 0; y < viewH; y += bgScale) {
 
 			dst.y = y;
 			SDL_FillRect(screen, &dst, 156 + (y / bgScale));
 
 		}
 
-		// Assign the correct portion of the sky palette
-		bgPE->setPosition(localPlayer->viewY + (localPlayer->viewH << 9) - F4);
-
 		// Show sun / moon / etc.
 		if (skyOrb) {
 
-			dst.x = (localPlayer->viewW * 4) / 5;
-			dst.y = (localPlayer->viewH * 3) / 25;
+			dst.x = (viewW * 4) / 5;
+			dst.y = (viewH * 3) / 25;
 			src.y = skyOrb << 5;
 			SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -228,35 +245,22 @@ void Level::draw (int ticks) {
 
 	}
 
-	// Tell the diagonal lines background where it should be
-	if (bgPE->getType() == PE_1D)
-		bgPE->setPosition(localPlayer->viewX + localPlayer->viewY);
-
-	// Tell the parallaxing background where it should be
-	else if (bgPE->getType() == PE_2D)
-		bgPE->setPosition(((localPlayer->viewX >> 10) & 65535) +
-			((localPlayer->viewY >> 10) << 16));
-
-	// Tell the underwater darkness effect how dark it should be
-	if (bgPE->getType() == PE_WATER)
-		bgPE->setPosition(localPlayer->getY() - waterLevel);
 
 
 	// Show background tiles
 
-	for (y = 0; y <= ((localPlayer->viewH - 1) >> 5) + 1; y++) {
+	for (y = 0; y <= ((viewH - 1) >> 5) + 1; y++) {
 
-		for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
+		for (x = 0; x <= ((viewW - 1) >> 5) + 1; x++) {
 
 			// Get the grid element from the given coordinates
-			ge = grid[y + (localPlayer->viewY >> 15)] + x +
-				(localPlayer->viewX >> 15);
+			ge = grid[y + (vY >> 5)] + x + (vX >> 5);
 
 			// If this tile uses a black background, draw it
 			if (ge->bg) {
 
-				dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
-				dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
+				dst.x = (x << 5) - (vX & 31);
+				dst.y = (y << 5) - (vY & 31);
 				dst.w = dst.h = TW;
 				SDL_FillRect(screen, &dst, BLACK);
 
@@ -266,8 +270,8 @@ void Level::draw (int ticks) {
 			if ((eventSet[ge->event][E_BEHAVIOUR] != 38) &&
 			    ((ge->event < 124) || (ge->event > 125))  ) {
 
-				dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
-				dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
+				dst.x = (x << 5) - (vX & 31);
+				dst.y = (y << 5) - (vY & 31);
 				src.y = ge->tile << 5;
 				SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -289,9 +293,9 @@ void Level::draw (int ticks) {
 	}
 
 
-	// Show the player
+	// Show the players
 
-	localPlayer->draw(ticks);
+	for (x = 0; x < nPlayers; x++) players[x].draw(ticks);
 
 
 	// Show bullets
@@ -308,19 +312,18 @@ void Level::draw (int ticks) {
 
 	// Show foreground tiles
 
-	for (y = 0; y <= ((localPlayer->viewH - 1) >> 5) + 1; y++) {
+	for (y = 0; y <= ((viewH - 1) >> 5) + 1; y++) {
 
-		for (x = 0; x <= ((localPlayer->viewW - 1) >> 5) + 1; x++) {
+		for (x = 0; x <= ((viewW - 1) >> 5) + 1; x++) {
 
 			// Get the grid element from the given coordinates
-			ge = grid[y + (localPlayer->viewY >> 15)] + x +
-				(localPlayer->viewX >> 15);
+			ge = grid[y + (vY >> 5)] + x + (vX >> 5);
 
 			// If this is an "animated" foreground tile, draw it
 			if (ge->event == 123) {
 
-				dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
-				dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
+				dst.x = (x << 5) - (vX & 31);
+				dst.y = (y << 5) - (vY & 31);
 				if (ticks & 64) src.y = eventSet[ge->event][E_YAXIS] << 5;
 				else src.y = eventSet[ge->event][E_MULTIPURPOSE] << 5;
 				SDL_BlitSurface(tileSet, &src, screen, &dst);
@@ -331,8 +334,8 @@ void Level::draw (int ticks) {
 			if ((ge->event == 124) || (ge->event == 125) ||
 				(eventSet[ge->event][E_BEHAVIOUR] == 38)   ) {
 
-				dst.x = (x << 5) - ((localPlayer->viewX >> 10) & 31);
-				dst.y = (y << 5) - ((localPlayer->viewY >> 10) & 31);
+				dst.x = (x << 5) - (vX & 31);
+				dst.y = (y << 5) - (vY & 31);
 				src.y = ge->tile << 5;
 				SDL_BlitSurface(tileSet, &src, screen, &dst);
 
@@ -344,7 +347,7 @@ void Level::draw (int ticks) {
 
 	// Uncomment the following for a line showing the water level
 /*	dst.x = 0;
-	dst.y = (getWaterLevel(ticks) - localPlayer->viewY) >> 10;
+	dst.y = (getWaterLevel(ticks) - viewY) >> 10;
 	dst.w = screenW;
 	dst.h = 2;
 	SDL_FillRect(screen, &dst, 24); */
@@ -456,16 +459,311 @@ void Level::draw (int ticks) {
 }
 
 
+void Level::setNext (int nextLevel, int nextWorld) {
+
+	unsigned char buffer[MTL_L_PROP];
+
+	nextLevelNum = nextLevel;
+	nextWorldNum = nextWorld;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_PROP;
+		buffer[1] = MT_L_PROP;
+		buffer[2] = 0; // set next level
+		buffer[3] = nextLevel;
+		buffer[4] = nextWorld;
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+void Level::setTile (unsigned char gridX, unsigned char gridY,
+	unsigned char tile) {
+
+	unsigned char buffer[MTL_L_GRID];
+
+	grid[gridY][gridX].tile = tile;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_GRID;
+		buffer[1] = MT_L_GRID;
+		buffer[2] = gridX;
+		buffer[3] = gridY;
+		buffer[4] = 0; // tile variable
+		buffer[5] = tile;
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+signed char * Level::getEvent (unsigned char gridX, unsigned char gridY) {
+
+	int event = grid[gridY][gridX].event;
+
+	if (event) return eventSet[grid[gridY][gridX].event];
+
+	return NULL;
+
+}
+
+
+unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
+
+	return grid[gridY][gridX].hits;
+
+}
+
+
+int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
+
+	return grid[gridY][gridX].time;
+
+}
+
+
+void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
+
+	unsigned char buffer[MTL_L_GRID];
+
+	grid[gridY][gridX].event = 0;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_GRID;
+		buffer[1] = MT_L_GRID;
+		buffer[2] = gridX;
+		buffer[3] = gridY;
+		buffer[4] = 2; // event variable
+		buffer[5] = 0;
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+bool Level::hitEvent (unsigned char gridX, unsigned char gridY, bool TNT) {
+
+	unsigned char buffer[MTL_L_GRID];
+	int hitsToKill;
+
+	if (TNT) grid[gridY][gridX].hits = 254;
+	else grid[gridY][gridX].hits++;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_GRID;
+		buffer[1] = MT_L_GRID;
+		buffer[2] = gridX;
+		buffer[3] = gridY;
+		buffer[4] = 3; // hits variable
+		buffer[5] = grid[gridY][gridX].hits;
+
+		game->send(buffer);
+
+	}
+
+	hitsToKill = eventSet[grid[gridY][gridX].event][E_HITSTOKILL];
+
+	if (hitsToKill && (grid[gridY][gridX].hits >= hitsToKill)) return true;
+
+	return false;
+
+}
+
+
+void Level::setEventTime (unsigned char gridX, unsigned char gridY, int time) {
+
+	grid[gridY][gridX].time = time;
+
+	return;
+
+}
+
+
+signed char * Level::getBullet (unsigned char bullet) {
+
+	return bulletSet[bullet];
+
+}
+
+
+Sprite * Level::getSprite (unsigned char sprite) {
+
+	return spriteSet + sprite;
+
+}
+
+
+Anim * Level::getAnim (unsigned char anim) {
+
+	return animSet + anim;
+
+}
+
+
+Sprite * Level::getFrame (unsigned char anim, unsigned char frame) {
+
+	return animSet[anim].sprites + (frame % animSet[anim].frames);
+
+}
+
+
+void Level::addTimer () {
+
+	unsigned char buffer[MTL_L_PROP];
+
+	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_PROP;
+		buffer[1] = MT_L_PROP;
+		buffer[2] = 2; // add timer
+		buffer[3] = 0;
+		buffer[4] = 0; // Don't really matter
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+void Level::setWaterLevel (unsigned char gridY) {
+
+	unsigned char buffer[MTL_L_PROP];
+
+	waterLevel = gridY << 15;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_PROP;
+		buffer[1] = MT_L_PROP;
+		buffer[2] = 1; // set water level
+		buffer[3] = gridY;
+		buffer[4] = 0; // Doesn't really matter
+
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+fixed Level::getWaterLevel (int phase) {
+
+	if (phase & 1024) return waterLevel - ((phase & 1023) * 32);
+	return waterLevel - ((1024 - (phase & 1023)) * 32);
+
+}
+
+
+void Level::win () {
+
+	unsigned char buffer[MTL_L_WON];
+
+	winTime = ticks;
+
+	if (gameMode != M_SINGLE) {
+
+		buffer[0] = MTL_L_WON;
+		buffer[1] = MT_L_WON;
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+Scene * Level::createScene () {
+
+	return new Scene(sceneFile);
+
+}
+
+
+void Level::receive (unsigned char *buffer) {
+
+	// Interpret data received from client/server
+
+	switch (buffer[1]) {
+
+		case MT_L_PROP:
+
+			if (buffer[2] == 0) {
+
+				nextLevelNum = buffer[3];
+				nextWorldNum = buffer[4];
+
+			} else if (buffer[2] == 1) {
+
+				waterLevel = buffer[3] << 15;
+
+			} else if (buffer[2] == 2) {
+
+				endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+
+			}
+
+			break;
+
+		case MT_L_GRID:
+
+			if (buffer[4] == 0) grid[buffer[3]][buffer[2]].tile = buffer[5];
+			else if (buffer[4] == 2)
+				grid[buffer[3]][buffer[2]].event = buffer[5];
+			else if (buffer[4] == 3)
+				grid[buffer[3]][buffer[2]].hits = buffer[5];
+
+			break;
+
+		case MT_L_WON:
+
+			winTime = ticks;
+
+			break;
+
+	}
+
+	return;
+
+}
+
 
 int Level::run () {
 
-	char *options[5] = {"CONTINUE GAME", "SAVE GAME", "LOAD GAME",
-		"SETUP OPTIONS", "QUIT GAME"};
+	char *options[5] = {"continue game", "save game", "load game",
+		"setup options", "quit game"};
+	PaletteEffect *levelPE;
+	char *string;
 	SDL_Rect dst;
 	float smoothfps;
-	int stats, paused, menu, option;
-	int tickOffset, prevTicks, ticks;
-	int count, perfect, timeBonus;
+	bool paused, pmenu;
+	int stats, option;
+	int tickOffset, prevTicks;
+ 	int perfect, timeBonus;
+ 	int count;
 
 
 	// Arbitrary initial value
@@ -474,28 +772,29 @@ int Level::run () {
 	tickOffset = SDL_GetTicks();
 	ticks = -10;
 
-	option = menu = paused = 0;
-
+	pmenu = paused = false;
+	option = 0;
 	stats = S_NONE;
 
 	timeBonus = -1;
 
-	while (1) {
+	while (true) {
 
 		// Do general processing
-		if (loop() == QUIT) return QUIT;
+		if (loop() == E_QUIT) return E_QUIT;
 
-		if (controls[C_ESCAPE].state == SDL_PRESSED) {
+		if (controls[C_ESCAPE].state) {
 
 			releaseControl(C_ESCAPE);
 
-			paused = !paused;
-			menu = !menu;
+			if (gameMode == M_SINGLE) paused = !paused;
+			pmenu = !pmenu;
 			option = 0;
 
 		}
 
-		if (controls[C_PAUSE].state == SDL_PRESSED) {
+		if ((controls[C_PAUSE].state) &&
+			(gameMode == M_SINGLE)) {
 
 			releaseControl(C_PAUSE);
 
@@ -503,19 +802,20 @@ int Level::run () {
 
 		}
 
-		if (controls[C_STATS].state == SDL_PRESSED) {
+		if (controls[C_STATS].state) {
 
 			releaseControl(C_STATS);
 
-			stats = (stats + 1) & 3;
+			if (gameMode == M_SINGLE) stats ^= S_SCREEN;
+			else stats = (stats + 1) & 3;
 
 		}
 
-		if (menu) {
+		if (pmenu) {
 
 			// Deal with menu controls
 
-			if (controls[C_UP].state == SDL_PRESSED) {
+			if (controls[C_UP].state) {
 
 				releaseControl(C_UP);
 
@@ -523,7 +823,7 @@ int Level::run () {
 
 			}
 
-			if (controls[C_DOWN].state == SDL_PRESSED) {
+			if (controls[C_DOWN].state) {
 
 				releaseControl(C_DOWN);
 
@@ -531,7 +831,7 @@ int Level::run () {
 
 			}
 
-			if (controls[C_ENTER].state == SDL_PRESSED) {
+			if (controls[C_ENTER].state) {
 
 				releaseControl(C_ENTER);
 
@@ -539,8 +839,7 @@ int Level::run () {
 
 					case 0: // Continue
 
-						paused = !paused;
-						menu = !menu;
+						paused = pmenu = false;
 
 						break;
 
@@ -554,27 +853,27 @@ int Level::run () {
 
 					case 3: // Setup
 
-						// Don't want palette effects in setup menu
-						count = bgPE->getType();
-						delete firstPE;
-						firstPE = NULL;
+						if (gameMode == M_SINGLE) {
 
-						if (menuInst->setup() == QUIT) return QUIT;
+							// Don't want palette effects in setup menu
+							levelPE = firstPE;
+							firstPE = NULL;
 
-						// Restore level palette
-						usePalette(levelPalette);
+							if (menu->setup() == E_QUIT) return E_QUIT;
 
-						// Restore palette effects
-						createPEs(count);
+							// Restore level palette
+							usePalette(palette);
 
-						// Ensure player name string is still valid
-						localPlayer->setName(localPlayerName);
+							// Restore palette effects
+							firstPE = levelPE;
+
+						}
 
 						break;
 
 					case 4: // Quit game
 
-						return SUCCESS;
+						return E_NONE;
 
 				}
 
@@ -618,24 +917,50 @@ int Level::run () {
 		}
 
 
+		// Check if level has been won
+		if (game && winTime && (ticks > winTime + T_WON)) {
+
+			if (nextLevelNum == 99) count = game->setLevel(NULL);
+			else {
+
+				string = new char[11];
+				sprintf(string, "level%1i.%03i", nextLevelNum, nextWorldNum);
+				count = game->setLevel(string);
+				delete[] string;
+
+			}
+
+			if (count < 0) return count;
+
+			return WON;
+
+		}
+
 
 		// Process frame-by-frame activity
 
 		if (!paused) {
 
-			if (playFrame(ticks) == FAILURE) return FAILURE;
+			// Apply controls to local player
+			for (count = 0; count < PCONTROLS; count++)
+				localPlayer->setControl(count, controls[count].state);
+
+			count = playFrame();
+
+			if (count < 0) return count;
 
 
 			// Handle player reactions
-			switch (localPlayer->reacted(ticks)) {
+			for (count = 0; count < nPlayers; count++) {
 
-				case PR_KILLED:
+				if (players[count].reacted(ticks) == PR_KILLED) {
 
-					return LOST;
+					if (gameMode == M_SINGLE) return LOST;
 
-				case PR_WON:
+					players[count].reset();
+					players[count].setPosition(checkX << 15, checkY << 15);
 
-					return WON;
+				}
 
 			}
 
@@ -644,37 +969,42 @@ int Level::run () {
 
 		// Draw the graphics
 
-		if ((localPlayer->viewW < screenW) || (localPlayer->viewH < screenH))
-			SDL_FillRect(screen, NULL, 15);
+		draw();
 
 
-		draw(ticks);
-
-
-		if (paused != menu)
+		// If paused, draw "PAUSE"
+		if (paused && !pmenu)
 			fontmn1->showString("PAUSE", (screenW >> 1) - 44, 32);
+
+
+		// If this is a competitive game, draw the score
+		if ((gameMode != M_SINGLE) && (gameMode != M_COOP))
+			fontmn1->showNumber(localPlayer->teamScore, 64, 4);
 
 
 		// Draw player list
 
 		if (stats & S_PLAYERS) {
 
-			dst.x = 128;
+			dst.x = (viewW >> 1) - 32;
 			dst.y = 11;
 			dst.w = 96;
 
 			for (count = 0; count < nPlayers; count++)
-				if ((strlen(players[count].getName()) * 8) + 33 > dst.w)
-					dst.w = (strlen(players[count].getName()) * 8) + 33;
+				if ((strlen(players[count].getName()) * 8) + 57 > dst.w)
+					dst.w = (strlen(players[count].getName()) * 8) + 57;
 
 			dst.h = (nPlayers * 12) + 1;
 			SDL_FillRect(screen, &dst, BLACK);
 
 			for (count = 0; count < nPlayers; count++) {
 
-				panelBigFont->showNumber(count + 1, 152, 14 + (count * 12));
-				panelBigFont->showString(players[count].getName(), 160,
+				panelBigFont->showNumber(count + 1, dst.x + 24,
 					14 + (count * 12));
+				panelBigFont->showString(players[count].getName(), dst.x + 32,
+					14 + (count * 12));
+				panelBigFont->showNumber(players[count].teamScore,
+					dst.x + dst.w - 8, 14 + (count * 12));
 
 			}
 
@@ -685,17 +1015,17 @@ int Level::run () {
 
 		if (stats & S_SCREEN) {
 
-			dst.x = 236;
-			dst.y = 9;
+			dst.x = viewW - 84;
+			dst.y = 11;
 			dst.w = 80;
-			dst.h = 32;
+			dst.h = 25;
 			SDL_FillRect(screen, &dst, BLACK);
 
-			panelBigFont->showNumber(screenW, 268, 15);
-			panelBigFont->showString("x", 272, 15);
-			panelBigFont->showNumber(screenH, 308, 15);
-			panelBigFont->showString("fps", 244, 27);
-			panelBigFont->showNumber((int)smoothfps, 308, 27);
+			panelBigFont->showNumber(screenW, viewW - 52, 14);
+			panelBigFont->showString("x", viewW - 48, 14);
+			panelBigFont->showNumber(screenH, viewW - 12, 14);
+			panelBigFont->showString("fps", viewW - 76, 26);
+			panelBigFont->showNumber((int)smoothfps, viewW - 12, 26);
 
 		}
 
@@ -734,7 +1064,7 @@ int Level::run () {
 				(screenH >> 1) - 40);
 
 			if (enemies)
-				fontmn1->showNumber((localPlayer->enemies * 100) / enemies,
+				fontmn1->showNumber((localPlayer->getEnemies() * 100) / enemies,
 					(screenW >> 1) + 124, (screenH >> 1) - 40);
 			else
 				fontmn1->showNumber(0, (screenW >> 1) + 124,
@@ -744,14 +1074,14 @@ int Level::run () {
 				(screenH >> 1) - 20);
 
 			if (items)
-				fontmn1->showNumber((localPlayer->items * 100) / items,
+				fontmn1->showNumber((localPlayer->getItems() * 100) / items,
 					(screenW >> 1) + 124, (screenH >> 1) - 20);
 			else
 				fontmn1->showNumber(0, (screenW >> 1) + 124,
 					(screenH >> 1) - 20);
 
-			if ((localPlayer->enemies == enemies) &&
-				(localPlayer->items == items)) perfect = 100;
+			if ((localPlayer->getEnemies() == enemies) &&
+				(localPlayer->getItems() == items)) perfect = 100;
 			else perfect = 0;
 
 			fontmn1->showString("PERFECT", (screenW >> 1) - 152, screenH >> 1);
@@ -765,7 +1095,7 @@ int Level::run () {
 		}
 
 
-		if (menu) {
+		if (pmenu) {
 
 			// Draw the menu
 
@@ -777,9 +1107,8 @@ int Level::run () {
 
 			for (count = 0; count < 5; count++) {
 
-				if (count == option)
-					fontmn2->scalePalette(-F2, (-240 * -2) + 48);
-				else fontmn2->scalePalette(-F2, (-240 * -2) + 16);
+				if (count == option) fontmn2->mapPalette(240, 8, 47, -16);
+				else fontmn2->mapPalette(240, 8, 15, -16);
 
 				fontmn2->showString(options[count], screenW >> 2,
 					(screenH >> 1) + (count << 4) - 38);
@@ -790,103 +1119,183 @@ int Level::run () {
 
 		}
 
+
+		// Networking
+
+		if (gameMode != M_SINGLE) {
+
+			count = game->playFrame(ticks);
+
+			switch (count) {
+
+				case E_UNUSED:
+
+					return E_NONE;
+
+				case E_NONE:
+
+					break;
+
+				default:
+
+					return count;
+
+			}
+
+		}
+
 	}
 
-	return SUCCESS;
+	return E_NONE;
 
 }
 
 
-void Level::setNext (int newLevelNum, int newWorldNum) {
+int DemoLevel::run () {
 
-	char *string;
-
-	string = new char[11];
-	sprintf(string, "level%1i.%03i", newLevelNum, newWorldNum);
-	menuInst->setNextLevel(string);
-
-	return;
-
-}
+	SDL_Rect dst;
+	float smoothfps;
+	int stats;
+	int tickOffset, prevTicks;
+	int timeBonus;
+	unsigned char macroPoint;
+	int ret;
 
 
-GridElement * Level::getGrid (unsigned char gridX, unsigned char gridY) {
+	// Arbitrary initial value
+	smoothfps = 50.0f;
 
-	return grid[gridY] + gridX;
+	tickOffset = SDL_GetTicks();
+	ticks = -10;
 
-}
+	stats = S_NONE;
 
+	timeBonus = -1;
 
-signed char * Level::getEvent (unsigned char gridX, unsigned char gridY) {
+	while (true) {
 
-	return eventSet[grid[gridY][gridX].event];
+		// Do general processing
+		if (loop() == E_QUIT) return E_QUIT;
 
-}
+		if (controls[C_ESCAPE].state) {
 
+			releaseControl(C_ESCAPE);
 
-signed char * Level::getBullet (unsigned char bullet) {
+			return E_NONE;
 
-	return bulletSet[bullet];
+		}
 
-}
+		if (controls[C_STATS].state) {
 
+			releaseControl(C_STATS);
 
-Sprite * Level::getSprite (unsigned char sprite) {
+			stats ^= S_SCREEN;
 
-	return spriteSet + sprite;
-
-}
-
-
-Anim * Level::getAnim (unsigned char anim) {
-
-	return animSet + anim;
-
-}
+		}
 
 
-Sprite * Level::getFrame (unsigned char anim, unsigned char frame) {
+		// Calculate smoothed fps
+		smoothfps = smoothfps + 1 - (smoothfps * ((float)mspf) / 1000.0f);
+		/* This equation is a simplified version of
+		(fps * c) + (smoothfps * (1 - c))
+		where c = (1 / fps)
+		and fps = 1000 / mspf
+		In other words, the response of smoothFPS to changes in FPS
+		decreases as the framerate increases 
+		The following version is for c = (1 / smoothfps)
+		*/
+		// smoothfps = (fps / smoothfps) + smoothfps - 1;
 
-	return animSet[anim].sprites + (frame % animSet[anim].frames);
-
-}
-
-
-void Level::addTimer () {
-
-	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
-
-	return;
-
-}
-
-
-void Level::setWaterLevel (unsigned char gridY) {
-
-	waterLevel = gridY << 15;
-
-}
-
-fixed Level::getWaterLevel (int ticks) {
-
-	if (ticks & 1024) return waterLevel - ((ticks & 1023) * 32);
-	return waterLevel - ((1024 - (ticks & 1023)) * 32);
-
-}
+		// Ignore outlandish values
+		if (smoothfps > 9999) smoothfps = 9999;
+		if (smoothfps < 1) smoothfps = 1;
 
 
-void Level::win (int ticks) {
+		// Number of ticks of gameplay since the level started
 
-	winTime = ticks;
+		prevTicks = ticks;
+		ticks = SDL_GetTicks() - tickOffset;
 
-	return;
+		if (ticks > prevTicks + 100) {
 
-}
+			tickOffset += ticks - (prevTicks + 100);
+			ticks = prevTicks + 100;
+
+		}
 
 
-Scene * Level::createScene () {
 
-	return new Scene(sceneFile);
+		// Use macro
+
+		macroPoint = macro[(ticks / 90) % 1024];
+
+		if (macroPoint & 128) return E_NONE;
+
+		if (macroPoint & 1) {
+
+			localPlayer->setControl(C_LEFT, false);
+			localPlayer->setControl(C_RIGHT, false);
+			localPlayer->setControl(C_UP, !(macroPoint & 4));
+
+		} else {
+
+			localPlayer->setControl(C_LEFT, !(macroPoint & 2));
+			localPlayer->setControl(C_RIGHT, macroPoint & 2);
+			localPlayer->setControl(C_UP, false);
+
+		}
+
+		localPlayer->setControl(C_DOWN, macroPoint & 8);
+		localPlayer->setControl(C_FIRE, macroPoint & 16);
+		localPlayer->setControl(C_CHANGE, macroPoint & 32);
+		localPlayer->setControl(C_JUMP, macroPoint & 64);
+
+
+
+		// Check if level has been won
+		if (winTime && (ticks > winTime + T_WON)) return WON;
+
+
+		// Process frame-by-frame activity
+
+		ret = playFrame();
+
+		if (ret < 0) return ret;
+
+
+		// Handle player reactions
+		if (localPlayer->reacted(ticks) == PR_KILLED) return LOST;
+
+
+		// Draw the graphics
+
+		draw();
+
+
+		fontmn1->showString("DEMO", (screenW >> 1) - 36, 32);
+
+
+		// Draw graphics statistics
+
+		if (stats & S_SCREEN) {
+
+			dst.x = 236;
+			dst.y = 9;
+			dst.w = 80;
+			dst.h = 32;
+			SDL_FillRect(screen, &dst, BLACK);
+
+			panelBigFont->showNumber(screenW, 268, 15);
+			panelBigFont->showString("x", 272, 15);
+			panelBigFont->showNumber(screenH, 308, 15);
+			panelBigFont->showString("fps", 244, 27);
+			panelBigFont->showNumber((int)smoothfps, 308, 27);
+
+		}
+
+	}
+
+	return E_NONE;
 
 }
 
