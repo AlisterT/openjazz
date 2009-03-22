@@ -34,7 +34,7 @@ File::File (char * fileName, bool write) {
 	// If that succeeded, done
 	if (f) {
 
-		printf("Opened %s\n", fileName);
+		//printf("Opened %s\n", fileName);
 
 		return;
 
@@ -60,7 +60,7 @@ File::File (char * fileName, bool write) {
 
 	}
 
-	printf("Opened %s\n", filePath);
+	//printf("Opened %s\n", filePath);
 
 	// Free the file path
 	delete[] filePath;

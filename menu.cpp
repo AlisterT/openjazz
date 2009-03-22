@@ -34,6 +34,7 @@
 Menu::Menu () {
 
 	File *f;
+	unsigned char *pixels;
 	time_t currentTime;
 	int count, col;
 
@@ -118,7 +119,7 @@ Menu::Menu () {
 	for (count = 0; count < 256; count++) {
 
 		col = ((palettes[2][count].r >> 1) + (palettes[2][count].g << 1) +
-			(palettes[2][count].b >> 1)  ) / 8;
+			(palettes[2][count].b >> 1)) >> 3;
 
 		if (col > 79) col = 79;
 
@@ -137,8 +138,13 @@ Menu::Menu () {
 
 			episodes = ++count;
 
-			for (; count < 11; count++)
-				screens[count + 3] = createBlankSurface();
+			for (; count < 11; count++) {
+
+				pixels = new unsigned char[1];
+				*pixels = 0;
+				screens[count + 3] = createSurface(pixels, 1, 1);
+
+			}
 
 		}
 
@@ -173,7 +179,7 @@ int Menu::message (char *text) {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ENTER].state || controls[C_ESCAPE].state) {
 
@@ -186,7 +192,7 @@ int Menu::message (char *text) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 15);
+		clearScreen(15);
 
 		// Draw the message
 		fontmn2->showString(text, screenW >> 2, (screenH >> 1) - 16);
@@ -208,7 +214,7 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -220,7 +226,7 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 		for (count = 0; count < options; count++) {
 
@@ -267,9 +273,7 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 int Menu::textInput (char * request, char ** text) {
 
 	char *input;
-	SDL_Event event;
-	SDL_Rect dst;
-	int count, terminate;
+	int count, terminate, character, x;
 	unsigned int cursor;
 
 	// Create input string
@@ -280,144 +284,54 @@ int Menu::textInput (char * request, char ** text) {
 
 	while (true) {
 
-		update();
+		character = loop(KEY_LOOP);
 
+		if (character == E_QUIT) {
 
-		// Process system events
-		while (SDL_PollEvent(&event)) {
+			delete[] input;
 
-			switch (event.type) {
+			return E_QUIT;
 
-				case SDL_KEYDOWN:
+		}
 
-					// Ensure there is space for another character
-					if (cursor < STRING_LENGTH) {
+		// Ensure there is space for another character
+		if (cursor < STRING_LENGTH) {
 
-						terminate = (input[cursor] == 0);
+			terminate = (input[cursor] == 0);
 
-						if ((event.key.keysym.sym == ' ') ||
-							(event.key.keysym.sym == '.') ||
-							((event.key.keysym.sym >= '0') &&
-							(event.key.keysym.sym <= '9')) ||
-							((event.key.keysym.sym >= 'a') &&
-							(event.key.keysym.sym <= 'z'))) {
+			// If the character is valid, add it to the input string
 
-							input[cursor] = event.key.keysym.sym;
-							cursor++;
-							if (terminate) input[cursor] = 0;
+			if ((character == ' ') || (character == '.') ||
+				((character >= '0') && (character <= '9')) ||
+				((character >= 'a') && (character <= 'z'))) {
 
-						} else if ((event.key.keysym.sym >= 'A') &&
-							(event.key.keysym.sym <= 'Z')) {
+				input[cursor] = character;
+				cursor++;
+				if (terminate) input[cursor] = 0;
 
-							input[cursor] = event.key.keysym.sym | 32;
-							cursor++;
-							if (terminate) input[cursor] = 0;
+			} else if ((character >= 'A') && (character <= 'Z')) {
 
-						}
-
-					}
-
-					if ((event.key.keysym.sym == SDLK_DELETE) &&
-						(cursor < strlen(input))) {
-
-						for (count = cursor; count < STRING_LENGTH; count++)
-							input[count] = input[count + 1];
-
-					}
-
-					if ((event.key.keysym.sym == SDLK_BACKSPACE) &&
-						(cursor > 0)) {
-
-						for (count = cursor - 1; count < STRING_LENGTH; count++)
-							input[count] = input[count + 1];
-
-						cursor--;
-
-					}
-
-					// The absence of a break statement is intentional
-
-				case SDL_KEYUP:
-
-					for (count = 0; count < CONTROLS; count++)
-						if (event.key.keysym.sym == keys[count].key)
-							keys[count].state = event.key.state;
-
-					break;
-
-				case SDL_JOYBUTTONDOWN:
-				case SDL_JOYBUTTONUP:
-
-					for (count = 0; count < CONTROLS; count++)
-						if (event.jbutton.button == buttons[count].button)
-							buttons[count].state = event.jbutton.state;
-
-					break;
-
-				case SDL_JOYAXISMOTION:
-
-					for (count = 0; count < CONTROLS; count++)
-						if (event.jaxis.axis == axes[count].axis) {
-
-							if (!axes[count].direction &&
-								(event.jaxis.value < -16384))
-								axes[count].state = SDL_PRESSED;
-
-							else if (axes[count].direction &&
-								(event.jaxis.value > 16384))
-								axes[count].state = SDL_PRESSED;
-
-							else axes[count].state = SDL_RELEASED;
-
-						}
-
-					break;
-
-#ifndef FULLSCREEN_ONLY
-				case SDL_VIDEORESIZE:
-
-					screenW = event.resize.w;
-					screenH = event.resize.h;
-					screen = SDL_SetVideoMode(screenW, screenH, 8,
-						SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-						SDL_HWPALETTE);
-
-					// The absence of a break statement is intentional
-
-				case SDL_VIDEOEXPOSE:
-
-					SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-					SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
-					break;
-#endif
-
-				case SDL_QUIT:
-
-					delete[] input;
-
-					return E_QUIT;
+				input[cursor] = character | 32;
+				cursor++;
+				if (terminate) input[cursor] = 0;
 
 			}
 
 		}
 
-		// Apply controls to universal control tracking
-		for (count = 0; count < CONTROLS; count++) {
+		if ((character == SDLK_DELETE) && (cursor < strlen(input))) {
 
-			if ((keys[count].state == SDL_PRESSED) ||
-				(buttons[count].state == SDL_PRESSED) || 
-				(axes[count].state == SDL_PRESSED)      ) {
+			for (count = cursor; count < STRING_LENGTH; count++)
+				input[count] = input[count + 1];
 
-				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = true;
+		}
 
-			} else {
+		if ((character == SDLK_BACKSPACE) && (cursor > 0)) {
 
-				controls[count].time = 0;
-				controls[count].state = false;
+			for (count = cursor - 1; count < STRING_LENGTH; count++)
+				input[count] = input[count + 1];
 
-			}
+			cursor--;
 
 		}
 
@@ -434,7 +348,7 @@ int Menu::textInput (char * request, char ** text) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 15);
+		clearScreen(15);
 
 		// Draw the prompt
 		fontmn2->showString(request, screenW >> 2, (screenH >> 1) - 16);
@@ -443,17 +357,14 @@ int Menu::textInput (char * request, char ** text) {
 		fontmn2->mapPalette(240, 8, 114, 16);
 		terminate = input[cursor];
 		input[cursor] = 0;
-		dst.x = fontmn2->showString(input, (screenW >> 2) + 8, screenH >> 1);
+		x = fontmn2->showString(input, (screenW >> 2) + 8, screenH >> 1);
 
 		// Draw the cursor
-		dst.w = 8;
-		dst.h = 2;
-		dst.y = (screenH >> 1) + 10;
-		SDL_FillRect(screen, &dst, 79);
+		drawRect(x, (screenH >> 1) + 10, 8, 2, 79);
 
 		// Draw the section of text after the cursor
 		input[cursor] = terminate;
-		fontmn2->showString(input + cursor, dst.x, screenH >> 1);
+		fontmn2->showString(input + cursor, x, screenH >> 1);
 		fontmn2->restorePalette();
 
 
@@ -505,7 +416,7 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -517,7 +428,7 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 		for (count = 0; count < 4; count++) {
 
@@ -630,7 +541,7 @@ int Menu::newGameLevel (int mode) {
 
 	while (true) {
 
-		if (loop()) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -642,7 +553,7 @@ int Menu::newGameLevel (int mode) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 15);
+		clearScreen(15);
 
 		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
 		fontmn2->showString("choose world:", 32, screenH / 3);
@@ -743,7 +654,7 @@ int Menu::newGameEpisode (int mode) {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -755,7 +666,7 @@ int Menu::newGameEpisode (int mode) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 		if ((episode < episodes - 1) || (episode < 6)) {
 
@@ -780,11 +691,8 @@ int Menu::newGameEpisode (int mode) {
 			if (count == episode) {
 
 				fontmn2->mapPalette(240, 8, 79, -80);
-				dst.x = (screenW >> 3) - 4;
-				dst.y = (screenH >> 1) + (count << 4) - 94;
-				dst.w = 136;
-				dst.h = 15;
-				SDL_FillRect(screen, &dst, 79);
+				drawRect((screenW >> 3) - 4, (screenH >> 1) + (count << 4) - 94,
+					136, 15, 79);
 
 			} else if (!exists[count])
 				fontmn2->mapPalette(240, 8, 94, -16);
@@ -868,9 +776,21 @@ int Menu::joinGame () {
 
 		switch (e) {
 
+			case E_S_SOCKET:
+
+				message("SOCKET ERROR");
+
+				break;
+
 			case E_S_ADDRESS:
 
 				message("INVALID ADDRESS");
+
+				break;
+
+			case E_S_CONNECT:
+
+				message("COULD NOT CONNECT");
 
 				break;
 
@@ -880,25 +800,26 @@ int Menu::joinGame () {
 
 				break;
 
-			case E_VERSION:
-
-				message("WRONG SERVER VERSION");
-
-				break;
-
 			case E_DATA:
 
 				message("INCORRECT DATA\nRECEIVED");
 
 				break;
 
+			case E_VERSION:
+
+				message("WRONG SERVER VERSION");
+
+				break;
+
+			case E_UNUSED:
 			case E_QUIT:
 
 				break;
 
 			default:
 
-				message("COULD NOT CONNECT");
+				message("COULD COMPLETE CONNECTION");
 
 				break;
 
@@ -947,86 +868,38 @@ int Menu::setupKeyboard () {
 
 	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
 		"weapon"};
-	SDL_Event event;
-	int progress, count, used;
+	int progress, count, character;
+	bool used;
 
 	progress = 0;
 
 	while (true) {
 
-		update();
+		character = loop(KEY_LOOP);
 
+		if (character == E_QUIT) return E_QUIT;
 
-		// Process system events
-		while (SDL_PollEvent(&event)) {
+		if (character > 0) {
 
-			switch (event.type) {
+			used = false;
 
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
+			// Check if key is already in use
 
-					used = 0;
+			for (count = 0; count < CONTROLS; count++)
+				if (character == keys[count].key) {
 
-					for (count = 0; count < CONTROLS; count++)
-						if (event.key.keysym.sym == keys[count].key) {
+					if (count != progress) used = true;
 
-							keys[count].state = event.key.state;
-							if (count != progress) used = 1;
+				}
 
-						}
+			// If not, assign it to the current control
 
-					if (!used) {
+			if (!used) {
 
-						keys[progress].key = event.key.keysym.sym;
-						progress++;
+				keys[progress].key = character;
+				progress++;
 
-						if (progress == 7) return E_NONE;
-
-					}
-
-					break;
-
-#ifndef FULLSCREEN_ONLY
-				case SDL_VIDEORESIZE:
-
-					screenW = event.resize.w;
-					screenH = event.resize.h;
-					screen = SDL_SetVideoMode(screenW, screenH, 8,
-						SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-						SDL_HWPALETTE);
-
-					// The absence of a break statement is intentional
-
-				case SDL_VIDEOEXPOSE:
-
-					SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-					SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
-					break;
-#endif
-
-				case SDL_QUIT:
-
-					return E_QUIT;
-
-			}
-
-		}
-
-		// Apply controls to universal control tracking
-		for (count = 0; count < CONTROLS; count++) {
-
-			if ((keys[count].state == SDL_PRESSED) ||
-				(buttons[count].state == SDL_PRESSED) || 
-				(axes[count].state == SDL_PRESSED)      ) {
-
-				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = true;
-
-			} else {
-
-				controls[count].time = 0;
-				controls[count].state = false;
+				if (progress == 7) return E_NONE;
 
 			}
 
@@ -1043,7 +916,7 @@ int Menu::setupKeyboard () {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 		for (count = 0; count < 7; count++) {
 
@@ -1078,140 +951,102 @@ int Menu::setupJoystick () {
 
 	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
 		"weapon"};
-	SDL_Event event;
-	int progress, count, used;
+	int progress, count, control;
+	bool used;
 
 	progress = 0;
 
 	while (true) {
 
-		update();
+		control = loop(JOYSTICK_LOOP);
 
+		if (control == E_QUIT) return E_QUIT;
 
-		// Process system events
-		while (SDL_PollEvent(&event)) {
+		switch (control & 0xF00) {
 
-			switch (event.type) {
+			case JOYSTICKB:
 
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
+				used = false;
 
-					for (count = 0; count < CONTROLS; count++)
-						if (event.key.keysym.sym == keys[count].key)
-							keys[count].state = event.key.state;
+				// Check if the button is already in use
 
-					break;
+				for (count = 0; count < CONTROLS; count++)
+					if ((control & 0xFF) == buttons[count].button) {
 
-				case SDL_JOYBUTTONDOWN:
-				case SDL_JOYBUTTONUP:
-
-					used = 0;
-
-					for (count = 0; count < CONTROLS; count++)
-						if (event.jbutton.button == buttons[count].button) {
-
-							buttons[count].state = event.jbutton.state;
-							if (count != progress) used = 1;
-
-						}
-
-					if (!used) {
-
-						buttons[progress].button = event.jbutton.button;
-						progress++;
-
-						if (progress == 7) return E_NONE;
+						if (count != progress) used = true;
 
 					}
 
-					break;
+				// If not, assign it to the current control
 
-				case SDL_JOYAXISMOTION:
+				if (!used) {
 
-					used = 0;
+					buttons[progress].button = control & 0xFF;
+					progress++;
 
-					for (count = 0; count < CONTROLS; count++)
-						if (event.jaxis.axis == axes[count].axis) {
-
-							if (!axes[count].direction &&
-								(event.jaxis.value < -16384)) {
-
-								axes[count].state = SDL_PRESSED;
-								if (count != progress) used = 1;
-
-							} else if (axes[count].direction &&
-								(event.jaxis.value > 16384)) {
-
-								axes[count].state = SDL_PRESSED;
-								if (count != progress) used = 1;
-
-							} else axes[count].state = SDL_RELEASED;
-
-						}
-
-						if (!used && ((event.jaxis.value < -16384) ||
-							(event.jaxis.value > 16384))) {
-
-							axes[progress].axis = event.jaxis.axis;
-							if (event.jaxis.value < -16384)
-								axes[progress].direction = 0;
-							else axes[progress].direction = 1;
-							progress++;
-
-							if (progress == 7) return E_NONE;
-
-						}
-
-						break;
-
-#ifndef FULLSCREEN_ONLY
-					case SDL_VIDEORESIZE:
-
-						screenW = event.resize.w;
-						screenH = event.resize.h;
-						screen = SDL_SetVideoMode(screenW, screenH, 8,
-							SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-							SDL_HWPALETTE);
-
-						// The absence of a break statement is intentional
-
-					case SDL_VIDEOEXPOSE:
-
-						SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0,
-							256);
-						SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0,
-							256);
-
-						break;
-#endif
-
-					case SDL_QUIT:
-
-						return E_QUIT;
+					if (progress == 7) return E_NONE;
 
 				}
 
+				break;
+
+			case JOYSTICKANEG:
+
+				used = false;
+
+				// Check if the arrow is already in use
+
+				for (count = 0; count < CONTROLS; count++)
+					if (((control & 0xFF) == axes[count].axis) &&
+						!axes[count].direction) {
+
+						if (count != progress) used = true;
+
+					}
+
+				// If not, assign it to the current control
+
+				if (!used) {
+
+					axes[progress].axis = control & 0xFF;
+					axes[progress].direction = 0;
+					progress++;
+
+					if (progress == 7) return E_NONE;
+
+				}
+
+				break;
+
+			case JOYSTICKAPOS:
+
+				used = false;
+
+				// Check if the arrow is already in use
+
+				for (count = 0; count < CONTROLS; count++)
+					if (((control & 0xFF) == axes[count].axis) &&
+						axes[count].direction) {
+
+						if (count != progress) used = true;
+
+					}
+
+				// If not, assign it to the current control
+
+				if (!used) {
+
+					axes[progress].axis = control & 0xFF;
+					axes[progress].direction = 1;
+					progress++;
+
+					if (progress == 7) return E_NONE;
+
+				}
+
+				break;
+
 		}
-
-		// Apply controls to universal control tracking
-		for (count = 0; count < CONTROLS; count++) {
-
-			if ((keys[count].state == SDL_PRESSED) ||
-				(buttons[count].state == SDL_PRESSED) || 
-				(axes[count].state == SDL_PRESSED)      ) {
-
-				if (controls[count].time < (int)SDL_GetTicks())
-					controls[count].state = true;
-
-			} else {
-
-				controls[count].time = 0;
-				controls[count].state = false;
-
-			}
-
-		}
-
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1223,7 +1058,7 @@ int Menu::setupJoystick () {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 		for (count = 0; count < 7; count++) {
 
@@ -1263,7 +1098,6 @@ int Menu::setupResolution () {
 	int heightOptions[] = {200, 240, 300, 384, 400, 480, 576, 600, 720, 768,
 		800, 864, 900, 960, 1024, 1080, 1200};
 	SDL_Rect **resolutions;
-	SDL_Rect dst;
 	int dimension, count, maxW, maxH;
 
 	dimension = 0;
@@ -1296,7 +1130,7 @@ int Menu::setupResolution () {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1316,21 +1150,14 @@ int Menu::setupResolution () {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 
 
 		// Show screen corners
-		dst.w = 32;
-		dst.h = 32;
-		dst.x = 0;
-		dst.y = 0;
-		SDL_FillRect(screen, &dst, 79);
-		dst.x = screenW - 32;
-		SDL_FillRect(screen, &dst, 79);
-		dst.y = screenH - 32;
-		SDL_FillRect(screen, &dst, 79);
-		dst.x = 0;
-		SDL_FillRect(screen, &dst, 79);
+		drawRect(0, 0, 32, 32, 79);
+		drawRect(screenW - 32, 0, 32, 32, 79);
+		drawRect(screenW - 32, screenH - 32, 32, 32, 79);
+		drawRect(0, screenH - 32, 32, 32, 79);
 
 
 		fontmn2->showString("x", (screenW >> 2) + 40, screenH >> 1);
@@ -1547,7 +1374,7 @@ int Menu::run () {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1739,7 +1566,7 @@ int Menu::run () {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 28);
+		clearScreen(28);
 
 		dst.x = (screenW >> 2) - 72;
 		dst.y = screenH - (screenH >> 2);

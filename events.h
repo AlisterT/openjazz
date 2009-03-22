@@ -68,7 +68,7 @@ class Event {
 		Event         *next;
 		unsigned char  gridX, gridY; // Grid position of the event
 		fixed          x, y;         // Actual position of the event
-		unsigned char  anim;         // E_LEFTANIM, etc, or 0
+		unsigned char  animType;     // E_LEFTANIM, etc, or 0
 		unsigned char  frame;
 		int            flashTime;
 

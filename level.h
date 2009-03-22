@@ -51,8 +51,7 @@
 #define T_WON  6000
 
 
-
-// Datatypes
+// Datatype
 
 typedef struct {
 
@@ -66,34 +65,17 @@ typedef struct {
 
 } GridElement;
 
-typedef struct {
-
-	SDL_Surface   *pixels; // Pointer to the sprite surface
-	unsigned char  x;      // Horizontal offset
-	unsigned char  y;      // Vertical offset
-
-} Sprite;
-
-typedef struct {
-
-	Sprite         sprites[19]; // Pointers to members of the sprite set
-	signed char    y[19];       // Vertical offsets (for pickup wobble effect)
-	unsigned char  frames;      // Number of frames
-
-} Anim;
-
-
 
 // Class
 
 class Level {
 
 	protected:
-		PaletteEffect *bgPE;
 		char          *sceneFile;
 		Sprite        *spriteSet; // 208 of which are usually in mainchar.000
 		SDL_Surface   *tileSet;
 		Anim           animSet[ANIMS];
+		char           miscAnims[4];
 		signed char    bulletSet[BULLETS][BLENGTH];
 		signed char    eventSet[EVENTS][ELENGTH]; // Not all used
 		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
@@ -111,11 +93,11 @@ class Level {
 		fixed          waterLevel;
 		int            gameMode;
 
-		int  loadSprites   (char *fn);
-		int  loadTiles     (char *fn);
+		int  loadSprites (char *fn);
+		int  loadTiles   (char *fn);
 
 	protected:
-		void load      (char *fn, unsigned char diff, bool checkpoint);
+		int  load      (char *fn, unsigned char diff, bool checkpoint);
 		int  playFrame ();
 		void draw      ();
 
@@ -147,7 +129,7 @@ class Level {
 		signed char * getBullet     (unsigned char bullet);
 		Sprite *      getSprite     (unsigned char sprite);
 		Anim *        getAnim       (unsigned char anim);
-		Sprite *      getFrame      (unsigned char anim, unsigned char frame);
+		Anim *        getMiscAnim   (unsigned char anim);
 		void          addTimer      ();
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel (int phase);

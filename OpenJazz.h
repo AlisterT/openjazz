@@ -78,6 +78,11 @@
 // Standard string length
 #define STRING_LENGTH 32
 
+// Loop return type
+#define NORMAL_LOOP   0
+#define KEY_LOOP      1
+#define JOYSTICK_LOOP 2
+
 // Return values
 #define E_DATA      -14
 #define E_VERSION   -13
@@ -96,6 +101,9 @@
 #define E_NONE       0
 #define WON          1
 #define LOST         2
+#define JOYSTICKB    0x100
+#define JOYSTICKANEG 0x200
+#define JOYSTICKAPOS 0x300
 
 // Time intervals
 #define T_FRAME 20
@@ -120,6 +128,7 @@ typedef int fixed;
 #include "events.h"
 #include "bullet.h"
 #include "game.h"
+#include "sprite.h"
 #include "level.h"
 #include "menu.h"
 
@@ -138,23 +147,23 @@ typedef int fixed;
 
 Extern struct {
 
-	SDLKey key; // Keyboard key
-	Uint8  state;
+	int           key; // Keyboard key
+	unsigned char state;
 
 } keys[CONTROLS];
 
 Extern struct {
 
-	int    button; // Joystick button
-	Uint8  state;
+	int           button; // Joystick button
+	unsigned char state;
 
 } buttons[CONTROLS];
 
 Extern struct {
 
-	int    axis; // Joystick axis
-	int    direction; // Axis direction
-	Uint8  state;
+	int           axis; // Joystick axis
+	int           direction; // Axis direction
+	unsigned char state;
 
 } axes[CONTROLS];
 
@@ -213,15 +222,12 @@ Extern char          *netAddress;
 // Functions in main.cpp
 
 Extern void releaseControl (int control);
-Extern void update         ();
-Extern int  loop           ();
+Extern int  loop           (int type);
 
 
 // Functions in palette.cpp
 
 Extern void usePalette     (SDL_Color *palette);
-Extern void mapPalette     (SDL_Surface *surface, int start, int length,
-	int newStart, int newLength);
 Extern void restorePalette (SDL_Surface *surface);
 
 
@@ -241,8 +247,10 @@ Extern void playSound  (int sound);
 Extern bool          fileExists         (char *fileName);
 Extern SDL_Surface * createSurface      (unsigned char *pixels, int width,
                                          int height);
-Extern SDL_Surface * createBlankSurface ();
 Extern char        * cloneString        (char *string);
+Extern void          clearScreen        (int index);
+Extern void          drawRect           (int x, int y, int width, int height,
+	int index);
 
 
 

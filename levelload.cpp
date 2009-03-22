@@ -69,11 +69,11 @@ int Level::loadSprites (char * fn) {
 
 	// Read horizontal offsets
 	for (count = 0; count < sprites; count++)
-		spriteSet[count].x = sf->loadChar() << 2;
+		spriteSet[count].xOffset = sf->loadChar() << 2;
 
 	// Read vertical offsets
 	for (count = 0; count < sprites; count++)
-		spriteSet[count].y = sf->loadChar();
+		spriteSet[count].yOffset = sf->loadChar();
 
 	// Find where the sprites start in fn
 	sposition = sf->tell();
@@ -101,7 +101,7 @@ int Level::loadSprites (char * fn) {
 			mposition += 2;
 
 			// Create a blank sprite
-			spriteSet[count].pixels = createBlankSurface();
+			spriteSet[count].clearPixels();
 			count++;
 
 		}
@@ -212,7 +212,7 @@ int Level::loadSprites (char * fn) {
 			}
 
 			// Skip to pixels
-			f->seek((width / 4), false);
+			f->seek(width >> 2, false);
 
 			// Next sprite offsets are relative to here
 			if (f == sf) sposition += f->tell();
@@ -264,8 +264,7 @@ int Level::loadSprites (char * fn) {
 
 
 		// Convert the sprite to an SDL surface
-		spriteSet[count].pixels = createSurface(sorted, width, height);
-		SDL_SetColorKey(spriteSet[count].pixels, SDL_SRCCOLORKEY, SKEY);
+		spriteSet[count].setPixels(sorted, width, height);
 
 		// Free redundant data
 		delete[] pixels;
@@ -277,7 +276,7 @@ int Level::loadSprites (char * fn) {
 
 			for (count++; count < sprites; count++) {
 
-				spriteSet[count].pixels = createBlankSurface();
+				spriteSet[count].clearPixels();
 
 			}
 
@@ -294,10 +293,9 @@ int Level::loadSprites (char * fn) {
 
 
 	// Include a blank sprite at the end
-
-	spriteSet[sprites].pixels = createBlankSurface();
-	spriteSet[sprites].x = 0;
-	spriteSet[sprites].y = 0;
+	spriteSet[sprites].clearPixels();
+	spriteSet[sprites].xOffset = 0;
+	spriteSet[sprites].yOffset = 0;
 
 	return E_NONE;
 
@@ -391,7 +389,7 @@ int Level::loadTiles (char * fn) {
 }
 
 
-void Level::load (char *fn, unsigned char diff, bool checkpoint) {
+int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	File *f;
 	unsigned char *buffer;
@@ -424,7 +422,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 			delete[] string;
 
-			throw e;
+			return e;
 
 		}
 
@@ -466,7 +464,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	}
 
-	SDL_FillRect(screen, NULL, 0);
+	clearScreen(0);
 
 	x = (screenW >> 1) - ((strlen(string) + strlen(ext)) << 2);
 	x = fontmn2->showString("LOADING ", x - 60, (screenH >> 1) - 16);
@@ -475,7 +473,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	delete[] string;
 
-	update();
+	if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 
 
@@ -487,7 +485,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	} catch (int e) {
 
-		throw e;
+		return e;
 
 	}
 
@@ -551,7 +549,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 		delete[] string;
 		delete f;
 
-		throw tiles;
+		return tiles;
 
 	}
 
@@ -569,7 +567,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 		delete[] string;
 		delete f;
 
-		throw count;
+		return count;
 
 	}
 
@@ -632,9 +630,9 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 			for (x = 0; x < TW; x++) {
 
-				if (mask[count][((y / 4) * 8) + (x / 4)] == 1)
+				if (mask[count][((y >> 2) << 3) + (x >> 2)] == 1)
 					((char *)(tileSet->pixels))
-						[(count * 32 * 32) + (y * 32) + x] = 88;
+						[(count * TW * TH) + (y * TW) + x] = 88;
 
 			}
 
@@ -713,18 +711,18 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// Create animation set based on that data
 	for (count = 0; count < ANIMS; count++) {
 
-		animSet[count].frames = buffer[(count * 64) + 6];
+		animSet[count].setFrames(buffer[(count * 64) + 6]);
 
-		for (y = 0; y < animSet[count].frames; y++) {
+		for (y = 0; y < buffer[(count * 64) + 6]; y++) {
 
 			// Get frame
 			x = buffer[(count * 64) + 7 + y];
 			if (x > sprites) x = sprites;
 
-			animSet[count].sprites[y] = spriteSet[x];
-
-			// Get vertical offset
-			animSet[count].y[y] = buffer[(count * 64) + 45 + y];
+			// Assign sprite and vertical offset
+			animSet[count].setFrame(y, true);
+			animSet[count].setData(spriteSet + x,
+				buffer[(count * 64) + 45 + y]);
 
 		}
 
@@ -813,17 +811,35 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	delete[] buffer;
 
 
-	// Now at "Section 16"
-
-	// Skip to bullet set
-	f->seek(4, false);
+	// Load Skip to bullet set
+	miscAnims[0] = f->loadChar();
+	miscAnims[1] = f->loadChar();
+	miscAnims[2] = f->loadChar();
+	miscAnims[3] = f->loadChar();
 
 
 	// Load bullet set
 	buffer = f->loadRLE(BULLETS * BLENGTH);
 
-	for (count = 0; count < BULLETS; count++)
+	for (count = 0; count < BULLETS; count++) {
+
 		memcpy(bulletSet[count], buffer + (count * BLENGTH), BLENGTH);
+
+		// Make sure bullets go in the right direction
+
+		if (bulletSet[count][B_XSPEED] > 0)
+			bulletSet[count][B_XSPEED] = -bulletSet[count][B_XSPEED];
+
+		if (bulletSet[count][B_XSPEED | 1] < 0)
+			bulletSet[count][B_XSPEED | 1] = -bulletSet[count][B_XSPEED | 1];
+
+		if (bulletSet[count][B_XSPEED | 2] > 0)
+			bulletSet[count][B_XSPEED | 2] = -bulletSet[count][B_XSPEED | 2];
+
+		if (bulletSet[count][B_XSPEED | 3] < 0)
+			bulletSet[count][B_XSPEED | 3] = -bulletSet[count][B_XSPEED | 3];
+
+	}
 
 	delete[] buffer;
 
@@ -846,35 +862,35 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 			sky = true;
 
 			// Sky background effect
-			bgPE = new SkyPaletteEffect(156, 100, FH, skyPalette, NULL);
+			firstPE = new SkyPaletteEffect(156, 100, FH, skyPalette, NULL);
 
 			break;
 
 		case 8:
 
 			// Parallaxing background effect
-			bgPE = new P2DPaletteEffect(128, 64, FE, NULL);
+			firstPE = new P2DPaletteEffect(128, 64, FE, NULL);
 
 			break;
 
 		case 9:
 
 			// Diagonal stripes "parallaxing" background effect
-			bgPE = new P1DPaletteEffect(128, 32, FH, NULL);
+			firstPE = new P1DPaletteEffect(128, 32, FH, NULL);
 
 			break;
 
 		case 11:
 
 			// The deeper below water, the darker it gets
-			bgPE = new WaterPaletteEffect(1, 250, F32 * 32, NULL);
+			firstPE = new WaterPaletteEffect(1, 250, F32 * 32, NULL);
 
 			break;
 
 		default:
 
 			// No effect, but bgPE must exist so here is a dummy animation
-			bgPE = new PaletteEffect(255, 1, F1, NULL);
+			firstPE = new PaletteEffect(255, 1, F1, NULL);
 
 			break;
 
@@ -886,7 +902,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// be
 
 	// In Diamondus: The red/yellow palette animation
-	firstPE = new RotatePaletteEffect(112, 4, F32, bgPE);
+	firstPE = new RotatePaletteEffect(112, 4, F32, firstPE);
 
 	// In Diamondus: The waterfall palette animation
 	firstPE = new RotatePaletteEffect(116, 8, F16, firstPE);
@@ -907,6 +923,10 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 		firstPE = new RotatePaletteEffect(224, 16, F16, firstPE);
 
 	}
+
+	// Level fade-in/white-in effect
+	if (checkpoint) firstPE = new FadeInPaletteEffect(0, 256, FH, firstPE);
+	else firstPE = new WhiteInPaletteEffect(0, 256, FH, firstPE);
 
 
 	f->seek(1, false);
@@ -936,7 +956,7 @@ void Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	firstEvent = NULL;
 
 
-	return;
+	return E_NONE;
 
 }
 
@@ -952,19 +972,15 @@ Level::Level () {
 
 Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
+	int ret;
+
 	gameMode = game->getMode();
 
 	// Load level data
 
-	try {
+	ret = load(fn, diff, checkpoint);
 
-		load(fn, diff, checkpoint);
-
-	} catch (int e) {
-
-		throw e;
-
-	}
+	if (ret < 0) throw ret;
 
 	return;
 
@@ -974,8 +990,6 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 Level::~Level () {
 
 	// Free all data
-
-	int count;
 
 	stopMusic();
 
@@ -1012,9 +1026,6 @@ Level::~Level () {
 
 	SDL_FreeSurface(tileSet);
 
-	for (count = 0; count <= sprites; count++)
-		SDL_FreeSurface(spriteSet[count].pixels);
-
 	delete[] spriteSet;
 
 	fontmn1->restorePalette();
@@ -1030,7 +1041,7 @@ DemoLevel::DemoLevel (char *fn) {
 
 	File *f;
 	char levelFile[11];
-	int lNum, wNum, diff;
+	int lNum, wNum, diff, ret;
 
 	gameMode = M_SINGLE;
 
@@ -1059,15 +1070,9 @@ DemoLevel::DemoLevel (char *fn) {
 
 	// Load level data
 
-	try {
+	ret = load(levelFile, diff, false);
 
-		load(levelFile, diff, false);
-
-	} catch (int e) {
-
-		throw e;
-
-	}
+	if (ret < 0) throw ret;
 
 	return;
 

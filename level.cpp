@@ -60,8 +60,8 @@ bool Level::checkMaskDown (fixed x, fixed y) {
 bool Level::checkSpikes (fixed x, fixed y) {
 
 	// Anything off the edge of the map is not spikes
-	if ((x < 0) || (y < 0) || (x > (LW * TW << 10)) || (y > (LH * TH << 10)))
-		return false;
+	// Ignore the bottom, as it is deadly anyway
+	if ((x < 0) || (y < 0) || (x > (LW * TW << 10))) return false;
 
 	// Event 126 is spikes
 	if (grid[y >> 15][x >> 15].event != 126) return false;
@@ -206,7 +206,7 @@ void Level::draw () {
 	SDL_SetClipRect(screen, &dst);
 
 
-	if ((viewW < screenW) || (viewH < screenH)) SDL_FillRect(screen, NULL, 15);
+	if ((viewW < screenW) || (viewH < screenH)) clearScreen(15);
 
 
 	// If there is a sky, draw it
@@ -216,16 +216,9 @@ void Level::draw () {
 		if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
 		else bgScale = ((screenH - 34) / 100) + 1;
 
-		dst.x = 0;
-		dst.w = screenW;
-		dst.h = bgScale;
+		for (y = 0; y < viewH; y += bgScale)
+			drawRect(0, y, screenW, bgScale, 156 + (y / bgScale));
 
-		for (y = 0; y < viewH; y += bgScale) {
-
-			dst.y = y;
-			SDL_FillRect(screen, &dst, 156 + (y / bgScale));
-
-		}
 
 		// Show sun / moon / etc.
 		if (skyOrb) {
@@ -241,7 +234,7 @@ void Level::draw () {
 
 		// If there is no sky, draw a blank background
 		// This is only very occasionally actually visible
-		SDL_FillRect(screen, NULL, 127);
+		clearScreen(127);
 
 	}
 
@@ -257,14 +250,10 @@ void Level::draw () {
 			ge = grid[y + (vY >> 5)] + x + (vX >> 5);
 
 			// If this tile uses a black background, draw it
-			if (ge->bg) {
+			if (ge->bg)
+				drawRect((x << 5) - (vX & 31), (y << 5) - (vY & 31), TW, TH,
+					BLACK);
 
-				dst.x = (x << 5) - (vX & 31);
-				dst.y = (y << 5) - (vY & 31);
-				dst.w = dst.h = TW;
-				SDL_FillRect(screen, &dst, BLACK);
-
-			}
 
 			// If this is not a foreground tile, draw it
 			if ((eventSet[ge->event][E_BEHAVIOUR] != 38) &&
@@ -346,11 +335,7 @@ void Level::draw () {
 	}
 
 	// Uncomment the following for a line showing the water level
-/*	dst.x = 0;
-	dst.y = (getWaterLevel(ticks) - viewY) >> 10;
-	dst.w = screenW;
-	dst.h = 2;
-	SDL_FillRect(screen, &dst, 24); */
+/*	drawRect(0, (getWaterLevel(ticks) - viewY) >> 10, screenW, 2, 24); */
 
 
 	SDL_SetClipRect(screen, NULL);
@@ -377,10 +362,7 @@ void Level::draw () {
 	dst.x = 0;
 	dst.y = screenH - 33;
 	SDL_BlitSurface(panel, NULL, screen, &dst);
-	dst.y += 32;
-	dst.w = 320;
-	dst.h = 1;
-	SDL_FillRect(screen, &dst, BLACK);
+	drawRect(0, screenH - 1, 320, 1, BLACK);
 
 
 	// Show panel data
@@ -417,16 +399,14 @@ void Level::draw () {
 
 	// Show ammo
 	if (localPlayer->getAmmo(false) == -1)
-		panelSmallFont->showString(":;", 224, screenH - 13);
-	else panelSmallFont->showNumber(localPlayer->getAmmo(true), 244,
+		panelSmallFont->showString(":;", 225, screenH - 13);
+	else panelSmallFont->showNumber(localPlayer->getAmmo(true), 245,
 		screenH - 13);
 
 
 	// Draw the health bar
 
 	dst.x = 20;
-	dst.y = screenH - 13;
-	dst.h = 7;
 	x = localPlayer->getEnergyBar();
 
 	if (x > F1) {
@@ -442,7 +422,7 @@ void Level::draw () {
 		else if (x <= 1) x = 32 + (((ticks / 75) * 4) & 15);
 
 		// Draw energy bar
-		SDL_FillRect(screen, &dst, x);
+		drawRect(dst.x, screenH - 13, dst.w, 7, x);
 
 		dst.x += dst.w;
 		dst.w = 64 - dst.w;
@@ -451,7 +431,7 @@ void Level::draw () {
 
 
 	// Fill in remaining energy bar space with black
-	SDL_FillRect(screen, &dst, BLACK);
+	drawRect(dst.x, screenH - 13, dst.w, 7, BLACK);
 
 
 	return;
@@ -617,9 +597,9 @@ Anim * Level::getAnim (unsigned char anim) {
 }
 
 
-Sprite * Level::getFrame (unsigned char anim, unsigned char frame) {
+Anim * Level::getMiscAnim (unsigned char anim) {
 
-	return animSet[anim].sprites + (frame % animSet[anim].frames);
+	return animSet + miscAnims[anim];
 
 }
 
@@ -682,6 +662,7 @@ void Level::win () {
 	unsigned char buffer[MTL_L_WON];
 
 	winTime = ticks;
+	firstPE = new WhiteOutPaletteEffect(0, 256, FH, firstPE);
 
 	if (gameMode != M_SINGLE) {
 
@@ -741,6 +722,7 @@ void Level::receive (unsigned char *buffer) {
 		case MT_L_WON:
 
 			winTime = ticks;
+			firstPE = new WhiteOutPaletteEffect(0, 256, FH, firstPE);
 
 			break;
 
@@ -757,13 +739,13 @@ int Level::run () {
 		"setup options", "quit game"};
 	PaletteEffect *levelPE;
 	char *string;
-	SDL_Rect dst;
 	float smoothfps;
 	bool paused, pmenu;
 	int stats, option;
 	int tickOffset, prevTicks;
  	int perfect, timeBonus;
  	int count;
+ 	unsigned int width;
 
 
 	// Arbitrary initial value
@@ -781,7 +763,7 @@ int Level::run () {
 	while (true) {
 
 		// Do general processing
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -986,25 +968,22 @@ int Level::run () {
 
 		if (stats & S_PLAYERS) {
 
-			dst.x = (viewW >> 1) - 32;
-			dst.y = 11;
-			dst.w = 96;
+			width = 96;
 
 			for (count = 0; count < nPlayers; count++)
-				if ((strlen(players[count].getName()) * 8) + 57 > dst.w)
-					dst.w = (strlen(players[count].getName()) * 8) + 57;
+				if ((strlen(players[count].getName()) * 8) + 57 > width)
+					width = (strlen(players[count].getName()) * 8) + 57;
 
-			dst.h = (nPlayers * 12) + 1;
-			SDL_FillRect(screen, &dst, BLACK);
+			drawRect((viewW >> 1) - 32, 11, width, (nPlayers * 12) + 1, BLACK);
 
 			for (count = 0; count < nPlayers; count++) {
 
-				panelBigFont->showNumber(count + 1, dst.x + 24,
+				panelBigFont->showNumber(count + 1, (viewW >> 1) - 8,
 					14 + (count * 12));
-				panelBigFont->showString(players[count].getName(), dst.x + 32,
-					14 + (count * 12));
+				panelBigFont->showString(players[count].getName(),
+					viewW >> 1, 14 + (count * 12));
 				panelBigFont->showNumber(players[count].teamScore,
-					dst.x + dst.w - 8, 14 + (count * 12));
+					(viewW >> 1) + width - 40, 14 + (count * 12));
 
 			}
 
@@ -1015,11 +994,7 @@ int Level::run () {
 
 		if (stats & S_SCREEN) {
 
-			dst.x = viewW - 84;
-			dst.y = 11;
-			dst.w = 80;
-			dst.h = 25;
-			SDL_FillRect(screen, &dst, BLACK);
+			drawRect(viewW - 84, 11, 80, 25, BLACK);
 
 			panelBigFont->showNumber(screenW, viewW - 52, 14);
 			panelBigFont->showString("x", viewW - 48, 14);
@@ -1099,11 +1074,7 @@ int Level::run () {
 
 			// Draw the menu
 
-			dst.x = (screenW >> 2) - 8;
-			dst.y = (screenH >> 1) - 46;
-			dst.w = 144;
-			dst.h = 92;
-			SDL_FillRect(screen, &dst, BLACK);
+			drawRect((screenW >> 2) - 8, (screenH >> 1) - 46, 144, 92, BLACK);
 
 			for (count = 0; count < 5; count++) {
 
@@ -1153,7 +1124,6 @@ int Level::run () {
 
 int DemoLevel::run () {
 
-	SDL_Rect dst;
 	float smoothfps;
 	int stats;
 	int tickOffset, prevTicks;
@@ -1175,7 +1145,7 @@ int DemoLevel::run () {
 	while (true) {
 
 		// Do general processing
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1279,11 +1249,7 @@ int DemoLevel::run () {
 
 		if (stats & S_SCREEN) {
 
-			dst.x = 236;
-			dst.y = 9;
-			dst.w = 80;
-			dst.h = 32;
-			SDL_FillRect(screen, &dst, BLACK);
+			drawRect(236, 9, 80, 32, BLACK);
 
 			panelBigFont->showNumber(screenW, 268, 15);
 			panelBigFont->showString("x", 272, 15);

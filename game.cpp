@@ -27,6 +27,9 @@
 	#define ioctl ioctlsocket
 	#define close closesocket
 	#define socklen_t int
+	#define socketError WSAGetLastError()
+	#define EWOULDBLOCK WSAEWOULDBLOCK
+	#define MSG_NOSIGNAL 0
 #else
 	#include <sys/types.h>
 	#include <sys/socket.h>
@@ -34,6 +37,7 @@
 	#include <sys/ioctl.h>
 	#include <unistd.h>
 	#include <errno.h>
+	#define socketError errno
 #endif
 
 
@@ -384,7 +388,7 @@ void ServerGame::send (unsigned char *buffer) {
 		if ((clientStatus[count] != -1) &&
 			(((buffer[1] & MCMASK) != MC_PLAYER) ||
 			(buffer[2] != clientPlayer[count])))
-			::send(clientSock[count], (char *)buffer, buffer[0], 0);
+			::send(clientSock[count], (char *)buffer, buffer[0], MSG_NOSIGNAL);
 
 	}
 
@@ -417,7 +421,7 @@ int ServerGame::playFrame (int ticks) {
 			sendBuffer[3] = clientStatus[count] & 255;
 			memcpy(sendBuffer + 4, levelData + clientStatus[count], length);
 			length = ::send(clientSock[count], (char *)sendBuffer,
-				sendBuffer[0], 0);
+				sendBuffer[0], MSG_NOSIGNAL);
 
 			// Client is operational if the whole level has been sent
 			// Otherwise, keep sending data
@@ -433,7 +437,7 @@ int ServerGame::playFrame (int ticks) {
 			// See if there is a new message to receive
 
 			length = recv(clientSock[count],
-				(char *)(recvBuffers[count]), 1, 0);
+				(char *)(recvBuffers[count]), 1, MSG_NOSIGNAL);
 
 			if (length > 0) received[count]++;
 
@@ -447,7 +451,7 @@ int ServerGame::playFrame (int ticks) {
 
 			length = recv(clientSock[count],
 				(char *)(recvBuffers[count] + received[count]),
-				recvBuffers[count][0] - received[count], 0);
+				recvBuffers[count][0] - received[count], MSG_NOSIGNAL);
 
 			if (length > 0) received[count] += length;
 
@@ -582,6 +586,11 @@ int ServerGame::playFrame (int ticks) {
 
 					printf("Client %d connected.\n", count);
 
+					// Make the socket non-blocking
+					pcount = 1;
+					ioctl(clientSock[count], FIONBIO, (u_long *)&pcount);
+
+
 					clientPlayer[count] = -1;
 					received[count] = 0;
 
@@ -597,7 +606,7 @@ int ServerGame::playFrame (int ticks) {
 					sendBuffer[6] = nPlayers; // Number of players
 					sendBuffer[7] = count; // Client's clientID
 					::send(clientSock[count], (char *)sendBuffer, sendBuffer[0],
-						0);
+						MSG_NOSIGNAL);
 
 					// Initiate sending of level data
 					clientStatus[count] = 0;
@@ -617,7 +626,7 @@ int ServerGame::playFrame (int ticks) {
 						memcpy(sendBuffer + 9, players[pcount].getName(),
 							strlen(players[pcount].getName()) + 1);
 						::send(clientSock[count], (char *)sendBuffer,
-							sendBuffer[0], 0);
+							sendBuffer[0], MSG_NOSIGNAL);
 
 					}
 
@@ -628,19 +637,12 @@ int ServerGame::playFrame (int ticks) {
 				// Client is connected
 				// Check for disconnection
 				length = recv(clientSock[count], (char *)sendBuffer, 1,
-					MSG_PEEK);
+					MSG_PEEK | MSG_NOSIGNAL);
 
-#ifdef WIN32
-				if ((length == -1) && (WSAGetLastError() != WSAEWOULDBLOCK)) {
-
-					printf("Client %d disconnected (code: %d).\n", count,
-						WSAGetLastError());
-#else
-				if ((length == -1) && (errno != EWOULDBLOCK)) {
+				if ((length == -1) && (socketError != EWOULDBLOCK)) {
 
 					printf("Client %d disconnected (code: %d).\n", count,
-						errno);
-#endif
+						socketError);
 
 					// Disconnect client
 					close(clientSock[count]);
@@ -719,7 +721,7 @@ ClientGame::ClientGame (char *address) {
 	fd_set writefds; 
 	timeval timeouttv;
 	unsigned int timeout;
-	int count;
+	int count, ret;
 
 	// Create socket
 
@@ -750,15 +752,12 @@ ClientGame::ClientGame (char *address) {
 
 		// Wait for connection to complete
 
-		FD_ZERO(&writefds);
-		FD_SET(sock, &writefds);
-
 		count = 0;
 		timeout = SDL_GetTicks() + T_TIMEOUT;
 
 		while (!count && (SDL_GetTicks() < timeout)) {
 
-			if (loop() == E_QUIT) {
+			if (loop(NORMAL_LOOP) == E_QUIT) {
 
 				close(sock);
 
@@ -776,17 +775,20 @@ ClientGame::ClientGame (char *address) {
 
 			}
 
-			SDL_Delay(T_FRAME);
-
-			SDL_FillRect(screen, NULL, 0);
+			clearScreen(0);
 			fontmn2->showString("CONNECTING TO SERVER", screenW >> 2,
 				(screenH >> 1) - 16);
 
+			FD_ZERO(&writefds);
+			FD_SET(sock, &writefds);
 			timeouttv.tv_sec = 0;
-			timeouttv.tv_usec = 0;
-			count = select(sock, NULL, &writefds, NULL, &timeouttv);
+			timeouttv.tv_usec = T_FRAME;
+			count = select(sock + 1, NULL, &writefds, NULL, &timeouttv);
 
 			if (count == -1) {
+
+				printf("Could not connect to server (code: %d).\n",
+					socketError);
 
 				close(sock);
 
@@ -809,15 +811,13 @@ ClientGame::ClientGame (char *address) {
 
 	// Receive initialisation message
 
-	SDL_Delay(T_SCHECK);
-
 	count = 0;
-	timeout = SDL_GetTicks() + T_TIMEOUT;
+	timeout = SDL_GetTicks() + T_SCHECK + T_TIMEOUT;
 
 	// Wait for whole message to arrive
 	while ((count < MTL_G_PROPS) && (SDL_GetTicks() < timeout)) {
 
-		if (loop() == E_QUIT) {
+		if (loop(NORMAL_LOOP) == E_QUIT) {
 
 			close(sock);
 
@@ -837,11 +837,14 @@ ClientGame::ClientGame (char *address) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 		fontmn2->showString("WAITING FOR REPLY", screenW >> 2,
 			(screenH >> 1) - 16);
 
-		count += recv(sock, (char *)buffer + count, MTL_G_PROPS - count, 0);
+		ret = recv(sock, (char *)buffer + count, MTL_G_PROPS - count,
+			MSG_NOSIGNAL);
+
+		if (ret > 0) count += ret;
 
 	}
 
@@ -898,15 +901,15 @@ ClientGame::ClientGame (char *address) {
 	levelFile = cloneString(LEVEL_FILE);
 	file = NULL;
 
-	count = setLevel(NULL);
+	ret = setLevel(NULL);
 
-	if (count < 0) {
+	if (ret < 0) {
 
 		close(sock);
 
 		if (file) delete file;
 
-		throw count;
+		throw ret;
 
 	}
 
@@ -928,7 +931,7 @@ ClientGame::ClientGame (char *address) {
 
 	while (!localPlayer) {
 
-		if (loop() == E_QUIT) {
+		if (loop(NORMAL_LOOP) == E_QUIT) {
 
 			close(sock);
 
@@ -950,18 +953,18 @@ ClientGame::ClientGame (char *address) {
 
 		}
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 		fontmn2->showString("JOINING GAME", screenW >> 2, (screenH >> 1) - 16);
 
-		count = playFrame(-1);
+		ret = playFrame(-1);
 
-		if (count < 0) {
+		if (ret < 0) {
 
 			close(sock);
 
 			if (file) delete file;
 
-			throw count;
+			throw ret;
 
 		}
 
@@ -1000,7 +1003,7 @@ int ClientGame::setLevel (char *fn) {
 	// Wait for level data to start arriving
 	while (!file && levelFile) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1012,7 +1015,7 @@ int ClientGame::setLevel (char *fn) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 		fontmn2->showString("WAITING FOR SERVER", screenW >> 2,
 			(screenH >> 1) - 16);
 
@@ -1025,7 +1028,7 @@ int ClientGame::setLevel (char *fn) {
 	// Wait for level data to finish arriving
 	while (file && levelFile) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 
@@ -1037,7 +1040,7 @@ int ClientGame::setLevel (char *fn) {
 
 		SDL_Delay(T_FRAME);
 
-		SDL_FillRect(screen, NULL, 0);
+		clearScreen(0);
 		fontmn2->showString("downloaded", screenW >> 2, (screenH >> 1) - 16);
 		fontmn2->showNumber(file->tell(), (screenW >> 2) + 56, screenH >> 1);
 		fontmn2->showString("bytes", (screenW >> 2) + 64, screenH >> 1);
@@ -1055,7 +1058,7 @@ int ClientGame::setLevel (char *fn) {
 
 void ClientGame::send (unsigned char *buffer) {
 
-	::send(sock, (char *)buffer, buffer[0], 0);
+	::send(sock, (char *)buffer, buffer[0], MSG_NOSIGNAL);
 
 	return;
 
@@ -1075,7 +1078,7 @@ int ClientGame::playFrame (int ticks) {
 		// Not currently receiving a message
 		// See if there is a new message to receive
 
-		length = recv(sock, (char *)(recvBuffer), 1, 0);
+		length = recv(sock, (char *)(recvBuffer), 1, MSG_NOSIGNAL);
 
 		if (length > 0) received++;
 
@@ -1087,7 +1090,7 @@ int ClientGame::playFrame (int ticks) {
 		// See if there is any more data
 
 		length = recv(sock,	(char *)(recvBuffer + received),
-			recvBuffer[0] - received, 0);
+			recvBuffer[0] - received, MSG_NOSIGNAL);
 
 		if (length > 0) received += length;
 
@@ -1130,6 +1133,8 @@ int ClientGame::playFrame (int ticks) {
 
 								// If the last message was also the first,
 								// then the run of levels has ended
+
+								printf("No level sent.\n");
 
 								delete[] levelFile;
 								levelFile = NULL;
@@ -1235,13 +1240,9 @@ int ClientGame::playFrame (int ticks) {
 
 		// Check for disconnection
 
-		length = recv(sock, (char *)sendBuffer, 1, MSG_PEEK);
+		length = recv(sock, (char *)sendBuffer, 1, MSG_PEEK | MSG_NOSIGNAL);
 
-#ifdef WIN32
-		if ((length == -1) && (WSAGetLastError() != WSAEWOULDBLOCK)) {
-#else
-		if ((length == -1) && (errno != EWOULDBLOCK)) {
-#endif
+		if ((length == -1) && (socketError != EWOULDBLOCK)) {
 
 			if (file) delete file;
 			file = NULL;

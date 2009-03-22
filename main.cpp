@@ -32,8 +32,6 @@
 
 #ifdef WIN32
 	#include <winsock.h>
-#else
-	#include <signal.h>
 #endif
 
 
@@ -484,32 +482,21 @@ void releaseControl (int control) {
 }
 
 
-void update () {
+int loop (int type) {
 
-	int ticks;
+	SDL_Color shownPalette[256];
+	SDL_Event event;
+	int count;
+
 
 	// Show everything that has been drawn so far
 	SDL_Flip(screen);
 
 	// Calculate frame rate and key timing
-	ticks = SDL_GetTicks();
-	mspf = ticks - oldTicks;
+	count = SDL_GetTicks();
+	mspf = count - oldTicks;
 	if (mspf > 100) mspf = 100;
-	oldTicks = ticks;
-
-	return;
-
-}
-
-
-int loop () {
-
-	SDL_Event event;
-	SDL_Color shownPalette[256];
-	int count;
-
-
-	update();
+	oldTicks = count;
 
 
 	// Process system events
@@ -635,6 +622,28 @@ int loop () {
 
 		}
 
+		if ((type == KEY_LOOP) && (event.type == SDL_KEYDOWN)) {
+
+			return event.key.keysym.sym;
+
+		}
+
+		if ((type == JOYSTICK_LOOP) && (event.type == SDL_JOYBUTTONDOWN)) {
+ 
+			return JOYSTICKB & event.jbutton.button;
+
+		}
+
+		if ((type == JOYSTICK_LOOP) && (event.type == SDL_JOYAXISMOTION)) {
+
+			if (event.jaxis.value < -16384)
+				return JOYSTICKANEG & event.jaxis.axis;
+
+			if (event.jaxis.value > 16384)
+				return JOYSTICKAPOS & event.jaxis.axis;
+
+		}
+
 	}
 
 	// Apply controls to universal control tracking
@@ -684,15 +693,6 @@ int loop () {
 	return E_NONE;
 
 }
-
-
-#ifndef WIN32
-void pipeSignal (int val) {
-
-	return;
-
-}
-#endif
 
 
 int main(int argc, char *argv[]) {
@@ -763,10 +763,6 @@ int main(int argc, char *argv[]) {
 
 	}
 
-#ifndef WIN32
-	// Prevent SIGPIPE from ending the program
-	signal(SIGPIPE, &pipeSignal);
-#endif
 
 	// Load universal game data and establish a window
 

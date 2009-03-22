@@ -178,7 +178,7 @@ int Scene::run () {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ENTER].state || controls[C_ESCAPE].state) {
 
@@ -190,7 +190,7 @@ int Scene::run () {
 		}
 
 		// Temporary stuff
-		SDL_FillRect(screen, NULL, BLACK);
+		clearScreen(BLACK);
 		dst.x = (screenW - 320) >> 1;
 		dst.y = (screenH - 200) >> 1;
 		SDL_BlitSurface(sceneBGs[0], NULL, screen, &dst);

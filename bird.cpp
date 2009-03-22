@@ -163,17 +163,13 @@ bool Bird::playFrame (int ticks) {
 
 void Bird::draw (int ticks) {
 
-	SDL_Rect dst;
-	int anim, frame;
+	Anim *anim;
 
-	anim = (player->getFacing() || fleeing) ? BIRD_RIGHTANIM: BIRD_LEFTANIM;
-	frame = ticks / 80;
+	anim = level->getAnim((player->getFacing() || fleeing)? BIRD_RIGHTANIM:
+		BIRD_LEFTANIM);
+	anim->setFrame(ticks / 80, true);
 
-	dst.x = (x >> 10) - (viewX >> 10) + level->getFrame(anim, frame)->x;
-
-	dst.y = (y >> 10) - (viewY >> 10) + level->getFrame(anim, frame)->y;
-
-	SDL_BlitSurface(level->getFrame(anim, frame)->pixels, NULL, screen, &dst);
+	anim->draw(x, y);
 
 	return;
 

@@ -22,6 +22,8 @@
 
 #include "OpenJazz.h"
 #include <string.h>
+#include <math.h>
+
 
 Player::Player () {
 
@@ -68,6 +70,7 @@ void Player::init (char *playerName, unsigned char *playerCols,
 	ammo[3] = 0;
 	fireSpeed = 0;
 	team = newTeam;
+	teamScore = 0;
 
 
 	// Create the player's palette
@@ -199,7 +202,6 @@ void Player::reset () {
 	dx = 0;
 	dy = 0;
 	enemies = items = 0;
-	teamScore = 0;
 
 	return;
 
@@ -428,6 +430,10 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
 			return true;
 
+		case 37: // Diamond
+
+			return true;
+
 		case 38: // Airboard, etc. off
 
 			floating = false;
@@ -485,12 +491,14 @@ bool Player::hit (int ticks) {
 
 void Player::kill (int ticks) {
 
-	if (reaction == PR_WON) return;
+	if (reaction != PR_NONE) return;
 
+	energy = 0;
 	lives--;
 
 	reaction = PR_KILLED;
 	reactionTime = ticks + PRT_KILLED;
+	firstPE = new FadeOutPaletteEffect(0, 256, FH, firstPE);
 
 	return;
 
@@ -715,7 +723,7 @@ void Player::send (unsigned char *data) {
 	data[3] = pcontrols[C_RIGHT];
 	data[4] = pcontrols[C_JUMP];
 	data[5] = pcontrols[C_FIRE];
-	data[6] = pcontrols[C_CHANGE];
+	data[6] = 0;
 	data[7] = ammo[0] >> 8;
 	data[8] = ammo[0] & 255;
 	data[9] = ammo[1] >> 8;
@@ -777,7 +785,7 @@ void Player::receive (unsigned char *buffer) {
 			pcontrols[C_RIGHT] = buffer[6];
 			pcontrols[C_JUMP] = buffer[7];
 			pcontrols[C_FIRE] = buffer[8];
-			pcontrols[C_CHANGE] = buffer[9];
+			pcontrols[C_CHANGE] = false;
 			ammo[0] = (buffer[10] << 8) + buffer[11];
 			ammo[1] = (buffer[12] << 8) + buffer[13];
 			ammo[2] = (buffer[14] << 8) + buffer[15];
@@ -973,9 +981,9 @@ void Player::control (int ticks) {
 
 		if ((event && ((event[E_MODIFIER] == 6) ||
 			(event[E_BEHAVIOUR] == 28))) ||
-			level->checkMaskDown(x + PXO_ML, y + F8) ||
-			level->checkMaskDown(x + PXO_MID, y + F8) ||
-			level->checkMaskDown(x + PXO_MR, y + F8)) {
+			level->checkMaskDown(x + PXO_ML, y + F2) ||
+			level->checkMaskDown(x + PXO_MID, y + F2) ||
+			level->checkMaskDown(x + PXO_MR, y + F2)) {
 
 			// Mask/platform/bridge below player
 
@@ -1191,10 +1199,10 @@ void Player::move (int ticks) {
 	// If on an uphill slope, push the player upwards
 	if (pdx < 0)
 		while (level->checkMask(x + PXO_ML, y) &&
-			!level->checkMask(x + PXO_ML, y + PYO_TOP)) y -= F1;
+			!level->checkMask(x + PXO_ML, y + PYO_MID)) y -= F1;
 	else
 		while (level->checkMask(x + PXO_MR, y) &&
-			!level->checkMask(x + PXO_MR, y + PYO_TOP)) y -= F1;
+			!level->checkMask(x + PXO_MR, y + PYO_MID)) y -= F1;
 
 
 	// If using a float up event and have hit a ceiling, ignore event
@@ -1205,6 +1213,10 @@ void Player::move (int ticks) {
 		event = NULL;
 
 	}
+
+
+	// If the player has hit the bottom of the level, kill
+	if (y + F4 > (LH * TH << 10)) kill(ticks);
 
 
 	// Handle spikes
@@ -1260,7 +1272,7 @@ void Player::view (int ticks) {
 
 
 	// Apply lag proportional to player "speed"
-	speed = ((dx >= 0? dx: -dx) + (dy >= 0? dy: -dy)) >> 15;
+	speed = ((dx >= 0? dx: -dx) + (dy >= 0? dy: -dy)) >> 14;
 
 	if (mspf < speed) {
 
@@ -1276,19 +1288,14 @@ void Player::view (int ticks) {
 
 void Player::draw (int ticks) {
 
-	Sprite *sprite;
-	SDL_Rect dst;
+	Anim *an;
 	int anim, frame;
+	fixed xOffset, yOffset;
 
 	// The current frame for animations
-	if (energy) frame = ticks / 75;
-	else {
+	if (reaction == PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
+	else frame = ticks / 75;
 
-		frame = (ticks + PRT_KILLED - reactionTime) / 75;
-		if (frame >= level->getAnim(anims[PA_LDIE])->frames)
-			frame = level->getAnim(anims[PA_LDIE])->frames - 1;
-
-	}
 
 	// Choose player animation
 
@@ -1306,13 +1313,13 @@ void Player::draw (int ticks) {
 	else if (dy >= 0) {
 
 		if ((event && ((event[E_MODIFIER] == 6) ||
-		    (event[E_BEHAVIOUR] == 28))) ||
-		    level->checkMaskDown(x + PXO_ML, y + F4) ||
-		    level->checkMaskDown(x + PXO_MID, y + F4) ||
-		    level->checkMaskDown(x + PXO_MR, y + F4) ||
-		    level->checkMaskDown(x + PXO_ML, y + F12) ||
-		    level->checkMaskDown(x + PXO_MID, y + F12) ||
-		    level->checkMaskDown(x + PXO_MR, y + F12)   ) {
+			(event[E_BEHAVIOUR] == 28))) ||
+			level->checkMaskDown(x + PXO_ML, y + F2) ||
+			level->checkMaskDown(x + PXO_MID, y + F2) ||
+			level->checkMaskDown(x + PXO_MR, y + F2) ||
+			level->checkMaskDown(x + PXO_ML, y + F8) ||
+			level->checkMaskDown(x + PXO_MID, y + F8) ||
+			level->checkMaskDown(x + PXO_MR, y + F8)) {
 
 			if (dx) {
 
@@ -1324,14 +1331,14 @@ void Player::draw (int ticks) {
 
 			} else {
 
-				if (!level->checkMaskDown(x + F12, y + F12) &&
-					!level->checkMaskDown(x + F8, y + F8) &&
+				if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
+					!level->checkMaskDown(x + PXO_L, y + F2) &&
 					(!event || ((event[E_MODIFIER] != 6) &&
 					(event[E_BEHAVIOUR] != 28))))
 					anim = anims[PA_LEDGE];
 
-				else if (!level->checkMaskDown(x + F20, y + F12) &&
-					!level->checkMaskDown(x + F24, y + F8) &&
+				else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
+					!level->checkMaskDown(x + PXO_R, y + F2) &&
 					(!event || ((event[E_MODIFIER] != 6) &&
 					(event[E_BEHAVIOUR] != 28))))
 					anim = anims[PA_REDGE];
@@ -1362,71 +1369,87 @@ void Player::draw (int ticks) {
 
 	// Choose sprite
 
-	sprite = level->getFrame(anim, frame);
+	an = level->getAnim(anim);
+	an->setFrame(frame, reaction != PR_KILLED);
 
 
 	// Show the player
 
 	// Flash red if hurt, otherwise use player colour
 	if ((reaction == PR_HURT) && (!((ticks / 30) & 3)))
-		mapPalette(sprite->pixels, 0, 256, 36, 1);
+		an->flashPalette(36);
+
 	else {
 
-		SDL_SetPalette(sprite->pixels, SDL_LOGPAL, palette + 23, 23, 41);
-		SDL_SetPalette(sprite->pixels, SDL_LOGPAL, palette + 88, 88, 8);
+		an->setPalette(palette, 23, 41);
+		an->setPalette(palette, 88, 8);
 
 	}
 
-	if (fastFeetTime > ticks) {
 
-		// Draw "motion blur"
+	// Draw "motion blur"
+	if (fastFeetTime > ticks)
+		an->draw(x - (dx >> 6), y + F4 - F32);
 
-		dst.x = ((x - viewX) >> 10) + sprite->x - (dx >> 16);
-
-		dst.y = ((y + F4 - viewY) >> 10) +
-			sprite->y +
-			level->getAnim(anim)->y[frame % level->getAnim(anim)->frames] -
-			level->getFrame(anim, 0)->pixels->h;
-
-		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
-
-	}
-
-	dst.x = ((x - viewX) >> 10) + sprite->x;
-
-	dst.y = ((y + F4 - viewY) >> 10) +
-		sprite->y +
-		level->getAnim(anim)->y[frame % level->getAnim(anim)->frames] -
-		level->getFrame(anim, 0)->pixels->h;
-
-	SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+	// Draw player
+	an->draw(x, y + F4 - F32);
 
 
 	// Remove red flash or player colour from sprite
-	restorePalette(sprite->pixels);
+	an->restorePalette();
 
 
-	// Show invincibility stars
 
 	if (reaction == PR_INVINCIBLE) {
 
-		sprite = level->getFrame(122, frame);
+		// Show invincibility stars
 
-		dst.x = (x + PXO_L - viewX) >> 10;
-		dst.y = (y - F32 - viewY) >> 10;
-		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+		xOffset = (int)(sin(ticks / 100.0f) * F12);
+		yOffset = (int)(cos(ticks / 100.0f) * F12);
 
-		dst.x = (x + PXO_MID - viewX) >> 10;
-		dst.y = (y - F32 - viewY) >> 10;
-		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+		an = level->getMiscAnim(0);
 
-		dst.x = (x + PXO_L - viewX) >> 10;
-		dst.y = (y - F16 - viewY) >> 10;
-		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+		an->setFrame(frame, true);
+		an->draw(x + PXO_MID + xOffset, y + PYO_MID + yOffset);
 
-		dst.x = (x + PXO_MID - viewX) >> 10;
-		dst.y = (y - F16 - viewY) >> 10;
-		SDL_BlitSurface(sprite->pixels, NULL, screen, &dst);
+		an->setFrame(frame + 1, true);
+		an->draw(x + PXO_MID - xOffset, y + PYO_MID - yOffset);
+
+		an->setFrame(frame + 2, true);
+		an->draw(x + PXO_MID + yOffset, y + PYO_MID + xOffset);
+
+		an->setFrame(frame + 3, true);
+		an->draw(x + PXO_MID - yOffset, y + PYO_MID - xOffset);
+
+	} else if (shield > 2) {
+
+		// Show the 4-hit shield
+
+		xOffset = (int)(cos(ticks / 200.0f) * F20);
+		yOffset = (int)(sin(ticks / 200.0f) * F20);
+
+		an = level->getAnim(59);
+
+		an->draw(x + PXO_MID + xOffset, y + PYO_TOP + yOffset);
+
+		if (shield > 3) an->draw(x + PXO_MID - xOffset, y + PYO_TOP - yOffset);
+
+		if (shield > 4) an->draw(x + PXO_MID + yOffset, y + PYO_TOP - xOffset);
+
+		if (shield > 5) an->draw(x + PXO_MID - yOffset, y + PYO_TOP + xOffset);
+
+	} else if (shield) {
+
+		// Show the 2-hit shield
+
+		xOffset = (int)(cos(ticks / 200.0f) * F20);
+		yOffset = (int)(sin(ticks / 200.0f) * F20);
+
+		an = level->getAnim(50);
+
+		an->draw(x + PXO_MID + xOffset, y + yOffset + PYO_TOP);
+
+		if (shield == 2) an->draw(x + PXO_MID - xOffset, y + PYO_TOP - yOffset);
 
 	}
 

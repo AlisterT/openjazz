@@ -89,11 +89,11 @@
 #define T_FASTFEET 25000
 
 // Player offsets
-#define PXO_L   (F16 - F10)
-#define PXO_ML  F12
-#define PXO_MID F16
-#define PXO_MR  F20
-#define PXO_R   (F16 + F10)
+#define PXO_L   (F12 - F10)
+#define PXO_ML  (F12 - F4)
+#define PXO_MID F12
+#define PXO_MR  (F12 + F4)
+#define PXO_R   (F12 + F10)
 #define PYO_TOP (-F20)
 #define PYO_MID (-F10)
 

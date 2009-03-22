@@ -66,7 +66,7 @@ int Planet::run () {
 
 	while (true) {
 
-		if (loop() == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls[C_ESCAPE].state) {
 

@@ -34,7 +34,7 @@ bool fileExists (char * fileName) {
 
 	File *f;
 
-	printf("Check: ");
+	//printf("Check: ");
 
 	try {
 
@@ -81,21 +81,6 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
-SDL_Surface * createBlankSurface () {
-
-	SDL_Surface *ret;
-	unsigned char *pixels;
-
-	pixels = new unsigned char[1];
-	*pixels = 0;
-	ret = createSurface(pixels, 1, 1);
-	SDL_SetColorKey(ret, SDL_SRCCOLORKEY, 0);
-
-	return ret;
-
-}
-
-
 char * cloneString (char *string) {
 
 	char *cloned;
@@ -104,6 +89,31 @@ char * cloneString (char *string) {
 	strcpy(cloned, string);
 
 	return cloned;
+
+}
+
+
+void clearScreen (int index) {
+
+	SDL_FillRect(screen, NULL, index);
+
+	return;
+
+}
+
+
+void drawRect (int x, int y, int width, int height, int index) {
+
+	SDL_Rect dst;
+
+	dst.x = x;
+	dst.y = y;
+	dst.w = width;
+	dst.h = height;
+
+	SDL_FillRect(screen, &dst, index);
+
+	return;
 
 }
 

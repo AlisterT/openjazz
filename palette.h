@@ -42,10 +42,11 @@ class PaletteEffect {
 		PaletteEffect *next;     // Next effect to use
 		unsigned char  first;    /* The first palette index affected by the
 			effect */
-		unsigned char  amount;   /* The number of (consecutive) palette indices
+		int            amount;   /* The number of (consecutive) palette indices
 			affected by the effect */
 		fixed          speed;    /* When class is:
-			FadePaletteEffect - Number of seconds the fade lasts
+			WhiteInPaletteEffect - Number of seconds the effect lasts
+			WhiteInPaletteEffect - Number of seconds the effect lasts
 			RotatePaletteEffect - Rotations per second
 			SkyPaletteEffect - Relative Y speed - as in Jazz 2
 			P1DPaletteEffect - Relative X & Y speed - as in Jazz 2
@@ -55,25 +56,67 @@ class PaletteEffect {
 			*/
 
 	public:
-		PaletteEffect            (unsigned char newFirst,
-			unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE);
-		virtual ~PaletteEffect   ();
+		PaletteEffect          (unsigned char newFirst, int newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+		virtual ~PaletteEffect ();
 
-		virtual void apply       (SDL_Color *shownPalette, bool direct);
+		virtual void apply     (SDL_Color *shownPalette, bool direct);
 
 };
 
 
-class FadePaletteEffect : public PaletteEffect {
+class WhiteInPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed          position;
+		fixed whiteness;
 
 	public:
-		FadePaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		WhiteInPaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, PaletteEffect * nextPE);
 
-		void apply        (SDL_Color *shownPalette, bool direct);
+		void apply           (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class FadeInPaletteEffect : public PaletteEffect {
+
+	private:
+		fixed blackness;
+
+	public:
+		FadeInPaletteEffect (unsigned char newFirst, int newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply          (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class WhiteOutPaletteEffect : public PaletteEffect {
+
+	private:
+		fixed whiteness;
+
+	public:
+		WhiteOutPaletteEffect (unsigned char newFirst, int newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply            (SDL_Color *shownPalette, bool direct);
+
+};
+
+
+class FadeOutPaletteEffect : public PaletteEffect {
+
+	private:
+		fixed blackness;
+
+	public:
+		FadeOutPaletteEffect (unsigned char newFirst, int newAmount,
+			fixed newSpeed, PaletteEffect * nextPE);
+
+		void apply           (SDL_Color *shownPalette, bool direct);
 
 };
 
@@ -81,10 +124,10 @@ class FadePaletteEffect : public PaletteEffect {
 class RotatePaletteEffect : public PaletteEffect {
 
 	private:
-		fixed          position;
+		fixed position;
 
 	public:
-		RotatePaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		RotatePaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, PaletteEffect * nextPE);
 
 		void apply          (SDL_Color *shownPalette, bool direct);
@@ -98,7 +141,7 @@ class SkyPaletteEffect : public PaletteEffect {
 		SDL_Color *skyPalette;
 
 	public:
-		SkyPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		SkyPaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, SDL_Color *newSkyPalette, PaletteEffect * nextPE);
 
 		void apply       (SDL_Color *shownPalette, bool direct);
@@ -109,7 +152,7 @@ class SkyPaletteEffect : public PaletteEffect {
 class P2DPaletteEffect : public PaletteEffect {
 
 	public:
-		P2DPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		P2DPaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, PaletteEffect * nextPE);
 
 		void apply       (SDL_Color *shownPalette, bool direct);
@@ -120,7 +163,7 @@ class P2DPaletteEffect : public PaletteEffect {
 class P1DPaletteEffect : public PaletteEffect {
 
 	public:
-		P1DPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		P1DPaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, PaletteEffect * nextPE);
 
 		void apply       (SDL_Color *shownPalette, bool direct);
@@ -131,7 +174,7 @@ class P1DPaletteEffect : public PaletteEffect {
 class WaterPaletteEffect : public PaletteEffect {
 
 	public:
-		WaterPaletteEffect (unsigned char newFirst, unsigned char newAmount,
+		WaterPaletteEffect (unsigned char newFirst, int newAmount,
 			fixed newSpeed, PaletteEffect * nextPE);
 
 		void apply         (SDL_Color *shownPalette, bool direct);

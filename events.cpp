@@ -31,12 +31,23 @@
 
 Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
+	Anim *anim;
+
 	next = nextEvent;
 	gridX = gX;
 	gridY = gY;
 	x = gX << 15;
-	y = (gY + 1) << 15;
-	anim = 0;
+	y = gY << 15;
+
+	if (getProperty(E_LEFTANIM) >= 0) {
+
+		anim = level->getAnim(getProperty(E_LEFTANIM));
+		anim->setFrame(0, true);
+		y += F32 - (anim->getHeight() << 10);
+
+	}
+
+	animType = 0;
 	flashTime = 0;
 
 	return;
@@ -83,9 +94,6 @@ bool Event::isFrom (unsigned char gX, unsigned char gY) {
 
 fixed Event::getX () {
 
-	if (anim && (getProperty(anim) >= 0))
-		return x + (level->getAnim(getProperty(anim))->sprites[frame].x << 10);
-
 	return x;
 
 }
@@ -93,13 +101,7 @@ fixed Event::getX () {
 
 fixed Event::getY () {
 
-	if (anim && (getProperty(anim) >= 0))
-		return y +
-			((level->getAnim(getProperty(anim))->sprites[frame].y +
-			level->getAnim(getProperty(anim))->y[frame] -
-			level->getAnim(getProperty(anim))->sprites[0].pixels->h) << 10);
-
-	return y - F32;
+	return y;
 
 }
 
@@ -108,10 +110,10 @@ fixed Event::getWidth () {
 
 	fixed width;
 
-	if (anim && (getProperty(anim) >= 0)) {
+	if (animType && (getProperty(animType) >= 0)) {
 
 		width =
-			level->getAnim(getProperty(anim))->sprites[0].pixels->w << 10;
+			level->getAnim(getProperty(animType))->getWidth() << 10;
 
 		// Blank sprites for e.g. invisible springs
 		if ((width == F1) && (getHeight() == F1)) return F32;
@@ -127,10 +129,8 @@ fixed Event::getWidth () {
 
 fixed Event::getHeight () {
 
-	if (anim && (getProperty(anim) >= 0))
-		return (level->getAnim(getProperty(anim))->sprites[0].pixels->h -
-			(level->getAnim(getProperty(anim))->sprites[frame].y +
-			level->getAnim(getProperty(anim))->y[frame])) << 10;
+	if (animType && (getProperty(animType) >= 0))
+		return level->getAnim(getProperty(animType))->getHeight() << 10;
 
 	return F32;
 
@@ -152,22 +152,18 @@ signed char Event::getProperty (unsigned char property) {
 
 bool Event::getFacing () {
 
-	return (anim == E_RIGHTANIM) || (anim == E_RFINISHANIM) ||
-		(anim == E_RSHOOTANIM);
+	return (animType == E_RIGHTANIM) || (animType == E_RFINISHANIM) ||
+		(animType == E_RSHOOTANIM);
 
 }
 
 
 bool Event::playFrame (int ticks) {
 
-	struct {
-
-		fixed x, y, w, h;
-
-	} pos;
+	fixed width, height;
 	Bullet *bul, *prevBul;
 	signed char *set;
-	fixed startX, targetH;
+	fixed startX;
 	int count;
 	int midpoint;
 
@@ -188,7 +184,7 @@ bool Event::playFrame (int ticks) {
 
 	// If the event and its origin are off-screen, the event is not in the
 	// process of self-destruction, remove it
-	if ((anim != E_LFINISHANIM) && (anim != E_RFINISHANIM) &&
+	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM) &&
 		((x < viewX - F160) || (x > viewX + (viewW << 10) + F160) ||
 		(y < viewY - F160) || (y > viewY + (viewH << 10) + F160)) &&
 		((gridX < (viewX >> 15) - 1) ||
@@ -198,29 +194,20 @@ bool Event::playFrame (int ticks) {
 
 
 	// Find frame
-	if (anim && (set[anim] >= 0)) {
+	if (animType && (set[animType] >= 0)) {
 
-		if ((anim == E_LFINISHANIM) || (anim == E_RFINISHANIM))
-			frame = ((ticks + T_FINISH - level->getEventTime(gridX, gridY)) /
-				40) % level->getAnim(set[anim])->frames;
+		if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))
+			frame = (ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40;
 		else if (set[E_ANIMSP])
-			frame = (ticks / (set[E_ANIMSP] * 40)) %
-				level->getAnim(set[anim])->frames;
-		else frame = (ticks / 40) % level->getAnim(set[anim])->frames;
+			frame = ticks / (set[E_ANIMSP] * 40);
+		else frame = ticks / 40;
 
 	}
 
 
 	// Find dimensions
-	pos.x = getX();
-	pos.y = getY();
-	pos.w = getWidth();
-	pos.h = getHeight();
-
-	// Height as a target
-    if (anim && (set[anim] >= 0))
-    	targetH = level->getFrame(set[anim], 0)->pixels->h << 10;
-   	else targetH = F32;
+	width = getWidth();
+	height = getHeight();
 
 
    	// Pre-movement platform position
@@ -239,24 +226,24 @@ bool Event::playFrame (int ticks) {
 		case 2: // Walk from side to side
 
 			// Walk from side to side
-			if (anim == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-			else if (anim == E_RIGHTANIM)
+			if (animType == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+			else if (animType == E_RIGHTANIM)
 				x += ES_FAST * mspf / set[E_MOVEMENTSP];
 
 			break;
 
 		case 3: // Seek jazz
 
-			if (localPlayer->getX() + PXO_R < pos.x)
+			if (localPlayer->getX() + PXO_R < x)
 				x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-			else if (localPlayer->getX() + PXO_L > pos.x + pos.w)
+			else if (localPlayer->getX() + PXO_L > x + width)
 				x += ES_FAST * mspf / set[E_MOVEMENTSP];
 
 			break;
 
 		case 4: // Walk from side to side and down hills
 
-			if (!level->checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h)) {
+			if (!level->checkMaskDown(x + (width >> 1), y + height)) {
 
 				// Fall downwards
 				y += ES_FAST * mspf / set[E_MOVEMENTSP];
@@ -264,8 +251,9 @@ bool Event::playFrame (int ticks) {
 			} else {
 
 				// Walk from side to side
-				if (anim == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-				else if (anim == E_RIGHTANIM)
+				if (animType == E_LEFTANIM)
+					x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+				else if (animType == E_RIGHTANIM)
 					x += ES_FAST * mspf / set[E_MOVEMENTSP];
 
 			}
@@ -281,8 +269,8 @@ bool Event::playFrame (int ticks) {
 
 		case 7: // Move back and forth horizontally with tail
 
-			if (anim == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
-			else if (anim == E_RIGHTANIM)
+			if (animType == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			else if (animType == E_RIGHTANIM)
 				x += ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			break;
@@ -293,23 +281,23 @@ bool Event::playFrame (int ticks) {
 
 		case 11: // Sink to ground
 
-			if (!level->checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h))
+			if (!level->checkMaskDown(x + (width >> 1), y + height))
 				y += ES_FAST * mspf / set[E_MOVEMENTSP];
 
 			break;
 
 		case 12: // Move back and forth horizontally
 
-			if (anim == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
-			else if (anim == E_RIGHTANIM)
+			if (animType == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			else if (animType == E_RIGHTANIM)
 				x += ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			break;
 
 		case 13: // Move up and down
 
-			if (anim == E_LEFTANIM) y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
-			else if (anim == E_RIGHTANIM)
+			if (animType == E_LEFTANIM) y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			else if (animType == E_RIGHTANIM)
 				y += ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			break;
@@ -329,35 +317,35 @@ bool Event::playFrame (int ticks) {
 
 		case 28: // Bridge
 
-			if (localPlayer->isIn(pos.x - F10,
-				pos.y + (set[E_YAXIS] << 10) - F32, set[E_MULTIPURPOSE] * F8,
+			if (localPlayer->isIn(x - F10,
+				y + (set[E_YAXIS] << 10) - F32, set[E_MULTIPURPOSE] * F8,
 				F8 + F20)) {
 
 				if (!level->checkMaskDown(localPlayer->getX() + PXO_MID,
-					pos.y + (set[E_YAXIS] << 10) - (F32 + F20))) {
+					y + (set[E_YAXIS] << 10) - (F32 + F20))) {
 
 					// Player is on the bridge
 
 					localPlayer->setEvent(set);
 					localPlayer->setPosition(localPlayer->getX(),
-						pos.y + (set[E_YAXIS] << 10) - F32);
+						y + (set[E_YAXIS] << 10) - F32);
 
-					midpoint = (localPlayer->getX() + PXO_MID - pos.x) >> 13;
+					midpoint = (localPlayer->getX() + PXO_MID - x) >> 13;
 
-					if (midpoint < set[E_MULTIPURPOSE] / 2) {
+					if (midpoint < set[E_MULTIPURPOSE] >> 1) {
 
 						// Player is to the left of the centre of the bridge
 
-						y = ((gridY + 1) << 15) + (midpoint << 10);
-						anim = E_LEFTANIM;
+						y = (gridY << 15) + F24 + (midpoint << 10);
+						animType = E_LEFTANIM;
 
 					} else {
 
 						// Player is to the right of the centre of the bridge
 
-						y = ((gridY + 1) << 15) +
+						y = (gridY << 15) + F24 +
 							((set[E_MULTIPURPOSE] - midpoint) << 10);
-						anim = E_RIGHTANIM;
+						animType = E_RIGHTANIM;
 
 					}
 
@@ -368,8 +356,7 @@ bool Event::playFrame (int ticks) {
 				// Player is not on the bridge
 
 				// Gradually stop the bridge sagging
-				midpoint = 0;
-				if (y > (gridY + 1) << 15) y -= 16 * mspf;
+				if (y - F24 > gridY << 15) y -= 16 * mspf;
 
 			}
 
@@ -377,31 +364,30 @@ bool Event::playFrame (int ticks) {
 
 		case 31: // Moving platform
 
-			if (anim == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
 			else x += ES_FAST * mspf / set[E_MOVEMENTSP];
 
 			break;
 
 		case 33: // Sparks-esque following
 
-			if (localPlayer->getFacing() &&
-				(pos.x + pos.w < localPlayer->getX())) {
+			if (localPlayer->getFacing() && (x + width < localPlayer->getX())) {
 
 				x += ES_FAST * mspf / set[E_MOVEMENTSP];
 
-				if (pos.y + pos.h < localPlayer->getY() + PYO_TOP)
+				if (y + height < localPlayer->getY() + PYO_TOP)
 					y += ES_SLOW * mspf / set[E_MOVEMENTSP];
-				else if (pos.y > localPlayer->getY())
+				else if (y > localPlayer->getY())
 					y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			} else if (!localPlayer->getFacing() &&
-				(pos.x > localPlayer->getX() + F32)) {
+				(x > localPlayer->getX() + F32)) {
 
 				x -= ES_FAST * mspf / set[E_MOVEMENTSP];
 
-				if (pos.y + pos.h < localPlayer->getY() + PYO_TOP)
+				if (y + height < localPlayer->getY() + PYO_TOP)
 					y += ES_SLOW * mspf / set[E_MOVEMENTSP];
-				else if (pos.y > localPlayer->getY())
+				else if (y > localPlayer->getY())
 					y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			}
@@ -430,8 +416,7 @@ bool Event::playFrame (int ticks) {
 
 		case 36: // Walk from side to side and down hills, staying on-screen
 
-			if (!level->checkMaskDown(pos.x + (pos.w >> 1),
-				pos.y + pos.h)) {
+			if (!level->checkMaskDown(x + (width >> 1), y + height)) {
 
 				// Fall downwards
 				y += ES_FAST * mspf / set[E_MOVEMENTSP];
@@ -439,9 +424,23 @@ bool Event::playFrame (int ticks) {
 			} else {
 
 				// Walk from side to side, staying on-screen
-				if (anim == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-				else if (anim == E_RIGHTANIM)
+				if (animType == E_LEFTANIM)
+					x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+				else if (animType == E_RIGHTANIM)
 					x += ES_FAST * mspf / set[E_MOVEMENTSP];
+
+			}
+
+			break;
+
+		case 53: // Dreempipes turtles
+
+			if (y > level->getWaterLevel(0)) {
+
+				if (animType == E_LEFTANIM)
+					x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+				else if (animType == E_RIGHTANIM)
+					x += ES_SLOW * mspf / set[E_MOVEMENTSP];
 
 			}
 
@@ -467,7 +466,6 @@ bool Event::playFrame (int ticks) {
 		case 50:
 		case 51:
 		case 52:
-		case 53:
 		case 54:
 		case 56:
 		case 59:
@@ -483,55 +481,54 @@ bool Event::playFrame (int ticks) {
 
 
 	// Choose animation and direction
-	if (!anim || (anim == E_LEFTANIM) || (anim == E_RIGHTANIM)) {
+	if (!animType || (animType == E_LEFTANIM) || (animType == E_RIGHTANIM)) {
 
 		switch (set[E_BEHAVIOUR]) {
 
 			case 2: // Walk from side to side
 
 				// Walk from side to side
-				if (anim == E_LEFTANIM) {
+				if (animType == E_LEFTANIM) {
 
-					if (!level->checkMaskDown(pos.x, pos.y + pos.h + F4) ||
-					    level->checkMaskDown(pos.x - F4,
-					    pos.y + (pos.h >> 1))) anim = E_RIGHTANIM;
+					if (!level->checkMaskDown(x, y + height + F4) ||
+					    level->checkMaskDown(x - F4, y + (height >> 1)))
+					    animType = E_RIGHTANIM;
 
-				} else if (anim == E_RIGHTANIM) {
+				} else if (animType == E_RIGHTANIM) {
 
-					if (!level->checkMaskDown(pos.x + pos.w,
-						pos.y + pos.h + F4) ||
-					    level->checkMaskDown(pos.x + pos.w + F4,
-					    pos.y + (pos.h >> 1))) anim = E_LEFTANIM;
+					if (!level->checkMaskDown(x + width, y + height + F4) ||
+					    level->checkMaskDown(x + width + F4, y + (height >> 1)))
+					    animType = E_LEFTANIM;
 
-				} else anim = E_LEFTANIM;
+				} else animType = E_LEFTANIM;
 
 				break;
 
 			case 3: // Seek jazz
 
-				if (localPlayer->getX() + PXO_R < pos.x) anim = E_LEFTANIM;
-				else if (localPlayer->getX() + PXO_L > pos.x + pos.w)
-					anim = E_RIGHTANIM;
-				else if (!anim) anim = E_RIGHTANIM;
+				if (localPlayer->getX() + PXO_R < x) animType = E_LEFTANIM;
+				else if (localPlayer->getX() + PXO_L > x + width)
+					animType = E_RIGHTANIM;
+				else if (!animType) animType = E_RIGHTANIM;
 
 				break;
 
 			case 4: // Walk from side to side and down hills
 
-				if (level->checkMaskDown(pos.x + (pos.w >> 1), pos.y + pos.h)) {
+				if (level->checkMaskDown(x + (width >> 1), y + height)) {
 
 					// Walk from side to side
-					if (anim == E_LEFTANIM) {
+					if (animType == E_LEFTANIM) {
 
-						if (level->checkMaskDown(pos.x - F4,
-							pos.y + (pos.h >> 1) - F12)) anim = E_RIGHTANIM;
+						if (level->checkMaskDown(x - F4,
+							y + (height >> 1) - F12)) animType = E_RIGHTANIM;
 
-					} else if (anim == E_RIGHTANIM) {
+					} else if (animType == E_RIGHTANIM) {
 
-						if (level->checkMaskDown(pos.x + pos.w + F4,
-							pos.y + (pos.h >> 1) - F12)) anim = E_LEFTANIM;
+						if (level->checkMaskDown(x + width + F4,
+							y + (height >> 1) - F12)) animType = E_LEFTANIM;
 
-					} else anim = E_LEFTANIM;
+					} else animType = E_LEFTANIM;
 
 				}
 
@@ -541,22 +538,22 @@ bool Event::playFrame (int ticks) {
 
 				// Check movement direction
 				if ((level->pathNode < 3) || (level->pathX[level->pathNode] <=
-					level->pathX[level->pathNode - 3])) anim = E_LEFTANIM;
-				else anim = E_RIGHTANIM;
+					level->pathX[level->pathNode - 3])) animType = E_LEFTANIM;
+				else animType = E_RIGHTANIM;
 
 				break;
 
 			case 7: // Move back and forth horizontally with tail
 
-				if (anim == E_LEFTANIM) {
+				if (animType == E_LEFTANIM) {
 
-					if (x < gridX << 15) anim = E_RIGHTANIM;
+					if (x < gridX << 15) animType = E_RIGHTANIM;
 
-				} else if (anim == E_RIGHTANIM) {
+				} else if (animType == E_RIGHTANIM) {
 
-					if (x > (gridX << 15) + 100 * F1) anim = E_LEFTANIM;
+					if (x > (gridX << 15) + 100 * F1) animType = E_LEFTANIM;
 
-				} else anim = E_LEFTANIM;
+				} else animType = E_LEFTANIM;
 
 				break;
 
@@ -566,39 +563,39 @@ bool Event::playFrame (int ticks) {
 
 			case 12: // Move back and forth horizontally
 
-				if (anim == E_LEFTANIM) {
+				if (animType == E_LEFTANIM) {
 
-					if (level->checkMaskDown(pos.x - F4,
-						pos.y + (pos.h >> 1))) anim = E_RIGHTANIM;
+					if (level->checkMaskDown(x - F4, y + (height >> 1)))
+						animType = E_RIGHTANIM;
 
-				} else if (anim == E_RIGHTANIM) {
+				} else if (animType == E_RIGHTANIM) {
 
-					if (level->checkMaskDown(pos.x + pos.w + F4,
-						pos.y + (pos.h >> 1))) anim = E_LEFTANIM;
+					if (level->checkMaskDown(x + width + F4, y + (height >> 1)))
+						animType = E_LEFTANIM;
 
-				} else anim = E_LEFTANIM;
+				} else animType = E_LEFTANIM;
 
 				break;
 
 			case 13: // Move up and down
 
-				if (anim == E_LEFTANIM) {
+				if (animType == E_LEFTANIM) {
 
-					if (level->checkMaskDown(pos.x + (pos.w >> 1), pos.y - F4))
-						anim = E_RIGHTANIM;
+					if (level->checkMaskDown(x + (width >> 1), y - F4))
+						animType = E_RIGHTANIM;
 
-				} else if (anim == E_RIGHTANIM) {
+				} else if (animType == E_RIGHTANIM) {
 
-					if (level->checkMaskDown(pos.x + (pos.w >> 1),
-						pos.y + pos.h + F4)) anim = E_LEFTANIM;
+					if (level->checkMaskDown(x + (width >> 1), y + height + F4))
+						animType = E_LEFTANIM;
 
-				} else anim = E_LEFTANIM;
+				} else animType = E_LEFTANIM;
 
 				break;
 
 			case 16: // Move across level to the left or right
 
-				anim = E_LEFTANIM;
+				animType = E_LEFTANIM;
 
 				break;
 
@@ -608,10 +605,9 @@ bool Event::playFrame (int ticks) {
 
 			case 25: // Float up / Belt
 
-				if (localPlayer->isIn(pos.x, pos.y, pos.w, pos.h)) {
+				if (localPlayer->isIn(x, y, width, height)) {
 
-					if (set[E_YAXIS])
-						localPlayer->floatUp(set);
+					if (set[E_YAXIS]) localPlayer->floatUp(set);
 
 					localPlayer->belt(set[E_MAGNITUDE]);
 
@@ -621,63 +617,63 @@ bool Event::playFrame (int ticks) {
 
 			case 26: // Flip animation
 
-				if (localPlayer->isIn(pos.x, pos.y, pos.w, pos.h))
-					anim = E_LEFTANIM;
-				else anim = E_RIGHTANIM;
+				if (localPlayer->isIn(x, y, width, height))
+					animType = E_LEFTANIM;
+				else animType = E_RIGHTANIM;
 
 				break;
 
 			case 28: // Bridge
 
-				if (!anim) anim = E_LEFTANIM;
+				if (!animType) animType = E_LEFTANIM;
 
 				break;
 
 			case 31: // Moving platform
 
 				if (x < (gridX << 15) - (set[E_BRIDGELENGTH] << 14))
-					anim = E_RIGHTANIM;
-				else if (!anim || (x > ((gridX + set[E_BRIDGELENGTH]) << 15)))
-					anim = E_LEFTANIM;
+					animType = E_RIGHTANIM;
+				else if (!animType ||
+					(x > ((gridX + set[E_BRIDGELENGTH]) << 15)))
+					animType = E_LEFTANIM;
 
 				break;
 
 			case 33: // Sparks-esque following
 
 				if (localPlayer->getFacing() &&
-					(pos.x + pos.w < localPlayer->getX())) {
+					(x + width < localPlayer->getX())) {
 
-					anim = E_RIGHTANIM;
+					animType = E_RIGHTANIM;
 
 				} else if (!localPlayer->getFacing() &&
-					(pos.x > localPlayer->getX() + F32)) {
+					(x > localPlayer->getX() + F32)) {
 
-					anim = E_LEFTANIM;
+					animType = E_LEFTANIM;
 
-				} else if (!anim) anim = E_LEFTANIM;
+				} else if (!animType) animType = E_LEFTANIM;
 
 				break;
 
 			case 36: // Walk from side to side and down hills, staying on-screen
 
-				if (level->checkMaskDown(pos.x + (pos.w >> 1),
-					pos.y + pos.h)) {
+				if (level->checkMaskDown(x + (width >> 1), y + height)) {
 
 					// Walk from side to side, staying on-screen
-					if (anim == E_LEFTANIM) {
+					if (animType == E_LEFTANIM) {
 
-						if (level->checkMaskDown(pos.x - F4,
-							pos.y + (pos.h >> 1)) || (pos.x - F4 < viewX))
-							anim = E_RIGHTANIM;
+						if (level->checkMaskDown(x - F4,
+							y + (height >> 1)) || (x - F4 < viewX))
+							animType = E_RIGHTANIM;
 
-					} else if (anim == E_RIGHTANIM) {
+					} else if (animType == E_RIGHTANIM) {
 
-						if (level->checkMaskDown(pos.x + pos.w + F4,
-							pos.y + (pos.h >> 1)) ||
-						    (pos.x + pos.w + F4 > viewX + (viewW << 10)))
-						    anim = E_LEFTANIM;
+						if (level->checkMaskDown(x + width + F4,
+							y + (height >> 1)) ||
+						    (x + width + F4 > viewX + (viewW << 10)))
+						    animType = E_LEFTANIM;
 
-					} else anim = E_LEFTANIM;
+					} else animType = E_LEFTANIM;
 
 				}
 
@@ -687,10 +683,10 @@ bool Event::playFrame (int ticks) {
 
 				for (count = 0; count < nPlayers; count++) {
 
-					if (players[count].isIn(pos.x, pos.y, pos.w, pos.h)) {
+					if (players[count].isIn(x + F8, y, width - F16, height)) {
 
 						players[count].setSpeed(set[E_MAGNITUDE] * F40,
-							set[E_YAXIS]? set[E_MULTIPURPOSE] * -F40: 0);
+							set[E_YAXIS]? set[E_MULTIPURPOSE] * -F20: 0);
 
 					}
 
@@ -698,11 +694,31 @@ bool Event::playFrame (int ticks) {
 
 				break;
 
+			case 53: // Dreempipes turtles
+
+				if (y > level->getWaterLevel(0)) {
+
+					if (animType == E_LEFTANIM) {
+
+						if (level->checkMaskDown(x - F4,
+							y + (height >> 1))) animType = E_RIGHTANIM;
+
+					} else if (animType == E_RIGHTANIM) {
+
+						if (level->checkMaskDown(x + width + F4,
+							y + (height >> 1))) animType = E_LEFTANIM;
+
+					} else animType = E_LEFTANIM;
+
+				} else animType = E_LEFTANIM;
+
+				break;
+
 			default:
 
-				if (localPlayer->getX() + PXO_MID < pos.x + (pos.w >> 1))
-					anim = E_LEFTANIM;
-				else anim = E_RIGHTANIM;
+				if (localPlayer->getX() + PXO_MID < x + (width >> 1))
+					animType = E_LEFTANIM;
+				else animType = E_RIGHTANIM;
 
 				break;
 
@@ -712,7 +728,7 @@ bool Event::playFrame (int ticks) {
 
 
 	// Deal with bullet collisions
-	if ((anim != E_LFINISHANIM) && (anim != E_RFINISHANIM) &&
+	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM) &&
 		(level->getEventHits(gridX, gridY) < set[E_HITSTOKILL])) {
 
 		bul = level->firstBullet;
@@ -720,7 +736,7 @@ bool Event::playFrame (int ticks) {
 
 		while (bul) {
 
-			if (bul->getSource() && bul->isIn(pos.x, pos.y, pos.w, targetH)) {
+			if (bul->getSource() && bul->isIn(x, y, width, height)) {
 
 				flashTime = ticks + T_FLASH;
 
@@ -728,10 +744,11 @@ bool Event::playFrame (int ticks) {
 
 					// If the event has been destroyed, play its finishing
 					// animation and set its reaction time
-					if ((anim != E_LFINISHANIM) && (anim != E_RFINISHANIM)) {
+					if ((animType != E_LFINISHANIM) &&
+						(animType != E_RFINISHANIM)) {
 
 						level->setEventTime(gridX, gridY, ticks + T_FINISH);
-						anim = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
+						animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
 
 						// Notify the player that has shot the event
 						bul->getSource()->shootEvent(gridX, gridY, ticks);
@@ -770,20 +787,20 @@ bool Event::playFrame (int ticks) {
 	if (set[E_BULLETSP]) {
 
 		if ((ticks % (set[E_BULLETSP] * 25) > (set[E_BULLETSP] * 25) - 200) &&
-			((anim == E_LEFTANIM) || (anim == E_RIGHTANIM))) {
+			((animType == E_LEFTANIM) || (animType == E_RIGHTANIM))) {
 
-			if (anim == E_LEFTANIM) anim = E_LSHOOTANIM;
-			else anim = E_RSHOOTANIM;
+			if (animType == E_LEFTANIM) animType = E_LSHOOTANIM;
+			else animType = E_RSHOOTANIM;
 
 		}
 
 		if ((ticks % (set[E_BULLETSP] * 25) < (set[E_BULLETSP] * 25) - 200) &&
-			((anim == E_LSHOOTANIM) || (anim == E_RSHOOTANIM))) {
+			((animType == E_LSHOOTANIM) || (animType == E_RSHOOTANIM))) {
 
 			level->firstBullet = new Bullet(this, ticks, level->firstBullet);
 
-			if (anim == E_LSHOOTANIM) anim = E_LEFTANIM;
-			else anim = E_RIGHTANIM;
+			if (animType == E_LSHOOTANIM) animType = E_LEFTANIM;
+			else animType = E_RIGHTANIM;
 
 		}
 
@@ -813,7 +830,7 @@ bool Event::playFrame (int ticks) {
 
 		}
 
-		if ((anim == E_LFINISHANIM) || (anim == E_RFINISHANIM)) {
+		if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM)) {
 
 			// The event has been destroyed, so remove it
 			level->clearEvent(gridX, gridY);
@@ -833,21 +850,21 @@ bool Event::playFrame (int ticks) {
 
 	for (count = 0; count < nPlayers; count++) {
 
-		if ((anim != E_LFINISHANIM) && (anim != E_RFINISHANIM)) {
+		if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM)) {
 
-			if (players[count].isIn(pos.x, pos.y, pos.w, pos.h)) {
+			if (players[count].isIn(x, y, width, height)) {
 
 				if (set[E_MODIFIER] == 6) {
 
 					// Platform
 
-					if ((players[count].getY() <= pos.y + (PYS_FALL / mspf))
+					if ((players[count].getY() <= y + (PYS_FALL / mspf))
 						&& !level->checkMaskDown(players[count].getX() +
-						PXO_MID, pos.y - F20)) {
+						PXO_MID, y - F20)) {
 
 						players[count].setEvent(set);
 						players[count].setPosition(players[count].getX() +
-							x - startX, pos.y);
+							x - startX, y);
 
 					} else players[count].clearEvent(set, E_MODIFIER);
 
@@ -859,7 +876,7 @@ bool Event::playFrame (int ticks) {
 					// The event has been picked up
 
 					level->setEventTime(gridX, gridY, ticks + T_FINISH);
-					anim = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
+					animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
 
 				}
 
@@ -877,10 +894,15 @@ bool Event::playFrame (int ticks) {
 
 void Event::draw (int ticks) {
 
-	SDL_Rect dst;
-	SDL_Surface *sprite;
+	Anim *anim;
 	signed char *set;
-	int count, dstx, dsty, midpoint;
+	int count, midpoint;
+	fixed bridgex, bridgey, dsty;
+
+
+	// Uncomment the following to see the area of the event
+/*	drawRect((getX() - viewX) >> 10, (getY() - viewY) >> 10, getWidth() >> 10,
+		getHeight() >> 10, 88);*/
 
 
 	// Get the event properties
@@ -891,63 +913,54 @@ void Event::draw (int ticks) {
 
 
 	// Check if the event has anything to draw
-	if (!anim || (set[anim] < 0)) return;
+	if (!animType || (set[animType] < 0)) return;
 
 
-	if ((anim == E_LFINISHANIM) || (anim == E_RFINISHANIM))
-		frame = ((ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40) %
-			level->getAnim(set[anim])->frames;
+	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))
+		frame = (ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40;
 	else if (set[E_ANIMSP])
-		frame = (ticks / (set[E_ANIMSP] * 40)) %
-			level->getAnim(set[anim])->frames;
-	else frame = (ticks / 20) % level->getAnim(set[anim])->frames;
+		frame = ticks / (set[E_ANIMSP] * 40);
+	else frame = ticks / 20;
 
-	dst.x = dstx = (x >> 10) - (viewX >> 10) +
-		level->getFrame(set[anim], frame)->x;
+	anim = level->getAnim(set[animType]);
+	anim->setFrame(frame, true);
 
-	dst.y = dsty = (y >> 10) - (viewY >> 10) +
-		level->getFrame(set[anim], frame)->y +
-		level->getAnim(set[anim])->y[frame] -
-		level->getFrame(set[anim], 0)->pixels->h;
-
-	sprite = level->getFrame(set[anim], frame)->pixels;
-
-	if (ticks < flashTime) mapPalette(sprite, 0, 256, 0, 1);
+	if (ticks < flashTime) anim->flashPalette(0);
 
 	// Draw the event
 
 	if (set[E_BEHAVIOUR] == 28) {
 
-		dstx -= 10;
-		dsty -= 32 - set[E_YAXIS];
+		bridgex = x - F10;
+		dsty = y + (set[E_YAXIS] << 10) - F32;
 
-		if (y > (gridY + 1) << 15) {
+		if (y - F24 > gridY << 15) {
 
-			if (anim == E_LEFTANIM)
-				midpoint = (y - ((gridY + 1) << 15)) >> 10;
+			if (animType == E_LEFTANIM)
+				midpoint = (y - F24 - (gridY << 15)) >> 10;
 			else midpoint = set[E_MULTIPURPOSE] -
-				((y - ((gridY + 1) << 15)) >> 10);
+				((y - F24 - (gridY << 15)) >> 10);
 
 		} else midpoint = 0;
 
-		if (midpoint < set[E_MULTIPURPOSE] / 2) {
+		if (midpoint < set[E_MULTIPURPOSE] >> 1) {
 
 			for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
 
-				dst.x = dstx += 8;
+				bridgex += F8;
 
-				if (midpoint == 0) dst.y = dsty;
+				if (midpoint == 0) bridgey = dsty;
 				else if (count < midpoint)
-					dst.y = ((dsty - midpoint) *
+					bridgey = ((dsty - (midpoint << 10)) *
 						(midpoint - count) / midpoint) +
 						(dsty * count / midpoint);
 				else
-					dst.y = ((dsty - midpoint) * (count - midpoint) /
+					bridgey = ((dsty - (midpoint << 10)) * (count - midpoint) /
 						(set[E_MULTIPURPOSE] - midpoint)) +
 						(dsty * (set[E_MULTIPURPOSE] - count) /
 						(set[E_MULTIPURPOSE] - midpoint));
 
-				SDL_BlitSurface(sprite, NULL, screen, &dst);
+				anim->draw(bridgex, bridgey);
 
 			}
 
@@ -955,21 +968,21 @@ void Event::draw (int ticks) {
 
 			for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
 
-				dst.x = dstx += 8;
+				bridgex += F8;
 
-				if (midpoint == 0) dst.y = dsty;
+				if (midpoint == 0) bridgey = dsty;
 				else if (count < midpoint)
-					dst.y = ((dsty + midpoint - set[E_MULTIPURPOSE]) *
+					bridgey = ((dsty + ((midpoint - set[E_MULTIPURPOSE]) << 10)) *
 						(midpoint - count) / midpoint) +
 						(dsty * count / midpoint);
 				else
-					dst.y = ((dsty + midpoint - set[E_MULTIPURPOSE]) *
+					bridgey = ((dsty + ((midpoint - set[E_MULTIPURPOSE]) << 10)) *
 						(count - midpoint) /
 						(set[E_MULTIPURPOSE] - midpoint)) +
 						(dsty * (set[E_MULTIPURPOSE] - count) /
 						(set[E_MULTIPURPOSE] - midpoint));
 
-				SDL_BlitSurface(sprite, NULL, screen, &dst);
+				anim->draw(bridgex, bridgey);
 
 			}
 
@@ -977,25 +990,21 @@ void Event::draw (int ticks) {
 
 	} else {
 
-		SDL_BlitSurface(sprite, NULL, screen, &dst);
+		anim->draw(x, y);
 
 	}
 
-	if (ticks < flashTime) restorePalette(sprite);
+	if (ticks < flashTime) anim->restorePalette();
 
 	// If the event has been destroyed, draw an explosion
 	if (set[E_HITSTOKILL] &&
-		((anim == E_LFINISHANIM) || (anim == E_RFINISHANIM))) {
+		((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))) {
 
-		dst.x = dstx + level->getFrame(121, frame)->x;
-		dst.y = dsty + level->getFrame(121, frame)->y +
-			level->getAnim(121)->y[frame];
-
-		SDL_BlitSurface(level->getFrame(121, frame)->pixels, NULL, screen,
-			&dst);
+		anim = level->getMiscAnim(2);
+		anim->setFrame(frame, false);
+		anim->draw(x, y);
 
 	}
-
 
 	if ((set[E_MODIFIER] == 8) && set[E_HITSTOKILL]) {
 
@@ -1006,24 +1015,19 @@ void Event::draw (int ticks) {
 
 		// Devan head
 
-		sprite = level->getSprite(225)->pixels;
+		anim = level->getMiscAnim(1);
+		anim->setFrame(0, true);
 
-		if (ticks < flashTime) mapPalette(sprite, 0, 256, 0, 1);
+		if (ticks < flashTime) anim->flashPalette(0);
 
-		dst.x = viewW - 44;
-		dst.y = count + 23;
-		SDL_BlitSurface(sprite, NULL, screen, &dst);
+		anim->draw(viewX + ((viewW - 44) << 10), viewY + ((count + 40) << 10));
 
-		if (ticks < flashTime) restorePalette(sprite);
+		if (ticks < flashTime) anim->restorePalette();
 
 
 		// Bar
-		dst.x = viewW - 40;
-		dst.y = count + 40;
-		dst.w = 12;
-		dst.h = 100 - count;
-		if (ticks < flashTime) SDL_FillRect(screen, &dst, 0);
-		else SDL_FillRect(screen, &dst, 32);
+		drawRect(viewW - 40, count + 40, 12, 100 - count,
+			(ticks < flashTime)? 0: 32);
 
 	}
 
@@ -1031,4 +1035,5 @@ void Event::draw (int ticks) {
 	return;
 
 }
+
 

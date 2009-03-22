@@ -23,7 +23,7 @@
 #include <string.h>
 
 
-PaletteEffect::PaletteEffect (unsigned char newFirst, unsigned char newAmount,
+PaletteEffect::PaletteEffect (unsigned char newFirst, int newAmount,
 	fixed newSpeed, PaletteEffect * nextPE) {
 
 	next = nextPE;
@@ -55,18 +55,18 @@ void PaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-FadePaletteEffect::FadePaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+WhiteInPaletteEffect::WhiteInPaletteEffect (unsigned char newFirst,
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
-	position = 0;
+	whiteness = F1 + FH;
 
 	return;
 
 }
 
 
-void FadePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	int count;
 
@@ -74,21 +74,26 @@ void FadePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 	if (next) next->apply(shownPalette, direct);
 
 
-	if (position) {
+	if (whiteness > F1) {
+
+		memset(shownPalette + first, 255, sizeof(SDL_Color) * amount);
+
+		whiteness -= (mspf << 10) / speed;
+
+	} else if (whiteness > 0) {
 
 		for (count = first; count < first + amount; count++) {
 
-			shownPalette[count].r = (currentPalette[count].r * position) >> 10;
-			shownPalette[count].g = (currentPalette[count].g * position) >> 10;
-			shownPalette[count].b = (currentPalette[count].b * position) >> 10;
+			shownPalette[count].r = 255 -
+				(((255 - shownPalette[count].r) * (F1 - whiteness)) >> 10);
+			shownPalette[count].g = 255 -
+				(((255 - shownPalette[count].g) * (F1 - whiteness)) >> 10);
+			shownPalette[count].b = 255 -
+				(((255 - shownPalette[count].b) * (F1 - whiteness)) >> 10);
 
 		}
 
-		position -= (mspf << 10) / speed;
-
-	} else {
-
-		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+		whiteness -= (mspf << 10) / speed;
 
 	}
 
@@ -101,8 +106,157 @@ void FadePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
+FadeInPaletteEffect::FadeInPaletteEffect (unsigned char newFirst,
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+
+	blackness = F1 + FH;
+
+	return;
+
+}
+
+
+void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+
+	int count;
+
+	// Apply the next palette effect
+	if (next) next->apply(shownPalette, direct);
+
+
+	if (blackness > F1) {
+
+		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+
+		blackness -= (mspf << 10) / speed;
+
+	} else if (blackness > 0) {
+
+		for (count = first; count < first + amount; count++) {
+
+			shownPalette[count].r =
+				(shownPalette[count].r * (F1 - blackness)) >> 10;
+			shownPalette[count].g =
+				(shownPalette[count].g * (F1 - blackness)) >> 10;
+			shownPalette[count].b =
+				(shownPalette[count].b * (F1 - blackness)) >> 10;
+
+		}
+
+		blackness -= (mspf << 10) / speed;
+
+	}
+
+	if (direct)
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
+			amount);
+
+	return;
+
+}
+
+
+WhiteOutPaletteEffect::WhiteOutPaletteEffect (unsigned char newFirst,
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+
+	whiteness = -F8;
+
+	return;
+
+}
+
+
+void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+
+	int count;
+
+	// Apply the next palette effect
+	if (next) next->apply(shownPalette, direct);
+
+
+	if (whiteness > F1) {
+
+		memset(shownPalette + first, 255, sizeof(SDL_Color) * amount);
+
+	} else if (whiteness > 0) {
+
+		for (count = first; count < first + amount; count++) {
+
+			shownPalette[count].r = 255 -
+				(((255 - shownPalette[count].r) * (F1 - whiteness)) >> 10);
+			shownPalette[count].g = 255 -
+				(((255 - shownPalette[count].g) * (F1 - whiteness)) >> 10);
+			shownPalette[count].b = 255 -
+				(((255 - shownPalette[count].b) * (F1 - whiteness)) >> 10);
+
+		}
+
+		whiteness += (mspf << 10) / speed;
+
+	} else whiteness += (mspf << 10) / speed;
+
+	if (direct)
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
+			amount);
+
+	return;
+
+}
+
+
+FadeOutPaletteEffect::FadeOutPaletteEffect (unsigned char newFirst,
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+
+	blackness = -(F2 + F1);
+
+	return;
+
+}
+
+
+void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+
+	int count;
+
+	// Apply the next palette effect
+	if (next) next->apply(shownPalette, direct);
+
+
+	if (blackness > F1) {
+
+		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+
+	} else if (blackness > 0) {
+
+		for (count = first; count < first + amount; count++) {
+
+			shownPalette[count].r =
+				(shownPalette[count].r * (F1 - blackness)) >> 10;
+			shownPalette[count].g =
+				(shownPalette[count].g * (F1 - blackness)) >> 10;
+			shownPalette[count].b =
+				(shownPalette[count].b * (F1 - blackness)) >> 10;
+
+		}
+
+		blackness += (mspf << 10) / speed;
+
+	} else blackness += (mspf << 10) / speed;
+
+	if (direct)
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
+			amount);
+
+	return;
+
+}
+
+
 RotatePaletteEffect::RotatePaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
 	position = 0;
@@ -141,7 +295,7 @@ void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 
 SkyPaletteEffect::SkyPaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, SDL_Color *newSkyPalette,
+	int newAmount, fixed newSpeed, SDL_Color *newSkyPalette,
 	PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
@@ -207,7 +361,7 @@ void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 
 P2DPaletteEffect::P2DPaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
 	return;
@@ -248,7 +402,7 @@ void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 
 P1DPaletteEffect::P1DPaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
 	return;
@@ -285,7 +439,7 @@ void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 
 WaterPaletteEffect::WaterPaletteEffect (unsigned char newFirst,
-	unsigned char newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
 
 	return;
@@ -332,30 +486,11 @@ void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 void usePalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
-	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
 	SDL_Flip(screen);
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
 	currentPalette = palette;
-
-	return;
-
-}
-
-
-void mapPalette (SDL_Surface *surface, int start, int length, int newStart,
-	int newLength) {
-
-	SDL_Color palette[256];
-	int count;
-
-	// Map a range of palette indices to another range
-
-	for (count = 0; count < length; count++)
-		palette[count].r = palette[count].g = palette[count].b =
-			(count * newLength / length) + newStart;
-
-	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
 
 	return;
 

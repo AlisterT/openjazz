@@ -28,10 +28,11 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 	// Properties based on the player
 
 	source = sourcePlayer;
+	type = source->getAmmo(false) + 1;
 
-	if (!lower && (type == 2)) {
+	if (!lower && (level->getBullet(type)[B_XSPEED | 2] != 0)) {
 
-		// Create the other RF missile
+		// Create the other bullet
 		next = new Bullet(source, true, ticks, nextBullet);
 
 	} else {
@@ -40,7 +41,6 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 
 	}
 
-	type = source->getAmmo(false) + 1;
 	direction = source->getFacing()? 1: 0;
 	direction |= lower? 2: 0;
 	x = source->getX() + (source->getFacing()? PXO_R: PXO_L);
@@ -74,10 +74,7 @@ Bullet::Bullet (Event *sourceEvent, int ticks, Bullet *nextBullet) {
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = sourceEvent->getFacing()? 1: 0;
 
-	if (sourceEvent->getFacing())
-		x = sourceEvent->getX() + sourceEvent->getWidth() + F8;
-	else x = sourceEvent->getX() - F8;
-
+	x = sourceEvent->getX() + (sourceEvent->getWidth() >> 1);
 	y = sourceEvent->getY() + (sourceEvent->getHeight() >> 1);
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
@@ -107,7 +104,7 @@ Bullet::Bullet (Bird *sourceBird, bool lower, int ticks,
 	}
 
 	type = 30;
-	direction = source->getFacing()? 0: 1;
+	direction = source->getFacing()? 1: 0;
 	direction |= lower? 2: 0;
 	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
 	y = sourceBird->getY();
@@ -296,21 +293,18 @@ bool Bullet::playFrame (int ticks) {
 
 void Bullet::draw () {
 
-	SDL_Rect dst;
-	Sprite *bulletSprite;
+	Sprite *sprite;
 
 	if (next) next->draw();
 
-	if (type == -1) bulletSprite = level->getSprite(130);
-	else bulletSprite =
+	if (type == -1) sprite = level->getSprite(130);
+	else sprite =
 		level->getSprite(((unsigned char *)level->getBullet(type))
 			[B_SPRITE + direction]);
 
-	dst.x = (x >> 10) - (bulletSprite->pixels->w >> 1) - (viewX >> 10);
-	dst.y = (y >> 10) - (bulletSprite->pixels->h >> 1) - (viewY >> 10);
-
 	// Show the bullet
-	SDL_BlitSurface(bulletSprite->pixels, NULL, screen, &dst);
+	sprite->draw((x >> 10) - (sprite->getWidth() >> 1) - (viewX >> 10),
+		(y >> 10) - (sprite->getWidth() >> 1) - (viewY >> 10));
 
 	return;
 

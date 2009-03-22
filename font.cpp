@@ -432,7 +432,16 @@ void Font::showNumber (int n, int x, int y) {
 
 void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
-	::mapPalette(surface, start, length, newStart, newLength);
+	SDL_Color palette[256];
+	int count;
+
+	// Map a range of palette indices to another range
+
+	for (count = 0; count < length; count++)
+		palette[count].r = palette[count].g = palette[count].b =
+			(count * newLength / length) + newStart;
+
+	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
 
 	return;
 

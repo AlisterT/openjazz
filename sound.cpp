@@ -85,13 +85,8 @@ void openAudio () {
 	asDesired.callback = audioCallback;
 	asDesired.userdata = NULL;
 
-	if (SDL_OpenAudio(&asDesired, &audioSpec) < 0) {
-
+	if (SDL_OpenAudio(&asDesired, &audioSpec) < 0)
 		fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
-
-		return;
-
-	}
 
 	return;
 
