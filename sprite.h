@@ -48,19 +48,21 @@ class Sprite {
 class Anim {
 
 	private:
-		Sprite *sprites[19]; // Pointers to members of the sprite set
-		signed char   offsets[19];  // Vertical offsets (for pickup wobble effect)
-		unsigned char frames; // Number of frames
-		unsigned char frame;
+		Sprite        *sprites[19];
+		signed char    xOffset;
+		signed char    yOffset;
+		signed char    xOffsets[19];
+		signed char    yOffsets[19];
+		unsigned char  frames; // Number of frames
+		unsigned char  frame;  // Current frame
 
 	public:
 		Anim                ();
 		~Anim               ();
 
-		void setFrames      (int newFrames);
-		void setFrame       (int newFrame, bool looping);
-		void setData        (Sprite *frameSprite, signed char frameY);
-		int  getOffset      ();
+		void setData        (int amount, signed char x, signed char y);
+		void setFrame       (int nextFrame, bool looping);
+		void setFrameData   (Sprite *frameSprite, signed char x, signed char y);
 		int  getWidth       ();
 		int  getHeight      ();
 		void draw           (int x, int y);

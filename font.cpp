@@ -312,30 +312,30 @@ int Font::showString (char * s, int x, int y) {
 
 	SDL_Rect src, dst;
 	unsigned int count;
-	int xoffset, yoffset;
+	int xOffset, yOffset;
 
 	// Determine the characters' dimensions
 	src.x = 0;
 	src.h = h;
 
 	// Determine the position at which to draw the first character
-	xoffset = x;
-	yoffset = y;
+	xOffset = x;
+	yOffset = y;
 
 	// Go through each character of the string
 	for (count = 0; count < strlen(s); count++) {
 
 		if (s[count] == '\n') {
 
-			xoffset = x;
-			yoffset += h;
+			xOffset = x;
+			yOffset += h;
 
 		} else {
 
 			// Determine the character's position on the screen
 			src.w = w[(int)(map[(int)(s[count])])];
-			dst.y = yoffset;
-			dst.x = xoffset;
+			dst.y = yOffset;
+			dst.x = xOffset;
 
 			// Determine the character's position in the font
 			if (s[count] >= 0) src.y = map[(int)(s[count])] * h;
@@ -344,13 +344,13 @@ int Font::showString (char * s, int x, int y) {
 			// Draw the character to the screen
 			SDL_BlitSurface(surface, &src, screen, &dst);
 
-			xoffset += w[(int)(map[(int)(s[count])])];
+			xOffset += w[(int)(map[(int)(s[count])])];
 
 		}
 
 	}
 
-	return xoffset;
+	return xOffset;
 
 }
 

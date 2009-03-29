@@ -153,7 +153,6 @@ class Player {
 			2 = bouncer 3 = TNT */
 		int           score;
 		int           energy;
-		fixed         energyBar;
 		int           lives;
 		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow,
 			3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
@@ -198,7 +197,6 @@ class Player {
 		void            addScore     (int addedScore);
 		int             getScore     ();
 		int             getEnergy    ();
-		int             getEnergyBar ();
 		int             getLives     ();
 		int             getAmmo      (bool amount);
 		int             getEnemies   ();

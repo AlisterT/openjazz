@@ -92,6 +92,7 @@ class Level {
 		int            enemies, items;
 		fixed          waterLevel;
 		int            gameMode;
+		fixed          energyBar;
 
 		int  loadSprites (char *fn);
 		int  loadTiles   (char *fn);
@@ -102,11 +103,11 @@ class Level {
 		void draw      ();
 
 	public:
-		Event       *firstEvent;
-		Bullet      *firstBullet;
-		signed char *pathX;
-		signed char *pathY;
-		int          pathNode;
+		Event  *firstEvent;
+		Bullet *firstBullet;
+		int    *pathX;
+		int    *pathY;
+		int     pathNode;
 
 		Level                       ();
 		Level                       (char *fn, unsigned char diff,

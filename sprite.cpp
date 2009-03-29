@@ -146,60 +146,56 @@ Anim::~Anim () {
 }
 
 
-void Anim::setFrames (int newFrames) {
+void Anim::setData (int amount, signed char x, signed char y) {
 
-	frames = newFrames;
-
-	return;
-
-}
-
-
-void Anim::setFrame (int newFrame, bool looping) {
-
-	if (looping) frame = newFrame % frames;
-	else frame = (newFrame >= frames)? frames - 1: newFrame;
+	frames = amount;
+	xOffset = x << 2;
+	yOffset = y;
 
 	return;
 
 }
 
 
-void Anim::setData (Sprite *frameSprite, signed char frameY) {
+void Anim::setFrame (int nextFrame, bool looping) {
 
-	sprites[frame] = frameSprite;
-	offsets[frame] = frameY;
+	if (looping) frame = nextFrame % frames;
+	else frame = (nextFrame >= frames)? frames - 1: nextFrame;
 
 	return;
 
 }
 
 
-int Anim::getOffset () {
+void Anim::setFrameData (Sprite *sprite, signed char x, signed char y) {
 
-	return offsets[frame];
+	sprites[frame] = sprite;
+	xOffsets[frame] = x << 2;
+	yOffsets[frame] = y;
+
+	return;
 
 }
 
 
 int Anim::getWidth () {
 
-	return sprites[frames - 1]->getWidth();
+	return sprites[frame]->getWidth();
 
 }
 
 
 int Anim::getHeight() {
 
-	return sprites[frames - 1]->getHeight();
+	return sprites[frame]->getHeight();
 
 }
 
 
 void Anim::draw (int x, int y) {
 
-	sprites[frame]->draw((x >> 10) - (viewX >> 10),
-		(y >> 10) - (viewY >> 10) + offsets[frame]);
+	sprites[frame]->draw((x >> 10) + xOffsets[frame] - xOffset - (viewX >> 10),
+		(y >> 10) + yOffsets[frame] - yOffset - (viewY >> 10));
 
 	return;
 

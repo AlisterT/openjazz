@@ -224,7 +224,6 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 	// Apply the next palette effect
 	if (next) next->apply(shownPalette, direct);
 
-
 	if (blackness > F1) {
 
 		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);

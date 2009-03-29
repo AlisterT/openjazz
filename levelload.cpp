@@ -365,7 +365,7 @@ int Level::loadTiles (char * fn) {
 			buffer[pos++] = f->loadChar();
 
 			f->seek(2, false); // I assume this is the length of the next tile
-			                   // block
+				// block
 			if (pos == TW * TH * 60) f->seek(2, false); // Maybe these say
 			if (pos == TW * TH * 120) f->seek(2, false); // whether or not there
 			if (pos == TW * TH * 180) f->seek(2, false); // are any more tiles
@@ -382,7 +382,6 @@ int Level::loadTiles (char * fn) {
 
 	tileSet = createSurface(buffer, TW, TH * tiles);
 	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
-
 
 	return tiles;
 
@@ -649,12 +648,12 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	pathLength = buffer[0] + (buffer[1] << 8);
 	pathNode = 0;
 	if (pathLength < 1) pathLength = 1;
-	pathX = new signed char[pathLength];
-	pathY = new signed char[pathLength];
+	pathX = new int[pathLength];
+	pathY = new int[pathLength];
 
 	for (count = 0; count < pathLength; count++) {
 
-		pathX[count] = ((signed char *)buffer)[(count << 1) + 3];
+		pathX[count] = ((signed char *)buffer)[(count << 1) + 3] << 2;
 		pathY[count] = ((signed char *)buffer)[(count << 1) + 2];
 
 	}
@@ -711,7 +710,8 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// Create animation set based on that data
 	for (count = 0; count < ANIMS; count++) {
 
-		animSet[count].setFrames(buffer[(count * 64) + 6]);
+		animSet[count].setData(buffer[(count * 64) + 6],
+			buffer[(count * 64) + 4], buffer[(count * 64) + 5]);
 
 		for (y = 0; y < buffer[(count * 64) + 6]; y++) {
 
@@ -721,8 +721,8 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 			// Assign sprite and vertical offset
 			animSet[count].setFrame(y, true);
-			animSet[count].setData(spriteSet + x,
-				buffer[(count * 64) + 45 + y]);
+			animSet[count].setFrameData(spriteSet + x,
+				buffer[(count * 64) + 26 + y], buffer[(count * 64) + 45 + y]);
 
 		}
 
@@ -919,7 +919,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	if (bgType != PE_SKY) {
 
-		firstPE = new RotatePaletteEffect(192, 32, F32, firstPE);
+		firstPE = new RotatePaletteEffect(192, 32, -F32, firstPE);
 		firstPE = new RotatePaletteEffect(224, 16, F16, firstPE);
 
 	}
@@ -955,6 +955,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	firstBullet = NULL;
 	firstEvent = NULL;
 
+	energyBar = 0;
 
 	return E_NONE;
 

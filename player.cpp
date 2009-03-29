@@ -190,7 +190,6 @@ void Player::reset () {
 	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
 
 	energy = 4;
-	energyBar = 0;
 	shield = 0;
 	floating = false;
 	facing = true;
@@ -498,7 +497,9 @@ void Player::kill (int ticks) {
 
 	reaction = PR_KILLED;
 	reactionTime = ticks + PRT_KILLED;
-	firstPE = new FadeOutPaletteEffect(0, 256, FH, firstPE);
+
+	if (!game || (game->getMode() == M_SINGLE))
+		firstPE = new FadeOutPaletteEffect(0, 256, FH, firstPE);
 
 	return;
 
@@ -523,25 +524,6 @@ int Player::getScore () {
 int Player::getEnergy () {
 
 	return energy;
-
-}
-
-
-int Player::getEnergyBar () {
-
-	if ((energyBar >> 10) < (energy << 4)) {
-
-		if ((energy << 14) - energyBar < mspf * 40) energyBar = energy << 14;
-		else energyBar += mspf * 40;
-
-	} else if ((energyBar >> 10) > (energy << 4)) {
-
-		if (energyBar - (energy << 14) < mspf * 40) energyBar = energy << 14;
-		else energyBar -= mspf * 40;
-
-	}
-
-	return energyBar;
 
 }
 
@@ -1389,10 +1371,10 @@ void Player::draw (int ticks) {
 
 	// Draw "motion blur"
 	if (fastFeetTime > ticks)
-		an->draw(x - (dx >> 6), y + F4 - F32);
+		an->draw(x - (dx >> 6), y);
 
 	// Draw player
-	an->draw(x, y + F4 - F32);
+	an->draw(x, y);
 
 
 	// Remove red flash or player colour from sprite
@@ -1430,13 +1412,13 @@ void Player::draw (int ticks) {
 
 		an = level->getAnim(59);
 
-		an->draw(x + PXO_MID + xOffset, y + PYO_TOP + yOffset);
+		an->draw(x + xOffset, y + PYO_TOP + yOffset);
 
-		if (shield > 3) an->draw(x + PXO_MID - xOffset, y + PYO_TOP - yOffset);
+		if (shield > 3) an->draw(x - xOffset, y + PYO_TOP - yOffset);
 
-		if (shield > 4) an->draw(x + PXO_MID + yOffset, y + PYO_TOP - xOffset);
+		if (shield > 4) an->draw(x + yOffset, y + PYO_TOP - xOffset);
 
-		if (shield > 5) an->draw(x + PXO_MID - yOffset, y + PYO_TOP + xOffset);
+		if (shield > 5) an->draw(x - yOffset, y + PYO_TOP + xOffset);
 
 	} else if (shield) {
 
@@ -1447,9 +1429,9 @@ void Player::draw (int ticks) {
 
 		an = level->getAnim(50);
 
-		an->draw(x + PXO_MID + xOffset, y + yOffset + PYO_TOP);
+		an->draw(x + xOffset, y + yOffset + PYO_TOP);
 
-		if (shield == 2) an->draw(x + PXO_MID - xOffset, y + PYO_TOP - yOffset);
+		if (shield == 2) an->draw(x - xOffset, y + PYO_TOP - yOffset);
 
 	}
 

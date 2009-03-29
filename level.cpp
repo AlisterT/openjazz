@@ -407,13 +407,23 @@ void Level::draw () {
 	// Draw the health bar
 
 	dst.x = 20;
-	x = localPlayer->getEnergyBar();
+	x = localPlayer->getEnergy();
 
-	if (x > F1) {
+	if ((energyBar >> 10) < (x << 4)) {
 
-		dst.w = (x >> 10) - 1;
+		if ((x << 14) - energyBar < mspf * 40) energyBar = x << 14;
+		else energyBar += mspf * 40;
 
-		x = localPlayer->getEnergy();
+	} else if ((energyBar >> 10) > (x << 4)) {
+
+		if (energyBar - (x << 14) < mspf * 40) energyBar = x << 14;
+		else energyBar -= mspf * 40;
+
+	}
+
+	if (energyBar > F1) {
+
+		dst.w = (energyBar >> 10) - 1;
 
 		// Choose energy bar colour
 		if (x == 4) x = 24;
