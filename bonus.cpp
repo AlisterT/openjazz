@@ -26,7 +26,8 @@
  */
 
 
-#include "OpenJazz.h"
+#include "bonus.h"
+#include "file.h"
 
 
 Bonus::Bonus (char * fn) {

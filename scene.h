@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _SCENE_H
+#define _SCENE_H
+
+
+#include "OpenJazz.h"
+
+
 // Class
 
 class Scene {
@@ -35,4 +42,6 @@ class Scene {
 		int run ();
 
 };
+
+#endif
 

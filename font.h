@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _FONT_H
+#define _FONT_H
+
+
+#include "file.h"
+
+
 // Class
 
 class Font {
@@ -43,4 +50,15 @@ class Font {
 
 };
 
+// Variables
+
+Extern Font *font2;          /* Taken from .0FN file name */
+Extern Font *fontbig;        /* Taken from .0FN file name */
+Extern Font *fontiny;        /* Taken from .0FN file name */
+Extern Font *fontmn1;        /* Taken from .0FN file name */
+Extern Font *fontmn2;        /* Taken from .0FN file name */
+Extern Font *panelBigFont;   /* Not a font file, found in PANEL.000 */
+Extern Font *panelSmallFont; /* Not a font file, found in PANEL.000 */
+
+#endif
 

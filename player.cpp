@@ -20,7 +20,11 @@
  *
  */
 
-#include "OpenJazz.h"
+
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "palette.h"
 #include <string.h>
 #include <math.h>
 
@@ -408,6 +412,8 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
 			setEvent(set);
 
+			level->playSound(set[E_SOUND]);
+
 			break;
 
 		case 30:
@@ -430,6 +436,9 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 			return true;
 
 		case 37: // Diamond
+
+			// Yellow flash
+			firstPE = new FlashPaletteEffect(255, 255, 0, FH, firstPE);
 
 			return true;
 
@@ -457,6 +466,8 @@ bool Player::hit (int ticks) {
 		energy--;
 
 		if (bird) bird->hit();
+
+		playSound(S_OW);
 
 	}
 
@@ -499,7 +510,7 @@ void Player::kill (int ticks) {
 	reactionTime = ticks + PRT_KILLED;
 
 	if (!game || (game->getMode() == M_SINGLE))
-		firstPE = new FadeOutPaletteEffect(0, 256, FH, firstPE);
+		firstPE = new FadeOutPaletteEffect(FH, firstPE);
 
 	return;
 
@@ -699,48 +710,48 @@ void Player::send (unsigned char *data) {
 
 	// Copy data to be sent to clients/server
 
-	data[0] = pcontrols[C_UP];
-	data[1] = pcontrols[C_DOWN];
-	data[2] = pcontrols[C_LEFT];
-	data[3] = pcontrols[C_RIGHT];
-	data[4] = pcontrols[C_JUMP];
-	data[5] = pcontrols[C_FIRE];
-	data[6] = 0;
-	data[7] = ammo[0] >> 8;
-	data[8] = ammo[0] & 255;
-	data[9] = ammo[1] >> 8;
-	data[10] = ammo[1] & 255;
-	data[11] = ammo[2] >> 8;
-	data[12] = ammo[2] & 255;
-	data[13] = ammo[3] >> 8;
-	data[14] = ammo[3] & 255;
-	data[15] = ammoType + 1;
-	data[16] = score >> 24;
-	data[17] = (score >> 16) & 255;
-	data[18] = (score >> 8) & 255;
-	data[19] = score & 255;
-	data[20] = energy;
-	data[21] = lives;
-	data[22] = shield;
-	data[23] = floating;
-	data[24] = facing;
-	data[25] = fireSpeed;
-	data[26] = jumpHeight >> 24;
-	data[27] = (jumpHeight >> 16) & 255;
-	data[28] = (jumpHeight >> 8) & 255;
-	data[29] = jumpHeight & 255;
-	data[30] = jumpY >> 24;
-	data[31] = (jumpY >> 16) & 255;
-	data[32] = (jumpY >> 8) & 255;
-	data[33] = jumpY & 255;
-	data[34] = x >> 24;
-	data[35] = (x >> 16) & 255;
-	data[36] = (x >> 8) & 255;
-	data[37] = x & 255;
-	data[38] = y >> 24;
-	data[39] = (y >> 16) & 255;
-	data[40] = (y >> 8) & 255;
-	data[41] = y & 255;
+	data[3] = pcontrols[C_UP];
+	data[4] = pcontrols[C_DOWN];
+	data[5] = pcontrols[C_LEFT];
+	data[6] = pcontrols[C_RIGHT];
+	data[7] = pcontrols[C_JUMP];
+	data[8] = pcontrols[C_FIRE];
+	data[9] = bird? 1: 0;
+	data[10] = ammo[0] >> 8;
+	data[11] = ammo[0] & 255;
+	data[12] = ammo[1] >> 8;
+	data[13] = ammo[1] & 255;
+	data[14] = ammo[2] >> 8;
+	data[15] = ammo[2] & 255;
+	data[16] = ammo[3] >> 8;
+	data[17] = ammo[3] & 255;
+	data[18] = ammoType + 1;
+	data[19] = score >> 24;
+	data[20] = (score >> 16) & 255;
+	data[21] = (score >> 8) & 255;
+	data[22] = score & 255;
+	data[23] = energy;
+	data[24] = lives;
+	data[25] = shield;
+	data[26] = floating;
+	data[27] = facing;
+	data[28] = fireSpeed;
+	data[29] = jumpHeight >> 24;
+	data[30] = (jumpHeight >> 16) & 255;
+	data[31] = (jumpHeight >> 8) & 255;
+	data[32] = jumpHeight & 255;
+	data[33] = jumpY >> 24;
+	data[34] = (jumpY >> 16) & 255;
+	data[35] = (jumpY >> 8) & 255;
+	data[36] = jumpY & 255;
+	data[37] = x >> 24;
+	data[38] = (x >> 16) & 255;
+	data[39] = (x >> 8) & 255;
+	data[40] = x & 255;
+	data[41] = y >> 24;
+	data[42] = (y >> 16) & 255;
+	data[43] = (y >> 8) & 255;
+	data[44] = y & 255;
 
 	return;
 
@@ -768,6 +779,17 @@ void Player::receive (unsigned char *buffer) {
 			pcontrols[C_JUMP] = buffer[7];
 			pcontrols[C_FIRE] = buffer[8];
 			pcontrols[C_CHANGE] = false;
+
+			if ((buffer[9] & 1) && !bird)
+				bird = new Bird(this, x >> 15, y >> 15);
+
+			if (!(buffer[9] & 1) && bird) {
+
+				delete bird;
+				bird = NULL;
+
+			}
+
 			ammo[0] = (buffer[10] << 8) + buffer[11];
 			ammo[1] = (buffer[12] << 8) + buffer[13];
 			ammo[2] = (buffer[14] << 8) + buffer[15];
@@ -981,6 +1003,8 @@ void Player::control (int ticks) {
 
 				event = NULL;
 
+				playSound(S_JUMPA);
+
 			}
 
 			if (!lookTime) {
@@ -1046,7 +1070,7 @@ void Player::control (int ticks) {
 		// Create new bullet
 		level->firstBullet = new Bullet(this, false, ticks, level->firstBullet);
 
-			// Set when the next bullet can be fired
+		// Set when the next bullet can be fired
 		if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);
 		else fireTime = 0x7FFFFFFF;
 
@@ -1239,16 +1263,14 @@ void Player::view (int ticks) {
 	} else if (lookTime > 0) {
 
 		if (ticks < 2000 + lookTime)
-			viewY = y - (F24 - (64 * (ticks - (1000 + lookTime)))) -
-				(viewH << 9);
-		else viewY = y - (F24 - F64) - (viewH << 9);
+			viewY = y - F24 - (64 * (lookTime + 1000 - ticks)) - (viewH << 9);
+		else viewY = y + F64 - F24 - (viewH << 9);
 
 	} else {
 
 		if (ticks < 2000 - lookTime)
-			viewY = y - (F24 + (64 * (ticks - (1000 - lookTime)))) -
-				(viewH << 9);
-		else viewY = y - (F24 + F64) - (viewH << 9);
+			viewY = y - F24 - (64 * (lookTime - 1000 + ticks)) - (viewH << 9);
+		else viewY = y - F64 - F24 - (viewH << 9);
 
 	}
 
@@ -1439,6 +1461,11 @@ void Player::draw (int ticks) {
 	// Show the bird
 	if (bird) bird->draw(ticks);
 
+
+	// Show the player's name
+	if (game->getMode() != M_SINGLE)
+		panelBigFont->showString(name, (x - viewX) >> 10,
+			(y - F32 - F16 - viewY) >> 10);
 
 	return;
 

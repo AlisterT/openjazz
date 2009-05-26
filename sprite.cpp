@@ -19,7 +19,9 @@
  *
  */
 
-#include "OpenJazz.h"
+
+#include "level.h"
+
 
 Sprite::Sprite () {
 

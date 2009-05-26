@@ -19,17 +19,15 @@
  *
  */
 
-#include "OpenJazz.h"
+
+#include "level.h"
+#include "palette.h"
 #include <string.h>
 
 
-PaletteEffect::PaletteEffect (unsigned char newFirst, int newAmount,
-	fixed newSpeed, PaletteEffect * nextPE) {
+PaletteEffect::PaletteEffect (PaletteEffect * nextPE) {
 
 	next = nextPE;
-	first = newFirst;
-	amount = newAmount;
-	speed = newSpeed;
 
 	return;
 
@@ -55,10 +53,10 @@ void PaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-WhiteInPaletteEffect::WhiteInPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+WhiteInPaletteEffect::WhiteInPaletteEffect (fixed newDuration,
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
+	duration = newDuration;
 	whiteness = F1 + FH;
 
 	return;
@@ -76,13 +74,13 @@ void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	if (whiteness > F1) {
 
-		memset(shownPalette + first, 255, sizeof(SDL_Color) * amount);
+		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
 
-		whiteness -= (mspf << 10) / speed;
+		whiteness -= (mspf << 10) / duration;
 
 	} else if (whiteness > 0) {
 
-		for (count = first; count < first + amount; count++) {
+		for (count = 0; count < 256; count++) {
 
 			shownPalette[count].r = 255 -
 				(((255 - shownPalette[count].r) * (F1 - whiteness)) >> 10);
@@ -93,23 +91,22 @@ void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 		}
 
-		whiteness -= (mspf << 10) / speed;
+		whiteness -= (mspf << 10) / duration;
 
 	}
 
 	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-FadeInPaletteEffect::FadeInPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+FadeInPaletteEffect::FadeInPaletteEffect (fixed newDuration,
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
+	duration = newDuration;
 	blackness = F1 + FH;
 
 	return;
@@ -127,13 +124,13 @@ void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	if (blackness > F1) {
 
-		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
-		blackness -= (mspf << 10) / speed;
+		blackness -= (mspf << 10) / duration;
 
 	} else if (blackness > 0) {
 
-		for (count = first; count < first + amount; count++) {
+		for (count = 0; count < 256; count++) {
 
 			shownPalette[count].r =
 				(shownPalette[count].r * (F1 - blackness)) >> 10;
@@ -144,23 +141,22 @@ void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 		}
 
-		blackness -= (mspf << 10) / speed;
+		blackness -= (mspf << 10) / duration;
 
 	}
 
 	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-WhiteOutPaletteEffect::WhiteOutPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+WhiteOutPaletteEffect::WhiteOutPaletteEffect (fixed newDuration,
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
+	duration = newDuration;
 	whiteness = -F8;
 
 	return;
@@ -178,11 +174,11 @@ void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	if (whiteness > F1) {
 
-		memset(shownPalette + first, 255, sizeof(SDL_Color) * amount);
+		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
 
 	} else if (whiteness > 0) {
 
-		for (count = first; count < first + amount; count++) {
+		for (count = 0; count < 256; count++) {
 
 			shownPalette[count].r = 255 -
 				(((255 - shownPalette[count].r) * (F1 - whiteness)) >> 10);
@@ -193,23 +189,22 @@ void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 		}
 
-		whiteness += (mspf << 10) / speed;
+		whiteness += (mspf << 10) / duration;
 
-	} else whiteness += (mspf << 10) / speed;
+	} else whiteness += (mspf << 10) / duration;
 
 	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-FadeOutPaletteEffect::FadeOutPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+FadeOutPaletteEffect::FadeOutPaletteEffect (fixed newDuration,
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
+	duration = newDuration;
 	blackness = -(F2 + F1);
 
 	return;
@@ -226,11 +221,11 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	if (blackness > F1) {
 
-		memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
 	} else if (blackness > 0) {
 
-		for (count = first; count < first + amount; count++) {
+		for (count = 0; count < 256; count++) {
 
 			shownPalette[count].r =
 				(shownPalette[count].r * (F1 - blackness)) >> 10;
@@ -241,13 +236,74 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 		}
 
-		blackness += (mspf << 10) / speed;
+		blackness += (mspf << 10) / duration;
 
-	} else blackness += (mspf << 10) / speed;
+	} else blackness += (mspf << 10) / duration;
 
 	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+
+	return;
+
+}
+
+
+FlashPaletteEffect::FlashPaletteEffect (unsigned char newRed,
+	unsigned char newGreen, unsigned char newBlue, fixed newDuration,
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+
+	duration = newDuration;
+	progress = -F1;
+	red = newRed;
+	green = newGreen;
+	blue = newBlue;
+
+	return;
+
+}
+
+
+void FlashPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+
+	int count;
+
+	// Apply the next palette effect
+	if (next) next->apply(shownPalette, direct);
+
+	if (progress < 0) {
+
+		for (count = 0; count < 256; count++) {
+
+			shownPalette[count].r = ((shownPalette[count].r * -progress) +
+				(red * (progress + F1))) >> 10;
+			shownPalette[count].g = ((shownPalette[count].g * -progress) +
+				(green * (progress + F1))) >> 10;
+			shownPalette[count].b = ((shownPalette[count].b * -progress) +
+				(blue * (progress + F1))) >> 10;
+
+		}
+
+		progress += (mspf << 10) / duration;
+
+	} else if (progress < F1) {
+
+		for (count = 0; count < 256; count++) {
+
+			shownPalette[count].r = ((shownPalette[count].r * progress) +
+				(red * (F1 - progress))) >> 10;
+			shownPalette[count].g = ((shownPalette[count].g * progress) +
+				(green * (F1 - progress))) >> 10;
+			shownPalette[count].b = ((shownPalette[count].b * progress) +
+				(blue * (F1 - progress))) >> 10;
+
+		}
+
+		progress += (mspf << 10) / duration;
+
+	}
+
+	if (direct)
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 	return;
 
@@ -256,8 +312,11 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 RotatePaletteEffect::RotatePaletteEffect (unsigned char newFirst,
 	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+	PaletteEffect (nextPE) {
 
+	first = newFirst;
+	amount = newAmount;
+	speed = newSpeed;
 	position = 0;
 
 	return;
@@ -295,10 +354,12 @@ void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 SkyPaletteEffect::SkyPaletteEffect (unsigned char newFirst,
 	int newAmount, fixed newSpeed, SDL_Color *newSkyPalette,
-	PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
 	skyPalette = newSkyPalette;
+	first = newFirst;
+	amount = newAmount;
+	speed = newSpeed;
 
 	return;
 
@@ -361,7 +422,11 @@ void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 P2DPaletteEffect::P2DPaletteEffect (unsigned char newFirst,
 	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+	PaletteEffect (nextPE) {
+
+	first = newFirst;
+	amount = newAmount;
+	speed = newSpeed;
 
 	return;
 
@@ -402,7 +467,11 @@ void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 P1DPaletteEffect::P1DPaletteEffect (unsigned char newFirst,
 	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+	PaletteEffect (nextPE) {
+
+	first = newFirst;
+	amount = newAmount;
+	speed = newSpeed;
 
 	return;
 
@@ -437,9 +506,10 @@ void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-WaterPaletteEffect::WaterPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
-	PaletteEffect (newFirst, newAmount, newSpeed, nextPE) {
+WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect * nextPE)
+	: PaletteEffect (nextPE) {
+
+	depth = newDepth;
 
 	return;
 
@@ -458,24 +528,23 @@ void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 	if (position <= 0) return;
 
-	if (position < speed) {
+	if (position < depth) {
 
-		for (count = first; count < first + amount; count++) {
+		for (count = 0; count < 256; count++) {
 
 			shownPalette[count].r = (currentPalette[count].r *
-				(1023 - ((position << 10) / speed))) >> 10;
+				(1023 - ((position << 10) / depth))) >> 10;
 			shownPalette[count].g = (currentPalette[count].g *
-				(1023 - ((position << 10) / speed))) >> 10;
+				(1023 - ((position << 10) / depth))) >> 10;
 			shownPalette[count].b = (currentPalette[count].b *
-				(1023 - ((position << 10) / speed))) >> 10;
+				(1023 - ((position << 10) / depth))) >> 10;
 
 		}
 
-	} else memset(shownPalette + first, 0, sizeof(SDL_Color) * amount);
+	} else memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
 	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 	return;
 

@@ -19,7 +19,10 @@
  *
  */
 
-#include "OpenJazz.h"
+
+#include "game.h"
+#include "level.h"
+#include "palette.h"
 
 
 Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
@@ -53,10 +56,15 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks,
 		dy = 0;
 		time = ticks + T_TNT;
 
+		// Red flash
+		firstPE = new FlashPaletteEffect(255, 0, 0, T_TNT, firstPE);
+
 	} else {
 
 		dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 		time = ticks + T_BULLET;
+
+		level->playSound(level->getBullet(type)[B_STARTSOUND]);
 
 	}
 
@@ -79,6 +87,7 @@ Bullet::Bullet (Event *sourceEvent, int ticks, Bullet *nextBullet) {
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
 
+	level->playSound(level->getBullet(type)[B_STARTSOUND]);
 
 	return;
 
@@ -110,6 +119,8 @@ Bullet::Bullet (Bird *sourceBird, bool lower, int ticks,
 	y = sourceBird->getY();
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
+
+	level->playSound(level->getBullet(type)[B_STARTSOUND]);
 
 	return;
 
@@ -154,19 +165,12 @@ Player * Bullet::getSource () {
 }
 
 
-bool Bullet::isIn (fixed left, fixed top, fixed width, fixed height) {
-
-	return (x >= left) && (x < left + width) && (y >= top) &&
-		(y < top + height);
-
-}
-
-
 bool Bullet::playFrame (int ticks) {
 
 	unsigned char buffer[MTL_G_ROAST];
 	signed char *set;
-	int cx, cy;
+	Event *event;
+	int count;
 
 	// Process the next bullet
 	if (next) {
@@ -179,17 +183,18 @@ bool Bullet::playFrame (int ticks) {
 	// If the time has expired, destroy the bullet
 	if (ticks > time) {
 
-		// If the bullet is TNT, kill all killable events nearby
+		// If the bullet is TNT, destroy all destructible events nearby
 		if (type == -1) {
 
-			for (cy = (y - F160) >> 15; cy < (y + F160) >> 15; cy++) {
+			event = level->firstEvent;
 
-				for (cx = (x - F100) >> 15; cx < (x + F100) >> 15; cx++) {
+			while (event) {
 
-					if ((cy >= 0) && (cy < 64) && (cx >= 0) && (cx < 256))
-						level->hitEvent(cx, cy, true);
+				// If the event is within range, hit it
+				if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100))
+					event->hit(source, ticks);
 
-				}
+				event = event->getNext();
 
 			}
 
@@ -207,28 +212,26 @@ bool Bullet::playFrame (int ticks) {
 
 	set = level->getBullet(type);
 
-	// If a player has been hit, destroy the bullet
-	for (cx = 0; cx < nPlayers; cx++) {
+	// Check if a player has been hit
+	for (count = 0; count < nPlayers; count++) {
 
-		if (players[cx].isIn(x, y, F1, F1)) {
+		if (players[count].isIn(x, y, F1, F1)) {
 
 			if (!source) {
 
 				// The bullet came from an event
 
 				// If the hit was successful, destroy the bullet
-				if (players[cx].hit(ticks)) return true;
+				if (players[count].hit(ticks)) return true;
 
-			}
+			} else if (source->getTeam() != players[count].getTeam()) {
 
-			if (source->getTeam() != players[cx].getTeam()) {
-
-				// The bullet came from another player or their bird
+				// The bullet came from an enemy player or their bird
 
 				// If the hit was successful, destroy the bullet
-				if (players[cx].hit(ticks)) {
+				if (players[count].hit(ticks)) {
 
-					if ((players + cx == localPlayer) &&
+					if ((players + count == localPlayer) &&
 						!localPlayer->getEnergy()) {
 
 						// If the player has been roasted, inform server/clients
@@ -241,10 +244,10 @@ bool Bullet::playFrame (int ticks) {
 						// If it is the server's player, inform self
 						if (localPlayer == players) {
 
-							for (cy = 0; cy < nPlayers; cy++) {
+							for (count = 0; count < nPlayers; count++) {
 
-								if (players[cy].getTeam() == buffer[2])
-									players[cy].teamScore++;
+								if (players[count].getTeam() == buffer[2])
+									players[count].teamScore++;
 
 							}
 
@@ -263,8 +266,37 @@ bool Bullet::playFrame (int ticks) {
 	}
 
 
-	// If an obstacle has been hit and this is not a bouncer, destroy the bullet
-	if (level->checkMask(x, y) && (set[B_BEHAVIOUR] != 4)) return true;
+	if (source) {
+
+		// Check if an event has been hit
+
+		event = level->firstEvent;
+
+		while (event) {
+
+			// Check if the event has been hit
+			if (event->overlap(x, y, 0, 0)) {
+
+				// If the event is hittable, hit it and destroy the bullet
+				if (event->hit(source, ticks)) return true;
+
+			}
+
+			event = event->getNext();
+
+		}
+
+	}
+
+
+	// If the scenery has been hit and this is not a bouncer, destroy the bullet
+	if (level->checkMask(x, y) && (set[B_BEHAVIOUR] != 4)) {
+
+		level->playSound(set[B_FINISHSOUND]);
+
+		return true;
+
+	}
 
 
 	// Calculate trajectory

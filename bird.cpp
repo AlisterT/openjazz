@@ -20,7 +20,7 @@
  */
 
 
-#include "OpenJazz.h"
+#include "level.h"
 
 
 Bird::Bird (Player *rescuer, unsigned char gX, unsigned char gY) {

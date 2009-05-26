@@ -27,7 +27,8 @@
  */
 
 
-#include "OpenJazz.h"
+#include "file.h"
+#include "planet.h"
 
 
 Planet::Planet (char * fn) {

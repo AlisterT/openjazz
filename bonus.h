@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _BONUS_H
+#define _BONUS_H
+
+
+#include "OpenJazz.h"
+
+
 // Class
 
 class Bonus {
@@ -32,4 +39,5 @@ class Bonus {
 
 };
 
+#endif
 

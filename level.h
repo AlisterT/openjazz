@@ -25,6 +25,16 @@
    "Tiles" in the context of level units are referred to as grid elements. */
 
 
+#ifndef _LEVEL_H
+#define _LEVEL_H
+
+
+#include "bullet.h"
+#include "events.h"
+#include "scene.h"
+#include "sprite.h"
+
+
 // Constants
 
 // Displayed statistics
@@ -35,7 +45,6 @@
 // General
 #define LW        256 /* Level width */
 #define LH         64 /* Level height */
-#define BLACK      31 /* Black palette index */
 #define EVENTS    127
 #define ELENGTH    32 /* Length of events, in bytes */
 #define BULLETS    32
@@ -43,8 +52,7 @@
 #define ANIMS     128
 #define TW         32 /* Tile width */
 #define TH         32 /* Tile height */
-#define SKEY      254 /* As in sprite colour key */
-#define TKEY      127 /* As in tileset colour key */
+#define TKEY      127 /* Tileset colour key */
 
 // Delays
 #define T_HURT 1000
@@ -80,6 +88,7 @@ class Level {
 		signed char    eventSet[EVENTS][ELENGTH]; // Not all used
 		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
 		GridElement    grid[LH][LW]; // All levels are the same size
+		int            soundMap[32];
 		SDL_Color      palette[256];
 		SDL_Color      skyPalette[256];
 		bool           sky;
@@ -123,8 +132,7 @@ class Level {
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		int           getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		bool          hitEvent      (unsigned char gridX, unsigned char gridY,
-			bool TNT);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY,
 			int time);
 		signed char * getBullet     (unsigned char bullet);
@@ -134,6 +142,7 @@ class Level {
 		void          addTimer      ();
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel (int phase);
+		void          playSound     (int sound);
 		void          win           ();
 		Scene *       createScene   ();
 		void          receive       (unsigned char *buffer);
@@ -154,4 +163,12 @@ class DemoLevel : public Level {
 
 };
 
+
+// Variables
+
+Extern Level         *level;
+Extern unsigned char  checkX, checkY;
+Extern fixed          viewX, viewY;
+
+#endif
 

@@ -26,7 +26,10 @@
  */
 
 
-#include "OpenJazz.h"
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "menu.h"
 #include <string.h>
 #include <time.h>
 
@@ -259,6 +262,8 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 
 			releaseControl(C_ENTER);
 
+			playSound(S_ORB);
+
 			return E_NONE;
 
 		}
@@ -270,7 +275,7 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 }
 
 
-int Menu::textInput (char * request, char ** text) {
+int Menu::textInput (char *request, char **text) {
 
 	char *input;
 	int count, terminate, character, x;
@@ -388,6 +393,8 @@ int Menu::textInput (char * request, char ** text) {
 
 			releaseControl(C_ENTER);
 
+			playSound(S_ORB);
+
 			// Replace the original string with the input string
 			delete[] *text;
 			*text = input;
@@ -466,6 +473,8 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
+
+			playSound(S_ORB);
 
 			sprintf(firstLevel, "level%1i.%03i", levelNum, worldNum);
 
@@ -605,6 +614,8 @@ int Menu::newGameLevel (int mode) {
 
 			releaseControl(C_ENTER);
 
+			playSound(S_ORB);
+
 			if (newGameDifficulty(mode, levelNum, worldNum) == E_QUIT)
 				return E_QUIT;
 
@@ -724,6 +735,8 @@ int Menu::newGameEpisode (int mode) {
 		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
+
+			playSound(S_ORB);
 
 			if (exists[episode]) {
 
@@ -899,7 +912,15 @@ int Menu::setupKeyboard () {
 				keys[progress].key = character;
 				progress++;
 
-				if (progress == 7) return E_NONE;
+				if (progress == 7) {
+
+					// If all controls have been assigned, return
+
+					playSound(S_ORB);
+
+					return E_NONE;
+
+				}
 
 			}
 
@@ -984,7 +1005,15 @@ int Menu::setupJoystick () {
 					buttons[progress].button = control & 0xFF;
 					progress++;
 
-					if (progress == 7) return E_NONE;
+					if (progress == 7) {
+
+						// If all controls have been assigned, return
+
+						playSound(S_ORB);
+
+						return E_NONE;
+
+					}
 
 				}
 
@@ -1012,7 +1041,15 @@ int Menu::setupJoystick () {
 					axes[progress].direction = 0;
 					progress++;
 
-					if (progress == 7) return E_NONE;
+					if (progress == 7) {
+
+						// If all controls have been assigned, return
+
+						playSound(S_ORB);
+
+						return E_NONE;
+
+					}
 
 				}
 
@@ -1040,7 +1077,15 @@ int Menu::setupJoystick () {
 					axes[progress].direction = 1;
 					progress++;
 
-					if (progress == 7) return E_NONE;
+					if (progress == 7) {
+
+						// If all controls have been assigned, return
+
+						playSound(S_ORB);
+
+						return E_NONE;
+
+					}
 
 				}
 
@@ -1245,6 +1290,8 @@ int Menu::setupResolution () {
 		// Check for a resolution change
 		if (count) {
 
+			playSound(S_ORB);
+
 			if (fullscreen)
 				screen = SDL_SetVideoMode(screenW, screenH, 8,
 					SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE |
@@ -1402,6 +1449,8 @@ int Menu::run () {
 		if (controls[C_ENTER].state) {
 
 			releaseControl(C_ENTER);
+
+			playSound(S_ORB);
 
 			switch(option) {
 

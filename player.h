@@ -25,6 +25,13 @@
    "Tiles" in the context of level units are referred to as grid elements. */
 
 
+#ifndef _PLAYER_H
+#define _PLAYER_H
+
+
+#include "bird.h"
+
+
 // Constants
 
 // Player animations
@@ -130,6 +137,13 @@
 #define PC_LANIM     116
 #define PC_LEVEL5    124
 
+// Player defaults
+#define CHAR_NAME   "jazz"
+#define CHAR_FUR    PC_LGREEN
+#define CHAR_BAND   PC_RED
+#define CHAR_GUN    PC_BLUE
+#define CHAR_WBAND  PC_ORANGE
+
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
 #define PCONTROLS   7 /* Number of player controls. */
@@ -224,4 +238,12 @@ class Player {
 
 };
 
+
+// Variables
+
+Extern Player *players;
+Extern Player *localPlayer;
+Extern int     nPlayers;
+
+#endif
 

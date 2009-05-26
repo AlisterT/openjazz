@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _PLANET_H
+#define _PLANET_H
+
+
+#include "OpenJazz.h"
+
+
 // Class
 
 class Planet {
@@ -32,4 +39,5 @@ class Planet {
 
 };
 
+#endif
 

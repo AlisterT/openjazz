@@ -20,6 +20,18 @@
  */
 
 
+#ifndef _SPRITE_H
+#define _SPRITE_H
+
+
+#include "OpenJazz.h"
+
+
+// Constant
+
+#define SKEY      254 /* Sprite colour key */
+
+
 // Classes
 
 class Sprite {
@@ -72,4 +84,5 @@ class Anim {
 
 };
 
+#endif
 

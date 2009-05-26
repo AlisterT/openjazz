@@ -26,7 +26,11 @@
  */
 
 
-#include "OpenJazz.h"
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "menu.h"
+#include "palette.h"
 #include <string.h>
 
 
@@ -153,7 +157,7 @@ int Level::playFrame () {
 
 
 	// Check if time has run out
-	if ((ticks > endTime) && (difficulty >= 2)) {
+	if ((ticks > endTime) && (difficulty >= 2) && (gameMode == M_SINGLE)) {
 
 		for (x = 0; x < nPlayers; x++) {
 
@@ -183,8 +187,8 @@ int Level::playFrame () {
 void Level::draw () {
 
 	GridElement *ge;
-	Event *currentEvent;
-	Bullet *currentBullet;
+	Event *event;
+	Bullet *bullet;
 	SDL_Rect src, dst;
 	int vX, vY;
 	int x, y, bgScale;
@@ -272,12 +276,12 @@ void Level::draw () {
 
 
 	// Show active events
-	currentEvent = firstEvent;
+	event = firstEvent;
 
-	while (currentEvent) {
+	while (event) {
 
-		currentEvent->draw(ticks);
-		currentEvent = currentEvent->getNext();
+		event->draw(ticks);
+		event = event->getNext();
 
 	}
 
@@ -288,12 +292,12 @@ void Level::draw () {
 
 
 	// Show bullets
-	currentBullet = firstBullet;
+	bullet = firstBullet;
 
-	while (currentBullet) {
+	while (bullet) {
 
-		currentBullet->draw();
-		currentBullet = currentBullet->getNext();
+		bullet->draw();
+		bullet = bullet->getNext();
 
 	}
 
@@ -547,13 +551,18 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-bool Level::hitEvent (unsigned char gridX, unsigned char gridY, bool TNT) {
+int Level::hitEvent (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_GRID];
 	int hitsToKill;
 
-	if (TNT) grid[gridY][gridX].hits = 254;
-	else grid[gridY][gridX].hits++;
+	hitsToKill = eventSet[grid[gridY][gridX].event][E_HITSTOKILL];
+
+	// If the event cannot be hit, return negative
+	if (!hitsToKill) return -1;
+
+	// Increase the hit count
+	grid[gridY][gridX].hits++;
 
 	if (gameMode != M_SINGLE) {
 
@@ -568,11 +577,8 @@ bool Level::hitEvent (unsigned char gridX, unsigned char gridY, bool TNT) {
 
 	}
 
-	hitsToKill = eventSet[grid[gridY][gridX].event][E_HITSTOKILL];
-
-	if (hitsToKill && (grid[gridY][gridX].hits >= hitsToKill)) return true;
-
-	return false;
+	// Return the number of hits remaining until the event is destroyed
+	return hitsToKill - grid[gridY][gridX].hits;
 
 }
 
@@ -667,12 +673,21 @@ fixed Level::getWaterLevel (int phase) {
 }
 
 
+void Level::playSound (int sound) {
+
+	if (sound > 0) ::playSound(soundMap[sound - 1]);
+
+	return;
+
+}
+
+
 void Level::win () {
 
 	unsigned char buffer[MTL_L_WON];
 
 	winTime = ticks;
-	firstPE = new WhiteOutPaletteEffect(0, 256, FH, firstPE);
+	firstPE = new WhiteOutPaletteEffect(FH, firstPE);
 
 	if (gameMode != M_SINGLE) {
 
@@ -732,7 +747,7 @@ void Level::receive (unsigned char *buffer) {
 		case MT_L_WON:
 
 			winTime = ticks;
-			firstPE = new WhiteOutPaletteEffect(0, 256, FH, firstPE);
+			firstPE = new WhiteOutPaletteEffect(FH, firstPE);
 
 			break;
 

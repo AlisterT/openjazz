@@ -20,6 +20,14 @@
  */
 
 
+#ifndef _BULLET_H
+#define _BULLET_H
+
+
+#include "events.h"
+#include "player.h"
+
+
 // Constants
 
 // Indexes for elements of the bullet set
@@ -35,7 +43,7 @@
 
 // Survival time
 #define T_BULLET 1000
-#define T_TNT    3000
+#define T_TNT    300
 
 // Class
 
@@ -60,10 +68,10 @@ class Bullet {
 		Bullet * getNext    ();
 		void     removeNext ();
 		Player * getSource  ();
-		bool     isIn       (fixed left, fixed top, fixed width, fixed height);
 		bool     playFrame  (int ticks);
 		void     draw       ();
 
 };
 
+#endif
 

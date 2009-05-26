@@ -20,6 +20,15 @@
  */
 
 
+#ifndef _MENU_H
+#define _MENU_H
+
+
+#include "OpenJazz.h"
+
+
+// Constant
+
 // Demo timeout
 #define T_DEMO 20000
 
@@ -55,4 +64,10 @@ class Menu {
 
 };
 
+
+// Variable
+
+Extern Menu          *menu;
+
+#endif
 

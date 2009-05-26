@@ -26,7 +26,10 @@
  */
 
 
-#include "OpenJazz.h"
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "palette.h"
 #include <string.h>
 
 
@@ -738,8 +741,37 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// Like another one of those pesky RLE blocks
 	f->skipRLE();
 
-	// And 505 bytes of DOOM
-	f->seek(505, false);
+	// And 217 bytes of DOOM
+	f->seek(217, false);
+
+
+	// Load sound map
+
+	x = f->tell();
+
+	for (count = 0; count < 32; count++) {
+
+		f->seek(x + (count * 9), true);
+
+		string = f->loadString();
+
+		soundMap[count] = -1;
+
+		// Search for matching sound
+
+		for (y = 0; (y < nSounds) && (soundMap[count] == -1); y++) {
+
+			if (!strcmp(string, sounds[y].name)) soundMap[count] = y;
+
+		}
+
+		printf("Mapping %d (%s) to %d\n", count, string, soundMap[count]);
+
+		delete[] string;
+
+	}
+
+	f->seek(x + 288, true);
 
 	// Music file
 	string = f->loadString();
@@ -855,6 +887,9 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	sky = false;
 
+	// Free any existing palette effects
+	if (firstPE) delete firstPE;
+
 	switch (bgType) {
 
 		case 2:
@@ -883,14 +918,14 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 		case 11:
 
 			// The deeper below water, the darker it gets
-			firstPE = new WaterPaletteEffect(1, 250, F32 * 32, NULL);
+			firstPE = new WaterPaletteEffect(F32 * 32, NULL);
 
 			break;
 
 		default:
 
-			// No effect, but bgPE must exist so here is a dummy animation
-			firstPE = new PaletteEffect(255, 1, F1, NULL);
+			// No effect
+			firstPE = NULL;
 
 			break;
 
@@ -925,8 +960,8 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	}
 
 	// Level fade-in/white-in effect
-	if (checkpoint) firstPE = new FadeInPaletteEffect(0, 256, FH, firstPE);
-	else firstPE = new WhiteInPaletteEffect(0, 256, FH, firstPE);
+	if (checkpoint) firstPE = new FadeInPaletteEffect(FH, firstPE);
+	else firstPE = new WhiteInPaletteEffect(FH, firstPE);
 
 
 	f->seek(1, false);

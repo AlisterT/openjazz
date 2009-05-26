@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _BIRD_H
+#define _BIRD_H
+
+
+#include "OpenJazz.h"
+
+
 // Constants
 
 // Animations
@@ -56,4 +63,5 @@ class Bird {
 
 };
 
+#endif
 

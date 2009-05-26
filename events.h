@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _EVENTS_H
+#define _EVENTS_H
+
+
+#include "player.h"
+
+
 // Constants
 
 // Indexes for elements of the event set
@@ -40,6 +47,7 @@
 #define E_BULLETSP     13
 #define E_MOVEMENTSP   15
 #define E_ANIMSP       17
+#define E_SOUND        21
 #define E_MULTIPURPOSE 22
 #define E_YAXIS        23
 #define E_BRIDGELENGTH 24
@@ -79,11 +87,14 @@ class Event {
 
 		Event *     getNext     ();
 		void        removeNext  ();
+		bool        hit         (Player *source, int ticks);
 		bool        isFrom      (unsigned char gX, unsigned char gY);
 		fixed       getX        ();
 		fixed       getY        ();
 		fixed       getWidth    ();
 		fixed       getHeight   ();
+		bool        overlap     (fixed left, fixed top, fixed width,
+			fixed height);
 		signed char getProperty (unsigned char property);
 		bool        getFacing   ();
 		bool        playFrame   (int ticks);
@@ -91,4 +102,5 @@ class Event {
 
 };
 
+#endif
 

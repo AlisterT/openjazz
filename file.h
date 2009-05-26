@@ -20,6 +20,13 @@
  */
 
 
+#ifndef _FILE_H
+#define _FILE_H
+
+
+#include "OpenJazz.h"
+
+
 // Class
 
 class File {
@@ -49,4 +56,11 @@ class File {
 
 };
 
+
+//Variable
+
+// Path to game data
+Extern char *path;
+
+#endif
 

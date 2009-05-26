@@ -26,11 +26,10 @@
  */
 
 
-#include "OpenJazz.h"
+#include "file.h"
 #include <SDL/SDL_audio.h>
 
 #ifdef USE_MODPLUG
-
 #include <modplug.h>
 
 
@@ -38,6 +37,8 @@ ModPlugFile   *musicFile;
 #endif
 
 SDL_AudioSpec  audioSpec;
+int            currentSound;
+int            soundPos;
 
 
 void audioCallback (void * userdata, unsigned char * stream, int len) {
@@ -61,6 +62,32 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 	}
 #endif
+
+	if (currentSound >= 0) {
+
+		// Add the next portion of the sound clip to the audio stream
+
+		if (len < sounds[currentSound].length - soundPos) {
+
+			// Play as much of the clip as possible
+
+			SDL_MixAudio(stream, sounds[currentSound].data + soundPos, len,
+				SDL_MIX_MAXVOLUME >> 1);
+
+			soundPos += len;
+
+		} else {
+
+			// Play the remainder of the clip
+
+			SDL_MixAudio(stream, sounds[currentSound].data + soundPos,
+				sounds[currentSound].length - soundPos, SDL_MIX_MAXVOLUME >> 1);
+
+			currentSound = -1;
+
+		}
+
+	}
 
 	return;
 
@@ -88,6 +115,12 @@ void openAudio () {
 	if (SDL_OpenAudio(&asDesired, &audioSpec) < 0)
 		fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
 
+
+	// Load sounds
+
+	if (loadSounds("sounds.000") != E_NONE) sounds = NULL;
+
+
 	return;
 
 }
@@ -97,6 +130,8 @@ void closeAudio () {
 	stopMusic();
 
 	SDL_CloseAudio();
+
+	freeSounds();
 
 	return;
 
@@ -207,6 +242,10 @@ void stopMusic () {
 int loadSounds (char *fn) {
 
 	File *f;
+	unsigned char *clip;
+	int count, sampleCount, rsFactor, offset, headerOffset;
+
+	currentSound = -1;
 
 	try {
 
@@ -218,7 +257,50 @@ int loadSounds (char *fn) {
 
 	}
 
-	// To do
+	// Calculate the resampling factor
+	if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
+		rsFactor = audioSpec.freq / 5512;
+	else rsFactor = (audioSpec.freq / 5512) * 2;
+
+	// Locate the header data
+	f->seek(f->getSize() - 4, true);
+	headerOffset = f->loadInt();
+
+	// Calculate number of sounds
+	nSounds = (f->getSize() - headerOffset) / 18;
+
+	// Load sound clips
+
+	sounds = new Sound[nSounds];
+
+	for(count = 0; count < nSounds; count++) {
+
+		f->seek(headerOffset + (count * 18), true);
+
+		// Read the name of the clip
+		sounds[count].name = (char *)(f->loadBlock(12));
+
+		// Read the offset of the clip
+		offset = f->loadInt();
+
+		// Read the length of the clip
+		sounds[count].length = f->loadShort();
+
+		// Read the clip
+		f->seek(offset, true);
+		clip = f->loadBlock(sounds[count].length);
+
+		sounds[count].length *= rsFactor;
+
+		// Resample the clip
+		sounds[count].data = new unsigned char[sounds[count].length];
+
+		for (sampleCount = 0; sampleCount < sounds[count].length; sampleCount++)
+			sounds[count].data[sampleCount] = clip[sampleCount / rsFactor];
+
+		delete[] clip;
+
+	}
 
 	delete f;
 
@@ -229,18 +311,38 @@ int loadSounds (char *fn) {
 
 void freeSounds () {
 
-  // To do
+	int count;
 
-  return;
+	if (sounds != NULL) {
+
+		for (count = 0; count < nSounds; count++) {
+
+			delete[] sounds[count].data;
+			delete[] sounds[count].name;
+
+		}
+
+		delete[] sounds;
+
+	}
+
+	return;
 
 }
 
 
-void playSound (int sound) {
+void playSound (int newSound) {
 
-  // To do
+	// Set the sound to be played
 
-  return;
+	if (sounds != NULL) {
+
+		currentSound = newSound;
+		soundPos = 0;
+
+	}
+
+	return;
 
 }
 

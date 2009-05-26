@@ -27,7 +27,11 @@
 
 
 #define Extern
-#include "OpenJazz.h"
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "menu.h"
+#include "palette.h"
 #include <string.h>
 
 #ifdef WIN32
@@ -63,6 +67,7 @@ int loadMain () {
 	// This is extremely likely
 	// To do: Find a better way!
 	fakePalette = true;
+	firstPE = NULL;
 
 
 	// Initialise controls

@@ -20,6 +20,10 @@
  */
 
 
+#ifndef _OPENJAZZ_H
+#define _OPENJAZZ_H
+
+
 #include <SDL/SDL.h>
 
 
@@ -109,38 +113,44 @@
 #define T_FRAME 20
 #define T_KEY   500
 
+// Black palette index
+#define BLACK      31
+
+// Sound effects
+#define S_INVULN   0
+#define S_MACHGUN  1
+#define S_BOOM     2
+#define S_OW       3
+#define S_YUM      4
+#define S_FIRE     5
+#define S_UPLOOP   6
+#define S_1UP      7
+#define S_PHOTON   8
+#define S_WAIT     9
+#define S_ORB     10
+#define S_JUMPA   11
+#define S_GODLIKE 12
+#define S_YEAHOO  13
+#define S_BIRDY   14
+#define S_FLAMER  15
+#define S_ELECTR  16
+#define S_SPRING  17
+#define S_ROCKET  18
+#define S_STOP    19
+#define S_BLOCK   20
+
 
 // Datatype
 
 typedef int fixed;
 
+typedef struct {
 
-// Includes
+	unsigned char *data;
+	char          *name;
+	int            length;
 
-#include "bonus.h"
-#include "file.h"
-#include "font.h"
-#include "palette.h"
-#include "bird.h"
-#include "player.h"
-#include "planet.h"
-#include "scene.h"
-#include "events.h"
-#include "bullet.h"
-#include "game.h"
-#include "sprite.h"
-#include "level.h"
-#include "menu.h"
-
-
-// Defaults
-#define NET_ADDRESS "192.168.0.1"
-#define NET_PORT    10052
-#define CHAR_NAME   "jazz"
-#define CHAR_FUR    PC_LGREEN
-#define CHAR_BAND   PC_RED
-#define CHAR_GUN    PC_BLUE
-#define CHAR_WBAND  PC_ORANGE
+} Sound;
 
 
 // Variables
@@ -175,42 +185,23 @@ Extern struct {
 } controls[CONTROLS];
 
 
-// Path to game data
-Extern char *path;
-
 // Panel
 Extern SDL_Surface *panel;
 Extern SDL_Surface *panelAmmo[5];
 
-// Fonts
-Extern Font *font2;          /* Taken from .0FN file name */
-Extern Font *fontbig;        /* Taken from .0FN file name */
-Extern Font *fontiny;        /* Taken from .0FN file name */
-Extern Font *fontmn1;        /* Taken from .0FN file name */
-Extern Font *fontmn2;        /* Taken from .0FN file name */
-Extern Font *panelBigFont;   /* Not a font file, found in PANEL.000 */
-Extern Font *panelSmallFont; /* Not a font file, found in PANEL.000 */
-
 // Graphics
-Extern PaletteEffect *firstPE;
-Extern SDL_Surface   *screen;
-Extern SDL_Color     *currentPalette;
-Extern SDL_Color      logicalPalette[256];
-Extern fixed          viewX, viewY;
-Extern int            viewW, viewH, screenW, screenH;
+Extern SDL_Surface *screen;
+Extern SDL_Color   *currentPalette;
+Extern SDL_Color    logicalPalette[256];
+Extern int          viewW, viewH, screenW, screenH;
 #ifndef FULLSCREEN_ONLY
-Extern bool           fullscreen;
+Extern bool         fullscreen;
 #endif
-Extern int            mspf;
+Extern int          mspf;
 
-// Menu & gameplay
-Extern Menu          *menu;
-Extern Game          *game;
-Extern Player        *players;
-Extern Player        *localPlayer;
-Extern int            nPlayers;
-Extern Level         *level;
-Extern unsigned char  checkX, checkY;
+// Audio
+Extern Sound *sounds;
+Extern int    nSounds;
 
 // Configuration data
 Extern char          *characterName;
@@ -237,8 +228,8 @@ Extern void openAudio  ();
 Extern void closeAudio ();
 Extern void playMusic  (char *fn);
 Extern void stopMusic  ();
-extern int  loadSounds (char *fn);
-extern void freeSounds ();
+Extern int  loadSounds (char *fn);
+Extern void freeSounds ();
 Extern void playSound  (int sound);
 
 
@@ -252,5 +243,5 @@ Extern void          clearScreen        (int index);
 Extern void          drawRect           (int x, int y, int width, int height,
 	int index);
 
-
+#endif
 

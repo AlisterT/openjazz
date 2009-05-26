@@ -21,6 +21,13 @@
  */
 
 
+#ifndef _GAME_H
+#define _GAME_H
+
+
+#include "file.h"
+
+
 // Constants
 
 // Game modes
@@ -76,6 +83,10 @@
 #define MAX_PLAYERS   (MAX_CLIENTS + 1)
 #define BUFFER_LENGTH 255 /* Should always be big enough to hold any message */
 
+// Networking defaults
+#define NET_ADDRESS "192.168.0.1"
+#define NET_PORT    10052
+
 
 // Classes
 
@@ -89,15 +100,15 @@ class Game {
 		Game ();
 
 	public:
-		Game                       (char *firstLevel, int gameDifficulty);
-		virtual ~Game              ();
+		Game                   (char *firstLevel, int gameDifficulty);
+		virtual ~Game          ();
 
-		int          getMode       ();
-		virtual int  setLevel      (char *fn);
-		int          run           ();
-		void         view          ();
-		virtual void send          (unsigned char *buffer);
-		virtual int  playFrame     (int ticks);
+		int          getMode   ();
+		virtual int  setLevel  (char *fn);
+		int          run       ();
+		void         view      ();
+		virtual void send      (unsigned char *buffer);
+		virtual int  playFrame (int ticks);
 
 };
 
@@ -149,4 +160,10 @@ class ClientGame : public Game {
 
 };
 
+
+// Variable
+
+Extern Game          *game;
+
+#endif
 

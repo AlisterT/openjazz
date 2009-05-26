@@ -26,7 +26,8 @@
  */
 
 
-#include "OpenJazz.h"
+#include "file.h"
+#include "scene.h"
 
 
 Scene::Scene (char * fn) {

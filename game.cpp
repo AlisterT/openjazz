@@ -19,7 +19,12 @@
  *
  */
 
-#include "OpenJazz.h"
+
+#include "font.h"
+#include "game.h"
+#include "level.h"
+#include "menu.h"
+#include "palette.h"
 #include <string.h>
 
 #ifdef WIN32
@@ -700,7 +705,7 @@ int ServerGame::playFrame (int ticks) {
 		for (count = 0; count < nPlayers; count++) {
 
 			sendBuffer[2] = count;
-			players[count].send(sendBuffer + 3);
+			players[count].send(sendBuffer);
 			send(sendBuffer);
 
 		}
@@ -1262,7 +1267,7 @@ int ClientGame::playFrame (int ticks) {
 		sendBuffer[0] = MTL_P_TEMP;
 		sendBuffer[1] = MT_P_TEMP;
 		sendBuffer[2] = 0;
-		localPlayer->send(sendBuffer + 3);
+		localPlayer->send(sendBuffer);
 		send(sendBuffer);
 
 		sendTime = ticks + T_CSEND;

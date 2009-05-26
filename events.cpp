@@ -26,7 +26,7 @@
  */
 
 
-#include "OpenJazz.h"
+#include "level.h"
 #include <math.h>
 
 
@@ -74,6 +74,42 @@ void Event::removeNext () {
 	return;
 
 }
+
+
+bool Event::hit (Player *source, int ticks) {
+
+	int hitsRemaining;
+
+	// Deal with bullet collisions
+	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM) ||
+		(ticks < flashTime)) return false;
+
+	hitsRemaining = level->hitEvent(gridX, gridY);
+
+	// If the event cannot be hit, do not register hit
+	if (hitsRemaining < 0) return false;
+
+	// Check if the hit has destroyed the event
+	if (hitsRemaining == 0) {
+
+		level->setEventTime(gridX, gridY, ticks + T_FINISH);
+		animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
+
+		level->playSound(getProperty(E_SOUND));
+
+		// Notify the player that shot the bullet
+		source->shootEvent(gridX, gridY, ticks);
+
+	}
+
+	// The event has been hit, so it should flash
+	flashTime = ticks + T_FLASH;
+
+	// Register hit
+	return true;
+
+}
+
 
 bool Event::isFrom (unsigned char gX, unsigned char gY) {
 
@@ -127,6 +163,14 @@ fixed Event::getHeight () {
 }
 
 
+bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
+
+	return (x + getWidth() >= left) && (x < left + width) &&
+		(y >= top) && (y - getHeight() < top + height);
+
+}
+
+
 signed char Event::getProperty (unsigned char property) {
 
 	signed char *set;
@@ -151,7 +195,6 @@ bool Event::getFacing () {
 bool Event::playFrame (int ticks) {
 
 	fixed width, height;
-	Bullet *bul, *prevBul;
 	signed char *set;
 	fixed startX;
 	int count, offset;
@@ -312,7 +355,7 @@ bool Event::playFrame (int ticks) {
 				F8 + F20)) {
 
 				if (!level->checkMaskDown(localPlayer->getX() + PXO_MID,
-					y + (set[E_YAXIS] << 10) - (F32 + F20))) {
+					y + (set[E_YAXIS] << 10) - F32 - F20)) {
 
 					// Player is on the bridge
 
@@ -759,58 +802,14 @@ bool Event::playFrame (int ticks) {
 	}
 
 
-	// Deal with bullet collisions
-	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM) &&
-		(level->getEventHits(gridX, gridY) < set[E_HITSTOKILL])) {
+	// If the event has been destroyed, play its finishing animation and set its
+	// reaction time
+	if (set[E_HITSTOKILL] &&
+		(level->getEventHits(gridX, gridY) >= set[E_HITSTOKILL]) &&
+		(animType != E_LFINISHANIM) && (animType != E_RFINISHANIM)) {
 
-		bul = level->firstBullet;
-		prevBul = NULL;
-
-		while (bul) {
-
-			if (bul->getSource() && bul->isIn(x, y - height, width, height))  {
-
-				flashTime = ticks + T_FLASH;
-
-				if (level->hitEvent(gridX, gridY, false)) {
-
-					// If the event has been destroyed, play its finishing
-					// animation and set its reaction time
-					if ((animType != E_LFINISHANIM) &&
-						(animType != E_RFINISHANIM)) {
-
-						level->setEventTime(gridX, gridY, ticks + T_FINISH);
-						animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
-
-						// Notify the player that has shot the event
-						bul->getSource()->shootEvent(gridX, gridY, ticks);
-
-					}
-
-				}
-
-				// Destroy the bullet
-				if (!prevBul) {
-
-					bul = bul->getNext();
-					delete level->firstBullet;
-					level->firstBullet = bul;
-
-				} else {
-
-					bul = bul->getNext();
-					prevBul->removeNext();
-
-				}
-
-			} else {
-
-				prevBul = bul;
-				bul = bul->getNext();
-
-			}
-
-		}
+		level->setEventTime(gridX, gridY, ticks + T_FINISH);
+		animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
 
 	}
 
@@ -910,6 +909,8 @@ bool Event::playFrame (int ticks) {
 
 					level->setEventTime(gridX, gridY, ticks + T_FINISH);
 					animType = getFacing()? E_RFINISHANIM: E_LFINISHANIM;
+
+					level->playSound(set[E_SOUND]);
 
 				}
 
