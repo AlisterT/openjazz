@@ -31,13 +31,13 @@
 #include "planet.h"
 
 
-Planet::Planet (char * fn) {
+Planet::Planet (char * fileName) {
 
-	File *f;
+	File *file;
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -47,7 +47,7 @@ Planet::Planet (char * fn) {
 
 	// To do
 
-	delete f;
+	delete file;
 
 	return;
 

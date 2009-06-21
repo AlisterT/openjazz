@@ -27,18 +27,19 @@
 
 
 #include "file.h"
+#include "palette.h"
 #include <string.h>
 
 
 bool fileExists (char * fileName) {
 
-	File *f;
+	File *file;
 
 	//printf("Check: ");
 
 	try {
 
-		f = new File(fileName, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -46,7 +47,7 @@ bool fileExists (char * fileName) {
 
 	}
 
-	delete f;
+	delete file;
 
 	return true;
 

@@ -27,18 +27,20 @@
 
 
 #include "file.h"
+#include "palette.h"
 #include "scene.h"
+#include "sound.h"
 
 
-Scene::Scene (char * fn) {
+Scene::Scene (char * fileName) {
 
-	File *f;
+	File *file;
 	char *string;
 	int type;
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -47,8 +49,8 @@ Scene::Scene (char * fn) {
 	}
 
 	// Skip to files
-	f->seek(25, true);
-	f->seek(f->loadChar(), true);
+	file->seek(25, true);
+	file->seek(file->loadChar(), true);
 
 // At this point, next bytes should be 0x50 0x01 0x00 0x00 0x00
 // Then, (0x3f 0x02)
@@ -67,13 +69,13 @@ Scene::Scene (char * fn) {
 // Then the length of a font file name
 // Then a font file name
 
-	f->seek(5, false);
-	type = f->loadChar();
+	file->seek(5, false);
+	type = file->loadChar();
 
 	while (type == 0x3f) {
 
-		f->seek(1, false);
-		type = f->loadChar();
+		file->seek(1, false);
+		type = file->loadChar();
 
 	}
 
@@ -82,25 +84,25 @@ Scene::Scene (char * fn) {
 		if (type == 0x2A) {
 
 			// Music file name
-			string = f->loadString();
+			string = file->loadString();
 			playMusic(string);
 			delete[] string;
 
 		} else if (type == 0x63) {
 
-			f->seek(1, false);
+			file->seek(1, false);
 
 		} else if (type == 0xA6) {
 
-			f->seek(20, false);
+			file->seek(20, false);
 
-		} else f->seek(-1, false); // type should be 58
+		} else file->seek(-1, false); // type should be 58
 
-		while (f->loadChar() == 0x58) {
+		while (file->loadChar() == 0x58) {
 
 			// Font names (file names minus extensions)
-			f->seek(2, false);
-			string = f->loadString();
+			file->seek(2, false);
+			string = file->loadString();
 
 			// Do something with this
 
@@ -110,15 +112,15 @@ Scene::Scene (char * fn) {
 
 	}
 
-	f->seek(-1, false);
+	file->seek(-1, false);
 
-	while (f->loadChar() == 0x3f) {
+	while (file->loadChar() == 0x3f) {
 
-		f->seek(1, false);
+		file->seek(1, false);
 
 	}
 
-	f->seek(-1, false);
+	file->seek(-1, false);
 
 // Then 0x4c 0x00 0x00 0x00 0x00 0x01 0x00
 // Then, (0x46
@@ -128,33 +130,33 @@ Scene::Scene (char * fn) {
 //          OR (0x01 0xdb)
 //    OR (0x57 0x14...)
 
-//	printf("Initial search reached %d\n", f->tell());
+//	printf("Initial search reached %d\n", file->tell());
 
 	// Skip to the palette
-	f->seek(23, true);
-	type = f->loadChar();
+	file->seek(23, true);
+	type = file->loadChar();
 
-	f->seek(19, true);
+	file->seek(19, true);
 
-	f->skipRLE();
+	file->skipRLE();
 
-	f->seek((type * 4) - 11, false);
+	file->seek((type * 4) - 11, false);
 
 	// Load the palette
 
-//	printf("Palette at %d\n", f->tell());
+//	printf("Palette at %d\n", file->tell());
 
-	f->loadPalette(scenePalette);
+	file->loadPalette(scenePalette);
 
 	usePalette(scenePalette);
 
-	f->seek(4, false);
+	file->seek(4, false);
 
-//	printf("Pixels at %d\n", f->tell());
+//	printf("Pixels at %d\n", file->tell());
 
-	sceneBGs[0] = f->loadSurface(320, 200);
+	sceneBGs[0] = file->loadSurface(320, 200);
 
-	delete f;
+	delete file;
 
 	return;
 

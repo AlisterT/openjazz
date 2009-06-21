@@ -36,7 +36,7 @@ class Scene {
 		SDL_Color    scenePalette[256];
 
 	public:
-		Scene   (char * fn);
+		Scene   (char * fileName);
 		~Scene  ();
 
 		int run ();

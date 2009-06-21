@@ -23,10 +23,13 @@
 /*
  * Deals with the loading, playing and freeing of music and sound effects.
  *
+ * For music, USE_MODPLUG must be defined.
+ *
  */
 
 
 #include "file.h"
+#include "sound.h"
 #include <SDL/SDL_audio.h>
 
 #ifdef USE_MODPLUG
@@ -37,11 +40,11 @@ ModPlugFile   *musicFile;
 #endif
 
 SDL_AudioSpec  audioSpec;
-int            currentSound;
-int            soundPos;
 
 
 void audioCallback (void * userdata, unsigned char * stream, int len) {
+
+	int count;
 
 #ifdef USE_MODPLUG
 	unsigned char *musicData;
@@ -63,27 +66,34 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 	}
 #endif
 
-	if (currentSound >= 0) {
+	for (count = 0; count < nSounds; count++) {
 
-		// Add the next portion of the sound clip to the audio stream
+		if (sounds[count].position >= 0) {
 
-		if (len < sounds[currentSound].length - soundPos) {
+			// Add the next portion of the sound clip to the audio stream
 
-			// Play as much of the clip as possible
+			if (len < sounds[count].length - sounds[count].position) {
 
-			SDL_MixAudio(stream, sounds[currentSound].data + soundPos, len,
-				SDL_MIX_MAXVOLUME >> 1);
+				// Play as much of the clip as possible
 
-			soundPos += len;
+				SDL_MixAudio(stream,
+					sounds[count].data + sounds[count].position, len,
+					SDL_MIX_MAXVOLUME >> 1);
 
-		} else {
+				sounds[count].position += len;
 
-			// Play the remainder of the clip
+			} else {
 
-			SDL_MixAudio(stream, sounds[currentSound].data + soundPos,
-				sounds[currentSound].length - soundPos, SDL_MIX_MAXVOLUME >> 1);
+				// Play the remainder of the clip
 
-			currentSound = -1;
+				SDL_MixAudio(stream,
+					sounds[count].data + sounds[count].position,
+					sounds[count].length - sounds[count].position,
+					SDL_MIX_MAXVOLUME >> 1);
+
+				sounds[count].position = -1;
+
+			}
 
 		}
 
@@ -138,11 +148,11 @@ void closeAudio () {
 }
 
 
-void playMusic (char * fn) {
+void playMusic (char * fileName) {
 
 #ifdef USE_MODPLUG
 
-	File *f;
+	File *file;
 	ModPlug_Settings settings;
 	unsigned char *psmData;
 	int size;
@@ -155,7 +165,7 @@ void playMusic (char * fn) {
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -164,13 +174,13 @@ void playMusic (char * fn) {
 	}
 
 	// Find the size of the file
-	size = f->getSize();
+	size = file->getSize();
 
 	// Read the entire file into memory
-	f->seek(0, true);
-	psmData = f->loadBlock(size);
+	file->seek(0, true);
+	psmData = file->loadBlock(size);
 
-	delete f;
+	delete file;
 
 
 	// Set up libmodplug
@@ -202,7 +212,7 @@ void playMusic (char * fn) {
 
 	if (!musicFile) {
 
-		fprintf(stderr, "Could not play music file %s\n", fn);
+		fprintf(stderr, "Could not play music file %s\n", fileName);
 
 		return;
 
@@ -239,17 +249,15 @@ void stopMusic () {
 }
 
 
-int loadSounds (char *fn) {
+int loadSounds (char *fileName) {
 
-	File *f;
+	File *file;
 	unsigned char *clip;
 	int count, sampleCount, rsFactor, offset, headerOffset;
 
-	currentSound = -1;
-
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -263,11 +271,11 @@ int loadSounds (char *fn) {
 	else rsFactor = (audioSpec.freq / 5512) * 2;
 
 	// Locate the header data
-	f->seek(f->getSize() - 4, true);
-	headerOffset = f->loadInt();
+	file->seek(file->getSize() - 4, true);
+	headerOffset = file->loadInt();
 
 	// Calculate number of sounds
-	nSounds = (f->getSize() - headerOffset) / 18;
+	nSounds = (file->getSize() - headerOffset) / 18;
 
 	// Load sound clips
 
@@ -275,20 +283,20 @@ int loadSounds (char *fn) {
 
 	for(count = 0; count < nSounds; count++) {
 
-		f->seek(headerOffset + (count * 18), true);
+		file->seek(headerOffset + (count * 18), true);
 
 		// Read the name of the clip
-		sounds[count].name = (char *)(f->loadBlock(12));
+		sounds[count].name = (char *)(file->loadBlock(12));
 
 		// Read the offset of the clip
-		offset = f->loadInt();
+		offset = file->loadInt();
 
 		// Read the length of the clip
-		sounds[count].length = f->loadShort();
+		sounds[count].length = file->loadShort();
 
 		// Read the clip
-		f->seek(offset, true);
-		clip = f->loadBlock(sounds[count].length);
+		file->seek(offset, true);
+		clip = file->loadBlock(sounds[count].length);
 
 		sounds[count].length *= rsFactor;
 
@@ -300,9 +308,11 @@ int loadSounds (char *fn) {
 
 		delete[] clip;
 
+		sounds[count].position = -1;
+
 	}
 
-	delete f;
+	delete file;
 
 	return E_NONE;
 
@@ -335,12 +345,7 @@ void playSound (int newSound) {
 
 	// Set the sound to be played
 
-	if (sounds != NULL) {
-
-		currentSound = newSound;
-		soundPos = 0;
-
-	}
+	if ((sounds != NULL) && (newSound >= 0)) sounds[newSound].position = 0;
 
 	return;
 

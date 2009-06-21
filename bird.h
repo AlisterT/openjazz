@@ -34,7 +34,7 @@
 #define BIRD_RIGHTANIM 52
 
 // Time interval
-#define T_BIRD_FIRE 1000
+#define T_BIRD_FIRE 500
 
 
 // Classes

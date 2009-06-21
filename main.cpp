@@ -31,12 +31,10 @@
 #include "game.h"
 #include "level.h"
 #include "menu.h"
+#include "network.h"
 #include "palette.h"
+#include "sound.h"
 #include <string.h>
-
-#ifdef WIN32
-	#include <winsock.h>
-#endif
 
 
 int oldTicks;
@@ -45,16 +43,9 @@ bool fakePalette;
 
 int loadMain () {
 
-	File *f;
+	File *file;
 	unsigned char *pixels, *sorted;
 	int count, x, y;
-#ifdef WIN32
-	WSADATA WSAData;
-
-
-	// Start Windows Sockets
-	WSAStartup(MAKEWORD(1, 0), &WSAData);
-#endif
 
 
 	// Initialise video settings
@@ -142,53 +133,53 @@ int loadMain () {
 	// Open config file
 	try {
 
-		f = new File(CONFIG_FILE, false);
+		file = new File(CONFIG_FILE, false);
 
 	} catch (int e) {
 
-		f = NULL;
+		file = NULL;
 
 	}
 
 	// Check that the config file was opened, and has the correct version
-	if (f && (f->loadChar() == 1)) {
+	if (file && (file->loadChar() == 1)) {
 
 		// Read video settings
-		screenW = f->loadShort();
-		screenH = f->loadShort();
+		screenW = file->loadShort();
+		screenH = file->loadShort();
 #ifdef FULLSCREEN_ONLY
-		f->loadChar();
+		file->loadChar();
 #else
-		fullscreen = f->loadChar();
+		fullscreen = file->loadChar();
 #endif
 
 		// Read controls
 		for (count = 0; count < CONTROLS - 4; count++)
-			keys[count].key = (SDLKey)(f->loadInt());
+			keys[count].key = (SDLKey)(file->loadInt());
 
 		for (count = 0; count < CONTROLS; count++)
-			buttons[count].button = f->loadInt();
+			buttons[count].button = file->loadInt();
 
 		for (count = 0; count < CONTROLS; count++) {
 
-			axes[count].axis = f->loadInt();
-			axes[count].direction = f->loadInt();
+			axes[count].axis = file->loadInt();
+			axes[count].direction = file->loadInt();
 
 		}
 
 		// Read the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			characterName[count] = f->loadChar();
+			characterName[count] = file->loadChar();
 
 		characterName[STRING_LENGTH] = 0;
 
 		// Read the player's colours
-		characterCols[0] = f->loadChar();
-		characterCols[1] = f->loadChar();
-		characterCols[2] = f->loadChar();
-		characterCols[3] = f->loadChar();
+		characterCols[0] = file->loadChar();
+		characterCols[1] = file->loadChar();
+		characterCols[2] = file->loadChar();
+		characterCols[3] = file->loadChar();
 
-		delete f;
+		delete file;
 
 	} else {
 
@@ -239,7 +230,7 @@ int loadMain () {
 
 	try {
 
-		f = new File("panel.000", false);
+		file = new File(F_PANEL, false);
 
 	} catch (int e) {
 
@@ -252,15 +243,15 @@ int loadMain () {
 	}
 
 	// Load the panel background
-	panel = f->loadSurface(320, 32);
+	panel = file->loadSurface(320, 32);
 
 
 	// Load the panel's ammo graphics
 
 	sorted = new unsigned char[64 * 27];
 
-	f->seek(7537, true);
-	pixels = f->loadRLE(64 * 27);
+	file->seek(7537, true);
+	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
@@ -272,8 +263,8 @@ int loadMain () {
 	panelAmmo[0] = createSurface(sorted, 64, 27);
 	sorted = pixels; // Re-use the allocated memory
 
-	f->seek(8264, true);
-	pixels = f->loadRLE(64 * 27);
+	file->seek(8264, true);
+	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
@@ -285,8 +276,8 @@ int loadMain () {
 	panelAmmo[1] = createSurface(sorted, 64, 27);
 	sorted = pixels; // Re-use the allocated memory
 
-	f->seek(9550, true);
-	pixels = f->loadRLE(64 * 27);
+	file->seek(9550, true);
+	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
@@ -298,8 +289,8 @@ int loadMain () {
 	panelAmmo[2] = createSurface(sorted, 64, 27);
 	sorted = pixels; // Re-use the allocated memory
 
-	f->seek(11060, true);
-	pixels = f->loadRLE(64 * 27);
+	file->seek(11060, true);
+	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
@@ -311,8 +302,8 @@ int loadMain () {
 	panelAmmo[3] = createSurface(sorted, 64, 27);
 	sorted = pixels; // Re-use the allocated memory
 
-	f->seek(12258, true);
-	pixels = f->loadRLE(64 * 27);
+	file->seek(12258, true);
+	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
@@ -335,8 +326,8 @@ int loadMain () {
 
 	try {
 
-		panelBigFont = new Font(f, true);
-		panelSmallFont = new Font(f, false);
+		panelBigFont = new Font(file, true);
+		panelSmallFont = new Font(file, false);
 		font2 = new Font("font2.0fn");
 		fontbig = new Font("fontbig.0fn");
 		fontiny = new Font("fontiny.0fn");
@@ -363,17 +354,23 @@ int loadMain () {
 
 		delete[] characterName;
 
+		delete file;
+
 		return e;
 
 	}
 
 
-	delete f;
+	delete file;
 
 
 	// Establish arbitrary timing
 	mspf = 20;
 	oldTicks = SDL_GetTicks() - 20;
+
+
+	// Initiate networking
+	net = new Network();
 
 
 	return E_NONE;
@@ -383,8 +380,10 @@ int loadMain () {
 
 void freeMain () {
 
-	File *f;
+	File *file;
 	int count;
+
+	delete net;
 
 	delete panelBigFont;
 	delete panelSmallFont;
@@ -408,54 +407,54 @@ void freeMain () {
 	// Open config file
 	try {
 
-		f = new File(CONFIG_FILE, true);
+		file = new File(CONFIG_FILE, true);
 
 	} catch (int e) {
 
-		f = NULL;
+		file = NULL;
 
 	}
 
 	// Check that the config file was opened
-	if (f) {
+	if (file) {
 
 		// Write the version number
-		f->storeChar(1);
+		file->storeChar(1);
 
 		// Write video settings
-		f->storeShort(screenW);
-		f->storeShort(screenH);
+		file->storeShort(screenW);
+		file->storeShort(screenH);
 #ifdef FULLSCREEN_ONLY
-		f->storeChar(1);
+		file->storeChar(1);
 #else
-		f->storeChar(fullscreen? ~0: 0);
+		file->storeChar(fullscreen? ~0: 0);
 #endif
 
 		// Write controls
 		for (count = 0; count < CONTROLS - 4; count++)
-			f->storeInt(keys[count].key);
+			file->storeInt(keys[count].key);
 
 		for (count = 0; count < CONTROLS; count++)
-			f->storeInt(buttons[count].button);
+			file->storeInt(buttons[count].button);
 
 		for (count = 0; count < CONTROLS; count++) {
 
-			f->storeInt(axes[count].axis);
-			f->storeInt(axes[count].direction);
+			file->storeInt(axes[count].axis);
+			file->storeInt(axes[count].direction);
 
 		}
 
 		// Write the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			f->storeChar(characterName[count]);
+			file->storeChar(characterName[count]);
 
 		// Write the player's colour
-		f->storeChar(characterCols[0]);
-		f->storeChar(characterCols[1]);
-		f->storeChar(characterCols[2]);
-		f->storeChar(characterCols[3]);
+		file->storeChar(characterCols[0]);
+		file->storeChar(characterCols[1]);
+		file->storeChar(characterCols[2]);
+		file->storeChar(characterCols[3]);
 
-		delete f;
+		delete file;
 
 	} else {
 
@@ -464,12 +463,6 @@ void freeMain () {
 	}
 
 	delete[] characterName;
-
-
-#ifdef WIN32
-	// Shut down Windows Sockets
-	WSACleanup();
-#endif
 
 
 	return;
@@ -634,18 +627,18 @@ int loop (int type) {
 		}
 
 		if ((type == JOYSTICK_LOOP) && (event.type == SDL_JOYBUTTONDOWN)) {
- 
-			return JOYSTICKB & event.jbutton.button;
+
+			return JOYSTICKB | event.jbutton.button;
 
 		}
 
 		if ((type == JOYSTICK_LOOP) && (event.type == SDL_JOYAXISMOTION)) {
 
 			if (event.jaxis.value < -16384)
-				return JOYSTICKANEG & event.jaxis.axis;
+				return JOYSTICKANEG | event.jaxis.axis;
 
 			if (event.jaxis.value > 16384)
-				return JOYSTICKAPOS & event.jaxis.axis;
+				return JOYSTICKAPOS | event.jaxis.axis;
 
 		}
 

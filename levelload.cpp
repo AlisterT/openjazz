@@ -30,20 +30,21 @@
 #include "game.h"
 #include "level.h"
 #include "palette.h"
+#include "sound.h"
 #include <string.h>
 
 
-int Level::loadSprites (char * fn) {
+int Level::loadSprites (char * fileName) {
 
-	File *f, *mf, *sf;
+	File *file, *mainFile, *specFile;
 	unsigned char *pixels, *sorted;
-	int mposition, sposition;
+	int mainPos, specPos;
 	int count, x, y, width, height, m;
 
-	// Open fn
+	// Open fileName
 	try {
 
-		sf = new File(fn, false);
+		specFile = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -51,57 +52,59 @@ int Level::loadSprites (char * fn) {
 
 	}
 
-	// This function loads all the sprites, not fust those in fn
-	// Note: Lower case is necessary for Unix support
+
+	// This function loads all the sprites, not fust those in fileName
 	try {
 
-		mf = new File("mainchar.000", false);
+		mainFile = new File(F_MAINCHAR, false);
 
 	} catch (int e) {
 
-		delete sf;
+		delete specFile;
 
 		return e;
 
 	}
 
-	sprites = sf->loadShort();
+
+	sprites = specFile->loadShort();
 
 	// Include space in the sprite set for the blank sprite at the end
 	spriteSet = new Sprite[sprites + 1];
 
 	// Read horizontal offsets
 	for (count = 0; count < sprites; count++)
-		spriteSet[count].xOffset = sf->loadChar() << 2;
+		spriteSet[count].xOffset = specFile->loadChar() << 2;
 
 	// Read vertical offsets
 	for (count = 0; count < sprites; count++)
-		spriteSet[count].yOffset = sf->loadChar();
+		spriteSet[count].yOffset = specFile->loadChar();
 
-	// Find where the sprites start in fn
-	sposition = sf->tell();
+	// Find where the sprites start in fileName
+	specPos = specFile->tell();
 
 	// Find where the sprites start in mainchar.000
-	mposition = 2;
+	mainPos = 2;
 
 	// Loop through all the sprites to be loaded
 	for (count = 0; count < sprites; count++) {
 
 		// Go to the start of the current sprite or file indicator
-		sf->seek(sposition, true);
-		mf->seek(mposition, true);
+		specFile->seek(specPos, true);
+		mainFile->seek(mainPos, true);
 
-		// If both fn and mainchar.000 have file indicators, create a blank
+		// If both fileName and mainchar.000 have file indicators, create a blank
 		// sprite
-		while ((sf->loadChar() == 0xFF) && (mf->loadChar() == 0xFF)) {
+		while ((specFile->loadChar() == 0xFF) &&
+			(mainFile->loadChar() == 0xFF)) {
 
 			// Go to the next sprite/file indicator
-			sf->seek(1, false);
-			mf->seek(1, false);
+			specFile->seek(1, false);
+			mainFile->seek(1, false);
 
 			// set the position of the next sprite/file indicators
-			sposition += 2;
-			mposition += 2;
+			specPos += 2;
+			mainPos += 2;
 
 			// Create a blank sprite
 			spriteSet[count].clearPixels();
@@ -110,39 +113,39 @@ int Level::loadSprites (char * fn) {
 		}
 
 		// Return to the start of the sprite/file indicators
-		sf->seek(sposition, true);
-		mf->seek(mposition, true);
+		specFile->seek(specPos, true);
+		mainFile->seek(mainPos, true);
 
-		// Unless otherwise stated, load from fn
-		f = sf;
+		// Unless otherwise stated, load from fileName
+		file = specFile;
 
 		// Check if otherwise stated
-		if (f->loadChar() == 0xFF) {
+		if (file->loadChar() == 0xFF) {
 
-			f = mf;
+			file = mainFile;
 
-		} else f->seek(-1, false);
+		} else file->seek(-1, false);
 
-		width = f->loadShort() << 2;
-		height = f->loadShort();
+		width = file->loadShort() << 2;
+		height = file->loadShort();
 
 		// Position of the next sprite or file indicator in each file
-		if (f == sf) {
+		if (file == specFile) {
 
-			mposition += 2;
+			mainPos += 2;
 
-			sposition += 10 + (f->loadShort() << 2);
+			specPos += 10 + (file->loadShort() << 2);
 
 		} else {
 
-			sposition += 2;
+			specPos += 2;
 
-			mposition += 10 + (f->loadShort() << 2);
+			mainPos += 10 + (file->loadShort() << 2);
 
 		}
 
 		// m is for MAGIC
-		m = f->loadShort();
+		m = file->loadShort();
 
 		// Allocate space for descrambling
 		sorted = new unsigned char[width * height];
@@ -154,10 +157,10 @@ int Level::loadSprites (char * fn) {
 			// Not masked
 			// Load the pixel data directly for descrambling
 
-			f->seek(2, false);
+			file->seek(2, false);
 
 			// Read pixel data
-			pixels = f->loadBlock(width * height);
+			pixels = file->loadBlock(width * height);
 
 
 		} else {
@@ -169,20 +172,18 @@ int Level::loadSprites (char * fn) {
 			// Load the pixel data according to the mask
 
 			// Masked sprites have their own next sprite offsets
-			if (f == sf) {
+			if (file == specFile) {
 
-				sposition = f->loadChar() << 2;
-				sposition += f->loadChar() << 10;
+				specPos = file->loadShort() << 2;
 
 			} else {
 
-				mposition = f->loadChar() << 2;
-				mposition += f->loadChar() << 10;
+				mainPos = file->loadShort() << 2;
 
 			}
 
 			// Skip to mask
-			f->seek(m, false);
+			file->seek(m, false);
 
 			// Read the mask
 			// Each mask pixel is either 0 or 1
@@ -191,7 +192,7 @@ int Level::loadSprites (char * fn) {
 
 				for (x = 0; x < width; x++) {
 
-					if (!(x & 3)) m = f->loadChar();
+					if (!(x & 3)) m = file->loadChar();
 					pixels[(y * width) + x] = (m >> (x & 3)) & 1;
 
 				}
@@ -215,11 +216,11 @@ int Level::loadSprites (char * fn) {
 			}
 
 			// Skip to pixels
-			f->seek(width >> 2, false);
+			file->seek(width >> 2, false);
 
 			// Next sprite offsets are relative to here
-			if (f == sf) sposition += f->tell();
-			else mposition += f->tell();
+			if (file == specFile) specPos += file->tell();
+			else mainPos += file->tell();
 
 			// Read pixels according to the scrambled mask
 			for (y = 0; y < height; y++) {
@@ -232,7 +233,7 @@ int Level::loadSprites (char * fn) {
 						// portion should be transparent.
 						m = SKEY;
 
-						while (m == SKEY) m = f->loadChar();
+						while (m == SKEY) m = file->loadChar();
 
 						// Use the acceptable pixel
 						pixels[(y * width) + x] = m;
@@ -275,7 +276,7 @@ int Level::loadSprites (char * fn) {
 
 		// Check if the next sprite exists
 		// If not, create blank sprites for the remainder
-		if (sposition >= f->getSize()) {
+		if (specPos >= file->getSize()) {
 
 			for (count++; count < sprites; count++) {
 
@@ -285,14 +286,14 @@ int Level::loadSprites (char * fn) {
 
 		} else {
 
-			sf->seek(sposition, true);
+			specFile->seek(specPos, true);
 
 		}
 
 	}
 
-	delete mf;
-	delete sf;
+	delete mainFile;
+	delete specFile;
 
 
 	// Include a blank sprite at the end
@@ -305,17 +306,17 @@ int Level::loadSprites (char * fn) {
 }
 
 
-int Level::loadTiles (char * fn) {
+int Level::loadTiles (char * fileName) {
 
-	File *f;
+	File *file;
 	unsigned char *buffer;
-	int rle, pos, index, count;
+	int rle, pos, index, count, fileSize;
 	int tiles;
 
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -325,15 +326,15 @@ int Level::loadTiles (char * fn) {
 
 
 	// Load the palette
-	f->loadPalette(palette);
+	file->loadPalette(palette);
 
 
 	// Load the background palette
-	f->loadPalette(skyPalette);
+	file->loadPalette(skyPalette);
 
 
 	// Skip the second, identical, background palette
-	f->skipRLE();
+	file->skipRLE();
 
 
 	// Load the tile pixel indices
@@ -342,42 +343,45 @@ int Level::loadTiles (char * fn) {
 
 	buffer = new unsigned char[tiles * TW * TH];
 
-	f->seek(4, false);
+	file->seek(4, false);
 
 	pos = 0;
+	fileSize = file->getSize();
 
 	// Read the RLE pixels
 	// file::loadRLE() cannot be used, for reasons that will become clear
-	while ((pos < TW * TH * tiles) && (f->tell() < f->getSize())) {
+	while ((pos < TW * TH * tiles) && (file->tell() < fileSize)) {
 
-		rle = f->loadChar();
+		rle = file->loadChar();
 
 		if (rle & 128) {
 
-			index = f->loadChar();
+			index = file->loadChar();
 
 			for (count = 0; count < (rle & 127); count++) buffer[pos++] = index;
 
 		} else if (rle) {
 
-			for (count = 0; count < rle; count++) buffer[pos++] = f->loadChar();
+			for (count = 0; count < rle; count++)
+				buffer[pos++] = file->loadChar();
 
 		} else { // This happens at the end of each tile
 
 			// 0 pixels means 1 pixel, apparently
-			buffer[pos++] = f->loadChar();
+			buffer[pos++] = file->loadChar();
 
-			f->seek(2, false); // I assume this is the length of the next tile
-				// block
-			if (pos == TW * TH * 60) f->seek(2, false); // Maybe these say
-			if (pos == TW * TH * 120) f->seek(2, false); // whether or not there
-			if (pos == TW * TH * 180) f->seek(2, false); // are any more tiles
+			file->seek(2, false); /* I assume this is the length of the next
+				tile block */
+
+			if (pos == TW * TH * 60) file->seek(2, false);
+			if (pos == TW * TH * 120) file->seek(2, false);
+			if (pos == TW * TH * 180) file->seek(2, false);
 
 		}
 
 	}
 
-	delete f;
+	delete file;
 
 	// Work out how many tiles were actually loaded
 	// Should be a multiple of 60
@@ -391,13 +395,13 @@ int Level::loadTiles (char * fn) {
 }
 
 
-int Level::load (char *fn, unsigned char diff, bool checkpoint) {
+int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
-	File *f;
+	File *file;
 	unsigned char *buffer;
 	char *string, *ext;
 	int tiles;
-	int count, x, y, bgType;
+	int count, x, y, type;
 
 
 	difficulty = diff;
@@ -407,18 +411,22 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Open planet.### file
 
-	if (!strcmp(fn, LEVEL_FILE)) {
+	if (!strcmp(fileName, LEVEL_FILE)) {
+
+		// Using the downloaded level file
 
 		string = cloneString("DOWNLOADED");
 
 	} else {
 
+		// Load the planet's name from the planet.### file
+
 		string = new char[11];
-		sprintf(string, "planet.%3s", fn + strlen(fn) - 3);
+		sprintf(string, F_PLANET, fileName + strlen(fileName) - 3);
 
 		try {
 
-			f = new File(string, false);
+			file = new File(string, false);
 
 		} catch (int e) {
 
@@ -430,14 +438,14 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 		delete[] string;
 
-		f->seek(2, true);
-		string = f->loadString();
+		file->seek(2, true);
+		string = file->loadString();
 
-		delete f;
+		delete file;
 
 	}
 
-	switch (fn[5]) {
+	switch (fileName[5]) {
 
 		case '0':
 
@@ -483,7 +491,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -497,50 +505,49 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// Load the blocks.### extension
 
 	// Skip past all level data
-	f->seek(39, true);
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->skipRLE();
-	f->seek(598, false);
-	f->skipRLE();
-	f->seek(4, false);
-	f->skipRLE();
-	f->skipRLE();
-	f->seek(25, false);
-	f->skipRLE();
-	f->seek(3, false);
+	file->seek(39, true);
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->skipRLE();
+	file->seek(598, false);
+	file->skipRLE();
+	file->seek(4, false);
+	file->skipRLE();
+	file->skipRLE();
+	file->seek(25, false);
+	file->skipRLE();
+	file->seek(3, false);
 
 	// Load the level number
-	levelNum = f->loadChar() ^ 210;
+	levelNum = file->loadChar() ^ 210;
 
 	// Load the world number
-	worldNum = f->loadChar() ^ 4;
+	worldNum = file->loadChar() ^ 4;
 
 
 	// Load tile set from appropriate blocks.###
-	// Note: Lower case is required for Unix support
 
 	// Load tile set extension
-	f->seek(8, false);
-	ext = f->loadString();
+	file->seek(8, false);
+	ext = file->loadString();
 
 	if (!strcmp(ext, "999")) {
 
 		// Use the level file's extension instead
 		delete[] ext;
-		ext = cloneString(fn + strlen(fn) - 3);
+		ext = cloneString(fileName + strlen(fileName) - 3);
 
 	}
 
 	// Allocate space for file names
 	string = new char[12];
 
-	sprintf(string, "blocks.%3s", ext);
+	sprintf(string, F_BLOCKS, ext);
 
 	delete[] ext;
 
@@ -549,7 +556,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	if (tiles < 0) {
 
 		delete[] string;
-		delete f;
+		delete file;
 
 		return tiles;
 
@@ -557,9 +564,8 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Load sprite set from corresponding Sprites.###
-	// Note: Lower case is required for Unix support
 
-	sprintf(string, "sprites.%03i", worldNum);
+	sprintf(string, F_SPRITES, worldNum);
 
 	count = loadSprites(string);
 
@@ -567,7 +573,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 		SDL_FreeSurface(tileSet);
 		delete[] string;
-		delete f;
+		delete file;
 
 		return count;
 
@@ -577,11 +583,11 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Skip to tile and event reference data
-	f->seek(39, true);
+	file->seek(39, true);
 
 	// Load tile and event references
 
-	buffer = f->loadRLE(LW * LH * 2);
+	buffer = file->loadRLE(LW * LH * 2);
 
 	// Create grid from data
 	for (x = 0; x < LW; x++) {
@@ -600,12 +606,12 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	delete[] buffer;
 
 	// A mysterious block of mystery
-	f->skipRLE();
+	file->skipRLE();
 
 
 	// Load mask data
 
-	buffer = f->loadRLE(tiles * 8);
+	buffer = file->loadRLE(tiles * 8);
 
 	// Unpack bits
 	for (count = 0; count < tiles; count++) {
@@ -647,7 +653,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Load special event path
 
-	buffer = f->loadRLE(8192);
+	buffer = file->loadRLE(8192);
 	pathLength = buffer[0] + (buffer[1] << 8);
 	pathNode = 0;
 	if (pathLength < 1) pathLength = 1;
@@ -666,7 +672,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Load event set
 
-	buffer = f->loadRLE(EVENTS * ELENGTH);
+	buffer = file->loadRLE(EVENTS * ELENGTH);
 
 	// Fill event set with data
 	for (count = 0; count < EVENTS; count++) {
@@ -703,12 +709,12 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Yet more doubtless essential data
-	f->skipRLE();
+	file->skipRLE();
 
 
 	// Load animation set
 
-	buffer = f->loadRLE(ANIMS * 64);
+	buffer = file->loadRLE(ANIMS * 64);
 
 	// Create animation set based on that data
 	for (count = 0; count < ANIMS; count++) {
@@ -739,21 +745,21 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	// There's a a whole load of unknown data around here
 
 	// Like another one of those pesky RLE blocks
-	f->skipRLE();
+	file->skipRLE();
 
 	// And 217 bytes of DOOM
-	f->seek(217, false);
+	file->seek(217, false);
 
 
 	// Load sound map
 
-	x = f->tell();
+	x = file->tell();
 
 	for (count = 0; count < 32; count++) {
 
-		f->seek(x + (count * 9), true);
+		file->seek(x + (count * 9), true);
 
-		string = f->loadString();
+		string = file->loadString();
 
 		soundMap[count] = -1;
 
@@ -765,35 +771,33 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 		}
 
-		printf("Mapping %d (%s) to %d\n", count, string, soundMap[count]);
-
 		delete[] string;
 
 	}
 
-	f->seek(x + 288, true);
+	file->seek(x + 288, true);
 
 	// Music file
-	string = f->loadString();
+	string = file->loadString();
 	playMusic(string);
 
 	// 25 bytes of undiscovered usefulness, less the music file name
-	f->seek(25 - strlen(string), false);
+	file->seek(25 - strlen(string), false);
 	delete[] string;
 
 	// End of episode cutscene
-	sceneFile = f->loadString();
+	sceneFile = file->loadString();
 
 	// 51 bytes of undiscovered usefulness, less the cutscene file name
-	f->seek(51 - strlen(sceneFile), false);
+	file->seek(51 - strlen(sceneFile), false);
 
 	// The players' coordinates
 	if (!checkpoint) {
 
-		checkX = f->loadShort();
-		checkY = f->loadShort() + 1;
+		checkX = file->loadShort();
+		checkY = file->loadShort() + 1;
 
-	} else f->seek(4, false);
+	} else file->seek(4, false);
 
 	// Set the players' initial values
 	for (count = 0; count < nPlayers; count++) {
@@ -804,26 +808,26 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	}
 
 	// Next level
-	x = f->loadChar();
-	y = f->loadChar();
+	x = file->loadChar();
+	y = file->loadChar();
 	setNext(x, y);
 
 
 	// Thanks to Doubble Dutch for this next bit
-	f->seek(4, false);
-	waterLevel = f->loadShort() << 10;
+	file->seek(4, false);
+	waterLevel = file->loadShort() << 10;
 
 
 	// Thanks to Feline and the JCS94 team for the next bits:
 
-	f->seek(3, false);
+	file->seek(3, false);
 
 	// Now at "Section 15"
 
 
 	// Load player's animation set references
 
-	buffer = f->loadRLE(PANIMS * 2);
+	buffer = file->loadRLE(PANIMS * 2);
 	string = new char[PANIMS + 3];
 
 	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
@@ -844,14 +848,14 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Load Skip to bullet set
-	miscAnims[0] = f->loadChar();
-	miscAnims[1] = f->loadChar();
-	miscAnims[2] = f->loadChar();
-	miscAnims[3] = f->loadChar();
+	miscAnims[0] = file->loadChar();
+	miscAnims[1] = file->loadChar();
+	miscAnims[2] = file->loadChar();
+	miscAnims[3] = file->loadChar();
 
 
 	// Load bullet set
-	buffer = f->loadRLE(BULLETS * BLENGTH);
+	buffer = file->loadRLE(BULLETS * BLENGTH);
 
 	for (count = 0; count < BULLETS; count++) {
 
@@ -877,20 +881,20 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 
 	// Now at "Section 18." More skippability.
-	f->skipRLE();
+	file->skipRLE();
 
 
 	// Now at "Section 19," THE MAGIC SECTION
 
 	// First byte is the background palette effect type
-	bgType = f->loadChar();
+	type = file->loadChar();
 
 	sky = false;
 
 	// Free any existing palette effects
 	if (firstPE) delete firstPE;
 
-	switch (bgType) {
+	switch (type) {
 
 		case 2:
 
@@ -946,13 +950,13 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	firstPE = new RotatePaletteEffect(124, 3, F16, firstPE);
 
-	if ((bgType != PE_1D) && (bgType != PE_2D))
+	if ((type != PE_1D) && (type != PE_2D))
 		firstPE = new RotatePaletteEffect(132, 8, F16, firstPE);
 
-	if ((bgType != PE_SKY) && (bgType != PE_2D))
+	if ((type != PE_SKY) && (type != PE_2D))
 		firstPE = new RotatePaletteEffect(160, 32, -F16, firstPE);
 
-	if (bgType != PE_SKY) {
+	if (type != PE_SKY) {
 
 		firstPE = new RotatePaletteEffect(192, 32, -F32, firstPE);
 		firstPE = new RotatePaletteEffect(224, 16, F16, firstPE);
@@ -960,19 +964,19 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 	}
 
 	// Level fade-in/white-in effect
-	if (checkpoint) firstPE = new FadeInPaletteEffect(FH, firstPE);
-	else firstPE = new WhiteInPaletteEffect(FH, firstPE);
+	if (checkpoint) firstPE = new FadeInPaletteEffect(T_START, firstPE);
+	else firstPE = new WhiteInPaletteEffect(T_START, firstPE);
 
 
-	f->seek(1, false);
+	file->seek(1, false);
 
-	skyOrb = f->loadChar(); // A.k.a the sun, the moon, the brightest star, that
-	                        // red planet with blue veins...
+	skyOrb = file->loadChar(); /* A.k.a the sun, the moon, the brightest star,
+		that red planet with blue veins... */
 
 
 	// And that's us done!
 
-	delete f;
+	delete file;
 
 
 	// Apply the palette to surfaces that already exist, e.g. fonts
@@ -984,7 +988,7 @@ int Level::load (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Set the tick at which the level will end
 	endTime = (5 - difficulty) * 2 * 60 * 1000;
-	winTime = 0;
+	timeBonus = -1;
 
 
 	firstBullet = NULL;
@@ -1006,7 +1010,7 @@ Level::Level () {
 }
 
 
-Level::Level (char *fn, unsigned char diff, bool checkpoint) {
+Level::Level (char *fileName, unsigned char diff, bool checkpoint) {
 
 	int ret;
 
@@ -1014,7 +1018,7 @@ Level::Level (char *fn, unsigned char diff, bool checkpoint) {
 
 	// Load level data
 
-	ret = load(fn, diff, checkpoint);
+	ret = load(fileName, diff, checkpoint);
 
 	if (ret < 0) throw ret;
 
@@ -1073,9 +1077,9 @@ Level::~Level () {
 }
 
 
-DemoLevel::DemoLevel (char *fn) {
+DemoLevel::DemoLevel (char *fileName) {
 
-	File *f;
+	File *file;
 	char levelFile[11];
 	int lNum, wNum, diff, ret;
 
@@ -1083,7 +1087,7 @@ DemoLevel::DemoLevel (char *fn) {
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -1092,17 +1096,17 @@ DemoLevel::DemoLevel (char *fn) {
 	}
 
 	// Check this is a normal level
-	if (f->loadShort() == 0) throw E_DEMOTYPE;
+	if (file->loadShort() == 0) throw E_DEMOTYPE;
 
 	// Level file to load
-	lNum = f->loadShort();
-	wNum = f->loadShort();
-	sprintf(levelFile, "level%1i.%03i", lNum, wNum);
+	lNum = file->loadShort();
+	wNum = file->loadShort();
+	sprintf(levelFile, F_LEVEL, lNum, wNum);
 
 	// Difficulty
-	diff = f->loadShort();
+	diff = file->loadShort();
 
-	macro = f->loadBlock(1024);
+	macro = file->loadBlock(1024);
 
 	// Load level data
 

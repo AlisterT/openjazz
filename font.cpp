@@ -27,21 +27,22 @@
 
 
 #include "font.h"
+#include "palette.h"
 #include <string.h>
 
 
-Font::Font (char * fn) {
+Font::Font (char * fileName) {
 
-	File *f;
+	File *file;
 	unsigned char *pixels, *character;
-	int rle, pos, byte, count, next;
+	int rle, pos, byte, count, next, fileSize;
 	int chr, width, height, y;
 
 	// Load font from a font file
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -49,32 +50,34 @@ Font::Font (char * fn) {
 
 	}
 
-	f->seek(19, true);
+	file->seek(19, true);
 
-	width = f->loadChar() << 2;
-	h = f->loadChar() << 1;
+	width = file->loadChar() << 2;
+	h = file->loadChar() << 1;
 	w = new unsigned char[128];
 	pixels = new unsigned char[width * h * 128];
 	memset(pixels, 0, width * h * 128);
 
-	f->seek(23, true);
+	file->seek(23, true);
 
 	w[0] = width >> 1;
 
+	fileSize = file->getSize();
+
 	for (chr = 1; chr < 128; chr++) {
 
-		f->seek(2, false);
-		next = f->loadChar();
+		file->seek(2, false);
+		next = file->loadChar();
 
-		if (f->tell() > f->getSize()) break;
+		if (file->tell() > fileSize) break;
 
-		next += f->loadChar() << 8;
-		next += f->tell();
+		next += file->loadChar() << 8;
+		next += file->tell();
 
-		f->seek(1, false);
-		w[chr] = f->loadChar();
-		f->seek(1, false);
-		height = f->loadChar();
+		file->seek(1, false);
+		w[chr] = file->loadChar();
+		file->seek(1, false);
+		height = file->loadChar();
 
 		character = new unsigned char[(w[chr] * height) + 1];
 
@@ -82,11 +85,11 @@ Font::Font (char * fn) {
 
 		while (pos < w[chr] * height) {
 
-			rle = f->loadChar();
+			rle = file->loadChar();
 
 			if (rle > 127) {
 
-				byte = f->loadChar();
+				byte = file->loadChar();
 
 				for (count = 0; count < (rle & 127); count++) {
 
@@ -99,7 +102,7 @@ Font::Font (char * fn) {
 
 				for (count = 0; count < rle; count++) {
 
-					character[pos++] = f->loadChar();
+					character[pos++] = file->loadChar();
 					if (pos >= w[chr] * height) break;
 
 				}
@@ -118,9 +121,12 @@ Font::Font (char * fn) {
 
 		w[chr] += 2;
 
-		f->seek(next, true);
+		file->seek(next, true);
 
 	}
+
+	delete file;
+
 
 	for (; chr < 128; chr++) w[chr] = width >> 1;
 
@@ -130,7 +136,7 @@ Font::Font (char * fn) {
 
 	// Create ASCII->font map
 
-	if (!strcmp(fn, "fontmn1.0fn")) {
+	if (!strcmp(fileName, "fontmn1.0fn")) {
 
 		for (count = 0; count < 48; count++) map[count] = 0;
 		for (; count < 58; count++) map[count] = count - 8;
@@ -140,7 +146,7 @@ Font::Font (char * fn) {
 		for (; count < 123; count++) map[count] = count - 96;
 		for (; count < 128; count++) map[count] = 0;
 
-	} else if (!strcmp(fn, "fontmn2.0fn")) {
+	} else if (!strcmp(fileName, "fontmn2.0fn")) {
 
 		for (count = 0; count < 43; count++) map[count] = 0;
 		map[33] = 89;
@@ -184,14 +190,12 @@ Font::Font (char * fn) {
 
 	}
 
-	delete f;
-
 	return;
 
 }
 
 
-Font::Font (File *f, bool big) {
+Font::Font (File *file, bool big) {
 
 	unsigned char *pixels;
 	int rle, pos, index, count;
@@ -212,7 +216,7 @@ Font::Font (File *f, bool big) {
 
 		pos = 1;
 
-		f->seek(4691, true);
+		file->seek(4691, true);
 
 	} else {
 
@@ -221,18 +225,18 @@ Font::Font (File *f, bool big) {
 
 		pos = 0;
 
-		f->seek(6975, true);
+		file->seek(6975, true);
 
 	}
 
 	// RLE decompression and horizontal to vertical character rearrangement
 	while (pos < 320 * h) {
 
-		rle = f->loadChar();
+		rle = file->loadChar();
 
 		if (rle >= 128) {
 
-			index = f->loadChar();
+			index = file->loadChar();
 
 			for (count = 0; count < (rle & 127); count++) {
 
@@ -247,7 +251,7 @@ Font::Font (File *f, bool big) {
 			for (count = 0; count < rle; count++) {
 
 				pixels[(pos & 7) + ((pos / 320) * 8) +
-					(((pos % 320)>>3) * 8 * h)] = f->loadChar();
+					(((pos % 320)>>3) * 8 * h)] = file->loadChar();
 				pos++;
 
 			}

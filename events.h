@@ -61,7 +61,6 @@
 // Delays
 #define T_FLASH  100
 #define T_FINISH 200
-#define T_WARP   1000
 
 // Speed factors
 #define ES_SLOW 80

@@ -94,6 +94,7 @@
 
 // Other time periods
 #define T_FASTFEET 25000
+#define T_WARP     1000
 
 // Player offsets
 #define PXO_L   (F12 - F10)
@@ -181,6 +182,8 @@ class Player {
 		fixed         jumpHeight;
 		fixed         jumpY;
 		int           fastFeetTime;
+		unsigned char warpX, warpY;
+		int           warpTime;
 		fixed         x, y, dx, dy;
 		int           enemies, items;
 		unsigned char team;

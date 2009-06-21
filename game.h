@@ -26,6 +26,7 @@
 
 
 #include "file.h"
+#include "network.h"
 
 
 // Constants
@@ -37,7 +38,6 @@
 #define M_TEAMBATTLE 3
 
 // Time intervals
-#define T_TIMEOUT 30000
 #define T_SSEND   20
 #define T_SCHECK  1000
 #define T_CSEND   10
@@ -79,13 +79,8 @@
 #define MTL_P_TEMP  45
 
 // Array limits
-#define MAX_CLIENTS   31
 #define MAX_PLAYERS   (MAX_CLIENTS + 1)
 #define BUFFER_LENGTH 255 /* Should always be big enough to hold any message */
-
-// Networking defaults
-#define NET_ADDRESS "192.168.0.1"
-#define NET_PORT    10052
 
 
 // Classes
@@ -104,7 +99,7 @@ class Game {
 		virtual ~Game          ();
 
 		int          getMode   ();
-		virtual int  setLevel  (char *fn);
+		virtual int  setLevel  (char *fileName);
 		int          run       ();
 		void         view      ();
 		virtual void send      (unsigned char *buffer);
@@ -132,7 +127,7 @@ class ServerGame : public Game {
 		ServerGame     (int gameMode, char *firstLevel, int gameDifficulty);
 		~ServerGame    ();
 
-		int  setLevel  (char *fn);
+		int  setLevel  (char *fileName);
 		void send      (unsigned char *buffer);
 		int  playFrame (int ticks);
 
@@ -154,7 +149,7 @@ class ClientGame : public Game {
 		ClientGame     (char *address);
 		~ClientGame    ();
 
-		int  setLevel  (char *fn);
+		int  setLevel  (char *fileName);
 		void send      (unsigned char *buffer);
 		int  playFrame (int ticks);
 

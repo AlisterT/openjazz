@@ -60,11 +60,11 @@ class PaletteEffect {
 class WhiteInPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed duration;  // Number of seconds the effect lasts
+		int   duration;  // Number of milliseconds the effect lasts
 		fixed whiteness;
 
 	public:
-		WhiteInPaletteEffect (fixed newDuration, PaletteEffect * nextPE);
+		WhiteInPaletteEffect (int newDuration, PaletteEffect * nextPE);
 
 		void apply           (SDL_Color *shownPalette, bool direct);
 
@@ -74,11 +74,11 @@ class WhiteInPaletteEffect : public PaletteEffect {
 class FadeInPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed duration;  // Number of seconds the effect lasts
+		int   duration;  // Number of milliseconds the effect lasts
 		fixed blackness;
 
 	public:
-		FadeInPaletteEffect (fixed newDuration, PaletteEffect * nextPE);
+		FadeInPaletteEffect (int newDuration, PaletteEffect * nextPE);
 
 		void apply          (SDL_Color *shownPalette, bool direct);
 
@@ -88,11 +88,11 @@ class FadeInPaletteEffect : public PaletteEffect {
 class WhiteOutPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed duration;  // Number of seconds the effect lasts
+		int   duration;  // Number of milliseconds the effect lasts
 		fixed whiteness;
 
 	public:
-		WhiteOutPaletteEffect (fixed newDuration, PaletteEffect * nextPE);
+		WhiteOutPaletteEffect (int newDuration, PaletteEffect * nextPE);
 
 		void apply            (SDL_Color *shownPalette, bool direct);
 
@@ -102,11 +102,11 @@ class WhiteOutPaletteEffect : public PaletteEffect {
 class FadeOutPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed duration;  // Number of seconds the effect lasts
+		int   duration;  // Number of milliseconds the effect lasts
 		fixed blackness;
 
 	public:
-		FadeOutPaletteEffect (fixed newDuration, PaletteEffect * nextPE);
+		FadeOutPaletteEffect (int newDuration, PaletteEffect * nextPE);
 
 		void apply           (SDL_Color *shownPalette, bool direct);
 
@@ -116,13 +116,13 @@ class FadeOutPaletteEffect : public PaletteEffect {
 class FlashPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed         duration;         // Number of seconds until peak
+		int           duration;  // Number of milliseconds the effect lasts
 		fixed         progress;
 		unsigned char red, green, blue; // Flash colour
 
 	public:
 		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen,
-			unsigned char newBlue, fixed newDuration, PaletteEffect * nextPE);
+			unsigned char newBlue, int newDuration, PaletteEffect * nextPE);
 
 		void apply         (SDL_Color *shownPalette, bool direct);
 
@@ -217,9 +217,17 @@ class WaterPaletteEffect : public PaletteEffect {
 };
 
 
-// Variable
+// Variables
 
+Extern SDL_Color     *currentPalette;
+Extern SDL_Color      logicalPalette[256];
 Extern PaletteEffect *firstPE;
+
+
+// Functions
+
+Extern void usePalette     (SDL_Color *palette);
+Extern void restorePalette (SDL_Surface *surface);
 
 #endif
 

@@ -25,6 +25,7 @@
 #include "game.h"
 #include "level.h"
 #include "palette.h"
+#include "sound.h"
 #include <string.h>
 #include <math.h>
 
@@ -200,8 +201,9 @@ void Player::reset () {
 	reaction = PR_NONE;
 	reactionTime = 0;
 	jumpHeight = 92 * F1;
-	jumpY = 65 * F32;
+	jumpY = LH * F32;
 	fastFeetTime = 0;
+	warpTime = 0;
 	dx = 0;
 	dy = 0;
 	enemies = items = 0;
@@ -283,7 +285,7 @@ void Player::shootEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
 		case 33:
 
-			shield = 2;
+			if (shield < 2) shield = 2;
 
 			break;
 
@@ -383,25 +385,35 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
 		case 13: // Warp
 
-			level->setEventTime(gridX, gridY, ticks + T_WARP);
+			if (!warpTime) {
+
+				warpX = set[E_MULTIPURPOSE];
+				warpY = set[E_YAXIS];
+				warpTime = ticks + T_WARP;
+
+				// White flash
+				firstPE =
+					new FlashPaletteEffect(255, 255, 255, T_WARP, firstPE);
+
+			}
 
 			break;
 
-		case 18:
+		case 18: // Ammo
 
 			addAmmo(0, 2);
 			addScore(set[E_ADDEDSCORE]);
 
 			return true;
 
-		case 19:
+		case 19: // Ammo
 
 			addAmmo(1, 2);
 			addScore(set[E_ADDEDSCORE]);
 
 			return true;
 
-		case 20:
+		case 20: // Ammo
 
 			addAmmo(2, 2);
 			addScore(set[E_ADDEDSCORE]);
@@ -416,7 +428,7 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 
 			break;
 
-		case 30:
+		case 30: // TNT
 
 			addAmmo(3, 1);
 
@@ -438,7 +450,7 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 		case 37: // Diamond
 
 			// Yellow flash
-			firstPE = new FlashPaletteEffect(255, 255, 0, FH, firstPE);
+			firstPE = new FlashPaletteEffect(255, 255, 0, 320, firstPE);
 
 			return true;
 
@@ -510,7 +522,7 @@ void Player::kill (int ticks) {
 	reactionTime = ticks + PRT_KILLED;
 
 	if (!game || (game->getMode() == M_SINGLE))
-		firstPE = new FadeOutPaletteEffect(FH, firstPE);
+		firstPE = new FadeOutPaletteEffect(T_END, firstPE);
 
 	return;
 
@@ -635,7 +647,7 @@ void Player::setPosition (fixed newX, fixed newY) {
 void Player::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
-	if (newDy < 0) dy = newDy;
+	if (newDy) dy = newDy;
 
 	return;
 
@@ -675,8 +687,7 @@ void Player::floatUp (signed char *newEvent) {
 
 void Player::belt (int speed) {
 
-	if (speed < 0) dx += speed * 4 * mspf;
-	else dx += speed * 40 * mspf;
+	dx += speed * 160 * mspf;
 
 	return;
 
@@ -948,11 +959,10 @@ void Player::control (int ticks) {
 
 			if (!level->checkMask(x + PXO_MID, y - F36)) {
 
-				jumpY = y -
-					(jumpHeight + (4928 * F1 * mspf / (1000 + (136 * mspf))));
+				jumpY = y - jumpHeight;
 
-				if (dx < 0) jumpY += dx / 40;
-				else if (dx > 0) jumpY -= dx / 40;
+				if (dx < 0) jumpY += dx >> 4;
+				else if (dx > 0) jumpY -= dx >> 4;
 
 				event = NULL;
 
@@ -980,9 +990,6 @@ void Player::control (int ticks) {
 
 	} else {
 
-		// If jumping, rise
-		if (y > jumpY) dy = (jumpY - ((2 * F32) + y)) * 4;
-
 		if ((event && ((event[E_MODIFIER] == 6) ||
 			(event[E_BEHAVIOUR] == 28))) ||
 			level->checkMaskDown(x + PXO_ML, y + F2) ||
@@ -995,11 +1002,11 @@ void Player::control (int ticks) {
 
 				// Jump
 
-				jumpY = y -
-					(jumpHeight + (4928 * F1 * mspf / (1000 + (136 * mspf))));
+				jumpY = y - jumpHeight;
 
-				if (dx < 0) jumpY += dx / 40;
-				else if (dx > 0) jumpY -= dx / 40;
+				// Increase jump height if walking/running
+				if (dx < 0) jumpY += dx >> 4;
+				else if (dx > 0) jumpY -= dx >> 4;
 
 				event = NULL;
 
@@ -1026,14 +1033,27 @@ void Player::control (int ticks) {
 		// Stop jumping
 		if (!pcontrols[C_JUMP] &&
 			(!event || ((event[E_MODIFIER] != 29) &&
-			(event[E_BEHAVIOUR] != 25)))) jumpY = 65 * F32;
+			(event[E_BEHAVIOUR] != 25)))) jumpY = LH * F32;
+
+		// If jumping, rise
+		if (y >= jumpY) {
+
+			dy = (jumpY - y - F64) * 4;
+
+			// Avoid jumping to fast, unless caused by an event
+			if (!event && (dy < ((-92 * F1) - F64) * 4))
+				dy = ((-92 * F1) - F64) * 4;
+
+		} else {
+
+			// Fall under gravity
+			dy += PYA_GRAVITY * mspf;
+			if (dy > PYS_FALL) dy = PYS_FALL;
+
+		}
 
 		// Stop looking
 		if (!pcontrols[C_UP] && !pcontrols[C_DOWN]) lookTime = 0;
-
-		// Fall under gravity
-		dy += PYA_GRAVITY * mspf;
-		if (dy > PYS_FALL) dy = PYS_FALL;
 
 	}
 
@@ -1042,7 +1062,7 @@ void Player::control (int ticks) {
 	if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) &&
 		(!event || event[E_BEHAVIOUR] != 25)) {
 
-		jumpY = 65 * F32;
+		jumpY = LH * F32;
 		if (dy < 0) dy = 0;
 
 		if (event && (event[E_MODIFIER] != 6) && (event[E_BEHAVIOUR] != 28))
@@ -1053,7 +1073,7 @@ void Player::control (int ticks) {
 	// If jump completed, stop rising
 	if (y <= jumpY) {
 
-		jumpY = 65 * F32;
+		jumpY = LH * F32;
 
 		if (event && (event[E_MODIFIER] != 6) && (event[E_BEHAVIOUR] != 28))
 			event = NULL;
@@ -1064,22 +1084,24 @@ void Player::control (int ticks) {
 	// Handle firing
 	if (pcontrols[C_FIRE]) {
 
-		// If a bullet has been fired too recently, do nothing
-		if (ticks <= fireTime) return;
+		if (ticks > fireTime) {
 
-		// Create new bullet
-		level->firstBullet = new Bullet(this, false, ticks, level->firstBullet);
+			// Create new bullet
+			level->firstBullet =
+				new Bullet(this, false, ticks, level->firstBullet);
 
-		// Set when the next bullet can be fired
-		if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);
-		else fireTime = 0x7FFFFFFF;
+			// Set when the next bullet can be fired
+			if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);
+			else fireTime = 0x7FFFFFFF;
 
-		// Remove the bullet from the arsenal
-		if (ammoType != -1) ammo[ammoType]--;
+			// Remove the bullet from the arsenal
+			if (ammoType != -1) ammo[ammoType]--;
 
-		// If the current ammo has been exhausted, go to the previous type that
-		// has ammo
-		while ((ammoType > -1) && !ammo[ammoType]) ammoType--;
+			/* If the current ammo type has been exhausted, use the previous
+			non-exhausted ammo type */
+			while ((ammoType > -1) && !ammo[ammoType]) ammoType--;
+
+		}
 
 	} else fireTime = 0;
 
@@ -1122,6 +1144,14 @@ void Player::move (int ticks) {
 	fixed pdx, pdy;
 	int count;
 
+	if (warpTime && (ticks > warpTime)) {
+
+		x = warpX << 15;
+		y = (warpY + 1) << 15;
+		warpTime = 0;
+
+	}
+
 	// Apply as much of the trajectory as possible, without going into the
 	// scenery
 
@@ -1139,83 +1169,122 @@ void Player::move (int ticks) {
 
 	// First for the vertical component of the trajectory
 
-	if (pdy >= 0) count = pdy >> 12;
-	else count = -((-pdy) >> 12);
+	if (pdy < 0) {
 
-	while (count > 0) {
+		// Moving up
 
-		if (level->checkMaskDown(x + PXO_ML, y + F4) ||
-			level->checkMaskDown(x + PXO_MID, y + F4) ||
-			level->checkMaskDown(x + PXO_MR, y + F4)) break;
+		count = (-pdy) >> 12;
 
-		y += F4;
-		count--;
+		while (count > 0) {
+
+			if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) break;
+
+			y -= F4;
+			count--;
+
+		}
+
+		pdy = (-pdy) & 4095;
+
+		if (!level->checkMask(x + PXO_MID, y + PYO_TOP - pdy)) y -= pdy;
+		else y &= ~4095;
+
+	} else if (pdy > 0) {
+
+		// Moving down
+
+		count = pdy >> 12;
+
+		while (count > 0) {
+
+			if (level->checkMaskDown(x + PXO_ML, y + F4) ||
+				level->checkMaskDown(x + PXO_MID, y + F4) ||
+				level->checkMaskDown(x + PXO_MR, y + F4)) break;
+
+			y += F4;
+			count--;
+
+		}
+
+		pdy &= 4095;
+
+		if (!(level->checkMaskDown(x + PXO_ML, y + pdy) ||
+			level->checkMaskDown(x + PXO_MID, y + pdy) ||
+			level->checkMaskDown(x + PXO_MR, y + pdy))) y += pdy;
+		else y |= 4095;
 
 	}
 
-
-	while (count < 0) {
-
-		if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) break;
-
-		y -= F4;
-		count++;
-
-	}
-
-	if (pdy >= 0) pdy &= 4095;
-	else pdy = -((-pdy) & 4095);
-
-	if (((pdy > 0) && !(level->checkMaskDown(x + PXO_ML, y + pdy) ||
-		level->checkMaskDown(x + PXO_MID, y + pdy) ||
-		level->checkMaskDown(x + PXO_MR, y + pdy))) || ((pdy < 0) &&
-		!level->checkMask(x + PXO_MID, y + pdy + PYO_TOP))) y += pdy;
 
 
 	// Then for the horizontal component of the trajectory
 
-	if (pdx >= 0) count = pdx >> 12;
-	else count = -((-pdx) >> 12);
+	if (pdx < 0) {
 
-	while (count < 0) {
+		// Moving left
 
-		if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) break;
+		count = (-pdx) >> 12;
 
-		x -= F4;
-		count++;
+		while (count > 0) {
 
-	}
+			// If there is an obstacle, stop
+			if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) break;
 
-	while (count > 0) {
+			x -= F4;
+			count--;
 
-		if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) break;
+			// If on an uphill slope, push the player upwards
+			if (level->checkMask(x + PXO_ML, y) &&
+				!level->checkMask(x + PXO_ML, y - F4)) y -= F4;
 
-		x += F4;
-		count--;
+		}
 
-	}
+		pdx = (-pdx) & 4095;
 
-	if (pdx >= 0) pdx &= 4095;
-	else pdx = -((-pdx) & 4095);
+		if (!level->checkMask(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
+		else x &= ~4095;
 
-	if (((pdx < 0) && !level->checkMask(x + PXO_L + pdx, y + PYO_MID)) ||
-		((pdx > 0) && !level->checkMask(x + PXO_R + pdx, y + PYO_MID)))
-		x += pdx;
-
-	// If on an uphill slope, push the player upwards
-	if (pdx < 0)
+		// If on an uphill slope, push the player upwards
 		while (level->checkMask(x + PXO_ML, y) &&
-			!level->checkMask(x + PXO_ML, y + PYO_MID)) y -= F1;
-	else
+			!level->checkMask(x + PXO_ML, y - F4)) y -= F1;
+
+	} else if (pdx > 0) {
+
+		// Moving right
+
+		count = pdx >> 12;
+
+		while (count > 0) {
+
+			// If there is an obstacle, stop
+			if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) break;
+
+			x += F4;
+			count--;
+
+			// If on an uphill slope, push the player upwards
+			if (level->checkMask(x + PXO_MR, y) &&
+				!level->checkMask(x + PXO_MR, y - F4)) y -= F4;
+
+		}
+
+		pdx &= 4095;
+
+		if (!level->checkMask(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
+		else x |= 4095;
+
+		// If on an uphill slope, push the player upwards
 		while (level->checkMask(x + PXO_MR, y) &&
-			!level->checkMask(x + PXO_MR, y + PYO_MID)) y -= F1;
+			!level->checkMask(x + PXO_MR, y - F4)) y -= F1;
+
+	}
 
 
 	// If using a float up event and have hit a ceiling, ignore event
 	if (event && (event[E_BEHAVIOUR] == 25) &&
 		level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
 
-		jumpY = 65 * F32;
+		jumpY = LH * F32;
 		event = NULL;
 
 	}
@@ -1401,7 +1470,6 @@ void Player::draw (int ticks) {
 
 	// Remove red flash or player colour from sprite
 	an->restorePalette();
-
 
 
 	if (reaction == PR_INVINCIBLE) {

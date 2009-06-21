@@ -32,7 +32,7 @@
 class Planet {
 
 	public:
-		Planet  (char * fn);
+		Planet  (char * fileName);
 		~Planet ();
 
 		int run ();

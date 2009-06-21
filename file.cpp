@@ -260,30 +260,38 @@ char * File::loadString () {
 	int length, count;
 
 	length = fgetc(f);
+	count = 0;
 
 	if (length) {
 
 		string = new char[length + 1];
-		for (count = 0; count < length; count++) string[count] = fgetc(f);
-		string[length] = 0;
+		for (; count < length; count++) string[count] = fgetc(f);
 
 	} else {
 
 		// If the length is not given, assume it is an 8.3 file name
 		string = new char[13];
-		for (count = 0; (count < 8) && (!length); count++) {
+		for (; count < 9; count++) {
 
 			string[count] = fgetc(f);
-			if (string[count] == '.') length = ~0;
+
+			if (string[count] == '.') {
+
+				string[++count] = fgetc(f);
+				string[++count] = fgetc(f);
+				string[++count] = fgetc(f);
+				count++;
+
+				break;
+
+			}
 
 		}
 
-		string[count++] = fgetc(f);
-		string[count++] = fgetc(f);
-		string[count++] = fgetc(f);
-		string[count] = 0;
 
 	}
+
+	string[count] = 0;
 
 	return string;
 

@@ -38,8 +38,8 @@ class Font {
 		char           map[128]; // Maps ASCII values to letter positions
 
 	public:
-		Font                (char *fn);
-		Font                (File *f, bool big);
+		Font                (char *fileName);
+		Font                (File *file, bool big);
 		~Font               ();
 
 		int  showString     (char *s, int x, int y);

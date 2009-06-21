@@ -21,6 +21,7 @@
 
 
 #include "level.h"
+#include "palette.h"
 
 
 Sprite::Sprite () {

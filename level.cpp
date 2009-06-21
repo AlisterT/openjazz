@@ -31,6 +31,7 @@
 #include "level.h"
 #include "menu.h"
 #include "palette.h"
+#include "sound.h"
 #include <string.h>
 
 
@@ -168,7 +169,7 @@ int Level::playFrame () {
 	}
 
 	// Calculate viewport
-	if (game && winTime && (ticks > winTime)) game->view();
+	if (game && (timeBonus != -1)) game->view();
 	else localPlayer->view(ticks);
 
 	// Ensure the new viewport is within the level
@@ -344,16 +345,6 @@ void Level::draw () {
 
 	SDL_SetClipRect(screen, NULL);
 
-
-	// The panel
-	// Design decision: When the width of the player's viewport is greater than
-	// 320, the panel will not fill up the whole space. I decided that as the
-	// game used the latin alphabet, and the latin alphabet is read from the
-	// left, then the panel should appear to the left. Another option would have
-	// been to have it in the centre, but this would obscure Jazz when he was at
-	// the bottom of the level. As it is, Jazz is still obscured at viewport
-	// widths between 321 and 672. A new approach may be needed, e.g. splitting
-	// the panel down the middle.
 
 	// Show panel
 
@@ -686,8 +677,7 @@ void Level::win () {
 
 	unsigned char buffer[MTL_L_WON];
 
-	winTime = ticks;
-	firstPE = new WhiteOutPaletteEffect(FH, firstPE);
+	if (timeBonus == -1) timeBonus = ((endTime - ticks) / 60000) * 100;
 
 	if (gameMode != M_SINGLE) {
 
@@ -746,8 +736,7 @@ void Level::receive (unsigned char *buffer) {
 
 		case MT_L_WON:
 
-			winTime = ticks;
-			firstPE = new WhiteOutPaletteEffect(FH, firstPE);
+			if (timeBonus == -1) timeBonus = ((endTime - ticks) / 60000) * 100;
 
 			break;
 
@@ -768,7 +757,8 @@ int Level::run () {
 	bool paused, pmenu;
 	int stats, option;
 	int tickOffset, prevTicks;
- 	int perfect, timeBonus;
+	int returnTime;
+ 	int perfect;
  	int count;
  	unsigned int width;
 
@@ -783,7 +773,7 @@ int Level::run () {
 	option = 0;
 	stats = S_NONE;
 
-	timeBonus = -1;
+	returnTime = 0;
 
 	while (true) {
 
@@ -925,13 +915,13 @@ int Level::run () {
 
 
 		// Check if level has been won
-		if (game && winTime && (ticks > winTime + T_WON)) {
+		if (game && (timeBonus == 0) && (ticks > returnTime)) {
 
 			if (nextLevelNum == 99) count = game->setLevel(NULL);
 			else {
 
 				string = new char[11];
-				sprintf(string, "level%1i.%03i", nextLevelNum, nextWorldNum);
+				sprintf(string, F_LEVEL, nextLevelNum, nextWorldNum);
 				count = game->setLevel(string);
 				delete[] string;
 
@@ -1032,16 +1022,16 @@ int Level::run () {
 
 		// If the level has been won, draw play statistics & bonuses
 
-		if (winTime && (ticks > winTime)) {
+		if (timeBonus != -1) {
 
-			if (timeBonus == -1)
-				timeBonus = ((endTime - winTime) / 60000) * 100;
-			else {
+			// Apply time bonus
 
-				count = mspf / 5;
+			if (timeBonus) {
+
+				count = mspf / 100;
 				if (!count) count = 1;
 
-				if (timeBonus - count >= 0) {
+				if (timeBonus - count > 0) {
 
 					localPlayer->addScore(count);
 					timeBonus -= count;
@@ -1050,10 +1040,15 @@ int Level::run () {
 
 					localPlayer->addScore(timeBonus);
 					timeBonus = 0;
+					returnTime = ticks + T_END;
+					firstPE = new WhiteOutPaletteEffect(T_END, firstPE);
+					::playSound(S_UPLOOP);
 
 				}
 
 			}
+
+			// Display statistics & bonuses
 
 			fontmn1->showString("TIME", (screenW >> 1) - 152,
 				(screenH >> 1) - 60);
@@ -1152,7 +1147,6 @@ int DemoLevel::run () {
 	float smoothfps;
 	int stats;
 	int tickOffset, prevTicks;
-	int timeBonus;
 	unsigned char macroPoint;
 	int ret;
 
@@ -1164,8 +1158,6 @@ int DemoLevel::run () {
 	ticks = -10;
 
 	stats = S_NONE;
-
-	timeBonus = -1;
 
 	while (true) {
 
@@ -1248,7 +1240,7 @@ int DemoLevel::run () {
 
 
 		// Check if level has been won
-		if (winTime && (ticks > winTime + T_WON)) return WON;
+		if (timeBonus != -1) return WON;
 
 
 		// Process frame-by-frame activity

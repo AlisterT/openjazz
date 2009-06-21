@@ -30,20 +30,25 @@
 #include "game.h"
 #include "level.h"
 #include "menu.h"
+#include "palette.h"
+#include "sound.h"
 #include <string.h>
 #include <time.h>
 
 
 Menu::Menu () {
 
-	File *f;
+	File *file;
 	unsigned char *pixels;
 	time_t currentTime;
 	int count, col;
 
+
+	// Load the OpenJazz logo
+
 	try {
 
-		f = new File(LOGO_FILE, false);
+		file = new File(LOGO_FILE, false);
 
 	} catch (int e) {
 
@@ -51,15 +56,16 @@ Menu::Menu () {
 
 	}
 
-	screens[14] = f->loadSurface(64, 40);
+	screens[14] = file->loadSurface(64, 40);
 
-	delete f;
+	delete file;
 
 
+	// Load the menu graphics
 
 	try {
 
-		f = new File("menu.000", false);
+		file = new File(F_MENU, false);
 
 	} catch (int e) {
 
@@ -69,15 +75,15 @@ Menu::Menu () {
 
 	}
 
-	f->seek(0, true);
+	file->seek(0, true);
 
 	// Load the main menu graphics
-	f->loadPalette(palettes[0]);
-	screens[0] = f->loadSurface(320, 200);
-	screens[1] = f->loadSurface(320, 200);
+	file->loadPalette(palettes[0]);
+	screens[0] = file->loadSurface(320, 200);
+	screens[1] = file->loadSurface(320, 200);
 
 
-	if (f->getSize() > 200000) {
+	if (file->getSize() > 200000) {
 
 		time(&currentTime);
 
@@ -86,15 +92,15 @@ Menu::Menu () {
 
 			SDL_FreeSurface(screens[0]);
 			SDL_FreeSurface(screens[1]);
-			f->loadPalette(palettes[0]);
-			screens[0] = f->loadSurface(320, 200);
-			screens[1] = f->loadSurface(320, 200);
+			file->loadPalette(palettes[0]);
+			screens[0] = file->loadSurface(320, 200);
+			screens[1] = file->loadSurface(320, 200);
 
 		} else {
 
-			f->skipRLE();
-			f->skipRLE();
-			f->skipRLE();
+			file->skipRLE();
+			file->skipRLE();
+			file->skipRLE();
 
 		}
 
@@ -105,8 +111,8 @@ Menu::Menu () {
 
 
 	// Load the difficulty graphics
-	f->loadPalette(palettes[1]);
-	screens[2] = f->loadSurface(320, 200);
+	file->loadPalette(palettes[1]);
+	screens[2] = file->loadSurface(320, 200);
 	SDL_SetColorKey(screens[2], SDL_SRCCOLORKEY, 0);
 
 	// Default difficulty setting
@@ -116,7 +122,7 @@ Menu::Menu () {
 	// Load the episode pictures (max. 10 episodes + bonus level)
 
 	// Load their palette
-	f->loadPalette(palettes[2]);
+	file->loadPalette(palettes[2]);
 
 	// Generate a greyscale mapping
 	for (count = 0; count < 256; count++) {
@@ -135,9 +141,9 @@ Menu::Menu () {
 
 	for (count = 0; count < 11; count++) {
 
-		screens[count + 3] = f->loadSurface(134, 110);
+		screens[count + 3] = file->loadSurface(134, 110);
 
-		if (f->tell() >= f->getSize()) {
+		if (file->tell() >= file->getSize()) {
 
 			episodes = ++count;
 
@@ -153,7 +159,7 @@ Menu::Menu () {
 
 	}
 
-	delete f;
+	delete file;
 
 	localPlayer = NULL;
 	game = NULL;
@@ -177,6 +183,8 @@ Menu::~Menu () {
 
 
 int Menu::message (char *text) {
+
+	// Display a message to the user
 
 	usePalette(palettes[1]);
 
@@ -208,6 +216,8 @@ int Menu::message (char *text) {
 
 
 int Menu::generic (char **optionNames, int options, int *chosen) {
+
+	// Let the user select from a menu of the given options
 
 	int count;
 
@@ -276,6 +286,8 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 
 
 int Menu::textInput (char *request, char **text) {
+
+	// Let the user to edit a text string
 
 	char *input;
 	int count, terminate, character, x;
@@ -476,7 +488,7 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 			playSound(S_ORB);
 
-			sprintf(firstLevel, "level%1i.%03i", levelNum, worldNum);
+			sprintf(firstLevel, F_LEVEL, levelNum, worldNum);
 
 			if (mode == M_SINGLE) {
 
@@ -648,7 +660,7 @@ int Menu::newGameEpisode (int mode) {
 		else if ((count >= 6) && (count < 9)) worldNum = (count + 4) * 3;
 		else worldNum = 50;
 
-		sprintf(check, "level0.%03i", worldNum);
+		sprintf(check, F_LEVEL, 0, worldNum);
 
 		exists[count] = fileExists(check);
 
@@ -789,19 +801,19 @@ int Menu::joinGame () {
 
 		switch (e) {
 
-			case E_S_SOCKET:
+			case E_N_SOCKET:
 
 				message("SOCKET ERROR");
 
 				break;
 
-			case E_S_ADDRESS:
+			case E_N_ADDRESS:
 
 				message("INVALID ADDRESS");
 
 				break;
 
-			case E_S_CONNECT:
+			case E_N_CONNECT:
 
 				message("COULD NOT CONNECT");
 
@@ -1292,15 +1304,12 @@ int Menu::setupResolution () {
 
 			playSound(S_ORB);
 
-			if (fullscreen)
-				screen = SDL_SetVideoMode(screenW, screenH, 8,
-					SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE |
-						SDL_HWPALETTE);
+			screen = SDL_SetVideoMode(screenW, screenH, 8,
+				(fullscreen? SDL_FULLSCREEN: SDL_RESIZABLE) | SDL_DOUBLEBUF |
+				SDL_HWSURFACE | SDL_HWPALETTE);
 
-			else
-				screen = SDL_SetVideoMode(screenW, screenH, 8,
-					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-						SDL_HWPALETTE);
+			SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+			SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 
 		}
 
@@ -1358,7 +1367,7 @@ int Menu::setup () {
 						default: // Character colour
 
 							subsuboption = 0;
-							ret = generic(setupCharacterColOptions, 9,
+							ret = generic(setupCharacterColOptions, 8,
 								&subsuboption);
 
 							if (ret == E_QUIT) return E_QUIT;

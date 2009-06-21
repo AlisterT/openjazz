@@ -64,6 +64,28 @@
 #define LOGO_FILE   "openjazz.000"
 #define LEVEL_FILE  "openjazz.tmp"
 
+#ifdef UPPERCASE_FILENAMES
+	#define F_MAINCHAR "MAINCHAR.000"
+	#define F_MENU     "MENU.000"
+	#define F_PANEL    "PANEL.000"
+
+	// File name formats
+	#define F_BLOCKS   "BLOCKS.%3s"
+	#define F_LEVEL    "LEVEL%1i.%03i"
+	#define F_PLANET   "PLANET.%3s"
+	#define F_SPRITES  "SPRITES.%03i"
+#else
+	#define F_MAINCHAR "mainchar.000"
+	#define F_MENU     "menu.000"
+	#define F_PANEL    "panel.000"
+
+	// File name formats
+	#define F_BLOCKS   "blocks.%3s"
+	#define F_LEVEL    "level%1i.%03i"
+	#define F_PLANET   "planet.%3s"
+	#define F_SPRITES  "sprites.%03i"
+#endif
+
 // Indexes for the keys / buttons / axes player controls arrays
 #define C_UP      0
 #define C_DOWN    1
@@ -91,12 +113,12 @@
 #define E_DATA      -14
 #define E_VERSION   -13
 #define E_TIMEOUT   -12
-#define E_S_OTHER   -11
-#define E_S_CONNECT -10
-#define E_S_ADDRESS -9
-#define E_S_LISTEN  -8
-#define E_S_BIND    -7
-#define E_S_SOCKET  -6
+#define E_N_OTHER   -11
+#define E_N_CONNECT -10
+#define E_N_ADDRESS -9
+#define E_N_LISTEN  -8
+#define E_N_BIND    -7
+#define E_N_SOCKET  -6
 #define E_DEMOTYPE  -5
 #define E_FILE      -4
 #define E_VIDEO     -3
@@ -116,41 +138,10 @@
 // Black palette index
 #define BLACK      31
 
-// Sound effects
-#define S_INVULN   0
-#define S_MACHGUN  1
-#define S_BOOM     2
-#define S_OW       3
-#define S_YUM      4
-#define S_FIRE     5
-#define S_UPLOOP   6
-#define S_1UP      7
-#define S_PHOTON   8
-#define S_WAIT     9
-#define S_ORB     10
-#define S_JUMPA   11
-#define S_GODLIKE 12
-#define S_YEAHOO  13
-#define S_BIRDY   14
-#define S_FLAMER  15
-#define S_ELECTR  16
-#define S_SPRING  17
-#define S_ROCKET  18
-#define S_STOP    19
-#define S_BLOCK   20
-
 
 // Datatype
 
 typedef int fixed;
-
-typedef struct {
-
-	unsigned char *data;
-	char          *name;
-	int            length;
-
-} Sound;
 
 
 // Variables
@@ -191,17 +182,11 @@ Extern SDL_Surface *panelAmmo[5];
 
 // Graphics
 Extern SDL_Surface *screen;
-Extern SDL_Color   *currentPalette;
-Extern SDL_Color    logicalPalette[256];
 Extern int          viewW, viewH, screenW, screenH;
 #ifndef FULLSCREEN_ONLY
 Extern bool         fullscreen;
 #endif
 Extern int          mspf;
-
-// Audio
-Extern Sound *sounds;
-Extern int    nSounds;
 
 // Configuration data
 Extern char          *characterName;
@@ -214,23 +199,6 @@ Extern char          *netAddress;
 
 Extern void releaseControl (int control);
 Extern int  loop           (int type);
-
-
-// Functions in palette.cpp
-
-Extern void usePalette     (SDL_Color *palette);
-Extern void restorePalette (SDL_Surface *surface);
-
-
-// Functions in sound.cpp
-
-Extern void openAudio  ();
-Extern void closeAudio ();
-Extern void playMusic  (char *fn);
-Extern void stopMusic  ();
-Extern int  loadSounds (char *fn);
-Extern void freeSounds ();
-Extern void playSound  (int sound);
 
 
 // Functions in util.cpp

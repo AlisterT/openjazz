@@ -32,7 +32,7 @@
 class Bonus {
 
 	public:
-		Bonus   (char * fn);
+		Bonus   (char * fileName);
 		~Bonus  ();
 
 		int run ();

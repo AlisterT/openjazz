@@ -27,6 +27,7 @@
 
 
 #include "level.h"
+#include "sound.h"
 #include <math.h>
 
 
@@ -37,8 +38,55 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 	gridY = gY;
 	x = gX << 15;
 	y = (gY + 1) << 15;
-	animType = 0;
 	flashTime = 0;
+
+	// Choose initial animation and direction
+
+	switch (getProperty(E_BEHAVIOUR)) {
+
+		case 21: // Destructible block
+
+			animType = 0;
+
+			break;
+
+		case 25: // Float up / Belt
+
+			animType = 0;
+
+			break;
+
+		case 26: // Flip animation
+
+			animType = E_RIGHTANIM;
+
+			break;
+
+		case 38: // Sucker tubes
+
+			animType = 0;
+
+			break;
+
+		case 40: // Monochrome
+
+			animType = 0;
+
+			break;
+
+		case 57: // Bubbles
+
+			animType = 0;
+
+			break;
+
+		default:
+
+			animType = E_LEFTANIM;
+
+			break;
+
+	}
 
 	return;
 
@@ -138,8 +186,7 @@ fixed Event::getWidth () {
 
 	if (animType && (getProperty(animType) >= 0)) {
 
-		width =
-			level->getAnim(getProperty(animType))->getWidth() << 10;
+		width = level->getAnim(getProperty(animType))->getWidth() << 10;
 
 		// Blank sprites for e.g. invisible springs
 		if ((width == F1) && (getHeight() == F1)) return F32;
@@ -248,6 +295,7 @@ bool Event::playFrame (int ticks) {
 
 
 	// Handle behaviour
+
 	switch (set[E_BEHAVIOUR]) {
 
 		case 1: // Sink down
@@ -345,6 +393,22 @@ bool Event::playFrame (int ticks) {
 
 			if (level->getEventHits(gridX, gridY) >= set[E_HITSTOKILL])
 				level->setTile(gridX, gridY, set[E_MULTIPURPOSE]);
+
+			break;
+
+		case 25: // Float up / Belt
+
+			for (count = 0; count < nPlayers; count++) {
+
+				if (players[count].isIn(x, y - height, width, height)) {
+
+					if (set[E_YAXIS]) players[count].floatUp(set);
+
+					players[count].belt(set[E_MAGNITUDE]);
+
+				}
+
+			}
 
 			break;
 
@@ -494,6 +558,22 @@ bool Event::playFrame (int ticks) {
 
 			break;
 
+		case 38: // Sucker tubes
+
+			for (count = 0; count < nPlayers; count++) {
+
+				if (players[count].isIn(x + F8, y - height, width - F16,
+					height)) {
+
+					players[count].setSpeed(set[E_MAGNITUDE] * F40,
+						set[E_YAXIS]? set[E_MULTIPURPOSE] * -F20: 0);
+
+				}
+
+			}
+
+			break;
+
 		case 53: // Dreempipes turtles
 
 			if (y > level->getWaterLevel(0)) {
@@ -539,7 +619,8 @@ bool Event::playFrame (int ticks) {
 
 
 	// Choose animation and direction
-	if (!animType || (animType == E_LEFTANIM) || (animType == E_RIGHTANIM)) {
+
+	if ((animType == E_LEFTANIM) || (animType == E_RIGHTANIM)) {
 
 		switch (set[E_BEHAVIOUR]) {
 
@@ -558,7 +639,7 @@ bool Event::playFrame (int ticks) {
 					    level->checkMaskDown(x + width + F4, y - (height >> 1)))
 					    animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
+				}
 
 				break;
 
@@ -567,7 +648,6 @@ bool Event::playFrame (int ticks) {
 				if (localPlayer->getX() + PXO_R < x) animType = E_LEFTANIM;
 				else if (localPlayer->getX() + PXO_L > x + width)
 					animType = E_RIGHTANIM;
-				else if (!animType) animType = E_RIGHTANIM;
 
 				break;
 
@@ -586,7 +666,7 @@ bool Event::playFrame (int ticks) {
 						if (level->checkMaskDown(x + width + F4,
 							y - (height >> 1) - F12)) animType = E_LEFTANIM;
 
-					} else animType = E_LEFTANIM;
+					}
 
 				}
 
@@ -611,11 +691,7 @@ bool Event::playFrame (int ticks) {
 
 					if (x > (gridX << 15) + 100 * F1) animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
-
-				break;
-
-			case 8: // Bird-esque following
+				}
 
 				break;
 
@@ -631,7 +707,7 @@ bool Event::playFrame (int ticks) {
 					if (level->checkMaskDown(x + width + F4, y - (height >> 1)))
 						animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
+				}
 
 				break;
 
@@ -647,28 +723,6 @@ bool Event::playFrame (int ticks) {
 					if (level->checkMaskDown(x + (width >> 1), y + F4))
 						animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
-
-				break;
-
-			case 16: // Move across level to the left or right
-
-				animType = E_LEFTANIM;
-
-				break;
-
-			case 21: // Destructible block
-
-				break;
-
-			case 25: // Float up / Belt
-
-				if (localPlayer->isIn(x, y - height, width, height)) {
-
-					if (set[E_YAXIS]) localPlayer->floatUp(set);
-
-					localPlayer->belt(set[E_MAGNITUDE]);
-
 				}
 
 				break;
@@ -678,12 +732,6 @@ bool Event::playFrame (int ticks) {
 				if (localPlayer->isIn(x, y - height, width, height))
 					animType = E_LEFTANIM;
 				else animType = E_RIGHTANIM;
-
-				break;
-
-			case 28: // Bridge
-
-				if (!animType) animType = E_LEFTANIM;
 
 				break;
 
@@ -699,7 +747,7 @@ bool Event::playFrame (int ticks) {
 					if (level->checkMaskDown(x + width + F4, y - (height >> 1)))
 					    animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
+				}
  
 				break;
 
@@ -725,7 +773,7 @@ bool Event::playFrame (int ticks) {
 
 					animType = E_LEFTANIM;
 
-				} else if (!animType) animType = E_LEFTANIM;
+				}
 
 				break;
 
@@ -746,22 +794,6 @@ bool Event::playFrame (int ticks) {
 							y - (height >> 1)) ||
 						    (x + width + F4 > viewX + (viewW << 10)))
 						    animType = E_LEFTANIM;
-
-					} else animType = E_LEFTANIM;
-
-				}
-
-				break;
-
-			case 38: // Sucker tubes
-
-				for (count = 0; count < nPlayers; count++) {
-
-					if (players[count].isIn(x + F8, y - height, width - F16,
-						height)) {
-
-						players[count].setSpeed(set[E_MAGNITUDE] * F40,
-							set[E_YAXIS]? set[E_MULTIPURPOSE] * -F20: 0);
 
 					}
 
@@ -785,7 +817,7 @@ bool Event::playFrame (int ticks) {
 
 					} else animType = E_LEFTANIM;
 
-				} else animType = E_LEFTANIM;
+				}
 
 				break;
 
@@ -842,25 +874,6 @@ bool Event::playFrame (int ticks) {
 	if (level->getEventTime(gridX, gridY) &&
 		(ticks > level->getEventTime(gridX, gridY))) {
 
-		// Handle modifiers which take effect after reaction time
-		switch (set[E_MODIFIER]) {
-
-			case 13: // Warp
-
-				localPlayer->setPosition(set[E_MULTIPURPOSE] << 15,
-					(set[E_YAXIS] + 1) << 15);
-				level->setEventTime(gridX, gridY, 0);
-
-				break;
-
-			case 31: // Water level
-
-				level->setWaterLevel(gridY);
-
-				break;
-
-		}
-
 		if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM)) {
 
 			// The event has been destroyed, so remove it
@@ -869,6 +882,9 @@ bool Event::playFrame (int ticks) {
 			return true;
 
 		} else {
+
+			// Change the water level
+			if (set[E_MODIFIER] == 31) level->setWaterLevel(gridY);
 
 			level->setEventTime(gridX, gridY, 0);
 
@@ -882,6 +898,8 @@ bool Event::playFrame (int ticks) {
 	for (count = 0; count < nPlayers; count++) {
 
 		if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM)) {
+
+			// Check if the player is touching the event
 
 			if (players[count].isIn(x, y - height, width, height)) {
 

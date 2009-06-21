@@ -103,7 +103,7 @@ void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-FadeInPaletteEffect::FadeInPaletteEffect (fixed newDuration,
+FadeInPaletteEffect::FadeInPaletteEffect (int newDuration,
 	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
@@ -153,11 +153,11 @@ void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-WhiteOutPaletteEffect::WhiteOutPaletteEffect (fixed newDuration,
+WhiteOutPaletteEffect::WhiteOutPaletteEffect (int newDuration,
 	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
-	whiteness = -F8;
+	whiteness = 0;
 
 	return;
 
@@ -201,7 +201,7 @@ void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 }
 
 
-FadeOutPaletteEffect::FadeOutPaletteEffect (fixed newDuration,
+FadeOutPaletteEffect::FadeOutPaletteEffect (int newDuration,
 	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
@@ -249,7 +249,7 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 
 
 FlashPaletteEffect::FlashPaletteEffect (unsigned char newRed,
-	unsigned char newGreen, unsigned char newBlue, fixed newDuration,
+	unsigned char newGreen, unsigned char newBlue, int newDuration,
 	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
@@ -524,7 +524,7 @@ void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
 	if (next) next->apply(shownPalette, direct);
 
 
-	position = viewY - level->getWaterLevel(0);
+	position = localPlayer->getY() - level->getWaterLevel(0);
 
 	if (position <= 0) return;
 

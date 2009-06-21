@@ -30,13 +30,13 @@
 #include "file.h"
 
 
-Bonus::Bonus (char * fn) {
+Bonus::Bonus (char * fileName) {
 
-	File *f;
+	File *file;
 
 	try {
 
-		f = new File(fn, false);
+		file = new File(fileName, false);
 
 	} catch (int e) {
 
@@ -46,7 +46,7 @@ Bonus::Bonus (char * fn) {
 
 	// To do
 
-	delete f;
+	delete file;
 
 	return;
 

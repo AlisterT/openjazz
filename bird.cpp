@@ -88,6 +88,10 @@ fixed Bird::getY () {
 
 bool Bird::playFrame (int ticks) {
 
+	Event *nextEvent;
+	fixed eventX, eventY;
+	bool target;
+
 	if (fleeing) {
 
 		// Trajectory for flying away
@@ -103,19 +107,28 @@ bool Bird::playFrame (int ticks) {
 
 		if ((x < player->getX() - F160) || (x > player->getX() + F160)) {
 
+			// Far away from the player
+			// Approach the player at a speed proportional to the distance
+
 			dx = player->getX() - x;
 
 		} else if (x < player->getX()) {
 
+			// To the left of the player, so move right
+
 			if (dx < F160) dx += 400 * mspf;
 
 		} else {
+
+			// To the right of the player, so move left
 
 			if (dx > -F160) dx -= 400 * mspf;
 
 		}
 
 		if (y > level->getWaterLevel(ticks) - F24) {
+
+			// Always stay above water
 
 			y = level->getWaterLevel(ticks) - F24;
 			dy = 0;
@@ -124,13 +137,20 @@ bool Bird::playFrame (int ticks) {
 
 			if ((y < player->getY() - F100) || (y > player->getY() + F100)) {
 
+				// Far away from the player
+				// Approach the player at a speed proportional to the distance
+
 				dy = (player->getY() - F64) - y;
 
 			} else if (y < player->getY() - F64) {
 
+				// Above the player, so move downwards
+
 				if (dy < F160) dy += 400 * mspf;
 
 			} else {
+
+				// Below the player, so move upwards
 
 				if (dy > -F160) dy -= 400 * mspf;
 
@@ -140,13 +160,66 @@ bool Bird::playFrame (int ticks) {
 		}
 
 
-		// If there are enemies in the vicinity, generate bullets
-		if (true && (ticks > fireTime)) {
+		if (ticks > fireTime) {
 
-			level->firstBullet =
-				new Bullet(this, false, ticks, level->firstBullet);
+			// Check for nearby targets
 
-			fireTime = ticks + T_BIRD_FIRE;
+			target = false;
+			nextEvent = level->firstEvent;
+
+			if (player->getFacing()) {
+
+				while (nextEvent) {
+
+					eventX = nextEvent->getX();
+					eventY = nextEvent->getY();
+
+					if (nextEvent->getProperty(E_HITSTOKILL) &&
+						(eventX > x) && (eventX < x + F160) && (eventY > y) &&
+						(eventY < y + F100)) {
+
+						target = true;
+
+						break;
+
+					}
+
+					nextEvent = nextEvent->getNext();
+
+				}
+
+			} else {
+
+				while (nextEvent) {
+
+					eventX = nextEvent->getX();
+					eventY = nextEvent->getY();
+
+					if (nextEvent->getProperty(E_HITSTOKILL) &&
+						(eventX > x - F160) && (eventX < x) && (eventY > y) &&
+						(eventY < y + F100)) {
+
+						target = true;
+
+						break;
+
+					}
+
+					nextEvent = nextEvent->getNext();
+
+				}
+
+			}
+
+			// If there is a target in the vicinity, generate bullets
+			if (target) {
+
+				level->firstBullet =
+					new Bullet(this, false, ticks, level->firstBullet);
+
+				fireTime = ticks + T_BIRD_FIRE;
+
+			}
 
 		}
 

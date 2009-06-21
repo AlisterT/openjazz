@@ -54,9 +54,9 @@
 #define TH         32 /* Tile height */
 #define TKEY      127 /* Tileset colour key */
 
-// Delays
-#define T_HURT 1000
-#define T_WON  6000
+// Fade delays
+#define T_START 500
+#define T_END   1000
 
 
 // Datatype
@@ -97,17 +97,18 @@ class Level {
 		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char  difficulty;
 		int            pathLength;
-		int            ticks, endTime, winTime;
+		int            ticks, endTime;
+		int            timeBonus;
 		int            enemies, items;
 		fixed          waterLevel;
 		int            gameMode;
 		fixed          energyBar;
 
-		int  loadSprites (char *fn);
-		int  loadTiles   (char *fn);
+		int  loadSprites (char *fileName);
+		int  loadTiles   (char *fileName);
 
 	protected:
-		int  load      (char *fn, unsigned char diff, bool checkpoint);
+		int  load      (char *fileName, unsigned char diff, bool checkpoint);
 		int  playFrame ();
 		void draw      ();
 
@@ -119,7 +120,7 @@ class Level {
 		int     pathNode;
 
 		Level                       ();
-		Level                       (char *fn, unsigned char diff,
+		Level                       (char *fileName, unsigned char diff,
 			bool checkpoint);
 		virtual ~Level              ();
 		bool          checkMask     (fixed x, fixed y);
@@ -157,7 +158,7 @@ class DemoLevel : public Level {
 		unsigned char *macro;
 
 	public:
-		DemoLevel  (char *fn);
+		DemoLevel  (char *fileName);
 		~DemoLevel ();
 		int run    ();
 
