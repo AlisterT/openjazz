@@ -1,0 +1,301 @@
+
+/*
+ *
+ * controls.cpp
+ *
+ * 13th July 2009: Created controls.cpp from parts of main.cpp
+ *
+ * Part of the OpenJazz project
+ *
+ *
+ * Copyright (c) 2005-2009 Alister Thomson
+ *
+ * OpenJazz is distributed under the terms of
+ * the GNU General Public License, version 2.0
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
+/*
+ * Deals with input.
+ *
+ */
+
+
+#include "controls.h"
+
+
+Controls::Controls () {
+
+	int count;
+
+	keys[C_UP].key     = SDLK_UP;
+	keys[C_DOWN].key   = SDLK_DOWN;
+	keys[C_LEFT].key   = SDLK_LEFT;
+	keys[C_RIGHT].key  = SDLK_RIGHT;
+#ifdef WIN32
+	keys[C_JUMP].key   = SDLK_RALT;
+	keys[C_FIRE].key   = SDLK_SPACE;
+#else
+	keys[C_JUMP].key   = SDLK_SPACE;
+	keys[C_FIRE].key   = SDLK_LALT;
+#endif
+	keys[C_CHANGE].key = SDLK_RCTRL;
+	keys[C_ENTER].key  = SDLK_RETURN;
+	keys[C_ESCAPE].key = SDLK_ESCAPE;
+	keys[C_STATS].key  = SDLK_F9;
+	keys[C_PAUSE].key  = SDLK_p;
+
+	buttons[C_UP].button = -1;
+	buttons[C_DOWN].button = -1;
+	buttons[C_LEFT].button = -1;
+	buttons[C_RIGHT].button = -1;
+	buttons[C_JUMP].button = 1;
+	buttons[C_FIRE].button = 0;
+	buttons[C_CHANGE].button = 3;
+	buttons[C_ENTER].button = 0;
+	buttons[C_ESCAPE].button = -1;
+	buttons[C_STATS].button = -1;
+	buttons[C_PAUSE].button = -1;
+
+	axes[C_UP].axis = 1;
+	axes[C_UP].direction = false;
+	axes[C_DOWN].axis = 1;
+	axes[C_DOWN].direction = true;
+	axes[C_LEFT].axis = 0;
+	axes[C_LEFT].direction = false;
+	axes[C_RIGHT].axis = 0;
+	axes[C_RIGHT].direction = true;
+	axes[C_JUMP].axis = -1;
+	axes[C_FIRE].axis = -1;
+	axes[C_CHANGE].axis = -1;
+	axes[C_ENTER].axis = -1;
+	axes[C_ESCAPE].axis = -1;
+	axes[C_STATS].axis = -1;
+	axes[C_PAUSE].axis = -1;
+
+	for (count = 0; count < CONTROLS; count++) {
+
+		controls[count].time = 0;
+		controls[count].state = false;
+
+	}
+
+	return;
+
+}
+
+
+void Controls::setKey (int control, int key) {
+
+	keys[control].key = key;
+
+	return;
+
+}
+
+
+void Controls::setButton (int control, int button) {
+
+	buttons[control].button = button;
+
+	return;
+
+}
+
+
+void Controls::setAxis (int control, int axis, bool direction) {
+
+	axes[control].axis = axis;
+	axes[control].direction = direction;
+
+	return;
+
+}
+
+
+int Controls::getKey (int control) {
+
+	return keys[control].key;
+
+}
+
+
+int Controls::getButton (int control) {
+
+	return buttons[control].button;
+
+}
+
+
+int Controls::getAxis (int control) {
+
+	return axes[control].axis;
+
+}
+
+
+int Controls::getAxisDirection (int control) {
+
+	return axes[control].direction;
+
+}
+
+
+int Controls::update (SDL_Event *event, int type) {
+
+	int count;
+
+	count = CONTROLS;
+
+	switch (event->type) {
+
+		case SDL_KEYDOWN:
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->key.keysym.sym == keys[count].key) {
+
+					keys[count].state = true;
+
+					break;
+
+				}
+
+			if (type == KEY_LOOP) return event->key.keysym.sym;
+
+			break;
+
+		case SDL_KEYUP:
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->key.keysym.sym == keys[count].key) {
+
+					keys[count].state = false;
+
+					break;
+
+				}
+
+			break;
+
+		case SDL_JOYBUTTONDOWN:
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->jbutton.button == buttons[count].button) {
+
+					buttons[count].state = true;
+
+					break;
+
+				}
+
+			if (type == JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
+
+			break;
+
+		case SDL_JOYBUTTONUP:
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->jbutton.button == buttons[count].button) {
+
+					buttons[count].state = false;
+
+					break;
+
+				}
+
+			break;
+
+		case SDL_JOYAXISMOTION:
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->jaxis.axis == axes[count].axis) {
+
+					if (!axes[count].direction &&
+						(event->jaxis.value < -16384)) {
+
+						axes[count].state = true;
+
+						break;
+
+					}
+
+					else if (axes[count].direction &&
+						(event->jaxis.value > 16384)) {
+
+						axes[count].state = true;
+
+						break;
+
+					}
+
+					else axes[count].state = false;
+
+				}
+
+			if (type == JOYSTICK_LOOP) {
+
+				if (event->jaxis.value < -16384)
+					return JOYSTICKANEG | event->jaxis.axis;
+
+				if (event->jaxis.value > 16384)
+					return JOYSTICKAPOS | event->jaxis.axis;
+
+			}
+
+			break;
+
+	}
+
+	if (count < CONTROLS) {
+
+		if (!(keys[count].state || buttons[count].state || axes[count].state)) {
+
+			controls[count].time = 0;
+			controls[count].state = false;
+
+		}
+
+	}
+
+	return E_NONE;
+
+}
+
+
+void Controls::loop () {
+
+	int count;
+
+	// Apply controls to universal control tracking
+	for (count = 0; count < CONTROLS; count++)
+		controls[count].state = (controls[count].time < globalTicks) &&
+			(keys[count].state || buttons[count].state || axes[count].state);
+
+	return;
+
+}
+
+
+bool Controls::getState (int control) {
+
+	return controls[control].state;
+
+}
+
+
+bool Controls::release (int control) {
+
+	if (!controls[control].state) return false;
+
+	controls[control].time = globalTicks + T_KEY;
+	controls[control].state = false;
+
+	return true;
+
+}
+
+
