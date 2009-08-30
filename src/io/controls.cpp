@@ -27,6 +27,9 @@
 
 #include "controls.h"
 
+#ifdef WIZ
+#include "platforms/wiz.h"
+#endif
 
 Controls::Controls () {
 
@@ -49,6 +52,19 @@ Controls::Controls () {
 	keys[C_STATS].key  = SDLK_F9;
 	keys[C_PAUSE].key  = SDLK_p;
 
+#ifdef WIZ
+	buttons[C_UP].button		= GP2X_BUTTON_UP;
+	buttons[C_DOWN].button		= GP2X_BUTTON_DOWN;
+	buttons[C_LEFT].button		= GP2X_BUTTON_LEFT;
+	buttons[C_RIGHT].button		= GP2X_BUTTON_RIGHT;
+	buttons[C_JUMP].button		= GP2X_BUTTON_A;
+	buttons[C_FIRE].button		= GP2X_BUTTON_X;
+	buttons[C_CHANGE].button	= GP2X_BUTTON_Y;
+	buttons[C_ENTER].button 	= GP2X_BUTTON_R;
+	buttons[C_ESCAPE].button 	= GP2X_BUTTON_L;
+	buttons[C_STATS].button 	= GP2X_BUTTON_SELECT;
+	buttons[C_PAUSE].button 	= GP2X_BUTTON_START;
+#else
 	buttons[C_UP].button = -1;
 	buttons[C_DOWN].button = -1;
 	buttons[C_LEFT].button = -1;
@@ -60,7 +76,7 @@ Controls::Controls () {
 	buttons[C_ESCAPE].button = -1;
 	buttons[C_STATS].button = -1;
 	buttons[C_PAUSE].button = -1;
-
+#endif
 	axes[C_UP].axis = 1;
 	axes[C_UP].direction = false;
 	axes[C_DOWN].axis = 1;

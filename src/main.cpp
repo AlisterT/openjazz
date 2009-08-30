@@ -46,6 +46,12 @@
 
 #include <string.h>
 
+#ifdef WIZ
+#include "platforms/wiz.h"
+extern int volume;
+extern int volume_direction;
+#endif
+
 
 int loadMain () {
 
@@ -137,8 +143,14 @@ int loadMain () {
 	// Create the game's window
 
 #ifdef FULLSCREEN_ONLY
+  #ifdef WIZ
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
+	SDL_ShowCursor(SDL_DISABLE);
+  #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8,
 		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+  #endif
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8,
 		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
@@ -446,7 +458,9 @@ int loop (int type) {
 				if ((event.key.keysym.sym == SDLK_RETURN) &&
 					(event.key.keysym.mod & KMOD_ALT)) toggleFullscreen();
 #endif
-
+#ifdef WIZ
+				SDL_ShowCursor(SDL_DISABLE);
+#endif
 				// Break statement intentionally omitted
 
 			case SDL_KEYUP:
@@ -458,6 +472,20 @@ int loop (int type) {
 
 				if (ret != E_NONE) return ret;
 
+#ifdef WIZ
+				if (event.jbutton.button ==  GP2X_BUTTON_VOLUP ) {
+					if( event.type == SDL_JOYBUTTONDOWN )
+						volume_direction = VOLUME_UP;
+					else
+						volume_direction = VOLUME_NOCHG;
+				}
+				if (event.jbutton.button ==  GP2X_BUTTON_VOLDOWN ) {
+					if( event.type == SDL_JOYBUTTONDOWN )
+						volume_direction = VOLUME_DOWN;
+					else
+						volume_direction = VOLUME_NOCHG;
+				}
+#endif
 				break;
 
 #ifndef FULLSCREEN_ONLY
@@ -514,7 +542,9 @@ int loop (int type) {
 		}
 
 	}
-
+#ifdef WIZ
+	WIZ_AdjustVolume( volume_direction );
+#endif
 	return E_NONE;
 
 }
