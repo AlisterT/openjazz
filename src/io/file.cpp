@@ -187,7 +187,7 @@ unsigned char * File::loadBlock (int length) {
 }
 
 
-unsigned char * File::loadRLE (int length) {
+unsigned char * File::loadRLE (int length, bool dontseek) {
 
 	unsigned char *buffer;
 	int rle, pos, byte, count, next;
@@ -229,7 +229,9 @@ unsigned char * File::loadRLE (int length) {
 
 	}
 
+	if(!dontseek) {
 	fseek(f, next, SEEK_SET);
+	}
 
 	return buffer;
 
@@ -293,9 +295,9 @@ char * File::loadString () {
 
 }
 
-SDL_Surface * File::loadSurface (int width, int height) {
+SDL_Surface * File::loadSurface (int width, int height, bool dontseek) {
 
-	return createSurface(loadRLE(width * height), width, height);
+	return createSurface(loadRLE(width * height, dontseek), width, height);
 
 }
 

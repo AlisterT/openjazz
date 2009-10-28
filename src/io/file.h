@@ -52,10 +52,10 @@ class File {
 		signed long int    loadInt     ();
 		void               storeInt    (signed long int val);
 		unsigned char *    loadBlock   (int length);
-		unsigned char *    loadRLE     (int length);
+		unsigned char *    loadRLE     (int length, bool dontseek = false);
 		void               skipRLE     ();
 		char *             loadString  ();
-		SDL_Surface *      loadSurface (int width, int height);
+		SDL_Surface *      loadSurface (int width, int height, bool dontseek = false);
 		void               loadPalette (SDL_Color *palette);
 
 };
