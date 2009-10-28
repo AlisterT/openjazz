@@ -23,18 +23,25 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
-
-#include <SDL/SDL.h>
-
-
+#include <io/file.h>
+#include <sdl.h>
 // Class
 
 class Scene {
 
 	private:
-		SDL_Surface *sceneBGs[1];
+		SDL_Surface *sceneBGs[100];
 		SDL_Color    scenePalette[256];
+		unsigned short int scriptItems;
+		unsigned short int dataItems;
+		signed long int* scriptStarts;
+		signed long int* dataOffsets;
+		int imageIndex;
 
+	protected:
+		void ParseScripts(File *f);
+		void ParseData(File *f);
+		void ParseAni(File* f);
 	public:
 		Scene    (char * fileName);
 		~Scene   ();
