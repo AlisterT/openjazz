@@ -24,7 +24,9 @@
 
 
 #include "OpenJazz.h"
-
+#ifdef USE_SDL_NET
+#include <SDL_net.h>
+#endif
 
 // Constants
 
@@ -55,6 +57,12 @@ class Network {
 		int  recv        (int sock, unsigned char *buffer, int length);
 		bool isConnected (int sock);
 		int  getError    ();
+#ifdef USE_SDL_NET
+		TCPsocket socket;
+		TCPsocket clientSocket;
+		IPaddress ipAddress;
+		SDLNet_SocketSet socketset;
+#endif
 
 };
 
