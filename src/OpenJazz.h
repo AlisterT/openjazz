@@ -64,8 +64,18 @@
 #define F160 163840
 
 // File names
+#ifdef __SYMBIAN32__
+#ifdef UIQ3
+#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
+#define LOGO_FILE   "c:\\shared\\openjazz\\openjazz.000"
+#else
+#define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
+#define LOGO_FILE   "c:\\data\\openjazz\\openjazz.000"
+#endif
+#else
 #define CONFIG_FILE "openjazz.cfg"
 #define LOGO_FILE   "openjazz.000"
+#endif
 #define LEVEL_FILE  "openjazz.tmp"
 
 #ifdef UPPERCASE_FILENAMES
