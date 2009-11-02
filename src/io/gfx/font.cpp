@@ -340,6 +340,10 @@ int Font::showString (char * s, int x, int y) {
 
 			// Determine the character's position on the screen
 			src.w = w[(int)(map[(int)(s[count])])];
+			if(s[count] == 32) {
+				src.w = src.w /2;
+				}
+			
 			dst.y = yOffset;
 			dst.x = xOffset;
 
@@ -349,9 +353,8 @@ int Font::showString (char * s, int x, int y) {
 
 			// Draw the character to the screen
 			SDL_BlitSurface(surface, &src, screen, &dst);
-
-			xOffset += w[(int)(map[(int)(s[count])])];
-
+							
+			xOffset += src.w-1;
 		}
 
 	}
@@ -462,4 +465,28 @@ void Font::restorePalette () {
 
 }
 
+
+int Font::calcStringWidth(char *s)
+	{
+	int count;
+	int stringwidth = 0;
+	// Go through each character of the string
+	for (count = 0; s[count]; count++) {
+
+	if (s[count] == '\n') {
+	
+	} else {
+	int width = w[(int)(map[(int)(s[count])])];
+
+	if(s[count] == 32) {
+		width = width/2;
+		}
+
+	stringwidth += (width-1);
+	}
+
+	}
+
+	return stringwidth;
+	}
 

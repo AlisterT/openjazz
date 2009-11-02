@@ -51,7 +51,8 @@ class Font {
 		void mapPalette     (int start, int length, int newStart,
 			int newLength);
 		void restorePalette ();
-
+		int fontHeight() { return h; }
+		int calcStringWidth(char *s);
 };
 
 // Variables
