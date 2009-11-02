@@ -644,7 +644,8 @@ int Scene::play () {
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
 	ImageInfo* imageInfo = NULL;
-	unsigned int pageTime = scriptPages[sceneIndex].pageTime; 
+	unsigned int pageTime = scriptPages[sceneIndex].pageTime;
+	unsigned int lastTicks = globalTicks;
 	if(scriptPages[sceneIndex].bgIndex != -1)
 		{
 		imageInfo = FindImage(scriptPages[sceneIndex].bgIndex);
@@ -653,7 +654,6 @@ int Scene::play () {
 	if(imageInfo != NULL)
 		usePalette(imageInfo[0].palette);
 	while (true) {
-
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
@@ -662,17 +662,21 @@ int Scene::play () {
 
 		}
 
-		if(controls.release(C_ENTER)) {			
+		if(controls.release(C_ENTER) || ((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {			
 			sceneIndex++;			
 			if(sceneIndex == scriptItems) {
 				return E_NONE;
 			}
-			
+			lastTicks = globalTicks;
 			// Get bg for this page
 			if(scriptPages[sceneIndex].bgIndex != -1) {
 				imageInfo = FindImage(scriptPages[sceneIndex].bgIndex);
 				if(imageInfo != NULL) {
 					usePalette(imageInfo[0].palette);
+					}
+				else
+					{
+					restorePalette(screen);
 					}
 				}
 			
@@ -683,63 +687,64 @@ int Scene::play () {
 		dst.x = (screenW - 320) >> 1;
 		dst.y = (screenH - 200) >> 1;
 		if(imageInfo != NULL) {			
-			SDL_BlitSurface(imageInfo->image, NULL, screen, &dst);
-			int x = 0;
-			int y = 0;
-			for(int text = 0;text<scriptPages[sceneIndex].noScriptTexts;text++) {
-				Font* font = NULL;
-				
-				for(int index = 0; index < noScriptFonts; index++) {
-					if( scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
-						switch(scriptFonts[index].fontType)
-							{
-							case EFONT2Type:
-								font = font2;
-								break;
-							case EFONTBIGType:
-								font = fontbig;
-								break;
-							case EFONTINYType:
-								font = fontiny;
-								break;
-							case EFONTMN1Type:
-								font = fontmn1;
-								break;
-							case EFONTMN2Type:
-								font = fontmn2;
-								break;
-							}
-							continue;
-						}
-					}
-				
-				if(scriptPages[sceneIndex].scriptTexts[text].x != -1) {
-					x = scriptPages[sceneIndex].scriptTexts[text].x;
-					y = scriptPages[sceneIndex].scriptTexts[text].y;
-					}
-				
-				switch(scriptPages[sceneIndex].scriptTexts[text].alignment)
-					{
-					case 0: // left
-						font->showString(scriptPages[sceneIndex].scriptTexts[text].text, x,y);
-						break;
-					case 1: // right
-						int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
-						font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 320-width, y);						
-						break;
-					case 2: // center
-						{
-						int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
-						font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 160-width, y);
-						}
-						break;
-					}
-				y+=font->fontHeight()/2;
-				}
-			}
+		SDL_BlitSurface(imageInfo->image, NULL, screen, &dst);
+		}
 		else {			
-			//clearScreen(BLACK);
+		clearScreen(BLACK);
+		}
+		int x = 0;
+		int y = 0;
+		for(int text = 0;text<scriptPages[sceneIndex].noScriptTexts;text++) {
+		Font* font = NULL;
+
+		for(int index = 0; index < noScriptFonts; index++) {
+		if( scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
+		switch(scriptFonts[index].fontType)
+			{
+			case EFONT2Type:
+				font = font2;
+				break;
+			case EFONTBIGType:
+				font = fontbig;
+				break;
+			case EFONTINYType:
+				font = fontiny;
+				break;
+			case EFONTMN1Type:
+				font = fontmn1;
+				break;
+			case EFONTMN2Type:
+				font = fontmn2;
+				break;
 			}
+		continue;
+		}
+		}
+
+		if(scriptPages[sceneIndex].scriptTexts[text].x != -1) {
+		x = scriptPages[sceneIndex].scriptTexts[text].x;
+		y = scriptPages[sceneIndex].scriptTexts[text].y;
+		}
+
+		switch(scriptPages[sceneIndex].scriptTexts[text].alignment)
+			{
+			case 0: // left
+			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, x,y);
+			break;
+			case 1: // right
+			int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
+			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 320-width, y);						
+			break;
+			case 2: // center
+				{
+				int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
+				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 160-width, y);
+				}
+				break;
+			}
+		y+=font->fontHeight()/2;
+		}
+
 		SDL_Delay(T_FRAME);
 
 	}
