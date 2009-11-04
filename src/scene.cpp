@@ -34,6 +34,7 @@
 #include "io/gfx/video.h"
 #include "io/gfx/font.h"
 #include "io/sound.h"
+#include "io/gfx/paletteeffects.h"
 
 /**
  *  This is the 0sc format
@@ -74,7 +75,44 @@ enum
 	ESceneTextShadow = 0xdb
 };
 
-void Scene::ParseAni(File* f) {
+ImageInfo::ImageInfo() {
+	image = NULL;
+}
+
+ImageInfo::~ImageInfo() {
+	if(image != NULL) {
+		SDL_FreeSurface(image);
+		image = NULL;
+		}
+}
+
+ScriptText::ScriptText() {
+		x = -1;
+		y = -1;
+		textRect.x = -1;
+		textRect.y = -1;
+		extraLineHeight = -1;
+		text = NULL;
+}
+	
+ScriptText::~ScriptText() {
+	free(text);
+	text = NULL;
+	}
+ScriptPage::ScriptPage() {		
+	pageTime = 0;
+	noScriptTexts = 0;
+	backgrounds = 0;
+	musicfile = NULL;
+	paletteIndex = 0;
+}
+
+ScriptPage::~ScriptPage() {
+	free(musicfile);
+	musicfile = NULL;
+}
+
+void Scene::ParseAni(File* f, int dataIndex) {
 	unsigned short int aniType = f->loadShort();// should be 0x02
 	log("ParseAni DataLen", aniType);
 	unsigned short int aniOffset = f->loadShort();// unknown, number of frames?
@@ -103,24 +141,37 @@ void Scene::ParseAni(File* f) {
 				
 				// Palette entries are 6-bit
 				// Shift them upwards to 8-bit, and fill in the lower 2 bits
-				imageInfo[imageIndex].palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
-				imageInfo[imageIndex].palette[count].g = (buffer[(count * 3) + 1] << 2) +
+				paletteInfos[paletteIndex].palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
+				paletteInfos[paletteIndex].palette[count].g = (buffer[(count * 3) + 1] << 2) +
 					(buffer[(count * 3) + 1] >> 4);
-				imageInfo[imageIndex].palette[count].b = (buffer[(count * 3) + 2] << 2) +
+				paletteInfos[paletteIndex].palette[count].b = (buffer[(count * 3) + 2] << 2) +
 					(buffer[(count * 3) + 2] >> 4);
 				
+				
 			}
-
+			
 			delete[] buffer;
-		
+			paletteInfos[paletteIndex].dataIndex = dataIndex; 
+			paletteIndex++;
 			pos = f->tell();
 			log("PL Read position after", pos);
-			unsigned short int value = f->loadChar();
+			unsigned short int value = f->loadShort();
 			log("PL Read block start", value);
-			imageInfo[imageIndex].image = f->loadSurface(320, 200, true);
-			imageInfo[imageIndex].dataIndex = -1;
-			imageIndex++;			
+			value = f->loadShort();
+			log("PL Anim block size", value);
+			f->seek(value-5, false);
 			pos = f->tell();
+			log("PL Read position after block seek", pos);
+			//value = f->loadShort();
+			//log("PL Read block size", value);
+			//signed int val2 = f->loadInt();
+			//log("PL Read block value", val2);
+			//f->seek(1, false);
+			imageInfos[imageIndex].image = f->loadSurface(320, 200, true);
+			imageInfos[imageIndex].dataIndex = -1;													
+			//imageIndex++;			
+			pos = f->tell();
+			log("PL Read position after image", pos);
 		}
 	}
 }
@@ -133,19 +184,21 @@ void Scene::ParseData(File *f) {
 		log("Data dataLen", dataLen);
 		// AN
 		if(dataLen == 0x4e41) {
-			log("Data Type:", "ANI");
-			ParseAni(f);			
+			log("Data Type", "ANI");
+			ParseAni(f, loop);			
 		}
 		else {
 			unsigned char type = f->loadChar();
-			log("Data Type:", type);
+			log("Data Type", type);
 			switch(type)
 			{	
 			case 3: 
 			case 4: // image
 			case 5:
+			case 6:
 				{
-					log("Data Type:", "Image");
+					log("Data Type", "Image");
+					log("Data Type Image index", loop);
 					unsigned short int width = f->loadShort(); // get width
 					unsigned short int height;
 					if(type == 3)
@@ -154,18 +207,20 @@ void Scene::ParseData(File *f) {
 						height = f->loadShort(); // Get height
 					if(imageIndex<100) {
 						f->seek(-2, false);
-						imageInfo[imageIndex].image = f->loadSurface(width, height);
-						imageInfo[imageIndex].dataIndex = loop;
+						imageInfos[imageIndex].image = f->loadSurface(width, height);
+						imageInfos[imageIndex].dataIndex = loop;
 						imageIndex++;
 					}
 				}break;
 				
 			default:
-				{
-					
+				{					
+					log("Data Type", "Palette");
+					log("Data Type Palette index", loop);
 					f->seek(-3, false);
-					f->loadPalette(imageInfo[imageIndex].palette);				
-					//usePalette(scenePalette[imageIndex]);					
+					f->loadPalette(paletteInfos[paletteIndex].palette);
+					paletteInfos[paletteIndex].dataIndex = loop;
+					paletteIndex++;
 				}
 				break;
 			}
@@ -177,16 +232,25 @@ void Scene::ParseData(File *f) {
 void Scene::ParseScripts(File *f) {
 	int loop;
 	char *string;
-   
+	int bgIndex = 0;
+	int textAlignment = 0;
+	int textFont = 0;   
 	for(loop = 0;loop < scriptItems; loop++)
 	{
 	    log("\nParse Script", loop);
+	    int textPosX = -1;
+	    int textPosY = -1;
+	    	    
+	    int extraheight = -1;
+	    SDL_Rect textRect = {-1,-1,-1,-1};
 		f->seek(scriptStarts[loop], true); // Seek to data start
 		if(f->loadChar() == 0x50) { // Script tag		
 			unsigned short int scriptid = f->loadShort();
 			log("Script id:", scriptid);
-			int unknown = f->loadShort();
-			log("Script unknown", unknown);
+			int palette = f->loadShort();
+			log("Script default palette", palette);
+			scriptPages[loop].paletteIndex = palette;
+			
 			unsigned char type = 0;
 			bool breakloop = false;
 			int pos = f->tell();
@@ -213,18 +277,22 @@ void Scene::ParseScripts(File *f) {
 					}break;
 				case ESceneBackground:
 					{
-						signed long int something = f->loadInt();
+						unsigned short int xpos = f->loadShort();
+						unsigned short int ypos = f->loadShort();
 						unsigned short bgImageIndex = f->loadShort();
 						log("ESceneBackground: index", bgImageIndex);
-						log("ESceneBackground: something", something);
-						scriptPages[loop].bgIndex = bgImageIndex;
+						log("ESceneBackground: xpos", xpos);
+						log("ESceneBackground: ypos", ypos);
+						scriptPages[loop].bgIndex[scriptPages[loop].backgrounds] = bgImageIndex;
+						scriptPages[loop].bgPos[scriptPages[loop].backgrounds] = xpos|(ypos<<16);
+						scriptPages[loop].backgrounds++;
 					}break;
 				case ESceneMusic:
 					{						
 						// Music file name
 						string = f->loadString();
 						log("ESceneMusic: ", string);
-						playMusic(string);
+						scriptPages[loop].musicfile = strdup(string);
 						delete[] string;
 					}break;				
 				case ESceneSomethingElse:
@@ -234,10 +302,10 @@ void Scene::ParseScripts(File *f) {
 					}break;
 				case ESceneTextRect: // String
 					{
-						unsigned short x = f->loadShort();
-						unsigned short y = f->loadShort();
-						unsigned short w = f->loadShort();
-						unsigned short h = f->loadShort();
+						unsigned short x = textRect.x = f->loadShort();
+						unsigned short y = textRect.y = f->loadShort();
+						unsigned short w = textRect.w = (f->loadShort()-x);
+						unsigned short h = textRect.h = (f->loadShort()-y);
 						log("Text rectangle xpos:", x);
 						log("Text rectangle ypos:", y);
 						log("Text rectangle w:", w);
@@ -310,6 +378,7 @@ void Scene::ParseScripts(File *f) {
 					{
 					unsigned short value = f->loadShort();
 					log("ESceneTextVAdjust", value);
+					extraheight = value;
 					}
 					break;	
 				case ESceneTextSetting:
@@ -349,11 +418,23 @@ void Scene::ParseScripts(File *f) {
 						unsigned char* block = f->loadBlock(datalen);
 						unsigned char pos = 0;
 						unsigned char orgdatalen = datalen;
+						char pagebuf[3];
 						log("Text len=", datalen);
 						// Convert to ascii
 						while(datalen>0) {
-							if(block[pos]>='a'-70 && block[pos]<='z'-70) {
-								block[pos]+=70;
+							if(block[pos] == 0x8b) {
+							sprintf(pagebuf, "%2d", loop+1);
+							memcpy(&block[pos-1], pagebuf,2);							
+							}
+							else if(block[pos] == 0x8a) {
+							sprintf(pagebuf, "%2d", scriptItems);
+							memcpy(&block[pos-1], pagebuf,2);							
+							}
+							else if(block[pos] == 'C') {
+								block[pos]=' ';							
+							}
+							else if(block[pos]>='a'-70 && block[pos]<='z'-70) {
+							block[pos]+=70;
 							}
 							else if(block[pos]>='A'-64 && block[pos]<='Z'-64) {
 								block[pos]+=64;
@@ -397,7 +478,7 @@ void Scene::ParseScripts(File *f) {
 							else if(block[pos] == 't') {
 								block[pos]='\'';
 							}
-
+							
 							pos++;
 							datalen--;
 						}	
@@ -421,6 +502,17 @@ void Scene::ParseScripts(File *f) {
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].y = textPosY;
 							textPosX = -1;
 							textPosY = -1;
+							}
+						if(textRect.x != -1)
+							{
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].textRect = textRect;
+							textRect.x = -1;
+							textRect.y = -1;
+							}
+						if(extraheight != -1)
+							{
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].extraLineHeight = extraheight;
+							extraheight = -1;
 							}
 						scriptPages[loop].noScriptTexts++;
 					}break;
@@ -455,16 +547,9 @@ void Scene::ParseScripts(File *f) {
 
 Scene::Scene (char * fileName) {
 
-	File *file;
-	char *string;
-	int type;
+	File *file;	
     int loop;
-    noScriptFonts = 0;
-    textAlignment = 0;
-    textFont = 0;
-    textPosX = -1;
-    textPosY = -1;
-    
+    noScriptFonts = 0;        
     log("\nScene", fileName);
 	try {
 
@@ -476,6 +561,7 @@ Scene::Scene (char * fileName) {
 
 	}
 	imageIndex = 0;
+	paletteIndex = 0;
 	
 	file->seek(0x13, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
@@ -501,116 +587,7 @@ Scene::Scene (char * fileName) {
 	ParseData(file);
 	ParseScripts(file);
 	delete []scriptStarts;
-	delete []dataOffsets;
-/*
-	// Skip to files
-	file->seek(25, true);
-	file->seek(file->loadChar(), true);
-
-// At this point, next bytes should be 0x50 0x01 0x00 0x00 0x00
-// Then, (0x3f 0x02)
-//    OR (Nothing)
-// Then, (0x2a
-//        Then the length of the music file name
-//        Then the bytes of the music file name)
-//    OR (0x3f, then another byte)
-//    OR (0x4c, not followed by any font stuff)
-//    OR (0xa6, then 20 bytes?)
-//    OR (Nothing)
-// Then 0x58 0x01 0x00
-// Then the length of a font file name
-// Then a font file name
-// Then 0x58 0x02 0x00
-// Then the length of a font file name
-// Then a font file name
-
-	file->seek(5, false);
-	type = file->loadChar();
-
-	while (type == 0x3f) {
-
-		file->seek(1, false);
-		type = file->loadChar();
-
-	}
-
-	if (type != 0x4C) {
-
-		if (type == 0x2A) {
-
-			// Music file name
-			string = file->loadString();
-			playMusic(string);
-			delete[] string;
-
-		} else if (type == 0x63) {
-
-			file->seek(1, false);
-
-		} else if (type == 0xA6) {
-
-			file->seek(20, false);
-
-		} else file->seek(-1, false); // type should be 58
-
-		while (file->loadChar() == 0x58) {
-
-			// Font names (file names minus extensions)
-			file->seek(2, false);
-			string = file->loadString();
-
-			// Do something with this
-
-			delete[] string;
-
-		}
-
-	}
-
-	file->seek(-1, false);
-
-	while (file->loadChar() == 0x3f) {
-
-		file->seek(1, false);
-
-	}
-
-	file->seek(-1, false);
-
-// Then 0x4c 0x00 0x00 0x00 0x00 0x01 0x00
-// Then, (0x46
-//        Then a small number, e.g. 0x01, 0x02
-//        Then 0x00 0x4a
-//        Then (0x02 0x5d)
-//          OR (0x01 0xdb)
-//    OR (0x57 0x14...)
-
-//	log("Initial search reached", file->tell());
-
-	// Skip to the palette
-	file->seek(23, true);
-	type = file->loadChar();
-
-	file->seek(19, true);
-
-	file->skipRLE();
-
-	file->seek((type * 4) - 11, false);
-
-	// Load the palette
-
-//	log("Palette", file->tell());
-
-	file->loadPalette(scenePalette);
-
-	usePalette(scenePalette);
-
-	file->seek(4, false);
-
-//	log("Pixels", file->tell());
-
-	sceneBGs[0] = file->loadSurface(320, 200);
-*/
+	delete []dataOffsets;	
 	delete file;
 
 	return;
@@ -619,20 +596,16 @@ Scene::Scene (char * fileName) {
 
 
 Scene::~Scene () {
-
-	//SDL_FreeSurface(sceneBGs[0]); // Temporary
-
-	return;
-
+	delete []scriptPages;
 }
 
 ImageInfo* Scene::FindImage(int dataIndex) {
 	int loop = 0;
 	while(loop<imageIndex)
 		{
-		if(imageInfo[loop].dataIndex == dataIndex)
+		if(imageInfos[loop].dataIndex == dataIndex)
 			{
-			return &imageInfo[loop];
+			return &imageInfos[loop];
 			}
 			loop++;
 		}
@@ -643,16 +616,13 @@ int Scene::play () {
 
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
-	ImageInfo* imageInfo = NULL;
+	ImageInfo* imageInfo;
 	unsigned int pageTime = scriptPages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
-	if(scriptPages[sceneIndex].bgIndex != -1)
-		{
-		imageInfo = FindImage(scriptPages[sceneIndex].bgIndex);
-		}
-	
-	if(imageInfo != NULL)
-		usePalette(imageInfo[0].palette);
+	int newpage = true;
+	int fadein = false;
+	SDL_Rect textRect = {0,0,320,200};
+	 
 	while (true) {
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
@@ -661,46 +631,80 @@ int Scene::play () {
 			return E_NONE;
 
 		}
-
-		if(controls.release(C_ENTER) || ((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {			
-			sceneIndex++;			
+		int upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
+		if((sceneIndex > 0 && upOrLeft) || controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) || 
+			((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {
+			if(upOrLeft) {
+				sceneIndex--;
+			}
+			else {
+				sceneIndex++;
+			}
 			if(sceneIndex == scriptItems) {
 				return E_NONE;
 			}
 			lastTicks = globalTicks;
 			// Get bg for this page
-			if(scriptPages[sceneIndex].bgIndex != -1) {
-				imageInfo = FindImage(scriptPages[sceneIndex].bgIndex);
-				if(imageInfo != NULL) {
-					usePalette(imageInfo[0].palette);
-					}
-				else
-					{
-					restorePalette(screen);
-					}
-				}
-			
+			newpage = true;			
+
 			pageTime = scriptPages[sceneIndex].pageTime;
 		}
-
-		// Temporary stuff		
-		dst.x = (screenW - 320) >> 1;
-		dst.y = (screenH - 200) >> 1;
-		if(imageInfo != NULL) {			
-		SDL_BlitSurface(imageInfo->image, NULL, screen, &dst);
+		if(newpage) {			
+			//firstPE = new FadeOutPaletteEffect(250, firstPE);				
+			
+			textRect.x = 0;
+			textRect.y = 0;
+			textRect.w = 320;
+			textRect.h = 200;
+			PaletteInfo* paletteInfo = NULL; 
+			for(int palette = 0;palette<paletteIndex;palette++) {
+				if(paletteInfos[palette].dataIndex == scriptPages[sceneIndex].paletteIndex) {
+					paletteInfo = &paletteInfos[palette];
+					break;
+					}
+					
+				}
+			
+			if(paletteInfo != NULL) {									
+					// usePalette(paletteInfo->palette);
+					currentPalette = paletteInfo->palette;
+					fadein = true;
+				}
+			else {
+				restorePalette(screen);				
+				}
+						
+			newpage = 0;
+			}
+		
+		// First draw the backgrounds associated with this page
+		if(scriptPages[sceneIndex].backgrounds > 0) {
+			for(int bg = 0;bg<scriptPages[sceneIndex].backgrounds;bg++) {
+				imageInfo = FindImage(scriptPages[sceneIndex].bgIndex[bg]);
+				if(imageInfo != NULL) {
+					dst.x = (scriptPages[sceneIndex].bgPos[bg] & 65535)*2+(screenW - 320) >> 1;
+					dst.y = ((scriptPages[sceneIndex].bgPos[bg] & (~65535))>>16)*2+(screenH - 200) >> 1;
+					SDL_BlitSurface(imageInfo->image, NULL, screen, &dst);
+					}		
+				}
+		} else {
+			clearScreen(0);
 		}
-		else {			
-		clearScreen(BLACK);
-		}
+		if(fadein)
+			{
+			fadein = false;
+			firstPE = new FadeInPaletteEffect(250, firstPE);			
+			}
+		// Draw the texts associated with this page
 		int x = 0;
 		int y = 0;
+		int extralineheight = 0;
 		for(int text = 0;text<scriptPages[sceneIndex].noScriptTexts;text++) {
 		Font* font = NULL;
 
 		for(int index = 0; index < noScriptFonts; index++) {
 		if( scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
-		switch(scriptFonts[index].fontType)
-			{
+			switch(scriptFonts[index].fontType) {
 			case EFONT2Type:
 				font = font2;
 				break;
@@ -717,32 +721,42 @@ int Scene::play () {
 				font = fontmn2;
 				break;
 			}
-		continue;
-		}
+			continue;
+			}
 		}
 
 		if(scriptPages[sceneIndex].scriptTexts[text].x != -1) {
-		x = scriptPages[sceneIndex].scriptTexts[text].x;
-		y = scriptPages[sceneIndex].scriptTexts[text].y;
+			x = scriptPages[sceneIndex].scriptTexts[text].x;
+			y = scriptPages[sceneIndex].scriptTexts[text].y;
 		}
 
+		if(scriptPages[sceneIndex].scriptTexts[text].textRect.x != -1) {
+			textRect = scriptPages[sceneIndex].scriptTexts[text].textRect;
+			x = 0;
+			y = 0;
+			}
+		
+		if(scriptPages[sceneIndex].scriptTexts[text].extraLineHeight != -1) {
+			extralineheight = scriptPages[sceneIndex].scriptTexts[text].extraLineHeight;
+		}
+		
 		switch(scriptPages[sceneIndex].scriptTexts[text].alignment)
 			{
 			case 0: // left
-			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, x,y);
+				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+x,textRect.y+y);
 			break;
 			case 1: // right
 			int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
-			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 320-width, y);						
+				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+textRect.w-width, textRect.y+y);						
 			break;
 			case 2: // center
 				{
 				int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
-				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, 160-width, y);
+				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+(textRect.w/2)-width,textRect.y+ y);
 				}
 				break;
 			}
-		y+=font->fontHeight()/2;
+		y+=(extralineheight+font->fontHeight()/2);
 		}
 
 		SDL_Delay(T_FRAME);
