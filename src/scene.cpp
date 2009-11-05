@@ -128,12 +128,13 @@ void Scene::ParseAni(File* f, int dataIndex) {
 			unsigned char noSounds = f->loadChar();
 			for(loop = 0;loop<noSounds;loop++) {
 				char* soundName = f->loadString();
-				log("Soundname %s", soundName);
+				log("Soundname ", soundName);
 				free(soundName);
 			}
 		}
 		else if(type == 0x4C50) {// PL		
 			int pos = f->tell();
+			int nextPos = f->tell();
 			log("PL Read position", pos);
 			unsigned short int len = f->loadShort();
 			unsigned char* buffer = f->loadBlock(len);
@@ -153,25 +154,118 @@ void Scene::ParseAni(File* f, int dataIndex) {
 			delete[] buffer;
 			paletteInfos[paletteIndex].dataIndex = dataIndex; 
 			paletteIndex++;
+			
+			unsigned short int value = 0x4646;
+			int items = 0;
+			int validValue = true;
 			pos = f->tell();
-			log("PL Read position after", pos);
-			unsigned short int value = f->loadShort();
-			log("PL Read block start", value);
-			value = f->loadShort();
-			log("PL Anim block size", value);
-			f->seek(value-5, false);
+							
+			log("PL Read position start", pos);
+			while(validValue)
+				{					
+				value = f->loadShort();
+				log("PL Read block start tag", value);
+				unsigned short int size= f->loadShort();
+				log("PL Anim block size", size);
+				nextPos = f->tell();
+				// next pos is intial position + size and four bytes header
+				nextPos+=(size);
+				switch(value)
+					{					
+					case 0x455F:				
+						validValue = false;
+						break;
+					case 0x3131:
+						{						
+						// Skip back size header, this is read by the surface reader
+						f->seek(-2, false);						
+
+						SDL_Surface* image = f->loadSurface(320, 200, true);
+						SDL_Rect dst;
+						dst.x = 0;
+						dst.y = 0;
+						SDL_BlitSurface(image, NULL, screen, &dst);
+						SDL_SetPalette(screen, SDL_PHYSPAL, paletteInfos[paletteIndex-1].palette, 0, 256);
+						currentPalette = paletteInfos[paletteIndex-1].palette;						
+						}break;
+					case 0x4c31:
+						{								
+						int longvalue = f->loadInt();
+						log("PL Anim block value", longvalue);
+						// Skip back size header, this is read by the surface reader
+						//f->seek(-2, false);						
+						while(size) {
+							size--;
+							}
+						}break;						
+					case 0x4646:
+						{						
+						while(size) {
+							unsigned char header = f->loadChar();
+							log("PL 4646 block header", header);
+							switch(header)
+								{
+								case 0xff:
+									{
+									unsigned char x= f->loadChar();
+									unsigned char y= f->loadChar();								
+									log("PL block x", x);
+									log("PL block y", y);
+									size-=2;
+									}break;
+								}
+							size--;
+							}
+						}break;
+					case 0x4e52:
+					case 0x4252:
+					case 0x4352:
+					case 0x4c52:
+					case 0x4e41:					
+					case 0x584d:
+					case 0x5252:
+						break;
+					case 0x5b5d:
+						unsigned char header = f->loadChar();
+						log("PL 5b5d block header", header);
+						unsigned short int value = f->loadShort();
+						log("PL 5b5d block value", value);
+						break;
+					case 0x5453:
+						unsigned char soundIndex = f->loadChar();
+						unsigned char soundNote = f->loadChar();
+						unsigned char soundOffset = f->loadChar(); 
+						log("PL Audio tag with index", soundIndex);
+						log("PL Audio tag play at ", soundNote);
+						log("PL Audio tag play offset ", soundOffset);
+						break;
+					
+					case 0:
+						int longvalue = f->loadInt();
+						while(longvalue == 0) {
+							longvalue = f->loadInt();
+							nextPos+=4;
+						}
+						f->seek(-4, false);
+						value = longvalue;
+						break;
+					default:
+						log("PL Read Unknown type", value);
+						validValue = false;
+						break;
+					}
+
+				pos = f->tell();				
+				log("PL Read position after block should be", nextPos);
+				f->seek(nextPos, true);
+					if(validValue) {
+					items++;
+					}
+				}
+			
+			log("PL Parsed through number of items skipping 0 items", items);		
 			pos = f->tell();
-			log("PL Read position after block seek", pos);
-			//value = f->loadShort();
-			//log("PL Read block size", value);
-			//signed int val2 = f->loadInt();
-			//log("PL Read block value", val2);
-			//f->seek(1, false);
-			imageInfos[imageIndex].image = f->loadSurface(320, 200, true);
-			imageInfos[imageIndex].dataIndex = -1;													
-			//imageIndex++;			
-			pos = f->tell();
-			log("PL Read position after image", pos);
+			log("PL Read position after parsing anim blocks", pos);
 		}
 	}
 }
@@ -518,8 +612,8 @@ void Scene::ParseScripts(File *f) {
 					}break;
 				case ESceneTime:
 					unsigned short int sceneTime = f->loadShort();
-					log("Scene time",sceneTime);
-					scriptPages[loop].pageTime = sceneTime;
+					log("Scene time",sceneTime&255);
+					scriptPages[loop].pageTime = sceneTime&255;
 					break;	
 				case ESceneBreaker:
 				case 0x3e:									
@@ -631,6 +725,7 @@ int Scene::play () {
 			return E_NONE;
 
 		}
+		SDL_Delay(T_FRAME);
 		int upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
 		if((sceneIndex > 0 && upOrLeft) || controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) || 
 			((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {
@@ -758,8 +853,6 @@ int Scene::play () {
 			}
 		y+=(extralineheight+font->fontHeight()/2);
 		}
-
-		SDL_Delay(T_FRAME);
 
 	}
 
