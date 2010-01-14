@@ -181,7 +181,7 @@ class DemoLevel : public Level {
 		unsigned char *macro;
 
 	public:
-		DemoLevel  (char *fileName);
+		DemoLevel  (const char *fileName);
 		~DemoLevel ();
 		int play   ();
 

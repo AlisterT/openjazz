@@ -40,7 +40,7 @@
 
 int Menu::main () {
 
-	char *newGameOptions[6] = {"new single player game", "new co-op game",
+	const char *newGameOptions[6] = {"new single player game", "new co-op game",
 		"new battle", "new team battle", "new race", "join game"};
 	Scene *scene;
 	SDL_Rect src, dst;
@@ -189,7 +189,7 @@ int Menu::main () {
 
 			try {
 
-				level = new DemoLevel("macro.2");
+				level = new DemoLevel(F_MACRO);
 
 			} catch (int e) {
 

@@ -25,41 +25,20 @@
 #include "io/gfx/video.h"
 
 
-File::File (char * fileName, bool write) {
+File::File (const char * name, bool write) {
 
-	// Open the file from the current directory
-	f = fopen(fileName, write ? "wb": "rb");
+	// Open the file from the user's directory
+	if (open(userPath, name, write)) return;
 
-	// If that succeeded, done
-	if (f) {
+	// Open the file from the OpenJazz directory
+	if (open(ojPath, name, write)) return;
 
-		//log("Opened file", fileName);
+	// Open the file from the game directory
+	if (open(gamePath, name, write)) return;
 
-		filePath = createString(fileName);
+	log("Could not open file", name);
 
-		return;
-
-	}
-
-	// Create the file path
-	filePath = createString(path, fileName);
-
-	// Open the file from the path
-	f = fopen(filePath, write ? "wb": "rb");
-
-	if (f == NULL) {
-
-		log("Could not open file", fileName);
-
-		delete[] filePath;
-
-		throw E_FILE;
-
-	}
-
-	//log("Opened file", filePath);
-
-	return;
+	throw E_FILE;
 
 }
 
@@ -75,6 +54,30 @@ File::~File () {
 	return;
 
 }
+
+
+bool File::open (const char * path, const char * name, bool write) {
+
+	// Create the file path for the given directory
+	filePath = createString(path, name);
+
+	// Open the file from the path
+	f = fopen(filePath, write ? "wb": "rb");
+
+	if (f) {
+
+		//log("Opened file", filePath);
+
+		return true;
+
+	}
+
+	delete[] filePath;
+
+	return false;
+
+}
+
 
 int File::getSize () {
 

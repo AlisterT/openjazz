@@ -37,7 +37,7 @@
 
 int Menu::setupKeyboard () {
 
-	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
+	const char *options[7] = {"up", "down", "left", "right", "jump", "fire",
 		"weapon"};
 	int progress, count, character;
 	bool used;
@@ -122,7 +122,7 @@ int Menu::setupKeyboard () {
 
 int Menu::setupJoystick () {
 
-	char *options[7] = {"up", "down", "left", "right", "jump", "fire",
+	const char *options[7] = {"up", "down", "left", "right", "jump", "fire",
 		"weapon"};
 	int progress, count, control;
 	bool used;
@@ -428,12 +428,13 @@ int Menu::setupResolution () {
 
 int Menu::setup () {
 
-	char *setupOptions[4] = {"character", "keyboard", "joystick", "resolution"};
-	char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun",
+	const char *setupOptions[4] = {"character", "keyboard", "joystick",
+		"resolution"};
+	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun",
 		"wristband"};
-	char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow",
-		"green", "blue", "animation 1", "animation 2"};
-	unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
+	const char *setupCharacterColOptions[8] = {"white", "red", "orange",
+		"yellow", "green", "blue", "animation 1", "animation 2"};
+	const unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
 		PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
 	int ret;
 	int option, suboption, subsuboption;

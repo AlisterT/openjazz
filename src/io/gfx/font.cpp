@@ -33,7 +33,7 @@
 #include <string.h>
 
 
-Font::Font (char * fileName) {
+Font::Font (const char * fileName) {
 
 	File *file;
 	unsigned char *pixels, *character;
@@ -314,7 +314,7 @@ Font::~Font () {
 
 
 
-int Font::showString (char * s, int x, int y) {
+int Font::showString (const char * s, int x, int y) {
 
 	SDL_Rect src, dst;
 	unsigned int count;
@@ -466,27 +466,41 @@ void Font::restorePalette () {
 }
 
 
-int Font::calcStringWidth(char *s)
-	{
+int Font::getHeight () {
+
+	return h;
+
+}
+
+
+int Font::getStringWidth (const char *string) {
+
 	int count;
-	int stringwidth = 0;
+	int stringWidth = 0;
+
 	// Go through each character of the string
-	for (count = 0; s[count]; count++) {
+	for (count = 0; string[count]; count++) {
 
-	if (s[count] == '\n') {
-	
-	} else {
-	int width = w[(int)(map[(int)(s[count])])];
+		if (string[count] == '\n') {
 
-	if(s[count] == 32) {
-		width = width/2;
+		} else {
+
+			int width = w[(int)(map[(int)(string[count])])];
+
+			if (string[count] == ' ') {
+
+				width = width >> 1;
+
+			}
+
+			stringWidth += width - 1;
+
 		}
 
-	stringwidth += (width-1);
 	}
 
-	}
+	return stringWidth;
 
-	return stringwidth;
-	}
+}
+
 

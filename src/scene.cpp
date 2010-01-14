@@ -36,6 +36,8 @@
 #include "io/sound.h"
 #include "io/gfx/paletteeffects.h"
 
+#include <string.h>
+
 /**
  *  This is the 0sc format
  *  Offset, Size (hex), type
@@ -83,7 +85,7 @@ ImageInfo::~ImageInfo() {
 	if(image != NULL) {
 		SDL_FreeSurface(image);
 		image = NULL;
-		}
+	}
 }
 
 ScriptText::ScriptText() {
@@ -96,9 +98,11 @@ ScriptText::ScriptText() {
 }
 	
 ScriptText::~ScriptText() {
-	free(text);
-	text = NULL;
-	}
+
+	if (text) delete[] text;
+
+}
+
 ScriptPage::ScriptPage() {		
 	pageTime = 0;
 	noScriptTexts = 0;
@@ -108,8 +112,9 @@ ScriptPage::ScriptPage() {
 }
 
 ScriptPage::~ScriptPage() {
-	free(musicfile);
-	musicfile = NULL;
+
+	if (musicfile) delete[] musicfile;
+
 }
 
 void Scene::ParseAni(File* f, int dataIndex) {
@@ -129,7 +134,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 			for(loop = 0;loop<noSounds;loop++) {
 				char* soundName = f->loadString();
 				log("Soundname ", soundName);
-				free(soundName);
+				delete[] soundName;
 			}
 		}
 		else if(type == 0x4C50) {// PL		
@@ -226,21 +231,26 @@ void Scene::ParseAni(File* f, int dataIndex) {
 					case 0x5252:
 						break;
 					case 0x5b5d:
+						{
 						unsigned char header = f->loadChar();
 						log("PL 5b5d block header", header);
 						unsigned short int value = f->loadShort();
 						log("PL 5b5d block value", value);
+						}
 						break;
 					case 0x5453:
+						{
 						unsigned char soundIndex = f->loadChar();
 						unsigned char soundNote = f->loadChar();
 						unsigned char soundOffset = f->loadChar(); 
 						log("PL Audio tag with index", soundIndex);
 						log("PL Audio tag play at ", soundNote);
 						log("PL Audio tag play offset ", soundOffset);
+						}
 						break;
 					
 					case 0:
+						{
 						int longvalue = f->loadInt();
 						while(longvalue == 0) {
 							longvalue = f->loadInt();
@@ -248,6 +258,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						}
 						f->seek(-4, false);
 						value = longvalue;
+						}
 						break;
 					default:
 						log("PL Read Unknown type", value);
@@ -336,7 +347,8 @@ void Scene::ParseScripts(File *f) {
 	    int textPosY = -1;
 	    	    
 	    int extraheight = -1;
-	    SDL_Rect textRect = {-1,-1,-1,-1};
+	    SDL_Rect textRect;
+	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
 		if(f->loadChar() == 0x50) { // Script tag		
 			unsigned short int scriptid = f->loadShort();
@@ -386,7 +398,7 @@ void Scene::ParseScripts(File *f) {
 						// Music file name
 						string = f->loadString();
 						log("ESceneMusic: ", string);
-						scriptPages[loop].musicfile = strdup(string);
+						scriptPages[loop].musicfile = createString(string);
 						delete[] string;
 					}break;				
 				case ESceneSomethingElse:
@@ -400,6 +412,7 @@ void Scene::ParseScripts(File *f) {
 						unsigned short y = textRect.y = f->loadShort();
 						unsigned short w = textRect.w = (f->loadShort()-x);
 						unsigned short h = textRect.h = (f->loadShort()-y);
+						textRectValid = true;
 						log("Text rectangle xpos:", x);
 						log("Text rectangle ypos:", y);
 						log("Text rectangle w:", w);
@@ -434,7 +447,7 @@ void Scene::ParseScripts(File *f) {
 						
 						scriptFonts[noScriptFonts].fontId = fontid;
 						noScriptFonts++;
-						free(fontname);
+						delete[] fontname;
 					}break;
 				case ESceneTextPosition:
 					{
@@ -447,8 +460,10 @@ void Scene::ParseScripts(File *f) {
 					}
 					break;
 				case ESceneTextColour:
+					{
 					unsigned short value = f->loadShort();
 					log("ESceneTextColour", value);
+					}
 					break;
 				case ESceneFontFun:
 					{					
@@ -578,14 +593,14 @@ void Scene::ParseScripts(File *f) {
 						}	
 						
 						if(orgdatalen > 0) {							
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text =(char*) malloc(orgdatalen+1);
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[orgdatalen + 1];
 							memcpy(scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text, block, orgdatalen);
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[orgdatalen] = 0;
 							
 							log("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);																		
 							}
 						else {
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text =(char*) malloc(1);							
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[1];							
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[0] = 0;							
 							log("Text data", "Empty line");
 							}
@@ -597,11 +612,10 @@ void Scene::ParseScripts(File *f) {
 							textPosX = -1;
 							textPosY = -1;
 							}
-						if(textRect.x != -1)
+						if(textRectValid)
 							{
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].textRect = textRect;
-							textRect.x = -1;
-							textRect.y = -1;
+							textRectValid = false;
 							}
 						if(extraheight != -1)
 							{
@@ -611,10 +625,12 @@ void Scene::ParseScripts(File *f) {
 						scriptPages[loop].noScriptTexts++;
 					}break;
 				case ESceneTime:
+					{
 					unsigned short int sceneTime = f->loadShort();
 					log("Scene time",sceneTime&255);
 					scriptPages[loop].pageTime = sceneTime&255;
-					break;	
+					}
+					break;
 				case ESceneBreaker:
 				case 0x3e:									
 					pos = f->tell();
@@ -639,7 +655,7 @@ void Scene::ParseScripts(File *f) {
 
 }
 
-Scene::Scene (char * fileName) {
+Scene::Scene (const char * fileName) {
 
 	File *file;	
     int loop;
@@ -841,17 +857,19 @@ int Scene::play () {
 				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+x,textRect.y+y);
 			break;
 			case 1: // right
-			int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
+				{
+				int width = font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
 				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+textRect.w-width, textRect.y+y);						
+				}
 			break;
 			case 2: // center
 				{
-				int width = font->calcStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
+				int width = font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
 				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+(textRect.w/2)-width,textRect.y+ y);
 				}
 				break;
 			}
-		y+=(extralineheight+font->fontHeight()/2);
+		y+=(extralineheight+font->getHeight()/2);
 		}
 
 	}

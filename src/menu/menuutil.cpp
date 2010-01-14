@@ -35,7 +35,7 @@
 #include <string.h>
 
 
-int Menu::message (char *text) {
+int Menu::message (const char *text) {
 
 	// Display a message to the user
 
@@ -62,7 +62,7 @@ int Menu::message (char *text) {
 }
 
 
-int Menu::generic (char **optionNames, int options, int *chosen) {
+int Menu::generic (const char **optionNames, int options, int *chosen) {
 
 	// Let the user select from a menu of the given options
 
@@ -112,7 +112,7 @@ int Menu::generic (char **optionNames, int options, int *chosen) {
 }
 
 
-int Menu::textInput (char *request, char **text) {
+int Menu::textInput (const char *request, char **text) {
 
 	// Let the user to edit a text string
 

@@ -43,6 +43,7 @@
 #include "level/level.h"
 #include "menu/menu.h"
 #include "player/player.h"
+#include "scene.h"
 
 #include <string.h>
 
@@ -555,57 +556,80 @@ int main(int argc, char *argv[]) {
 /*
 	Scene *scene;
 */
+	int count;
 
-	// Find path
 
-	if (argc < 2) {
+	// Determine user path
 
-		// No path was given, use the path of the program
-
-		int count;
-
-		count = strlen(argv[0]) - 1;
-
-		// Search for directory separator
-#ifdef WIN32
-		while ((argv[0][count] != '\\') && (count >= 0)) count--;
+#ifdef HOMEDIR
+	#ifdef WIN32
+		userPath = createString(getenv("HOME"), "\\");
+	#else
+		userPath = createString(getenv("HOME"), "/.");
+	#endif
 #else
-		while ((argv[0][count] != '/') && (count >= 0)) count--;
+	userPath = createString("");
 #endif
 
-		path = new char[count + 2];
 
-		// If a directory was found, copy it to the path
-		if (count >= 0) {
+	// Determine OpenJazz path
 
-			memcpy(path, argv[0], count + 1);
-			path[count + 1] = 0;
+	// Use the path of the program, if available
 
-		} else path[0] = 0;
+	count = strlen(argv[0]) - 1;
 
-	} else {
+	// Search for directory separator
+#ifdef WIN32
+	while ((argv[0][count] != '\\') && (count >= 0)) count--;
+#else
+	while ((argv[0][count] != '/') && (count >= 0)) count--;
+#endif
+
+	// If a directory was found, copy it to the path
+	if (count >= 0) {
+
+		ojPath = new char[count + 2];
+		memcpy(ojPath, argv[0], count + 1);
+		ojPath[count + 1] = 0;
+
+	} else ojPath = createString("");
+
+
+	// Determine game path
+
+#ifdef DATAPATH
+	gamePath = createString(DATAPATH);
+#elseifdef __SYMBIAN32__
+	#ifdef UIQ3
+		gamePath = createString("c:\\shared\\openjazz\\");
+	#else
+		gamePath = createString("c:\\data\\openjazz\\");
+	#endif
+#else
+
+	if (argc >= 2) {
 
 		// Copy the provided path, appending a directory separator as necessary
 
-#ifdef WIN32
+	#ifdef WIN32
 		if (argv[1][strlen(argv[1]) - 1] != '\\') {
-#else
-		if (argv[1][strlen(argv[1]) - 1] != '/') {
-#endif
 
-#ifdef WIN32
-			path = createString(argv[1], "\\");
-#else
-			path = createString(argv[1], "/");
-#endif
+			gamePath = createString(argv[1], "\\");
+	#else
+		if (argv[1][strlen(argv[1]) - 1] != '/') {
+
+			gamePath = createString(argv[1], "/");
+	#endif
 
 		} else {
 
-			path = createString(argv[1]);
+			gamePath = createString(argv[1]);
 
 		}
 
-	}
+	} else gamePath = createString("");
+
+#endif
 
 
 	// Initialise SDL
@@ -625,7 +649,9 @@ int main(int argc, char *argv[]) {
 	if (loadMain() != E_NONE) {
 
 		SDL_Quit();
-		delete[] path;
+		delete[] ojPath;
+		delete[] gamePath;
+		delete[] userPath;
 
 		return -1;
 
@@ -633,18 +659,20 @@ int main(int argc, char *argv[]) {
 
 
 	// Show the startup cutscene
-/*
-	try {
 
-			scene = new Scene("startup.0sc");
+/*	try {
+
+		scene = new Scene(F_STARTUP_0SC);
 
 	} catch (int e) {
 
-			freeMain();
-			SDL_Quit();
-			delete[] path;
+		freeMain();
+		SDL_Quit();
+		delete[] ojPath;
+		delete[] gamePath;
+		delete[] userPath;
 
-			return e;
+		return e;
 
 	}
 
@@ -662,7 +690,9 @@ int main(int argc, char *argv[]) {
 
 			freeMain();
 			SDL_Quit();
-			delete[] path;
+			delete[] ojPath;
+			delete[] gamePath;
+			delete[] userPath;
 
 			return e;
 
@@ -672,17 +702,19 @@ int main(int argc, char *argv[]) {
 		if (menu->main() == E_NONE) {
 
 			// Show the ending cutscene
-/*
-			try {
 
-				scene = new Scene("end.0sc");
+/*			try {
+
+				scene = new Scene(F_END_0SC);
 
 			} catch (int e) {
 
 				delete menu;
 				freeMain();
 				SDL_Quit();
-				delete[] path;
+				delete[] ojPath;
+				delete[] gamePath;
+				delete[] userPath;
 
 				return e;
 
@@ -703,7 +735,9 @@ int main(int argc, char *argv[]) {
 
 	freeMain();
 	SDL_Quit();
-	delete[] path;
+	delete[] ojPath;
+	delete[] gamePath;
+	delete[] userPath;
 
 
 	return 0;

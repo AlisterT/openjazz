@@ -551,7 +551,7 @@ void Level::timeCalcs (bool paused) {
 
 int Level::play () {
 
-	char *options[5] = {"continue game", "save game", "load game",
+	const char *options[5] = {"continue game", "save game", "load game",
 		"setup options", "quit game"};
 	PaletteEffect *levelPE;
 	char *string;

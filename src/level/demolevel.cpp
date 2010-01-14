@@ -37,7 +37,7 @@
 #include "player/player.h"
 
 
-DemoLevel::DemoLevel (char *fileName) {
+DemoLevel::DemoLevel (const char *fileName) {
 
 	File *file;
 	char *levelFile;

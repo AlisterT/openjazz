@@ -43,9 +43,9 @@ class Menu {
 		int            episodes;
 		unsigned char  difficulty;
 
-		int message           (char *text);
-		int generic           (char **optionNames, int options, int *chosen);
-		int textInput         (char *request, char **text);
+		int message           (const char *text);
+		int generic           (const char **optionNames, int options, int *chosen);
+		int textInput         (const char *request, char **text);
 		int newGameDifficulty (int mode, int levelNum, int worldNum);
 		int newGameLevel      (int mode);
 		int newGameEpisode    (int mode);

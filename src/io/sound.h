@@ -74,9 +74,9 @@ EXTERN int    nSounds;
 
 EXTERN void openAudio  ();
 EXTERN void closeAudio ();
-EXTERN void playMusic  (char *fileName);
+EXTERN void playMusic  (const char *fileName);
 EXTERN void stopMusic  ();
-EXTERN int  loadSounds (char *fileName);
+EXTERN int  loadSounds (const char *fileName);
 EXTERN void freeSounds ();
 EXTERN void playSound  (int sound);
 

@@ -34,7 +34,7 @@
 #include <string.h>
 
 
-bool fileExists (char * fileName) {
+bool fileExists (const char * fileName) {
 
 	File *file;
 
@@ -57,7 +57,7 @@ bool fileExists (char * fileName) {
 }
 
 
-char * createString (char *string) {
+char * createString (const char *string) {
 
 	char *cloned;
 
@@ -69,7 +69,7 @@ char * createString (char *string) {
 }
 
 
-char * createString (char *first, char *second) {
+char * createString (const char *first, const char *second) {
 
 	char *concatenated;
 
@@ -82,7 +82,7 @@ char * createString (char *first, char *second) {
 }
 
 
-char * createFileName (char *type, int extension) {
+char * createFileName (const char *type, int extension) {
 
 	char *fileName;
 	int pos;
@@ -101,7 +101,7 @@ char * createFileName (char *type, int extension) {
 }
 
 
-char * createFileName (char *type, char *extension) {
+char * createFileName (const char *type, const char *extension) {
 
 	char *fileName;
 	int pos;
@@ -117,7 +117,7 @@ char * createFileName (char *type, char *extension) {
 }
 
 
-char * createFileName (char *type, int level, int extension) {
+char * createFileName (const char *type, int level, int extension) {
 
 	char *fileName;
 	int pos;
@@ -137,7 +137,7 @@ char * createFileName (char *type, int level, int extension) {
 }
 
 
-char * createEditableString (char *string) {
+char * createEditableString (const char *string) {
 
 	char *cloned;
 
@@ -149,7 +149,7 @@ char * createEditableString (char *string) {
 }
 
 
-void log (char *message) {
+void log (const char *message) {
 
 	printf("%s\n", message);
 
@@ -158,7 +158,7 @@ void log (char *message) {
 }
 
 
-void log (char *message, char *detail) {
+void log (const char *message, const char *detail) {
 
 	printf("%s: %s\n", message, detail);
 
@@ -167,7 +167,7 @@ void log (char *message, char *detail) {
 }
 
 
-void log (char *message, int number) {
+void log (const char *message, int number) {
 
 	printf("%s: %d\n", message, number);
 
@@ -176,7 +176,7 @@ void log (char *message, int number) {
 }
 
 
-void logError (char *message, char *detail) {
+void logError (const char *message, const char *detail) {
 
 	fprintf(stderr, "%s: %s\n", message, detail);
 

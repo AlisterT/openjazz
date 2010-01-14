@@ -38,7 +38,7 @@
 
 int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
-	char *options[4] = {"easy", "medium", "hard", "turbo"};
+	const char *options[4] = {"easy", "medium", "hard", "turbo"};
 	char *firstLevel;
 	SDL_Rect src, dst;
 	int count;
@@ -220,9 +220,9 @@ int Menu::newGameLevel (int mode) {
 
 int Menu::newGameEpisode (int mode) {
 
-	char *options[12] = {"episode 1", "episode 2", "episode 3", "episode 4",
-		"episode 5", "episode 6", "episode a", "episode b", "episode c",
-		"episode x", "bonus stage", "specific level"};
+	const char *options[12] = {"episode 1", "episode 2", "episode 3",
+		"episode 4", "episode 5", "episode 6", "episode a", "episode b",
+		"episode c", "episode x", "bonus stage", "specific level"};
 	bool exists[12];
 	char *check;
 	SDL_Rect dst;

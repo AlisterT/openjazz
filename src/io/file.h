@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 
-// Class
+// Classes
 
 class File {
 
@@ -38,8 +38,10 @@ class File {
 		FILE *f;
 		char *filePath;
 
+		bool open (const char * path, const char * name, bool write);
+
 	public:
-		File                           (char * fileName, bool write);
+		File                           (const char * name, bool write);
 		~File                          ();
 
 		int                getSize     ();
@@ -61,10 +63,12 @@ class File {
 };
 
 
-//Variable
+// Variables
 
-// Path to game data
-EXTERN char *path;
+// Paths to files
+EXTERN char *userPath;
+EXTERN char *ojPath;
+EXTERN char *gamePath;
 
 #endif
 

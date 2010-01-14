@@ -42,17 +42,17 @@ class Font {
 		char           map[128]; // Maps ASCII values to letter positions
 
 	public:
-		Font                (char *fileName);
+		Font                (const char *fileName);
 		Font                (File *file, bool big);
 		~Font               ();
 
-		int  showString     (char *s, int x, int y);
+		int  showString     (const char *s, int x, int y);
 		void showNumber     (int n, int x, int y);
 		void mapPalette     (int start, int length, int newStart,
 			int newLength);
 		void restorePalette ();
-		int fontHeight() { return h; }
-		int calcStringWidth(char *s);
+		int  getHeight      ();
+		int  getStringWidth (const char *string);
 };
 
 // Variables

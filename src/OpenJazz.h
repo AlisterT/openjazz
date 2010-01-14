@@ -63,41 +63,44 @@
 #define F100 102400
 #define F160 163840
 
-// File names
-#ifdef __SYMBIAN32__
-#ifdef UIQ3
-#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
-#define LOGO_FILE   "c:\\shared\\openjazz\\openjazz.000"
-#else
-#define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
-#define LOGO_FILE   "c:\\data\\openjazz\\openjazz.000"
-#endif
-#else
+// Files
+
 #define CONFIG_FILE "openjazz.cfg"
 #define LOGO_FILE   "openjazz.000"
-#endif
 #define LEVEL_FILE  "openjazz.tmp"
 
 #ifdef UPPERCASE_FILENAMES
-	#define F_MAINCHAR "MAINCHAR.000"
-	#define F_MENU     "MENU.000"
-	#define F_PANEL    "PANEL.000"
+	#define F_MAINCHAR    "MAINCHAR.000"
+	#define F_MENU        "MENU.000"
+	#define F_PANEL       "PANEL.000"
+	#define F_SOUNDS      "SOUNDS.000"
 
-	// File name formats
-	#define F_BLOCKS   "BLOCKS"
-	#define F_LEVEL    "LEVEL"
-	#define F_PLANET   "PLANET"
-	#define F_SPRITES  "SPRITES"
+	#define F_STARTUP_0SC "STARTUP.0SC"
+	#define F_END_0SC     "END.0SC"
+
+	#define F_MACRO       "MACRO.2"
+
+	// File path prefixes
+	#define F_BLOCKS      "BLOCKS"
+	#define F_LEVEL       "LEVEL"
+	#define F_PLANET      "PLANET"
+	#define F_SPRITES     "SPRITES"
 #else
-	#define F_MAINCHAR "mainchar.000"
-	#define F_MENU     "menu.000"
-	#define F_PANEL    "panel.000"
+	#define F_MAINCHAR    "mainchar.000"
+	#define F_MENU        "menu.000"
+	#define F_PANEL       "panel.000"
+	#define F_SOUNDS      "sounds.000"
 
-	// File name formats
-	#define F_BLOCKS   "blocks"
-	#define F_LEVEL    "level"
-	#define F_PLANET   "planet"
-	#define F_SPRITES  "sprites"
+	#define F_STARTUP_0SC "startup.0sc"
+	#define F_END_0SC     "end.0sc"
+
+	#define F_MACRO       "macro.2"
+
+	// File path prefixes
+	#define F_BLOCKS      "blocks"
+	#define F_LEVEL       "level"
+	#define F_PLANET      "planet"
+	#define F_SPRITES     "sprites"
 #endif
 
 // Standard string length
@@ -161,17 +164,17 @@ EXTERN int loop (int type);
 
 // Functions in util.cpp
 
-EXTERN bool   fileExists           (char *fileName);
-EXTERN char * createString         (char *string);
-EXTERN char * createString         (char *first, char *second);
-EXTERN char * createFileName       (char *type, int extension);
-EXTERN char * createFileName       (char *type, char *extension);
-EXTERN char * createFileName       (char *type, int level, int extension);
-EXTERN char * createEditableString (char *string);
-EXTERN void   log                  (char *message);
-EXTERN void   log                  (char *message, char *detail);
-EXTERN void   log                  (char *message, int number);
-EXTERN void   logError             (char *message, char *detail);
+EXTERN bool   fileExists           (const char *fileName);
+EXTERN char * createString         (const char *string);
+EXTERN char * createString         (const char *first, const char *second);
+EXTERN char * createFileName       (const char *type, int extension);
+EXTERN char * createFileName       (const char *type, const char *extension);
+EXTERN char * createFileName       (const char *type, int level, int extension);
+EXTERN char * createEditableString (const char *string);
+EXTERN void   log                  (const char *message);
+EXTERN void   log                  (const char *message, const char *detail);
+EXTERN void   log                  (const char *message, int number);
+EXTERN void   logError             (const char *message, const char *detail);
 
 #endif
 

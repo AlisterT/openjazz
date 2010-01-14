@@ -113,7 +113,7 @@ void openAudio () {
 
 	// Load sounds
 
-	if (loadSounds("sounds.000") != E_NONE) sounds = NULL;
+	if (loadSounds(F_SOUNDS) != E_NONE) sounds = NULL;
 
 
 	return;
@@ -133,7 +133,7 @@ void closeAudio () {
 }
 
 
-void playMusic (char * fileName) {
+void playMusic (const char * fileName) {
 
 #ifdef USE_MODPLUG
 
@@ -234,7 +234,7 @@ void stopMusic () {
 }
 
 
-int loadSounds (char *fileName) {
+int loadSounds (const char *fileName) {
 
 	File *file;
 	unsigned char *clip;

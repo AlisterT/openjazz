@@ -23,8 +23,11 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
+
 #include <io/file.h>
-#include <sdl.h>
+
+#include <SDL/SDL.h>
+
 
 enum EScriptFontTypes
 	{
@@ -117,7 +120,7 @@ class Scene {
 		void ParseData(File *f);
 		void ParseAni(File* f, int dataIndex);
 	public:
-		Scene    (char * fileName);
+		Scene    (const char * fileName);
 		~Scene   ();
 
 		int play ();
