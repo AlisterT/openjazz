@@ -29,6 +29,7 @@
 #define _PLAYER_H
 
 
+#include "movable.h"
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
@@ -154,7 +155,7 @@
 
 class Bird;
 
-class Player {
+class Player : public Movable {
 
 	private:
 		Bird         *bird;
@@ -175,18 +176,17 @@ class Player {
 			3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
 		bool          floating; // false = normal, true = boarding/bird/etc.
 		bool          facing;
-		int           lookTime; /* Negative if looking up, positive if looking
+		unsigned int  lookTime; /* Negative if looking up, positive if looking
 			down, 0 if neither */
 		int           reaction;
-		int           reactionTime;
+		unsigned int  reactionTime;
 		int           fireSpeed;
-		int           fireTime;
+		unsigned int  fireTime;
 		fixed         jumpHeight;
 		fixed         jumpY;
-		int           fastFeetTime;
+		unsigned int  fastFeetTime;
 		unsigned char warpX, warpY;
-		int           warpTime;
-		fixed         x, y, dx, dy;
+		unsigned int  warpTime;
 		int           enemies, items;
 		unsigned char team;
 
@@ -207,11 +207,11 @@ class Player {
 		void            reset        ();
 		void            setControl   (int control, bool state);
 		bool            shootEvent   (unsigned char gridX, unsigned char gridY,
-			int ticks);
+			unsigned int ticks);
 		bool            touchEvent   (unsigned char gridX, unsigned char gridY,
-			int ticks);
-		bool            hit          (Player *source, int ticks);
-		void            kill         (Player *source, int ticks);
+			unsigned int ticks);
+		bool            hit          (Player *source, unsigned int ticks);
+		void            kill         (Player *source, unsigned int ticks);
 		void            addScore     (int addedScore);
 		int             getScore     ();
 		int             getEnergy    ();
@@ -219,26 +219,24 @@ class Player {
 		int             getAmmo      (bool amount);
 		int             getEnemies   ();
 		int             getItems     ();
-		fixed           getX         ();
-		fixed           getY         ();
 		bool            overlap      (fixed left, fixed top, fixed width,
 			fixed height);
 		void            setPosition  (fixed newX, fixed newY);
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
 		unsigned char   getTeam      ();
-		void            floatUp      (signed char *newEvent);
+		void            floatUp      (signed char *newEvent, int speed);
 		void            belt         (int speed);
 		void            setEvent     (signed char *newEvent);
 		void            clearEvent   (signed char *newEvent,
 			unsigned char property);
 		void            send         (unsigned char *data);
 		void            receive      (unsigned char *buffer);
-		void            control      (int ticks);
-		void            move         (int ticks);
-		void            view         (int ticks);
-		void            draw         (int ticks);
-		int             reacted      (int ticks);
+		void            control      (unsigned int ticks, int msps);
+		void            move         (unsigned int ticks, int msps);
+		void            view         (unsigned int ticks, int mspf);
+		void            draw         (unsigned int ticks, int change);
+		int             reacted      (unsigned int ticks);
 
 };
 

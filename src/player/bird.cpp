@@ -78,21 +78,7 @@ void Bird::hit () {
 }
 
 
-fixed Bird::getX () {
-
-	return x;
-
-}
-
-
-fixed Bird::getY () {
-
-	return y;
-
-}
-
-
-bool Bird::playFrame (int ticks) {
+bool Bird::step (unsigned int ticks, int msps) {
 
 	Event *nextEvent;
 	fixed eventX, eventY;
@@ -122,13 +108,13 @@ bool Bird::playFrame (int ticks) {
 
 			// To the left of the player, so move right
 
-			if (dx < F160) dx += 400 * mspf;
+			if (dx < F160) dx += 400 * msps;
 
 		} else {
 
 			// To the right of the player, so move left
 
-			if (dx > -F160) dx -= 400 * mspf;
+			if (dx > -F160) dx -= 400 * msps;
 
 		}
 
@@ -152,13 +138,13 @@ bool Bird::playFrame (int ticks) {
 
 				// Above the player, so move downwards
 
-				if (dy < F160) dy += 400 * mspf;
+				if (dy < F160) dy += 400 * msps;
 
 			} else {
 
 				// Below the player, so move upwards
 
-				if (dy > -F160) dy -= 400 * mspf;
+				if (dy > -F160) dy -= 400 * msps;
 
 			}
 
@@ -178,7 +164,7 @@ bool Bird::playFrame (int ticks) {
 				while (nextEvent) {
 
 					eventX = nextEvent->getX();
-					eventY = nextEvent->getY();
+					eventY = nextEvent->getY() - nextEvent->getHeight();
 
 					if (nextEvent->getProperty(E_HITSTOKILL) &&
 						(eventX > x) && (eventX < x + F160) && (eventY > y) &&
@@ -199,7 +185,7 @@ bool Bird::playFrame (int ticks) {
 				while (nextEvent) {
 
 					eventX = nextEvent->getX();
-					eventY = nextEvent->getY();
+					eventY = nextEvent->getY() - nextEvent->getHeight();
 
 					if (nextEvent->getProperty(E_HITSTOKILL) &&
 						(eventX > x - F160) && (eventX < x) && (eventY > y) &&
@@ -231,15 +217,15 @@ bool Bird::playFrame (int ticks) {
 	}
 
 	// Apply trajectory
-	x += (dx * mspf) >> 10;
-	y += (dy * mspf) >> 10;
+	x += (dx * msps) >> 10;
+	y += (dy * msps) >> 10;
 
 	return false;
 
 }
 
 
-void Bird::draw (int ticks) {
+void Bird::draw (unsigned int ticks, int change) {
 
 	Anim *anim;
 
@@ -247,7 +233,7 @@ void Bird::draw (int ticks) {
 		BIRD_LEFTANIM);
 	anim->setFrame(ticks / 80, true);
 
-	anim->draw(x, y);
+	anim->draw(getDrawX(change), getDrawY(change));
 
 	return;
 

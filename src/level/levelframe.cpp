@@ -36,11 +36,17 @@
 #include "player/player.h"
 
 
-int Level::playFrame () {
+int Level::step () {
 
 	Bullet *nextBullet;
 	Event *nextEvent;
 	int x, y;
+	int msps;
+
+
+	// Milliseconds per step
+	msps = ticks - prevStepTicks;
+	prevStepTicks = ticks;
 
 
 	// Search for active events
@@ -74,7 +80,7 @@ int Level::playFrame () {
 
 
 	// Determine the players' trajectories
-	for (x = 0; x < nPlayers; x++) players[x].control(ticks);
+	for (x = 0; x < nPlayers; x++) players[x].control(ticks, msps);
 
 
 	// Process active events
@@ -83,7 +89,7 @@ int Level::playFrame () {
 
 	if (firstEvent) {
 
-		if (firstEvent->playFrame(ticks)) {
+		if (firstEvent->step(ticks, msps)) {
 
 			nextEvent = firstEvent->getNext();
 			delete firstEvent;
@@ -98,7 +104,7 @@ int Level::playFrame () {
 
 	if (firstBullet) {
 
-		if (firstBullet->playFrame(ticks)) {
+		if (firstBullet->step(ticks, msps)) {
 
 			nextBullet = firstBullet->getNext();
 			delete firstBullet;
@@ -111,7 +117,7 @@ int Level::playFrame () {
 
 	// Apply as much of those trajectories as possible, without going into the
 	// scenery
-	for (x = 0; x < nPlayers; x++) players[x].move(ticks);
+	for (x = 0; x < nPlayers; x++) players[x].move(ticks, msps);
 
 
 
@@ -126,17 +132,6 @@ int Level::playFrame () {
 		} else gameMode->outOfTime();
 
 	}
-
-
-	// Calculate viewport
-	if (game && (stage == LS_END)) game->view();
-	else localPlayer->view(ticks);
-
-	// Ensure the new viewport is within the level
-	if (viewX < 0) viewX = 0;
-	if (FTOI(viewX) + viewW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - viewW);
-	if (viewY < 0) viewY = 0;
-	if (FTOI(viewY) + viewH >= TTOI(LH)) viewY = ITOF(TTOI(LH) - viewH);
 
 
 	return E_NONE;
@@ -161,7 +156,17 @@ void Level::draw () {
 	src.x = 0;
 
 
-	// Use the local player's viewport
+	// Calculate viewport
+	if (game && (stage == LS_END)) game->view((ticks - prevTicks) * 160);
+	else localPlayer->view(ticks, ticks - prevTicks);
+
+	// Ensure the new viewport is within the level
+	if (viewX < 0) viewX = 0;
+	if (FTOI(viewX) + viewW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - viewW);
+	if (viewY < 0) viewY = 0;
+	if (FTOI(viewY) + viewH >= TTOI(LH)) viewY = ITOF(TTOI(LH) - viewH);
+
+	// Use the viewport
 	dst.x = 0;
 	dst.y = 0;
 	vX = FTOI(viewX);
@@ -240,15 +245,15 @@ void Level::draw () {
 
 	while (event) {
 
-		event->draw(ticks);
+		event->draw(ticks, ticks - prevStepTicks);
 		event = event->getNext();
 
 	}
 
 
 	// Show the players
-
-	for (x = 0; x < nPlayers; x++) players[x].draw(ticks);
+	for (x = 0; x < nPlayers; x++)
+		players[x].draw(ticks, ticks - prevStepTicks);
 
 
 	// Show bullets
@@ -256,7 +261,7 @@ void Level::draw () {
 
 	while (bullet) {
 
-		bullet->draw();
+		bullet->draw(ticks - prevStepTicks);
 		bullet = bullet->getNext();
 
 	}
@@ -362,16 +367,17 @@ void Level::draw () {
 
 	dst.x = 20;
 	x = localPlayer->getEnergy();
+	y = (ticks - prevTicks) * 40;
 
 	if (FTOI(energyBar) < (x << 4)) {
 
-		if ((x << 14) - energyBar < mspf * 40) energyBar = x << 14;
-		else energyBar += mspf * 40;
+		if ((x << 14) - energyBar < y) energyBar = x << 14;
+		else energyBar += y;
 
 	} else if (FTOI(energyBar) > (x << 4)) {
 
-		if (energyBar - (x << 14) < mspf * 40) energyBar = x << 14;
-		else energyBar -= mspf * 40;
+		if (energyBar - (x << 14) < y) energyBar = x << 14;
+		else energyBar -= y;
 
 	}
 

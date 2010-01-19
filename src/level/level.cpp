@@ -237,7 +237,7 @@ unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
 }
 
 
-int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
+unsigned int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
 
 	return grid[gridY][gridX].time;
 
@@ -322,7 +322,8 @@ int Level::hitEvent (Player *source, unsigned char gridX, unsigned char gridY) {
 }
 
 
-void Level::setEventTime (unsigned char gridX, unsigned char gridY, int time) {
+void Level::setEventTime (unsigned char gridX, unsigned char gridY,
+	unsigned int time) {
 
 	grid[gridY][gridX].time = time;
 
@@ -511,11 +512,12 @@ void Level::receive (unsigned char *buffer) {
 void Level::timeCalcs (bool paused) {
 
 	// Calculate smoothed fps
-	smoothfps = smoothfps + 1 - (smoothfps * ((float)mspf) / 1000.0f);
+	smoothfps = smoothfps + 1.0f -
+		(smoothfps * ((float)(ticks - prevTicks)) / 1000.0f);
 	/* This equation is a simplified version of
 	(fps * c) + (smoothfps * (1 - c))
 	where c = (1 / fps)
-	and fps = 1000 / mspf
+	and fps = 1000 / (ticks - prevTicks)
 	In other words, the response of smoothFPS to changes in FPS decreases as the
 	framerate increases 
 	The following version is for c = (1 / smoothfps)
@@ -523,24 +525,27 @@ void Level::timeCalcs (bool paused) {
 	// smoothfps = (fps / smoothfps) + smoothfps - 1;
 
 	// Ignore outlandish values
-	if (smoothfps > 9999) smoothfps = 9999;
-	if (smoothfps < 1) smoothfps = 1;
+	if (smoothfps > 9999.0f) smoothfps = 9999.0f;
+	if (smoothfps < 1.0f) smoothfps = 1.0f;
 
 
-	// Number of ticks of gameplay since the level started
-
-	prevTicks = ticks;
-	ticks = globalTicks - tickOffset;
+	// Track number of ticks of gameplay since the level started
 
 	if (paused) {
 
-		tickOffset += ticks - prevTicks;
-		ticks = prevTicks;
+		tickOffset = globalTicks - ticks;
 
-	} else if (ticks > prevTicks + 100) {
+	} else if (globalTicks - tickOffset > ticks + 100) {
 
-		tickOffset += ticks - (prevTicks + 100);
-		ticks = prevTicks + 100;
+		prevTicks = ticks;
+		ticks += 100;
+
+		tickOffset = globalTicks - ticks;
+
+	} else {
+
+		prevTicks = ticks;
+		ticks = globalTicks - tickOffset;
 
 	}
 
@@ -557,7 +562,7 @@ int Level::play () {
 	char *string;
 	bool paused, pmenu;
 	int stats, option;
-	int returnTime;
+	unsigned int returnTime;
  	int perfect;
  	int timeBonus;
  	int count;
@@ -568,7 +573,8 @@ int Level::play () {
 	smoothfps = 50.0f;
 
 	tickOffset = globalTicks;
-	ticks = -10;
+	ticks = 16;
+	prevStepTicks = 0;
 
 	pmenu = paused = false;
 	option = 0;
@@ -688,9 +694,15 @@ int Level::play () {
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
 
-			count = playFrame();
 
-			if (count < 0) return count;
+			// Process step
+			if (ticks >= prevStepTicks + 16) {
+
+				count = step();
+
+				if (count < 0) return count;
+
+			}
 
 
 			// Handle player reactions
@@ -772,7 +784,7 @@ int Level::play () {
 
 			if (timeBonus) {
 
-				count = mspf / 100;
+				count = (ticks - prevTicks) / 100;
 				if (!count) count = 1;
 
 				if (timeBonus == -1) {
@@ -870,7 +882,7 @@ int Level::play () {
 
 		if (gameMode) {
 
-			count = game->playFrame(ticks);
+			count = game->step(ticks);
 
 			switch (count) {
 

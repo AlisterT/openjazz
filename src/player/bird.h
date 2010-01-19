@@ -24,6 +24,7 @@
 #define _BIRD_H
 
 
+#include "movable.h"
 #include "OpenJazz.h"
 
 
@@ -41,11 +42,10 @@
 
 class Player;
 
-class Bird {
+class Bird : public Movable {
 
 	private:
 		Player *player;
-		fixed   x, y, dx, dy;
 		bool    fleeing;
 		int     fireTime;
 
@@ -56,10 +56,8 @@ class Bird {
 		void     reset     ();
 		Player * getPlayer ();
 		void     hit       ();
-		fixed    getX      ();
-		fixed    getY      ();
-		bool     playFrame (int ticks);
-		void     draw      (int ticks);
+		bool     step      (unsigned int ticks, int msps);
+		void     draw      (unsigned int ticks, int change);
 
 };
 

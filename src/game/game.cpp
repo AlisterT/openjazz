@@ -179,17 +179,15 @@ int Game::play () {
 }
 
 
-void Game::view () {
+void Game::view (int change) {
 
 	// Move the viewport towards the exit sign
 
-	if (TTOF(checkX) > viewX + (viewW << 9) + (160 * mspf)) viewX += 160 * mspf;
-	else if (TTOF(checkX) < viewX + (viewW << 9) - (160 * mspf))
-		viewX -= 160 * mspf;
+	if (TTOF(checkX) > viewX + (viewW << 9) + change) viewX += change;
+	else if (TTOF(checkX) < viewX + (viewW << 9) - change) viewX -= change;
 
-	if (TTOF(checkY) > viewY + (viewH << 9) + (160 * mspf)) viewY += 160 * mspf;
-	else if (TTOF(checkY) < viewY + (viewH << 9) - (160 * mspf))
-		viewY -= 160 * mspf;
+	if (TTOF(checkY) > viewY + (viewH << 9) + change) viewY += change;
+	else if (TTOF(checkY) < viewY + (viewH << 9) - change) viewY -= change;
 
 	return;
 
@@ -205,7 +203,7 @@ void Game::send (unsigned char *buffer) {
 }
 
 
-int Game::playFrame (int ticks) {
+int Game::step (unsigned int ticks) {
 
 	// Do nothing
 

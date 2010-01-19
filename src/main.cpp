@@ -325,7 +325,6 @@ int loadMain () {
 
 
 	// Establish arbitrary timing
-	mspf = 20;
 	globalTicks = SDL_GetTicks() - 20;
 
 
@@ -435,17 +434,14 @@ int loop (int type) {
 
 	SDL_Color shownPalette[256];
 	SDL_Event event;
-	int ret;
+	int prevTicks, ret;
 
 
 	// Show everything that has been drawn so far
 	SDL_Flip(screen);
 
-	// Calculate frame rate and key timing
-	ret = SDL_GetTicks();
-	mspf = ret - globalTicks;
-	if (mspf > 100) mspf = 100;
-	globalTicks = ret;
+	prevTicks = globalTicks;
+	globalTicks = SDL_GetTicks();
 
 	// Process system events
 	while (SDL_PollEvent(&event)) {
@@ -532,20 +528,22 @@ int loop (int type) {
 
 			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
 
-			firstPE->apply(shownPalette, false);
+			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
 
 			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 		} else {
 
-			firstPE->apply(shownPalette, true);
+			firstPE->apply(shownPalette, true, globalTicks - prevTicks);
 
 		}
 
 	}
+
 #ifdef WIZ
 	WIZ_AdjustVolume( volume_direction );
 #endif
+
 	return E_NONE;
 
 }

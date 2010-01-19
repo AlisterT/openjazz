@@ -85,7 +85,7 @@ class Game {
 	protected:
 		char          *levelFile;
 		int            difficulty;
-		int            sendTime, checkTime;
+		unsigned int   sendTime, checkTime;
 		unsigned char  checkX, checkY;
 
 		Game ();
@@ -96,9 +96,9 @@ class Game {
 
 		virtual int  setLevel      (char *fileName);
 		int          play          ();
-		void         view          ();
+		void         view          (int change);
 		virtual void send          (unsigned char *buffer);
-		virtual int  playFrame     (int ticks);
+		virtual int  step          (unsigned int ticks);
 		virtual void score         (unsigned char team);
 		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY);
 		void         resetPlayer   (Player *player);
@@ -127,7 +127,7 @@ class ServerGame : public Game {
 
 		int  setLevel      (char *fileName);
 		void send          (unsigned char *buffer);
-		int  playFrame     (int ticks);
+		int  step          (unsigned int ticks);
 		void score         (unsigned char team);
 		void setCheckpoint (unsigned char gridX, unsigned char gridY);
 
@@ -150,7 +150,7 @@ class ClientGame : public Game {
 
 		int  setLevel      (char *fileName);
 		void send          (unsigned char *buffer);
-		int  playFrame     (int ticks);
+		int  step          (unsigned int ticks);
 		void score         (unsigned char team);
 		void setCheckpoint (unsigned char gridX, unsigned char gridY);
 

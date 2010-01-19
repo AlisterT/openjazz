@@ -237,7 +237,8 @@ void Player::setControl (int control, bool state) {
 }
 
 
-bool Player::shootEvent (unsigned char gridX, unsigned char gridY, int ticks) {
+bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
+	unsigned int ticks) {
 
 	signed char *set;
 
@@ -331,7 +332,8 @@ bool Player::shootEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 }
 
 
-bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
+bool Player::touchEvent (unsigned char gridX, unsigned char gridY,
+	unsigned int ticks) {
 
 	signed char *set;
 
@@ -485,7 +487,7 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, int ticks) {
 }
 
 
-bool Player::hit (Player *source, int ticks) {
+bool Player::hit (Player *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
 	if (reaction != PR_NONE) return false;
@@ -534,7 +536,7 @@ bool Player::hit (Player *source, int ticks) {
 }
 
 
-void Player::kill (Player *source, int ticks) {
+void Player::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
@@ -615,20 +617,6 @@ int Player::getItems () {
 }
 
 
-fixed Player::getX () {
-
-	return x;
-
-}
-
-
-fixed Player::getY () {
-
-	return y;
-
-}
-
-
 bool Player::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	return (x + PXO_R >= left) && (x + PXO_L < left + width) && (y >= top) &&
@@ -671,7 +659,7 @@ unsigned char Player::getTeam () {
 }
 
 
-void Player::floatUp (signed char *newEvent) {
+void Player::floatUp (signed char *newEvent, int speed) {
 
 	event = newEvent;
 
@@ -679,7 +667,7 @@ void Player::floatUp (signed char *newEvent) {
 		dy = event[E_MULTIPURPOSE] * -F40;
 
 	if (dy > event[E_MULTIPURPOSE] * -F40)
-		dy -= event[E_MULTIPURPOSE] * 320 * mspf;
+		dy -= event[E_MULTIPURPOSE] * 320 * speed;
 
 	jumpY = y - (8 * F16);
 
@@ -690,7 +678,7 @@ void Player::floatUp (signed char *newEvent) {
 
 void Player::belt (int speed) {
 
-	dx += speed * 160 * mspf;
+	dx += speed * 160;
 
 	return;
 
@@ -835,7 +823,7 @@ void Player::receive (unsigned char *buffer) {
 }
 
 
-int Player::reacted (int ticks) {
+int Player::reacted (unsigned int ticks) {
 
 	int oldReaction;
 

@@ -181,7 +181,7 @@ void ServerGame::send (unsigned char *buffer) {
 }
 
 
-int ServerGame::playFrame (int ticks) {
+int ServerGame::step (unsigned int ticks) {
 
 	unsigned char sendBuffer[BUFFER_LENGTH];
 	int count, pcount, length;

@@ -209,7 +209,7 @@ ClientGame::ClientGame (char *address) {
 		clearScreen(0);
 		fontmn2->showString("JOINING GAME", screenW >> 2, (screenH >> 1) - 16);
 
-		ret = playFrame(-1);
+		ret = step(0);
 
 		if (ret < 0) {
 
@@ -270,7 +270,7 @@ int ClientGame::setLevel (char *fileName) {
 		fontmn2->showString("WAITING FOR SERVER", screenW >> 2,
 			(screenH >> 1) - 16);
 
-		ret = playFrame(-1);
+		ret = step(0);
 
 		if (ret < 0) return ret;
 
@@ -290,7 +290,7 @@ int ClientGame::setLevel (char *fileName) {
 		fontmn2->showNumber(file->tell(), (screenW >> 2) + 56, screenH >> 1);
 		fontmn2->showString("bytes", (screenW >> 2) + 64, screenH >> 1);
 
-		ret = playFrame(-1);
+		ret = step(0);
 
 		if (ret < 0) return ret;
 
@@ -310,7 +310,7 @@ void ClientGame::send (unsigned char *buffer) {
 }
 
 
-int ClientGame::playFrame (int ticks) {
+int ClientGame::step (unsigned int ticks) {
 
 	unsigned char sendBuffer[BUFFER_LENGTH];
 	int length, count;

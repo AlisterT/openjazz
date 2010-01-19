@@ -40,7 +40,7 @@
 #include <math.h>
 
 
-void Player::control (int ticks) {
+void Player::control (unsigned int ticks, int msps) {
 
 	// Respond to controls, unless the player has been killed
 
@@ -52,7 +52,7 @@ void Player::control (int ticks) {
 		if (floating) dy = 0;
 		else {
 
-			dy += PYA_GRAVITY * mspf;
+			dy += PYA_GRAVITY * msps;
 			if (dy > PYS_FALL) dy = PYS_FALL;
 
 		}
@@ -65,9 +65,9 @@ void Player::control (int ticks) {
 
 		// Walk/run right
 
-		if (dx < 0) dx += PXA_REVERSE * mspf;
-		else if (dx < PXS_WALK) dx += PXA_WALK * mspf;
-		else if (dx < PXS_RUN) dx += PXA_RUN * mspf;
+		if (dx < 0) dx += PXA_REVERSE * msps;
+		else if (dx < PXS_WALK) dx += PXA_WALK * msps;
+		else if (dx < PXS_RUN) dx += PXA_RUN * msps;
 
 		facing = true;
 
@@ -75,9 +75,9 @@ void Player::control (int ticks) {
 
 		// Walk/run left
 
-		if (dx > 0) dx -= PXA_REVERSE * mspf;
-		else if (dx > -PXS_WALK) dx -= PXA_WALK * mspf;
-		else if (dx > -PXS_RUN) dx -= PXA_RUN * mspf;
+		if (dx > 0) dx -= PXA_REVERSE * msps;
+		else if (dx > -PXS_WALK) dx -= PXA_WALK * msps;
+		else if (dx > -PXS_RUN) dx -= PXA_RUN * msps;
 
 		facing = false;
 
@@ -87,15 +87,15 @@ void Player::control (int ticks) {
 
 		if (dx > 0) {
 
-			if (dx < PXA_STOP * mspf) dx = 0;
-			else dx -= PXA_STOP * mspf;
+			if (dx < PXA_STOP * msps) dx = 0;
+			else dx -= PXA_STOP * msps;
 
 		}
 
 		if (dx < 0) {
 
-			if (dx > -PXA_STOP * mspf) dx = 0;
-			else dx += PXA_STOP * mspf;
+			if (dx > -PXA_STOP * msps) dx = 0;
+			else dx += PXA_STOP * msps;
 
 		}
 
@@ -111,17 +111,17 @@ void Player::control (int ticks) {
 
 			// Fly upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * mspf;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
+			if (dy > 0) dy -= PXA_REVERSE * msps;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
 
 		} else if (pcontrols[C_DOWN]) {
 
 			// Fly downwards
 
-			if (dy < 0) dy += PXA_REVERSE * mspf;
-			else if (dy < PXS_WALK) dy += PXA_WALK * mspf;
-			else if (dy < PXS_RUN) dy += PXA_RUN * mspf;
+			if (dy < 0) dy += PXA_REVERSE * msps;
+			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
+			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
 
 		} else {
 
@@ -129,15 +129,15 @@ void Player::control (int ticks) {
 
 			if (dy > 0) {
 
-				if (dy < PXA_STOP * mspf) dy = 0;
-				else dy -= PXA_STOP * mspf;
+				if (dy < PXA_STOP * msps) dy = 0;
+				else dy -= PXA_STOP * msps;
 
 			}
 
 			if (dy < 0) {
 
-				if (dy > -PXA_STOP * mspf) dy = 0;
-				else dy += PXA_STOP * mspf;
+				if (dy > -PXA_STOP * msps) dy = 0;
+				else dy += PXA_STOP * msps;
 
 			}
 
@@ -159,9 +159,9 @@ void Player::control (int ticks) {
 
 			// Swim upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * mspf;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * mspf;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * mspf;
+			if (dy > 0) dy -= PXA_REVERSE * msps;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
 
 			// Prepare to jump upon leaving the water
 
@@ -180,15 +180,15 @@ void Player::control (int ticks) {
 
 			// Swim downwards
 
-			if (dy < 0) dy += PXA_REVERSE * mspf;
-			else if (dy < PXS_WALK) dy += PXA_WALK * mspf;
-			else if (dy < PXS_RUN) dy += PXA_RUN * mspf;
+			if (dy < 0) dy += PXA_REVERSE * msps;
+			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
+			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
 
 		} else {
 
 			// Sink
 
-			dy += PYA_SINK * mspf;
+			dy += PYA_SINK * msps;
 			if (dy > PYS_SINK) dy = PYS_SINK;
 
 		}
@@ -255,7 +255,7 @@ void Player::control (int ticks) {
 		} else {
 
 			// Fall under gravity
-			dy += PYA_GRAVITY * mspf;
+			dy += PYA_GRAVITY * msps;
 			if (dy > PYS_FALL) dy = PYS_FALL;
 
 		}
@@ -331,7 +331,7 @@ void Player::control (int ticks) {
 
 	if (bird) {
 
-		if (bird->playFrame(ticks)) {
+		if (bird->step(ticks, msps)) {
 
 			delete bird;
 			bird = NULL;
@@ -346,7 +346,7 @@ void Player::control (int ticks) {
 }
 
 
-void Player::move (int ticks) {
+void Player::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
 	int count;
@@ -364,13 +364,13 @@ void Player::move (int ticks) {
 
 	if (fastFeetTime > ticks) {
 
-		pdx = (dx * mspf * 3) >> 11;
-		pdy = (dy * mspf * 3) >> 11;
+		pdx = (dx * msps * 3) >> 11;
+		pdy = (dy * msps * 3) >> 11;
 
 	} else {
 
-		pdx = (dx * mspf) >> 10;
-		pdy = (dy * mspf) >> 10;
+		pdx = (dx * msps) >> 10;
+		pdy = (dy * msps) >> 10;
 
 	}
 
@@ -516,7 +516,7 @@ void Player::move (int ticks) {
 }
 
 
-void Player::view (int ticks) {
+void Player::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;
 
@@ -569,15 +569,22 @@ void Player::view (int ticks) {
 
 }
 
-void Player::draw (int ticks) {
+void Player::draw (unsigned int ticks, int change) {
 
 	Anim *an;
 	int anim, frame;
+	fixed drawX, drawY;
 	fixed xOffset, yOffset;
 
 	// The current frame for animations
 	if (reaction == PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
 	else frame = ticks / 75;
+
+
+	// Get position
+
+	drawX = getDrawX(change);
+	drawY = getDrawY(change);
 
 
 	// Choose player animation
@@ -603,6 +610,9 @@ void Player::draw (int ticks) {
 			level->checkMaskDown(x + PXO_ML, y + F8) ||
 			level->checkMaskDown(x + PXO_MID, y + F8) ||
 			level->checkMaskDown(x + PXO_MR, y + F8)) {
+
+			drawX = x;
+			drawY = y;
 
 			if (dx) {
 
@@ -671,11 +681,10 @@ void Player::draw (int ticks) {
 
 
 	// Draw "motion blur"
-	if (fastFeetTime > ticks)
-		an->draw(x - (dx >> 6), y);
+	if (fastFeetTime > ticks) an->draw(drawX - (dx >> 6), drawY);
 
 	// Draw player
-	an->draw(x, y);
+	an->draw(drawX, drawY);
 
 
 	// Remove red flash or player colour from sprite
@@ -692,16 +701,16 @@ void Player::draw (int ticks) {
 		an = level->getMiscAnim(0);
 
 		an->setFrame(frame, true);
-		an->draw(x + PXO_MID + xOffset, y + PYO_MID + yOffset);
+		an->draw(drawX + PXO_MID + xOffset, drawY + PYO_MID + yOffset);
 
 		an->setFrame(frame + 1, true);
-		an->draw(x + PXO_MID - xOffset, y + PYO_MID - yOffset);
+		an->draw(drawX + PXO_MID - xOffset, drawY + PYO_MID - yOffset);
 
 		an->setFrame(frame + 2, true);
-		an->draw(x + PXO_MID + yOffset, y + PYO_MID + xOffset);
+		an->draw(drawX + PXO_MID + yOffset, drawY + PYO_MID + xOffset);
 
 		an->setFrame(frame + 3, true);
-		an->draw(x + PXO_MID - yOffset, y + PYO_MID - xOffset);
+		an->draw(drawX + PXO_MID - yOffset, drawY + PYO_MID - xOffset);
 
 	} else if (shield > 2) {
 
@@ -712,13 +721,13 @@ void Player::draw (int ticks) {
 
 		an = level->getAnim(59);
 
-		an->draw(x + xOffset, y + PYO_TOP + yOffset);
+		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 
-		if (shield > 3) an->draw(x - xOffset, y + PYO_TOP - yOffset);
+		if (shield > 3) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
 
-		if (shield > 4) an->draw(x + yOffset, y + PYO_TOP - xOffset);
+		if (shield > 4) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
 
-		if (shield > 5) an->draw(x - yOffset, y + PYO_TOP + xOffset);
+		if (shield > 5) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
 
 	} else if (shield) {
 
@@ -729,21 +738,21 @@ void Player::draw (int ticks) {
 
 		an = level->getAnim(50);
 
-		an->draw(x + xOffset, y + yOffset + PYO_TOP);
+		an->draw(drawX + xOffset, drawY + yOffset + PYO_TOP);
 
-		if (shield == 2) an->draw(x - xOffset, y + PYO_TOP - yOffset);
+		if (shield == 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
 
 	}
 
 
 	// Show the bird
-	if (bird) bird->draw(ticks);
+	if (bird) bird->draw(ticks, change);
 
 
 	// Show the player's name
 	if (gameMode)
-		panelBigFont->showString(name, FTOI(x - viewX),
-			FTOI(y - F32 - F16 - viewY));
+		panelBigFont->showString(name, FTOI(drawX - viewX),
+			FTOI(drawY - F32 - F16 - viewY));
 
 	return;
 

@@ -24,6 +24,7 @@
 #define _BULLET_H
 
 
+#include "movable.h"
 #include "OpenJazz.h"
 
 
@@ -51,27 +52,28 @@ class Bird;
 class Event;
 class Player;
 
-class Bullet {
+class Bullet : public Movable {
 
 	private:
-		Bullet *next;
-		Player *source;    // If NULL, was fired by an event
-		int     type;      // -1 is TNT, otherwise this indexes the bullet set
-		int     direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
-		fixed   x, y, dy;
-		int     time;      // The time at which the bullet will self-destruct
+		Bullet      *next;
+		Player      *source;    // If NULL, was fired by an event
+		int          type;      // -1 is TNT, otherwise indexes the bullet set
+		int          direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
+		unsigned int time;      // Time at which the bullet will self-destruct
 
 	public:
-		Bullet              (Player *sourcePlayer, bool lower, int ticks);
-		Bullet              (Event *sourceEvent, bool facing, int ticks);
-		Bullet              (Bird *sourceBird, bool lower, int ticks);
+		Bullet              (Player *sourcePlayer, bool lower,
+			unsigned int ticks);
+		Bullet              (Event *sourceEvent, bool facing,
+			unsigned int ticks);
+		Bullet              (Bird *sourceBird, bool lower, unsigned int ticks);
 		~Bullet             ();
 
 		Bullet * getNext    ();
 		void     removeNext ();
 		Player * getSource  ();
-		bool     playFrame  (int ticks);
-		void     draw       ();
+		bool     step       (unsigned int ticks, int msps);
+		void     draw       (int change);
 
 };
 

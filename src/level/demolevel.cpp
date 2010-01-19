@@ -101,7 +101,8 @@ int DemoLevel::play () {
 	smoothfps = 50.0f;
 
 	tickOffset = globalTicks;
-	ticks = -10;
+	ticks = 16;
+	prevStepTicks = 0;
 
 	stats = S_NONE;
 
@@ -152,9 +153,14 @@ int DemoLevel::play () {
 
 		// Process frame-by-frame activity
 
-		ret = playFrame();
+		// Process step
+		if (ticks >= prevStepTicks + 16) {
 
-		if (ret < 0) return ret;
+			ret = step();
+
+			if (ret < 0) return ret;
+
+		}
 
 
 		// Handle player reactions

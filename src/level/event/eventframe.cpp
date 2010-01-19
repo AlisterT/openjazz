@@ -36,18 +36,18 @@
 #include <math.h>
 
 
-bool Event::playFrame (int ticks) {
+bool Event::step (unsigned int ticks, int msps) {
 
 	fixed width, height;
 	signed char *set;
-	fixed startX;
-	int count, offset;
+	int count;
+	fixed offset;
 	float angle;
 
 	// Process the next event
 	if (next) {
 
-		if (next->playFrame(ticks)) removeNext();
+		if (next->step(ticks, msps)) removeNext();
 
 	}
 
@@ -87,8 +87,13 @@ bool Event::playFrame (int ticks) {
 	height = getHeight();
 
 
-   	// Pre-movement platform position
-	startX = x;
+	if (set[E_BEHAVIOUR] != 28) {
+
+   		// Pre-movement position
+	   	dx = x;
+		dy = y;
+
+	}
 
 
 	// Handle behaviour
@@ -98,16 +103,16 @@ bool Event::playFrame (int ticks) {
 		case 1:
 
 			// Sink down
-			y += ES_FAST * mspf / set[E_MOVEMENTSP];
+			y += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
 		case 2:
 
 			// Walk from side to side
-			if (animType == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_FAST * msps / set[E_MOVEMENTSP];
 			else if (animType == E_RIGHTANIM)
-				x += ES_FAST * mspf / set[E_MOVEMENTSP];
+				x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -115,9 +120,9 @@ bool Event::playFrame (int ticks) {
 
 			// Seek jazz
 			if (localPlayer->getX() + PXO_R < x)
-				x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+				x -= ES_FAST * msps / set[E_MOVEMENTSP];
 			else if (localPlayer->getX() + PXO_L > x + width)
-				x += ES_FAST * mspf / set[E_MOVEMENTSP];
+				x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -128,15 +133,15 @@ bool Event::playFrame (int ticks) {
 			if (!level->checkMaskDown(x + (width >> 1), y)) {
 
 				// Fall downwards
-				y += ES_FAST * mspf / set[E_MOVEMENTSP];
+				y += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			} else {
 
 				// Walk from side to side
 				if (animType == E_LEFTANIM)
-					x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+					x -= ES_FAST * msps / set[E_MOVEMENTSP];
 				else if (animType == E_RIGHTANIM)
-					x += ES_FAST * mspf / set[E_MOVEMENTSP];
+					x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			}
 
@@ -159,9 +164,9 @@ bool Event::playFrame (int ticks) {
 		case 7:
 
 			// Move back and forth horizontally with tail
-			if (animType == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_SLOW * msps / set[E_MOVEMENTSP];
 			else if (animType == E_RIGHTANIM)
-				x += ES_SLOW * mspf / set[E_MOVEMENTSP];
+				x += ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -187,25 +192,25 @@ bool Event::playFrame (int ticks) {
 
 			// Sink to ground
 			if (!level->checkMaskDown(x + (width >> 1), y))
-				y += ES_FAST * mspf / set[E_MOVEMENTSP];
+				y += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
 		case 12:
 
 			// Move back and forth horizontally
-			if (animType == E_LEFTANIM) x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_SLOW * msps / set[E_MOVEMENTSP];
 			else if (animType == E_RIGHTANIM)
-				x += ES_SLOW * mspf / set[E_MOVEMENTSP];
+				x += ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			break;
 
 		case 13:
 
 			// Move up and down
-			if (animType == E_LEFTANIM) y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) y -= ES_SLOW * msps / set[E_MOVEMENTSP];
 			else if (animType == E_RIGHTANIM)
-				y += ES_SLOW * mspf / set[E_MOVEMENTSP];
+				y += ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -224,7 +229,7 @@ bool Event::playFrame (int ticks) {
 		case 16:
 
 			// Move across level to the left or right
-			x += set[E_MAGNITUDE] * ES_SLOW * mspf / set[E_MOVEMENTSP];
+			x += set[E_MAGNITUDE] * ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -286,9 +291,9 @@ bool Event::playFrame (int ticks) {
 
 				if (players[count].overlap(x, y - height, width, height)) {
 
-					if (set[E_YAXIS]) players[count].floatUp(set);
+					if (set[E_YAXIS]) players[count].floatUp(set, msps);
 
-					players[count].belt(set[E_MAGNITUDE]);
+					players[count].belt(set[E_MAGNITUDE] * msps);
 
 				}
 
@@ -312,46 +317,42 @@ bool Event::playFrame (int ticks) {
 
 			// Bridge
 
-			if (localPlayer->overlap(x - F10,
-				y + ITOF(set[E_YAXIS]) - F32, set[E_MULTIPURPOSE] * F8,
-				F8 + F20)) {
+			// Gradually stop the bridge sagging
+			if (dx < set[E_MULTIPURPOSE] * F8) dx += 320 * msps;
+			if (dx > set[E_MULTIPURPOSE] * F8) dx = set[E_MULTIPURPOSE] * F8;
+			if (dy > 0) dy -= 320 * msps;
+			if (dy < 0) dy = 0;
 
-				if (!level->checkMaskDown(localPlayer->getX() + PXO_MID,
-					y + ITOF(set[E_YAXIS]) - F32 - F20)) {
+			for (count = 0; count < nPlayers; count++) {
 
-					// Player is on the bridge
+				if (players[count].overlap(x, y, set[E_MULTIPURPOSE] * F8,
+					F8)) {
 
-					localPlayer->setEvent(set);
-					localPlayer->setPosition(localPlayer->getX(),
-						y + ITOF(set[E_YAXIS]) - F32);
+					offset = players[count].getX() + PXO_MID;
 
-					offset = (localPlayer->getX() + PXO_MID - x) >> 13;
+					if (!level->checkMaskDown(offset, y - F32)) {
 
-					if (offset < set[E_MULTIPURPOSE] >> 1) {
+						// Player is on the bridge
 
-						// Player is to the left of the centre of the bridge
+						players[count].setEvent(set);
 
-						y = TTOF(gridY) + F24 + ITOF(offset);
-						animType = E_LEFTANIM;
+						offset -= x;
 
-					} else {
+						if (offset < dx) dx = offset;
 
-						// Player is to the right of the centre of the bridge
+						if ((offset > dy) &&
+							(offset < set[E_MULTIPURPOSE] * F8)) dy = offset;
 
-						y = TTOF(gridY) + F24 +
-							ITOF(set[E_MULTIPURPOSE] - offset);
-						animType = E_RIGHTANIM;
+						if (offset < set[E_MULTIPURPOSE] * F4)
+							players[count].setPosition(players[count].getX(),
+								y + (offset >> 3) - F8);
+						else
+							players[count].setPosition(players[count].getX(),
+								y + (set[E_MULTIPURPOSE] * F1) - (offset >> 3) - F8);
 
-					}
+					} else players[count].clearEvent(set, E_BEHAVIOUR);
 
-				} else localPlayer->clearEvent(set, E_BEHAVIOUR);
-
-			} else {
-
-				// Player is not on the bridge
-
-				// Gradually stop the bridge sagging
-				if (y - F24 > TTOF(gridY)) y -= 16 * mspf;
+				}
 
 			}
 
@@ -386,16 +387,16 @@ bool Event::playFrame (int ticks) {
 		case 31:
 
 			// Move horizontally
-			if (animType == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-			else x += ES_FAST * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_FAST * msps / set[E_MOVEMENTSP];
+			else x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
 		case 32:
 
 			// Move horizontally
-			if (animType == E_LEFTANIM) x -= ES_FAST * mspf / set[E_MOVEMENTSP];
-			else x += ES_FAST * mspf / set[E_MOVEMENTSP];
+			if (animType == E_LEFTANIM) x -= ES_FAST * msps / set[E_MOVEMENTSP];
+			else x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			break;
 
@@ -405,22 +406,22 @@ bool Event::playFrame (int ticks) {
 
 			if (localPlayer->getFacing() && (x + width < localPlayer->getX())) {
 
-				x += ES_FAST * mspf / set[E_MOVEMENTSP];
+				x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 				if (y + height < localPlayer->getY() + PYO_TOP)
-					y += ES_SLOW * mspf / set[E_MOVEMENTSP];
+					y += ES_SLOW * msps / set[E_MOVEMENTSP];
 				else if (y > localPlayer->getY())
-					y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+					y -= ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			} else if (!localPlayer->getFacing() &&
 				(x > localPlayer->getX() + F32)) {
 
-				x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+				x -= ES_FAST * msps / set[E_MOVEMENTSP];
 
 				if (y + height < localPlayer->getY() + PYO_TOP)
-					y += ES_SLOW * mspf / set[E_MOVEMENTSP];
+					y += ES_SLOW * msps / set[E_MOVEMENTSP];
 				else if (y > localPlayer->getY())
-					y -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+					y -= ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			}
 
@@ -436,12 +437,12 @@ bool Event::playFrame (int ticks) {
 					level->setEventTime(gridX, gridY,
 						ticks + (set[E_MODIFIER] * 500));
 				else
-					y -= (y + (set[E_YAXIS] * F2) - TTOF(gridY)) * mspf / 320;
+					y -= (y + (set[E_YAXIS] * F2) - TTOF(gridY)) * msps / 320;
 
 			} else {
 
 				if (y < TTOF(gridY) + F16)
-					y += (y + (set[E_YAXIS] * F2) - TTOF(gridY)) * mspf / 320;
+					y += (y + (set[E_YAXIS] * F2) - TTOF(gridY)) * msps / 320;
 				else y = TTOF(gridY) + F16;
 
 			}
@@ -461,15 +462,15 @@ bool Event::playFrame (int ticks) {
 			if (!level->checkMaskDown(x + (width >> 1), y)) {
 
 				// Fall downwards
-				y += ES_FAST * mspf / set[E_MOVEMENTSP];
+				y += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			} else {
 
 				// Walk from side to side, staying on-screen
 				if (animType == E_LEFTANIM)
-					x -= ES_FAST * mspf / set[E_MOVEMENTSP];
+					x -= ES_FAST * msps / set[E_MOVEMENTSP];
 				else if (animType == E_RIGHTANIM)
-					x += ES_FAST * mspf / set[E_MOVEMENTSP];
+					x += ES_FAST * msps / set[E_MOVEMENTSP];
 
 			}
 
@@ -554,9 +555,9 @@ bool Event::playFrame (int ticks) {
 			if (y > level->getWaterLevel(0)) {
 
 				if (animType == E_LEFTANIM)
-					x -= ES_SLOW * mspf / set[E_MOVEMENTSP];
+					x -= ES_SLOW * msps / set[E_MOVEMENTSP];
 				else if (animType == E_RIGHTANIM)
-					x += ES_SLOW * mspf / set[E_MOVEMENTSP];
+					x += ES_SLOW * msps / set[E_MOVEMENTSP];
 
 			}
 
@@ -824,7 +825,8 @@ bool Event::playFrame (int ticks) {
 	// Generate bullet
 	if (set[E_BULLETSP]) {
 
-		if ((ticks % (set[E_BULLETSP] * 25) > (set[E_BULLETSP] * 25) - 200) &&
+		if ((ticks % (set[E_BULLETSP] * 25) >
+				(unsigned int)(set[E_BULLETSP] * 25) - 200) &&
 			((animType == E_LEFTANIM) || (animType == E_RIGHTANIM))) {
 
 			if (animType == E_LEFTANIM) animType = E_LSHOOTANIM;
@@ -832,7 +834,8 @@ bool Event::playFrame (int ticks) {
 
 		}
 
-		if ((ticks % (set[E_BULLETSP] * 25) < (set[E_BULLETSP] * 25) - 200) &&
+		if ((ticks % (set[E_BULLETSP] * 25) <
+				(unsigned int)(set[E_BULLETSP] * 25) - 200) &&
 			((animType == E_LSHOOTANIM) || (animType == E_RSHOOTANIM))) {
 
 			if (animType == E_RSHOOTANIM) {
@@ -893,13 +896,13 @@ bool Event::playFrame (int ticks) {
 					// Platform
 
 					if ((players[count].getY() <=
-						y + (PYS_FALL / mspf) - height)
+						y + (PYS_FALL / msps) - height)
 						&& !level->checkMaskDown(players[count].getX() +
 						PXO_MID, y - height - F20)) {
 
 						players[count].setEvent(set);
 						players[count].setPosition(players[count].getX() +
-							x - startX, y - height);
+							x - dx, y - height);
 
 					} else players[count].clearEvent(set, E_MODIFIER);
 
@@ -916,21 +919,31 @@ bool Event::playFrame (int ticks) {
 	}
 
 
+	if (set[E_BEHAVIOUR] != 28) {
+
+		// Store change in position
+		dx = x - dx;
+		dy = y - dy;
+
+	}
+
+
 	return false;
 
 }
 
 
-void Event::draw (int ticks) {
+void Event::draw (unsigned int ticks, int change) {
 
 	Anim *anim;
 	signed char *set;
-	int count, midpoint;
-	fixed bridgex, bridgey, dsty;
+	int count;
+	fixed bridgeLength, dipA, dipB;
 
 
 	// Uncomment the following to see the area of the event
-	/*drawRect(FTOI(getX() - viewX), FTOI(getY() - viewY), FTOI(getWidth()),
+	/*drawRect(FTOI(getDrawX(change) - viewX),
+		FTOI(getDrawY(change) - (viewY + getHeight())), FTOI(getWidth()),
 		FTOI(getHeight()), 88);*/
 
 
@@ -960,57 +973,45 @@ void Event::draw (int ticks) {
 
 	if (set[E_BEHAVIOUR] == 28) {
 
-		bridgex = x - F10;
-		dsty = y + ITOF(set[E_YAXIS]) - F32;
+		bridgeLength = set[E_MULTIPURPOSE] * F8;
 
-		if (y - F24 > TTOF(gridY)) {
+		if (dy >= dx) {
 
-			if (animType == E_LEFTANIM)
-				midpoint = FTOI(y - F24 - TTOF(gridY));
-			else midpoint = set[E_MULTIPURPOSE] - FTOI(y - F24 - TTOF(gridY));
+			dipA = (dx <= (bridgeLength >> 1)) ? dx >> 3:
+				(bridgeLength - dx) >> 3;
+			dipB = (dy <= (bridgeLength >> 1)) ? dy >> 3:
+				(bridgeLength - dy) >> 3;
 
-		} else midpoint = 0;
+			for (count = 0; count < bridgeLength; count += F8) {
 
-		if (midpoint < set[E_MULTIPURPOSE] >> 1) {
-
-			for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
-
-				bridgex += F8;
-
-				if (midpoint == 0) bridgey = dsty;
-				else if (count < midpoint)
-					bridgey = ((dsty - ITOF(midpoint)) *
-						(midpoint - count) / midpoint) +
-						(dsty * count / midpoint);
+				if (count < dx)
+					anim->draw(x + count, y + (count * dipA / dx));
+				else if (count < dy)
+					anim->draw(x + count,
+						y + dipA +
+							((count - dx) * (dipB - dipA) / (dy - dx)));
 				else
-					bridgey = ((dsty - ITOF(midpoint)) * (count - midpoint) /
-						(set[E_MULTIPURPOSE] - midpoint)) +
-						(dsty * (set[E_MULTIPURPOSE] - count) /
-						(set[E_MULTIPURPOSE] - midpoint));
-
-				anim->draw(bridgex, bridgey);
+					anim->draw(x + count,
+						y + ((bridgeLength - count) * dipB /
+							(bridgeLength - dy)));
 
 			}
 
 		} else {
 
-			for (count = 0; count < set[E_MULTIPURPOSE]; count++) {
+			// No players on the bridge, de-sagging in progress
 
-				bridgex += F8;
+			dipA = (dx + dy) >> 1;
+			dipB = (dy < bridgeLength - dx) ? dy >> 3: (bridgeLength - dx) >> 3;
 
-				if (midpoint == 0) bridgey = dsty;
-				else if (count < midpoint)
-					bridgey = ((dsty + ITOF(midpoint - set[E_MULTIPURPOSE])) *
-						(midpoint - count) / midpoint) +
-						(dsty * count / midpoint);
+			for (count = 0; count < bridgeLength; count += F8) {
+
+				if (count < dipA)
+					anim->draw(x + count, y + (count * dipB / dipA));
 				else
-					bridgey = ((dsty + ITOF(midpoint - set[E_MULTIPURPOSE])) *
-						(count - midpoint) /
-						(set[E_MULTIPURPOSE] - midpoint)) +
-						(dsty * (set[E_MULTIPURPOSE] - count) /
-						(set[E_MULTIPURPOSE] - midpoint));
-
-				anim->draw(bridgex, bridgey);
+					anim->draw(x + count,
+						y + ((bridgeLength - count) * dipB /
+							(bridgeLength - dipA)));
 
 			}
 
@@ -1018,7 +1019,7 @@ void Event::draw (int ticks) {
 
 	} else {
 
-		anim->draw(x, y);
+		anim->draw(getDrawX(change), getDrawY(change));
 
 	}
 
@@ -1030,7 +1031,7 @@ void Event::draw (int ticks) {
 
 		anim = level->getMiscAnim(2);
 		anim->setFrame(frame, false);
-		anim->draw(x, y);
+		anim->draw(getDrawX(change), getDrawY(change));
 
 	}
 

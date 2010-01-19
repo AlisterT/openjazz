@@ -50,7 +50,7 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 	y = TTOF(gY + 1);
 	flashTime = 0;
 
-	// Choose initial animation and direction
+	// Choose initial settings
 
 	switch (getProperty(E_BEHAVIOUR)) {
 
@@ -67,6 +67,19 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 		case 26: // Flip animation
 
 			animType = E_RIGHTANIM;
+
+			break;
+
+		case 28:
+
+			animType = E_LEFTANIM;
+			x -= F2;
+			y += ITOF(getProperty(E_YAXIS)) - F40;
+
+			// dx and dy used to store leftmost and rightmost player on bridge
+			// Start with minimum values
+			dx = getProperty(E_MULTIPURPOSE) * F8;
+			dy = 0;
 
 			break;
 
@@ -114,7 +127,7 @@ void Event::removeNext () {
 }
 
 
-void Event::destroy (int ticks) {
+void Event::destroy (unsigned int ticks) {
 
 	level->setEventTime(gridX, gridY, ticks + T_FINISH);
 
@@ -128,7 +141,7 @@ void Event::destroy (int ticks) {
 }
 
 
-bool Event::hit (Player *source, int ticks) {
+bool Event::hit (Player *source, unsigned int ticks) {
 
 	int hitsRemaining;
 
@@ -156,20 +169,6 @@ bool Event::hit (Player *source, int ticks) {
 bool Event::isFrom (unsigned char gX, unsigned char gY) {
 
 	return (gX == gridX) && (gY == gridY);
-
-}
-
-
-fixed Event::getX () {
-
-	return x;
-
-}
-
-
-fixed Event::getY () {
-
-	return y - getHeight();
 
 }
 

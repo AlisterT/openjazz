@@ -27,6 +27,7 @@
 #define _EVENTS_H
 
 
+#include "movable.h"
 #include "OpenJazz.h"
 
 
@@ -74,17 +75,16 @@
 
 class Player;
 
-class Event {
+class Event : public Movable {
 
 	private:
 		Event         *next;
 		unsigned char  gridX, gridY; // Grid position of the event
-		fixed          x, y;         // Actual position of the event
 		unsigned char  animType;     // E_LEFTANIM, etc, or 0
 		unsigned char  frame;
-		int            flashTime;
+		unsigned int   flashTime;
 
-		void destroy (int ticks);
+		void destroy (unsigned int ticks);
 
 	public:
 		Event                   (unsigned char gX, unsigned char gY,
@@ -93,17 +93,15 @@ class Event {
 
 		Event *     getNext     ();
 		void        removeNext  ();
-		bool        hit         (Player *source, int ticks);
+		bool        hit         (Player *source, unsigned int ticks);
 		bool        isFrom      (unsigned char gX, unsigned char gY);
-		fixed       getX        ();
-		fixed       getY        ();
 		fixed       getWidth    ();
 		fixed       getHeight   ();
 		bool        overlap     (fixed left, fixed top, fixed width,
 			fixed height);
 		signed char getProperty (unsigned char property);
-		bool        playFrame   (int ticks);
-		void        draw        (int ticks);
+		bool        step        (unsigned int ticks, int msps);
+		void        draw        (unsigned int ticks, int change);
 
 };
 

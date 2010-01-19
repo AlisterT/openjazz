@@ -115,7 +115,7 @@ class Level {
 		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char  difficulty;
 		int            pathLength;
-		int            endTime;
+		unsigned int   endTime;
 		int            enemies, items;
 		fixed          waterLevel;
 		fixed          energyBar;
@@ -125,11 +125,11 @@ class Level {
 		int loadTiles   (char *fileName);
 
 	protected:
-		float smoothfps;
-		int   tickOffset, prevTicks, ticks;
+		float        smoothfps;
+		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
 
 		int  load      (char *fileName, unsigned char diff, bool checkpoint);
-		int  playFrame ();
+		int  step      ();
 		void draw      ();
 		void timeCalcs (bool paused);
 
@@ -152,12 +152,12 @@ class Level {
 			unsigned char tile);
 		signed char * getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
-		int           getEventTime  (unsigned char gridX, unsigned char gridY);
+		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
 		int           hitEvent      (Player *source, unsigned char gridX,
 			unsigned char gridY);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY,
-			int time);
+			unsigned int time);
 		signed char * getBullet     (unsigned char bullet);
 		Sprite *      getSprite     (unsigned char sprite);
 		Anim *        getAnim       (unsigned char anim);

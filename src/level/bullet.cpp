@@ -32,7 +32,7 @@
 #include "player/player.h"
 
 
-Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks) {
+Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 	// Properties based on the player
 
@@ -54,6 +54,7 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks) {
 	direction |= lower? 2: 0;
 	x = source->getX() + (source->getFacing()? PXO_R: PXO_L);
 	y = source->getY() - F8;
+	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 
 	if (type == 4) {
 
@@ -79,7 +80,7 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, int ticks) {
 }
 
 
-Bullet::Bullet (Event *sourceEvent, bool facing, int ticks) {
+Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 
 	// Properties based on the event
 
@@ -89,7 +90,8 @@ Bullet::Bullet (Event *sourceEvent, bool facing, int ticks) {
 	direction = facing? 1: 0;
 
 	x = sourceEvent->getX() + (sourceEvent->getWidth() >> 1);
-	y = sourceEvent->getY() + (sourceEvent->getHeight() >> 1);
+	y = sourceEvent->getY() - (sourceEvent->getHeight() >> 1);
+	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
 
@@ -100,7 +102,7 @@ Bullet::Bullet (Event *sourceEvent, bool facing, int ticks) {
 }
 
 
-Bullet::Bullet (Bird *sourceBird, bool lower, int ticks) {
+Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
 
 	// Properties based on the bird and its player
 
@@ -122,6 +124,7 @@ Bullet::Bullet (Bird *sourceBird, bool lower, int ticks) {
 	direction |= lower? 2: 0;
 	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
 	y = sourceBird->getY();
+	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
 
@@ -170,7 +173,7 @@ Player * Bullet::getSource () {
 }
 
 
-bool Bullet::playFrame (int ticks) {
+bool Bullet::step (unsigned int ticks, int msps) {
 
 	signed char *set;
 	Event *event;
@@ -179,7 +182,7 @@ bool Bullet::playFrame (int ticks) {
 	// Process the next bullet
 	if (next) {
 
-		if (next->playFrame(ticks)) removeNext();
+		if (next->step(ticks, msps)) removeNext();
 
 	}
 
@@ -276,14 +279,14 @@ bool Bullet::playFrame (int ticks) {
 		else if (level->checkMaskDown(x, y + F4)) dy = -600 * F1;
 		else if (level->checkMaskDown(x - F4, y)) direction |= 1;
 		else if (level->checkMaskDown(x + F4, y)) direction &= ~1;
-		else dy += 6400 * mspf * set[B_GRAVITY];
+		else dy += 6400 * msps * set[B_GRAVITY];
 
-	} else dy += 6400 * mspf * set[B_GRAVITY];
+	} else dy += 6400 * msps * set[B_GRAVITY];
 
 
 	// Apply trajectory
-	x += (set[B_XSPEED + direction] * 500 * F1 * mspf) >> 10;
-	y += (dy * mspf) >> 10;
+	x += (dx * msps) >> 10;
+	y += (dy * msps) >> 10;
 
 
 	// Do not destroy the bullet
@@ -292,11 +295,11 @@ bool Bullet::playFrame (int ticks) {
 }
 
 
-void Bullet::draw () {
+void Bullet::draw (int change) {
 
 	Sprite *sprite;
 
-	if (next) next->draw();
+	if (next) next->draw(change);
 
 	if (type == -1) sprite = level->getSprite(130);
 	else sprite =
@@ -304,8 +307,9 @@ void Bullet::draw () {
 			[B_SPRITE + direction]);
 
 	// Show the bullet
-	sprite->draw(FTOI(x) - (sprite->getWidth() >> 1) - FTOI(viewX),
-		FTOI(y) - (sprite->getWidth() >> 1) - FTOI(viewY));
+	sprite->draw(
+		FTOI(getDrawX(change)) - (sprite->getWidth() >> 1) - FTOI(viewX),
+		FTOI(getDrawY(change)) - (sprite->getHeight() >> 1) - FTOI(viewY));
 
 	return;
 

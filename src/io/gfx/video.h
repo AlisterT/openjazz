@@ -43,7 +43,6 @@ EXTERN int          viewW, viewH, screenW, screenH;
 EXTERN bool         fullscreen;
 #endif
 EXTERN bool         fakePalette;
-EXTERN int          mspf;
 
 // Palettes
 EXTERN SDL_Color *currentPalette;

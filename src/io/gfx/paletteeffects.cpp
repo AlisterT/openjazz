@@ -48,10 +48,10 @@ PaletteEffect::~PaletteEffect () {
 }
 
 
-void PaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void PaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 	return;
 
@@ -69,12 +69,13 @@ WhiteInPaletteEffect::WhiteInPaletteEffect (fixed newDuration,
 }
 
 
-void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	if (whiteness > F1) {
@@ -119,12 +120,13 @@ FadeInPaletteEffect::FadeInPaletteEffect (int newDuration,
 }
 
 
-void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	if (blackness > F1) {
@@ -169,12 +171,13 @@ WhiteOutPaletteEffect::WhiteOutPaletteEffect (int newDuration,
 }
 
 
-void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	if (whiteness > F1) {
@@ -217,12 +220,13 @@ FadeOutPaletteEffect::FadeOutPaletteEffect (int newDuration,
 }
 
 
-void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 	if (blackness > F1) {
 
@@ -268,12 +272,13 @@ FlashPaletteEffect::FlashPaletteEffect (unsigned char newRed,
 }
 
 
-void FlashPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void FlashPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 	if (progress < 0) {
 
@@ -329,12 +334,13 @@ RotatePaletteEffect::RotatePaletteEffect (unsigned char newFirst,
 }
 
 
-void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	for (count = 0; count < amount; count++) {
@@ -371,12 +377,12 @@ SkyPaletteEffect::SkyPaletteEffect (unsigned char newFirst,
 }
 
 
-void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	int position, count, y;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	position = viewY + (viewH << 9) - F4;
@@ -438,12 +444,12 @@ P2DPaletteEffect::P2DPaletteEffect (unsigned char newFirst,
 }
 
 
-void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	int count, x, y, j;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	x = FTOI(((256 * 32) - FTOI(viewX)) * speed);
@@ -483,13 +489,13 @@ P1DPaletteEffect::P1DPaletteEffect (unsigned char newFirst,
 }
 
 
-void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	fixed position;
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	position = viewX + viewY;
@@ -522,12 +528,13 @@ WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect * nextPE)
 }
 
 
-void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct) {
+void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
+	int mspf) {
 
 	int position, count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct);
+	if (next) next->apply(shownPalette, direct, mspf);
 
 
 	position = localPlayer->getY() - level->getWaterLevel(0);
