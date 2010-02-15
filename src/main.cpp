@@ -12,7 +12,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -54,25 +54,104 @@ extern int volume_direction;
 #endif
 
 
-int loadMain () {
+int loadMain (int argc, char *argv[]) {
 
 	File *file;
 	unsigned char *pixels, *sorted;
 	int count, x, y;
 
 
-	// Initialise video settings
+	// Determine paths
+
+	// Use the hard-coded path, if available
+
+#ifdef DATAPATH
+	firstPath = new Path(NULL, createString(DATAPATH));
+#elseifdef __SYMBIAN32__
+	#ifdef UIQ3
+		firstPath = new Path(NULL, createString("c:\\shared\\openjazz\\"));
+	#else
+		firstPath = new Path(NULL, createString("c:\\data\\openjazz\\"));
+	#endif
+#else
+	firstPath = NULL;
+#endif
+
+
+	// Use any provided paths, appending a directory separator as necessary
+
+	for (count = 1; count < argc; count++) {
+
+		// If it isn't an option, it should be a path
+		if (argv[count][0] != '-') {
+
+#ifdef WIN32
+			if (argv[count][strlen(argv[count]) - 1] != '\\') {
+
+				firstPath = new Path(firstPath, createString(argv[count], "\\"));
+#else
+			if (argv[count][strlen(argv[count]) - 1] != '/') {
+
+				firstPath = new Path(firstPath, createString(argv[count], "/"));
+#endif
+
+			} else {
+
+				firstPath = new Path(firstPath, createString(argv[count]));
+
+			}
+
+		}
+
+	}
+
+
+	// Use the path of the program
+
+	count = strlen(argv[0]) - 1;
+
+	// Search for directory separator
+#ifdef WIN32
+	while ((argv[0][count] != '\\') && (count >= 0)) count--;
+#else
+	while ((argv[0][count] != '/') && (count >= 0)) count--;
+#endif
+
+	// If a directory was found, copy it to the path
+	if (count > 0) {
+
+		firstPath = new Path(firstPath, new char[count + 2]);
+		memcpy(firstPath->path, argv[0], count + 1);
+		firstPath->path[count + 1] = 0;
+
+	}
+
+
+	// Use the user's home directory, if available
+
+#ifdef HOMEDIR
+	#ifdef WIN32
+		firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
+	#else
+		firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
+	#endif
+#endif
+
+
+	// Use the current working directory
+
+	firstPath = new Path(firstPath, createString(""));
+
+
+
+	// Default settings
+
+	// Video settings
 	screenW = 320;
 	screenH = 200;
 #ifndef FULLSCREEN_ONLY
 	fullscreen = false;
 #endif
-	// Assume that in windowed mode the palette is being emulated
-	// This is extremely likely
-	// TODO: Find a better way
-	fakePalette = true;
-	firstPE = NULL;
-
 
 	// Create the player's name
 	characterName = createEditableString(CHAR_NAME);
@@ -89,6 +168,7 @@ int loadMain () {
 
 
 	// Open config file
+
 	try {
 
 		file = new File(CONFIG_FILE, false);
@@ -141,20 +221,32 @@ int loadMain () {
 
 	}
 
+
+	// Get command-line override
+
+#ifndef FULLSCREEN_ONLY
+	for (count = 1; count < argc; count++) {
+
+		// If there's a hyphen, it should be an option
+		if (argv[count][0] == '-') {
+
+			if (argv[count][1] == 'f') fullscreen = true;
+
+		}
+
+	}
+#endif
+
+
 	// Create the game's window
 
+	currentPalette = logicalPalette;
+
 #ifdef FULLSCREEN_ONLY
-  #ifdef WIZ
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
-		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
-	SDL_ShowCursor(SDL_DISABLE);
-  #else
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
-		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-  #endif
+	createFullscreen();
 #else
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
-		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+	if (fullscreen) createFullscreen();
+	else createWindow();
 #endif
 
 	if (!screen) {
@@ -162,6 +254,8 @@ int loadMain () {
 		logError("Could not set video mode", SDL_GetError());
 
 		delete characterName;
+
+		delete firstPath;
 
 		return E_VIDEO;
 
@@ -180,6 +274,8 @@ int loadMain () {
 
 	restorePalette(screen);
 
+	firstPE = NULL;
+
 
 	// Set up audio
 	openAudio();
@@ -197,6 +293,8 @@ int loadMain () {
 		closeAudio();
 
 		delete characterName;
+
+		delete firstPath;
 
 		return e;
 
@@ -314,6 +412,8 @@ int loadMain () {
 
 		delete[] characterName;
 
+		delete firstPath;
+
 		delete file;
 
 		return e;
@@ -424,6 +524,8 @@ void freeMain () {
 
 	delete[] characterName;
 
+	delete firstPath;
+
 
 	return;
 
@@ -453,7 +555,14 @@ int loop (int type) {
 #ifndef FULLSCREEN_ONLY
 				// If Alt + Enter has been pressed, go to full screen
 				if ((event.key.keysym.sym == SDLK_RETURN) &&
-					(event.key.keysym.mod & KMOD_ALT)) toggleFullscreen();
+					(event.key.keysym.mod & KMOD_ALT)) {
+
+					fullscreen = !fullscreen;
+
+					if (fullscreen) createFullscreen();
+					else createWindow();
+
+				}
 #endif
 #ifdef WIZ
 				SDL_ShowCursor(SDL_DISABLE);
@@ -554,81 +663,6 @@ int main(int argc, char *argv[]) {
 /*
 	Scene *scene;
 */
-	int count;
-
-
-	// Determine user path
-
-#ifdef HOMEDIR
-	#ifdef WIN32
-		userPath = createString(getenv("HOME"), "\\");
-	#else
-		userPath = createString(getenv("HOME"), "/.");
-	#endif
-#else
-	userPath = createString("");
-#endif
-
-
-	// Determine OpenJazz path
-
-	// Use the path of the program, if available
-
-	count = strlen(argv[0]) - 1;
-
-	// Search for directory separator
-#ifdef WIN32
-	while ((argv[0][count] != '\\') && (count >= 0)) count--;
-#else
-	while ((argv[0][count] != '/') && (count >= 0)) count--;
-#endif
-
-	// If a directory was found, copy it to the path
-	if (count >= 0) {
-
-		ojPath = new char[count + 2];
-		memcpy(ojPath, argv[0], count + 1);
-		ojPath[count + 1] = 0;
-
-	} else ojPath = createString("");
-
-
-	// Determine game path
-
-#ifdef DATAPATH
-	gamePath = createString(DATAPATH);
-#elseifdef __SYMBIAN32__
-	#ifdef UIQ3
-		gamePath = createString("c:\\shared\\openjazz\\");
-	#else
-		gamePath = createString("c:\\data\\openjazz\\");
-	#endif
-#else
-
-	if (argc >= 2) {
-
-		// Copy the provided path, appending a directory separator as necessary
-
-	#ifdef WIN32
-		if (argv[1][strlen(argv[1]) - 1] != '\\') {
-
-			gamePath = createString(argv[1], "\\");
-	#else
-		if (argv[1][strlen(argv[1]) - 1] != '/') {
-
-			gamePath = createString(argv[1], "/");
-	#endif
-
-		} else {
-
-			gamePath = createString(argv[1]);
-
-		}
-
-	} else gamePath = createString("");
-
-#endif
-
 
 	// Initialise SDL
 
@@ -644,12 +678,9 @@ int main(int argc, char *argv[]) {
 
 	// Load universal game data and establish a window
 
-	if (loadMain() != E_NONE) {
+	if (loadMain(argc, argv) != E_NONE) {
 
 		SDL_Quit();
-		delete[] ojPath;
-		delete[] gamePath;
-		delete[] userPath;
 
 		return -1;
 
@@ -666,9 +697,6 @@ int main(int argc, char *argv[]) {
 
 		freeMain();
 		SDL_Quit();
-		delete[] ojPath;
-		delete[] gamePath;
-		delete[] userPath;
 
 		return e;
 
@@ -688,9 +716,6 @@ int main(int argc, char *argv[]) {
 
 			freeMain();
 			SDL_Quit();
-			delete[] ojPath;
-			delete[] gamePath;
-			delete[] userPath;
 
 			return e;
 
@@ -710,9 +735,6 @@ int main(int argc, char *argv[]) {
 				delete menu;
 				freeMain();
 				SDL_Quit();
-				delete[] ojPath;
-				delete[] gamePath;
-				delete[] userPath;
 
 				return e;
 
@@ -733,9 +755,6 @@ int main(int argc, char *argv[]) {
 
 	freeMain();
 	SDL_Quit();
-	delete[] ojPath;
-	delete[] gamePath;
-	delete[] userPath;
 
 
 	return 0;

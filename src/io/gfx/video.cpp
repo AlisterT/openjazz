@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -59,44 +59,51 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
+void createFullscreen () {
+
+	SDL_ShowCursor(SDL_DISABLE);
+
+#ifdef WIZ
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
+#else
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+#endif
+
+	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+	/* A real 8-bit display is quite likely if the user has the right video
+	card, the right video drivers, the right version of DirectX/whatever, and
+	the right version of SDL. In other words, it's not likely enough. If a real
+	palette is assumed when
+	a) there really is a real palette, there will be an extremely small speed
+		gain.
+	b) the palette is emulated, there will be a HUGE speed loss.
+	Therefore, assume the palette is emulated. */
+	// TODO: Find a better way
+	fakePalette = true;
+
+	return;
+
+}
+
 #ifndef FULLSCREEN_ONLY
-void toggleFullscreen () {
+void createWindow () {
 
-	fullscreen = !fullscreen;
+	screen = SDL_SetVideoMode(screenW, screenH, 8,
+		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
 
-	if (fullscreen) {
+	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 
-		SDL_ShowCursor(SDL_DISABLE);
-		screen = SDL_SetVideoMode(screenW, screenH, 8,
-			SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-		SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-		SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+	SDL_ShowCursor(SDL_ENABLE);
 
-		/* A real 8-bit display is quite likely if the user has the right video
-		card, the right video drivers, the right version of DirectX/whatever,
-		and the right version of SDL. In other words, it's not likely enough.
-		If a real palette is assumed when
-		a) there really is a real palette, there will be an extremely small
-			speed gain.
-		b) the palette is emulated, there will be a HUGE speed loss.
-		Therefore, assume the palette is emulated. */
-		// TODO: Find a better way
-		fakePalette = true;
-
-	} else {
-
-		screen = SDL_SetVideoMode(screenW, screenH, 8,
-			SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-		SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-		SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-		SDL_ShowCursor(SDL_ENABLE);
-
-		/* Assume that in windowed mode the palette is being emulated.
-		This is extremely likely. */
-		// TODO: Find a better way
-		fakePalette = true;
-
-	}
+	/* Assume that in windowed mode the palette is being emulated.
+	This is extremely likely. */
+	// TODO: Find a better way
+	fakePalette = true;
 
 	return;
 

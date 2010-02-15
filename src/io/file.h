@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 
-// Classes
+// Class
 
 class File {
 
@@ -62,13 +62,22 @@ class File {
 
 };
 
+class Path {
 
-// Variables
+	public:
+		Path *next;
+		char *path;
+
+		Path  (Path *newNext, char *newPath);
+		~Path ();
+
+};
+
+
+// Variable
 
 // Paths to files
-EXTERN char *userPath;
-EXTERN char *ojPath;
-EXTERN char *gamePath;
+EXTERN Path *firstPath;
 
 #endif
 

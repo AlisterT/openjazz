@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -408,12 +408,8 @@ int Menu::setupResolution () {
 
 			playSound(S_ORB);
 
-			screen = SDL_SetVideoMode(screenW, screenH, 8,
-				(fullscreen? SDL_FULLSCREEN: SDL_RESIZABLE) | SDL_DOUBLEBUF |
-				SDL_HWSURFACE | SDL_HWPALETTE);
-
-			SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-			SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+			if (fullscreen) createFullscreen();
+			else createWindow();
 
 		}
 

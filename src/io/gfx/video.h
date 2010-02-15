@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -57,8 +57,9 @@ EXTERN SDL_Surface *panelAmmo[5];
 
 EXTERN SDL_Surface * createSurface    (unsigned char *pixels, int width,
 	int height);
+EXTERN void          createFullscreen ();
 #ifndef FULLSCREEN_ONLY
-EXTERN void          toggleFullscreen ();
+EXTERN void          createWindow ();
 #endif
 EXTERN void          usePalette       (SDL_Color *palette);
 EXTERN void          restorePalette   (SDL_Surface *surface);

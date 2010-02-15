@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -27,14 +27,18 @@
 
 File::File (const char * name, bool write) {
 
-	// Open the file from the user's directory
-	if (open(userPath, name, write)) return;
+	Path *path;
 
-	// Open the file from the OpenJazz directory
-	if (open(ojPath, name, write)) return;
+	// Try opening the file from all the available directories
 
-	// Open the file from the game directory
-	if (open(gamePath, name, write)) return;
+	path = firstPath;
+
+	while (path) {
+
+		if (open(path->path, name, write)) return;
+		path = path->next;
+
+	}
 
 	log("Could not open file", name);
 
@@ -325,6 +329,26 @@ void File::loadPalette (SDL_Color *palette) {
 	}
 
 	delete[] buffer;
+
+	return;
+
+}
+
+
+Path::Path (Path *newNext, char *newPath) {
+
+	next = newNext;
+	path = newPath;
+
+	return;
+
+}
+
+
+Path::~Path () {
+
+	if (next) delete next;
+	delete[] path;
 
 	return;
 
