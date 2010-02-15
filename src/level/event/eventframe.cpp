@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -73,7 +73,7 @@ bool Event::step (unsigned int ticks, int msps) {
 	// Find frame
 	if (animType && (set[animType] >= 0)) {
 
-		if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))
+		if ((animType != E_LEFTANIM) && (animType != E_RIGHTANIM))
 			frame = (ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40;
 		else if (set[E_ANIMSP])
 			frame = ticks / (set[E_ANIMSP] * 40);
@@ -826,29 +826,13 @@ bool Event::step (unsigned int ticks, int msps) {
 	if (set[E_BULLETSP]) {
 
 		if ((ticks % (set[E_BULLETSP] * 25) >
-				(unsigned int)(set[E_BULLETSP] * 25) - 200) &&
+			(unsigned int)(set[E_BULLETSP] * 25) - T_SHOOT) &&
 			((animType == E_LEFTANIM) || (animType == E_RIGHTANIM))) {
 
 			if (animType == E_LEFTANIM) animType = E_LSHOOTANIM;
 			else animType = E_RSHOOTANIM;
 
-		}
-
-		if ((ticks % (set[E_BULLETSP] * 25) <
-				(unsigned int)(set[E_BULLETSP] * 25) - 200) &&
-			((animType == E_LSHOOTANIM) || (animType == E_RSHOOTANIM))) {
-
-			if (animType == E_RSHOOTANIM) {
-
-				level->firstBullet = new Bullet(this, true, ticks);
-				animType = E_RIGHTANIM;
-
-			} else {
-
-				level->firstBullet = new Bullet(this, false, ticks);
-				animType = E_LEFTANIM;
-
-			}
+			level->setEventTime(gridX, gridY, ticks + T_SHOOT);
 
 		}
 
@@ -865,6 +849,22 @@ bool Event::step (unsigned int ticks, int msps) {
 			level->clearEvent(gridX, gridY);
 
 			return true;
+
+		} else if (animType == E_LSHOOTANIM) {
+
+			if ((set[E_BULLET] < 32) &&
+				(level->getBullet(set[E_BULLET])[B_SPRITE] != 0))
+				level->firstBullet = new Bullet(this, false, ticks);
+
+			animType = E_LEFTANIM;
+
+		} else if (animType == E_RSHOOTANIM) {
+
+			if ((set[E_BULLET] < 32) &&
+				(level->getBullet(set[E_BULLET])[B_SPRITE + 1] != 0))
+				level->firstBullet = new Bullet(this, true, ticks);
+
+			animType = E_RIGHTANIM;
 
 		} else {
 
