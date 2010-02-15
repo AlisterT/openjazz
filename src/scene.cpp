@@ -129,7 +129,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 		type = f->loadShort();
 		
 		if(type == 0x4C53) { // SL 
-			unsigned short int offset = f->loadShort();
+			/*unsigned short int offset =*/ f->loadShort();
 			unsigned char noSounds = f->loadChar();
 			for(loop = 0;loop<noSounds;loop++) {
 				char* soundName = f->loadString();
@@ -337,7 +337,7 @@ void Scene::ParseData(File *f) {
 void Scene::ParseScripts(File *f) {
 	int loop;
 	char *string;
-	int bgIndex = 0;
+	/*int bgIndex = 0;*/
 	int textAlignment = 0;
 	int textFont = 0;   
 	for(loop = 0;loop < scriptItems; loop++)

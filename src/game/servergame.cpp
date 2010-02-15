@@ -282,7 +282,7 @@ int ServerGame::step (unsigned int ticks) {
 							for (pcount = 0; pcount < nPlayers; pcount++) {
 
 								if (players[pcount].getTeam() ==
-									recvBuffers[pcount][2])
+									recvBuffers[count][2])
 									players[pcount].teamScore++;
 
 							}

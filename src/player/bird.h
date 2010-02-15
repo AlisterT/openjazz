@@ -45,9 +45,9 @@ class Player;
 class Bird : public Movable {
 
 	private:
-		Player *player;
-		bool    fleeing;
-		int     fireTime;
+		Player       *player;
+		bool          fleeing;
+		unsigned int  fireTime;
 
 	public:
 		Bird               (Player *player, unsigned char gX, unsigned char gY);
