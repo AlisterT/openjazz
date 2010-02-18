@@ -15,6 +15,7 @@ INCLUDES = -I. -I$(PREFIX)/include -I$(PREFIX)/include/modplug
 # list all .c files here
 CFILES	=		\
 		main.cpp \
+		movable.cpp \
 		planet.cpp \
 		scene.cpp \
 		util.cpp \

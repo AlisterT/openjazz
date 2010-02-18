@@ -1,10 +1,21 @@
 # OpenJazz makefile
 
-objects = bird.o bonus.o bullet.o events.o file.o font.o game.o level.o \
-	levelload.o main.o menu.o network.o palette.o planet.o player.o scene.o \
-	sound.o sprite.o util.o
+objects = src/bonus/bonus.o \
+	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
+	src/game/servergame.o \
+	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
+	src/io/gfx/sprite.o src/io/gfx/video.o \
+	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/level/event/event.o src/level/event/eventframe.o \
+	src/level/bullet.o src/level/demolevel.o src/level/level.o \
+	src/level/levelframe.o src/level/levelload.o \
+	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
+	src/menu/menuutil.o src/menu/setupmenu.o \
+	src/player/bird.o src/player/player.o src/player/playerframe.o \
+	src/main.o src/movable.o src/planet.o src/scene.o src/util.o
 
-CXXFLAGS += -g -Wall -O2
+
+CXXFLAGS += -g -Wall -O2 -DUSE_SOCKETS
 
 # Uncomment the following two lines for music (requires libmodplug)
 #CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
@@ -13,42 +24,8 @@ CXXFLAGS += -g -Wall -O2
 OpenJazz: $(objects)
 	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lSDL -lstdc++ $(objects)
 
-bird.o: level.h
-bonus.o: bonus.h file.h
-bullet.o: game.h level.h palette.h
-events.o: level.h sound.h
-file.o: file.h
-font.o: font.h palette.h
-game.o: font.h game.h level.h menu.h palette.h sound.h
-level.o: font.h game.h level.h menu.h palette.h sound.h
-levelload.o: font.h game.h level.h palette.h sound.h
-main.o: font.h game.h level.h menu.h palette.h sound.h
-menu.o: font.h game.h level.h menu.h palette.h sound.h
-network.o: font.h network.h
-palette.o: level.h palette.h
-planet.o: file.h planet.h
-player.o: font.h game.h level.h palette.h sound.h
-scene.o: file.h scene.h sound.h
-sound.o: file.h sound.h
-sprite.o: level.h palette.h
-util.o: file.h palette.h
-
-bird.h: OpenJazz.h
-bonus.h: OpenJazz.h
-bullet.h: events.h player.h
-events.h: player.h
-file.h: OpenJazz.h
-font.h: file.h
-game.h: file.h
-level.h: bullet.h events.h scene.h sprite.h
-menu.h: OpenJazz.h
-network.h: OpenJazz.h
-palette.h: OpenJazz.h
-planet.h: OpenJazz.h
-player.h: bird.h
-scene.h: OpenJazz.h
-sound.h: OpenJazz.h
-sprite.h: OpenJazz.h
+%.o: %.cpp
+	cc $(CXXFLAGS) -Isrc -c $< -o $@
 
 clean:
 	rm -f OpenJazz $(objects)
