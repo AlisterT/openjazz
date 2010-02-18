@@ -40,13 +40,15 @@
 
 int Menu::main () {
 
+#if (defined USE_SOCKETS) || (defined USE_SDL_NET)
 	const char *newGameOptions[6] = {"new single player game", "new co-op game",
 		"new battle", "new team battle", "new race", "join game"};
+	int ret;
+#endif
 	Scene *scene;
 	SDL_Rect src, dst;
 	int option, suboption;
 	unsigned int idleTime;
-	int ret;
 
 	option = suboption = 0;
 
@@ -73,6 +75,7 @@ int Menu::main () {
 
 				case 0: // New game
 
+#if (defined USE_SOCKETS) || (defined USE_SDL_NET)
 					while (true) {
 
 						ret = generic(newGameOptions, 6, &suboption);
@@ -92,6 +95,9 @@ int Menu::main () {
 						}
 
 					}
+#else
+					if (newGameEpisode(suboption) == E_QUIT) return E_QUIT;
+#endif
 
 					break;
 

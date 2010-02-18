@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -24,6 +24,7 @@
 
 
 #include "OpenJazz.h"
+
 #ifdef USE_SDL_NET
 #include <SDL_net.h>
 #endif
@@ -46,6 +47,13 @@
 class Network {
 
 	public:
+#ifdef USE_SDL_NET
+		TCPsocket socket;
+		TCPsocket clientSocket;
+		IPaddress ipAddress;
+		SDLNet_SocketSet socketset;
+#endif
+
 		Network          ();
 		~Network         ();
 
@@ -57,12 +65,6 @@ class Network {
 		int  recv        (int sock, unsigned char *buffer, int length);
 		bool isConnected (int sock);
 		int  getError    ();
-#ifdef USE_SDL_NET
-		TCPsocket socket;
-		TCPsocket clientSocket;
-		IPaddress ipAddress;
-		SDLNet_SocketSet socketset;
-#endif
 
 };
 

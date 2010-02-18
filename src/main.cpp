@@ -63,18 +63,20 @@ int loadMain (int argc, char *argv[]) {
 
 	// Determine paths
 
-	// Use the hard-coded path, if available
+	// Use hard-coded paths, if available
 
 #ifdef DATAPATH
 	firstPath = new Path(NULL, createString(DATAPATH));
-#elseifdef __SYMBIAN32__
-	#ifdef UIQ3
-		firstPath = new Path(NULL, createString("c:\\shared\\openjazz\\"));
-	#else
-		firstPath = new Path(NULL, createString("c:\\data\\openjazz\\"));
-	#endif
 #else
 	firstPath = NULL;
+#endif
+
+#ifdef __SYMBIAN32__
+	#ifdef UIQ3
+		firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
+	#else
+		firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
+	#endif
 #endif
 
 

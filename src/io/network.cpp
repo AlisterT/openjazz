@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -19,70 +19,75 @@
  *
  */
 
+/*
+ * Deals with a platform-specific networking API.
+ *
+ * On most platforms, USE_SOCKETS should be defined.
+ *
+ */
+
 
 #include "controls.h"
 #include "gfx/font.h"
 #include "gfx/video.h"
 #include "network.h"
-#ifdef USE_SDL_NET
-#include <arpa/inet.h>
-#else
-#ifdef WIN32
-	#include <winsock.h>
-	#define ioctl ioctlsocket
-	#define socklen_t int
-	#define EWOULDBLOCK WSAEWOULDBLOCK
-	#define MSG_NOSIGNAL 0
-#else
-	#include <sys/types.h>
-	#include <sys/socket.h>
+
+#ifdef USE_SOCKETS
+	#ifdef WIN32
+		#include <winsock.h>
+		#define ioctl ioctlsocket
+		#define socklen_t int
+		#define EWOULDBLOCK WSAEWOULDBLOCK
+		#define MSG_NOSIGNAL 0
+	#else
+		#include <sys/types.h>
+		#include <sys/socket.h>
+		#include <arpa/inet.h>
+		#include <sys/ioctl.h>
+		#include <unistd.h>
+		#include <errno.h>
+		#include <string.h>
+	#endif
+#elif defined USE_SDL_NET
 	#include <arpa/inet.h>
-	#include <sys/ioctl.h>
-	#include <unistd.h>
-	#include <errno.h>
-#endif
 #endif
 
+
 Network::Network () {
-#ifdef USE_SDL_NET
-	SDLNet_Init();
-#else
-#ifdef WIN32
+
+#ifdef USE_SOCKETS
+	#ifdef WIN32
 	WSADATA WSAData;
 
 	// Start Windows Sockets
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
+	#endif
+#elif defined USE_SDL_NET
+	SDLNet_Init();
 #endif
-#endif
+
 	return;
 
 }
 
 Network::~Network () {
-#ifdef USE_SDL_NET
-	SDLNet_Quit();
-#else
 
-#ifdef WIN32
+#ifdef USE_SOCKETS
+	#ifdef WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
+	#endif
+#elif defined USE_SDL_NET
+	SDLNet_Quit();
 #endif
-#endif
+
 	return;
 
 }
 
 int Network::host () {
-#ifdef USE_SDL_NET
-	ipAddress.port = NET_PORT;
-	ipAddress.host = 0;	
-	socket = SDLNet_TCP_Open(&ipAddress);
 
-	if(socket == NULL)
-		return E_N_SOCKET;
-
-	return (int) socket;
-#else
+#ifdef USE_SOCKETS
 	sockaddr_in sockAddr;
 	int sock, nonblock;
 
@@ -119,24 +124,23 @@ int Network::host () {
 	}
 
 	return sock;
+#elif defined USE_SDL_NET
+	ipAddress.port = NET_PORT;
+	ipAddress.host = 0;	
+	socket = SDLNet_TCP_Open(&ipAddress);
+
+	if (socket == NULL) return E_N_SOCKET;
+
+	return (int)socket;
+#else
+	return E_N_OTHER;
 #endif
 
 }
 
 int Network::join (char *address) {
-#ifdef USE_SDL_NET
-	clearScreen(0);
-	fontmn2->showString("CONNECTING TO SERVER", screenW >> 2,
-			(screenH >> 1) - 16);
-	loop(NORMAL_LOOP);
-	ipAddress.port = NET_PORT;
-	ipAddress.host = inet_addr(address);	
-	socket = SDLNet_TCP_Open(&ipAddress);
-	if(socket == NULL)
-		return -1;
 
-	return (int) socket;
-#else
+#ifdef USE_SOCKETS
 	sockaddr_in sockAddr;
 	fd_set writefds; 
 	timeval timeouttv;
@@ -160,11 +164,11 @@ int Network::join (char *address) {
 	sockAddr.sin_family = AF_INET;
 	sockAddr.sin_port = htons(NET_PORT);
 
-#ifdef WIN32
+	#ifdef WIN32
 	sockAddr.sin_addr.s_addr = inet_addr(address);
-#else
+	#else
 	if (inet_aton(address, &(sockAddr.sin_addr)) == 0) return E_N_ADDRESS;
-#endif
+	#endif
 
 	// Initiate connection
 	con = connect(sock, (sockaddr *)&sockAddr, sizeof(sockAddr));
@@ -227,17 +231,27 @@ int Network::join (char *address) {
 	}
 
 	return sock;
+#elif defined USE_SDL_NET
+	clearScreen(0);
+	fontmn2->showString("CONNECTING TO SERVER", screenW >> 2,
+		(screenH >> 1) - 16);
+	loop(NORMAL_LOOP);
+	ipAddress.port = NET_PORT;
+	ipAddress.host = inet_addr(address);	
+	socket = SDLNet_TCP_Open(&ipAddress);
+
+	if (socket == NULL) return -1;
+
+	return (int)socket;
+#else
+	return E_N_OTHER;
 #endif
 
 }
 
 int Network::accept (int sock) {
-#ifdef USE_SDL_NET
-	clientSocket  = SDLNet_TCP_Accept((TCPsocket)sock);
-	if(clientSocket == NULL)
-		return -1;
-	return (int) &clientSocket;
-#else
+
+#ifdef USE_SOCKETS
 	sockaddr_in sockAddr;
 	int clientSocket, length;
 
@@ -254,45 +268,61 @@ int Network::accept (int sock) {
 	}
 
 	return clientSocket;
+#elif defined USE_SDL_NET
+	clientSocket = SDLNet_TCP_Accept((TCPsocket)sock);
+
+	if (clientSocket == NULL) return -1;
+
+	return (int)&clientSocket;
+#else
+	return -1;
 #endif
+
 }
 
 void Network::close (int sock) {
-#ifdef USE_SDL_NET
-	SDLNet_TCP_Close((TCPsocket)sock);
-#else
 
-#ifdef WIN32
+#ifdef USE_SOCKETS
+	#ifdef WIN32
 	closesocket(sock);
-#else
+	#else
 	::close(sock);
+	#endif
+#elif defined USE_SDL_NET
+	SDLNet_TCP_Close((TCPsocket)sock);
 #endif
-#endif
+
 	return;
 
 }
 
 int Network::send (int sock, unsigned char *buffer) {
-#ifdef USE_SDL_NET
+
+#ifdef USE_SOCKETS
+	return ::send(sock, (char *)buffer, buffer[0], MSG_NOSIGNAL);
+#elif defined USE_SDL_NET
 	return SDLNet_TCP_Send((TCPsocket)sock, (char *)buffer, buffer[0]);	
 #else
-	return ::send(sock, (char *)buffer, buffer[0], MSG_NOSIGNAL);
+	return 0;
 #endif
 
 }
 
 int Network::recv (int sock, unsigned char *buffer, int length) {
-#ifdef USE_SDL_NET
+
+#ifdef USE_SOCKETS
+	return ::recv(sock, (char *)buffer, length, MSG_NOSIGNAL);
+#elif defined USE_SDL_NET
 	return SDLNet_TCP_Recv((TCPsocket)sock, buffer, length);
 #else
-	return ::recv(sock, (char *)buffer, length, MSG_NOSIGNAL);
+	return 0;
 #endif
+
 }
 
 bool Network::isConnected (int sock) {
-#ifdef USE_SDL_NET
-	return SDLNet_SocketReady((TCPsocket) sock);
-#else
+
+#ifdef USE_SOCKETS
 	int length;
 	char buffer;
 
@@ -301,21 +331,29 @@ bool Network::isConnected (int sock) {
 
 	// Still connected if data was received or if there was no data to receive
 	return (length != -1) || (getError() == EWOULDBLOCK);
+#elif defined USE_SDL_NET
+	return SDLNet_SocketReady((TCPsocket)sock);
+#else
+	return false;
 #endif
+
 }
 
 
 int Network::getError () {
-#ifdef USE_SDL_NET
-	return (int) SDLNet_GetError();
-#else
 
-#ifdef WIN32
+#ifdef USE_SOCKETS
+	#ifdef WIN32
 	return WSAGetLastError();
-#else
+	#else
 	return errno;
+	#endif
+#elif defined USE_SDL_NET
+	return (int)SDLNet_GetError();
+#else
+	return 0;
 #endif
-#endif
+
 }
 
 
