@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -202,7 +202,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 
 					// If the event is within range, hit it
 					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100))
-						event->hit(source, ticks);
+						event->hit(source, true, ticks);
 
 					event = event->getNext();
 
@@ -245,7 +245,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 				if (event->overlap(x, y, 0, 0)) {
 
 					// If the event is hittable, hit it and destroy the bullet
-					if (event->hit(source, ticks)) return true;
+					if (event->hit(source, false, ticks)) return true;
 
 				}
 

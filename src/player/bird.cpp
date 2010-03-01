@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -118,11 +118,11 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 		}
 
-		if (y > level->getWaterLevel(ticks) - F24) {
+		if (y > level->getWaterLevel() - F24) {
 
 			// Always stay above water
 
-			y = level->getWaterLevel(ticks) - F24;
+			y = level->getWaterLevel() - F24;
 			dy = 0;
 
 		} else {

@@ -12,7 +12,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -610,6 +610,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 			grid[y][x].bg = buffer[((y + (x * LH)) << 1) + 1] >> 7;
 			grid[y][x].event = buffer[((y + (x * LH)) << 1) + 1] & 127;
 			grid[y][x].hits = 0;
+			grid[y][x].time = 0;
 
 		}
 
@@ -823,9 +824,11 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	setNext(x, y);
 
 
-	// Thanks to Doubble Dutch for this next bit
+	// Thanks to Doubble Dutch for the water level bytes
 	file->seek(4, false);
-	waterLevel = ITOF(file->loadShort());
+	waterLevelTarget = ITOF(file->loadShort());
+	waterLevel = waterLevelTarget - F8;
+	waterLevelSpeed = 0;
 
 
 	// Thanks to Feline and the JCS94 team for the next bits:

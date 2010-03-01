@@ -46,7 +46,7 @@
 #define CONTROLS 11
 
 // Time interval
-#define T_KEY   500
+#define T_KEY   200
 
 
 // Class

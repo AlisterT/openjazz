@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -537,7 +537,7 @@ void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 	if (next) next->apply(shownPalette, direct, mspf);
 
 
-	position = localPlayer->getY() - level->getWaterLevel(0);
+	position = localPlayer->getY() - level->getWaterLevel();
 
 	if (position <= 0) return;
 

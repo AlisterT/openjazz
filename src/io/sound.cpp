@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -63,7 +63,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position, len,
-					SDL_MIX_MAXVOLUME >> 1);
+					SDL_MIX_MAXVOLUME >> 2);
 
 				sounds[count].position += len;
 
@@ -74,7 +74,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position,
 					sounds[count].length - sounds[count].position,
-					SDL_MIX_MAXVOLUME >> 1);
+					SDL_MIX_MAXVOLUME >> 2);
 
 				sounds[count].position = -1;
 

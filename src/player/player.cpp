@@ -11,7 +11,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -678,7 +678,7 @@ void Player::floatUp (signed char *newEvent, int speed) {
 
 void Player::belt (int speed) {
 
-	dx += speed * 160;
+	dx += speed * 20;
 
 	return;
 

@@ -94,7 +94,7 @@ class Event : public Movable {
 
 		Event *     getNext     ();
 		void        removeNext  ();
-		bool        hit         (Player *source, unsigned int ticks);
+		bool        hit         (Player *source, bool TNT, unsigned int ticks);
 		bool        isFrom      (unsigned char gX, unsigned char gY);
 		fixed       getWidth    ();
 		fixed       getHeight   ();

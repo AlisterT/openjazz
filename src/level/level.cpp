@@ -17,7 +17,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -272,7 +272,7 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-int Level::hitEvent (Player *source, unsigned char gridX, unsigned char gridY) {
+int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player *source, bool TNT) {
 
 	GridElement *ge;
 	unsigned char buffer[MTL_L_GRID];
@@ -286,7 +286,8 @@ int Level::hitEvent (Player *source, unsigned char gridX, unsigned char gridY) {
 	if (!hitsToKill) return -1;
 
 	// Increase the hit count
-	ge->hits++;
+	if (TNT) ge->hits = hitsToKill;
+	else ge->hits++;
 
 	// Check if the event has been killed
 	if (ge->hits == hitsToKill) {
@@ -389,7 +390,7 @@ void Level::setWaterLevel (unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_PROP];
 
-	waterLevel = TTOF(gridY);
+	waterLevelTarget = TTOF(gridY);
 
 	if (gameMode) {
 
@@ -407,10 +408,9 @@ void Level::setWaterLevel (unsigned char gridY) {
 
 }
 
-fixed Level::getWaterLevel (int phase) {
+fixed Level::getWaterLevel () {
 
-	if (phase & 1024) return waterLevel - ((phase & 1023) * 32);
-	return waterLevel - ((1024 - (phase & 1023)) * 32);
+	return waterLevel;
 
 }
 
@@ -475,7 +475,7 @@ void Level::receive (unsigned char *buffer) {
 
 			} else if (buffer[2] == 1) {
 
-				waterLevel = TTOF(buffer[3]);
+				waterLevelTarget = TTOF(buffer[3]);
 
 			} else if (buffer[2] == 2) {
 

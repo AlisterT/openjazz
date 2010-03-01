@@ -15,7 +15,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -43,11 +43,14 @@
 
 Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
+	x = TTOF(gX);
+	y = TTOF(gY + 1);
+	dx = 0;
+	dy = 0;
+
 	next = nextEvent;
 	gridX = gX;
 	gridY = gY;
-	x = TTOF(gX);
-	y = TTOF(gY + 1);
 	flashTime = 0;
 
 	// Choose initial settings
@@ -56,6 +59,7 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
 		case 21: // Destructible block
 		case 25: // Float up / Belt
+		case 37: // Sucker tubes
 		case 38: // Sucker tubes
 		case 40: // Monochrome
 		case 57: // Bubbles
@@ -141,15 +145,17 @@ void Event::destroy (unsigned int ticks) {
 }
 
 
-bool Event::hit (Player *source, unsigned int ticks) {
+bool Event::hit (Player *source, bool TNT, unsigned int ticks) {
 
 	int hitsRemaining;
 
 	// Deal with bullet collisions
+
+	// Check if event has already been destroyed
 	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM) ||
 		(ticks < flashTime)) return false;
 
-	hitsRemaining = level->hitEvent(source, gridX, gridY);
+	hitsRemaining = level->hitEvent(gridX, gridY, source, TNT);
 
 	// If the event cannot be hit, do not register hit
 	if (hitsRemaining < 0) return false;
@@ -177,28 +183,27 @@ fixed Event::getWidth () {
 
 	fixed width;
 
-	if (animType && (getProperty(animType) >= 0)) {
+	if (!animType) return F32;
 
-		width = ITOF(level->getAnim(getProperty(animType))->getWidth());
+	if (getProperty(animType) <= 0) return 0;
 
-		// Blank sprites for e.g. invisible springs
-		if ((width == F1) && (getHeight() == F1)) return F32;
+	width = ITOF(level->getAnim(getProperty(animType))->getWidth());
 
-		return width;
+	// Blank sprites for e.g. invisible springs
+	if ((width == F1) && (getHeight() == F1)) return F32;
 
-	}
-
-	return F32;
+	return width;
 
 }
 
 
 fixed Event::getHeight () {
 
-	if (animType && (getProperty(animType) >= 0))
-		return ITOF(level->getAnim(getProperty(animType))->getHeight());
+	if (!animType) return F32;
 
-	return F32;
+	if (getProperty(animType) <= 0) return 0;
+
+	return ITOF(level->getAnim(getProperty(animType))->getHeight());
 
 }
 

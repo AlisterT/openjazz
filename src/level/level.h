@@ -10,7 +10,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -118,6 +118,8 @@ class Level {
 		unsigned int   endTime;
 		int            enemies, items;
 		fixed          waterLevel;
+		fixed          waterLevelTarget;
+		fixed          waterLevelSpeed;
 		fixed          energyBar;
 		int            stage;
 
@@ -148,23 +150,20 @@ class Level {
 		bool          checkMaskDown (fixed x, fixed y);
 		bool          checkSpikes   (fixed x, fixed y);
 		void          setNext       (int nextLevel, int nextWorld);
-		void          setTile       (unsigned char gridX, unsigned char gridY,
-			unsigned char tile);
+		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
 		signed char * getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (Player *source, unsigned char gridX,
-			unsigned char gridY);
-		void          setEventTime  (unsigned char gridX, unsigned char gridY,
-			unsigned int time);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player *source, bool TNT);
+		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
 		signed char * getBullet     (unsigned char bullet);
 		Sprite *      getSprite     (unsigned char sprite);
 		Anim *        getAnim       (unsigned char anim);
 		Anim *        getMiscAnim   (unsigned char anim);
 		void          addTimer      ();
 		void          setWaterLevel (unsigned char gridY);
-		fixed         getWaterLevel (int phase);
+		fixed         getWaterLevel ();
 		void          playSound     (int sound);
 		void          setStage      (int stage);
 		int           getStage      ();

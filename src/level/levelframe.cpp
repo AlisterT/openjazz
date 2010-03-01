@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -132,6 +132,14 @@ int Level::step () {
 		} else gameMode->outOfTime();
 
 	}
+
+	// Handle change in water level
+	if (waterLevel < waterLevelTarget) waterLevelSpeed += 100 * msps;
+	else waterLevelSpeed -= 100 * msps;
+	if (waterLevelSpeed > 40000) waterLevelSpeed = 40000;
+	if (waterLevelSpeed < -40000) waterLevelSpeed = -40000;
+
+	waterLevel += (waterLevelSpeed * msps) >> 10;
 
 
 	return E_NONE;
@@ -303,8 +311,11 @@ void Level::draw () {
 
 	}
 
-	// Uncomment the following for a line showing the water level
-/*	drawRect(0, FTOI(getWaterLevel(ticks) - viewY), screenW, 2, 24); */
+	// Temporary lines showing the water level
+	drawRect(0, FTOI(waterLevel - viewY), screenW, 2, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 3, screenW, 1, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 6, screenW, 1, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 10, screenW, 1, 24);
 
 
 	SDL_SetClipRect(screen, NULL);

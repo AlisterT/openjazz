@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -98,11 +98,11 @@
 #define T_WARP     1000
 
 // Player offsets
-#define PXO_L   (F12 - F10)
-#define PXO_ML  (F12 - F4)
-#define PXO_MID F12
-#define PXO_MR  (F12 + F4)
-#define PXO_R   (F12 + F10)
+#define PXO_MID F16
+#define PXO_L   (PXO_MID - F10)
+#define PXO_ML  (PXO_MID - F4)
+#define PXO_MR  (PXO_MID + F4)
+#define PXO_R   (PXO_MID + F10)
 #define PYO_TOP (-F20)
 #define PYO_MID (-F10)
 
@@ -176,7 +176,7 @@ class Player : public Movable {
 			3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
 		bool          floating; // false = normal, true = boarding/bird/etc.
 		bool          facing;
-		unsigned int  lookTime; /* Negative if looking up, positive if looking
+		int           lookTime; /* Negative if looking up, positive if looking
 			down, 0 if neither */
 		int           reaction;
 		unsigned int  reactionTime;

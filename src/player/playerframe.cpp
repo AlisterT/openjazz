@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -153,7 +153,7 @@ void Player::control (unsigned int ticks, int msps) {
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		if (dy > PXS_RUN) dy = PXS_RUN;
 
-	} else if (y > level->getWaterLevel(ticks)) {
+	} else if (y + PYO_MID > level->getWaterLevel()) {
 
 		if (pcontrols[C_JUMP]) {
 
@@ -213,8 +213,8 @@ void Player::control (unsigned int ticks, int msps) {
 				jumpY = y - jumpHeight;
 
 				// Increase jump height if walking/running
-				if (dx < 0) jumpY += dx >> 4;
-				else if (dx > 0) jumpY -= dx >> 4;
+				if (dx < 0) jumpY += dx >> 3;
+				else if (dx > 0) jumpY -= dx >> 3;
 
 				event = NULL;
 
@@ -248,9 +248,19 @@ void Player::control (unsigned int ticks, int msps) {
 
 			dy = (jumpY - y - F64) * 4;
 
-			// Avoid jumping to fast, unless caused by an event
-			if (!event && (dy < (ITOF(-92) - F64) * 4))
-				dy = (ITOF(-92) - F64) * 4;
+			// Spring speed limit
+			if (event && (event[E_MODIFIER] == 29)) {
+
+				if ((event[E_MULTIPURPOSE] == 0) && (dy < PYS_JUMP))
+					dy = PYS_JUMP;
+
+				if ((event[E_MULTIPURPOSE] > 0) && (dy < event[E_MULTIPURPOSE] * -F20))
+					dy = event[E_MULTIPURPOSE] * -F20;
+
+			}
+
+			// Avoid jumping too fast, unless caused by an event
+			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else {
 
@@ -261,7 +271,8 @@ void Player::control (unsigned int ticks, int msps) {
 		}
 
 		// Stop looking
-		if (!pcontrols[C_UP] && !pcontrols[C_DOWN]) lookTime = 0;
+		if (!pcontrols[C_UP] && (lookTime < 0)) lookTime = 0;
+		if (!pcontrols[C_DOWN] && (lookTime > 0)) lookTime = 0;
 
 	}
 
@@ -534,22 +545,19 @@ void Player::view (unsigned int ticks, int mspf) {
 	// Find new position
 
 	viewX = x + F8 - (viewW << 9);
+	viewY = y - F24 - (viewH << 9);
 
-	if (!lookTime || (ticks < 1000 + lookTime) || (ticks < 1000 - lookTime)) {
+	if ((lookTime > 0) && ((int)ticks > 1000 + lookTime)) {
 
-		viewY = y - F24 - (viewH << 9);
+		// Look down
+		if ((int)ticks < 2000 + lookTime) viewY += 64 * (ticks - (1000 + lookTime));
+		else viewY += F64;
 
-	} else if (lookTime > 0) {
+	} else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime)) {
 
-		if (ticks < 2000 + lookTime)
-			viewY = y - F24 - (64 * (lookTime + 1000 - ticks)) - (viewH << 9);
-		else viewY = y + F64 - F24 - (viewH << 9);
-
-	} else {
-
-		if (ticks < 2000 - lookTime)
-			viewY = y - F24 - (64 * (lookTime - 1000 + ticks)) - (viewH << 9);
-		else viewY = y - F64 - F24 - (viewH << 9);
+		// Look up
+		if ((int)ticks < 2000 - lookTime) viewY -= 64 * (ticks - (1000 - lookTime));
+		else viewY -= F64;
 
 	}
 
@@ -595,7 +603,7 @@ void Player::draw (unsigned int ticks, int change) {
 		(reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
 		anim = anims[facing? PA_RHURT: PA_LHURT];
 
-	else if (y > level->getWaterLevel(ticks))
+	else if (y + PYO_MID > level->getWaterLevel())
 		anim = anims[facing? PA_RSWIM: PA_LSWIM];
 
 	else if (floating) anim = anims[facing? PA_RBOARD: PA_LBOARD];
@@ -639,12 +647,12 @@ void Player::draw (unsigned int ticks, int change) {
 				else if (pcontrols[C_FIRE])
 					anim = anims[facing? PA_RSHOOT: PA_LSHOOT];
 
-				else if ((lookTime < 0) && (ticks > 1000 - lookTime))
+				else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
 					anim = anims[PA_LOOKUP];
 
 				else if (lookTime > 0) {
 
-					if (ticks < 1000 + lookTime)
+					if ((int)ticks < 1000 + lookTime)
 						anim = anims[facing? PA_RCROUCH: PA_LCROUCH];
 					else anim = anims[PA_LOOKDOWN];
 
@@ -689,6 +697,17 @@ void Player::draw (unsigned int ticks, int change) {
 
 	// Remove red flash or player colour from sprite
 	an->restorePalette();
+
+
+	// Uncomment the following to see the area of the player
+	/*drawRect(FTOI(getDrawX(change) + PXO_L - viewX),
+		FTOI(getDrawY(change) + PYO_TOP - viewY),
+		FTOI(PXO_R - PXO_L),
+		FTOI(-PYO_TOP), 89);
+	drawRect(FTOI(getDrawX(change) + PXO_ML - viewX),
+		FTOI(getDrawY(change) + PYO_TOP - viewY),
+		FTOI(PXO_MR - PXO_ML),
+		FTOI(-PYO_TOP), 88);*/
 
 
 	if (reaction == PR_INVINCIBLE) {
