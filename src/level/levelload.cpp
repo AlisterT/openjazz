@@ -820,8 +820,10 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	} else file->seek(4, false);
 
 	// Set the players' initial values
-	for (count = 0; count < nPlayers; count++)
-		game->resetPlayer(players + count);
+	if(game) {
+		for (count = 0; count < nPlayers; count++)
+			game->resetPlayer(players + count);
+    }
 
 	// Next level
 	x = file->loadChar();
