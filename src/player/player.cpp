@@ -663,12 +663,11 @@ bool Player::isOnPlatform () {
 
 	return
 		(event >= 3) ||
-		level->checkMaskDown(x + PXO_ML, y + F2) ||
-		level->checkMaskDown(x + PXO_MID, y + F2) ||
-		level->checkMaskDown(x + PXO_MR, y + F2) ||
-		level->checkMaskDown(x + PXO_ML, y + F8) ||
-		level->checkMaskDown(x + PXO_MID, y + F8) ||
-		level->checkMaskDown(x + PXO_MR, y + F8);
+		level->checkMaskDown(x + PXO_ML, y + 1) ||
+		level->checkMaskDown(x + PXO_MID, y + 1) ||
+		level->checkMaskDown(x + PXO_MR, y + 1) ||
+		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
+		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
 
 }
 

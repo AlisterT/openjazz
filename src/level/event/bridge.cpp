@@ -33,24 +33,25 @@
 
 Bridge::Bridge (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
+	signed char *set;
+
+	set = level->getEvent(gX, gY);
+
 	x = TTOF(gX);
-	y = TTOF(gY + 1);
+	y = TTOF(gY) + ITOF(set[E_YAXIS]) - F8 - F1;
 	dx = 0;
 	dy = 0;
 
 	next = nextEvent;
 	gridX = gX;
 	gridY = gY;
+	animType = E_LEFTANIM;
 	flashTime = 0;
 
-	animType = E_LEFTANIM;
-	x -= F2;
-	y += ITOF(getProperty(E_YAXIS)) - F40;
-
-	// dx and dy used to store leftmost and rightmost player on bridge
+	// leftDipX and rightDipX used to store leftmost and rightmost player on bridge
 	// Start with minimum values
-	dx = getProperty(E_MULTIPURPOSE) * F8;
-	dy = 0;
+	leftDipX = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
+	rightDipX = 0;
 
 	return;
 
@@ -61,7 +62,7 @@ bool Bridge::step (unsigned int ticks, int msps) {
 
 	signed char *set;
 	int count;
-	fixed offset;
+	fixed bridgeLength, playerDipX, playerDipY;
 
 
 	set = prepareStep(ticks, msps);
@@ -69,34 +70,35 @@ bool Bridge::step (unsigned int ticks, int msps) {
 	if (!set) return true;
 
 
+	bridgeLength = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
+
+
 	// Gradually stop the bridge sagging
-	if (dx < set[E_MULTIPURPOSE] * F8) dx += 320 * msps;
-	if (dx > set[E_MULTIPURPOSE] * F8) dx = set[E_MULTIPURPOSE] * F8;
-	if (dy > 0) dy -= 320 * msps;
-	if (dy < 0) dy = 0;
+	if (leftDipX < bridgeLength) leftDipX += 320 * msps;
+	if (leftDipX > bridgeLength) leftDipX = bridgeLength;
+	if (rightDipX > 0) rightDipX -= 320 * msps;
+	if (rightDipX < 0) rightDipX = 0;
 
 
 	for (count = 0; count < nPlayers; count++) {
 
-		offset = players[count].getX() + PXO_MID;
+		playerDipX = players[count].getX() + PXO_MID - x;
 
-		if (players[count].overlap(x, y, set[E_MULTIPURPOSE] * F8, F8) &&
-			!level->checkMaskDown(offset, y - F32)) {
+		if (playerDipX < bridgeLength >> 1) playerDipY = playerDipX >> 3;
+		else playerDipY = (bridgeLength - playerDipX) >> 3;
+
+		if (players[count].overlap(x, y + playerDipY - F4, bridgeLength, F8) &&
+			!level->checkMaskDown(x + playerDipX, y + playerDipY - F32)) {
 
 			// Player is on the bridge
 
 			players[count].setEvent(gridX, gridY);
 
-			offset -= x;
+			if (playerDipX < leftDipX) leftDipX = playerDipX;
 
-			if (offset < dx) dx = offset;
+			if (playerDipX > rightDipX) rightDipX = playerDipX;
 
-			if ((offset > dy) && (offset < set[E_MULTIPURPOSE] * F8)) dy = offset;
-
-			if (offset < set[E_MULTIPURPOSE] * F4)
-				players[count].setPosition(players[count].getX(), y + (offset >> 3) - F8);
-			else
-				players[count].setPosition(players[count].getX(), y + (set[E_MULTIPURPOSE] * F1) - (offset >> 3) - F8);
+			players[count].setPosition(players[count].getX(), y + playerDipY);
 
 		} else players[count].clearEvent(gridX, gridY);
 
@@ -113,7 +115,7 @@ void Bridge::draw (unsigned int ticks, int change) {
 	Anim *anim;
 	signed char *set;
 	int count;
-	fixed bridgeLength, dipA, dipB;
+	fixed bridgeLength, leftDipY, rightDipY;
 
 
 	// Get the event properties
@@ -127,12 +129,8 @@ void Bridge::draw (unsigned int ticks, int change) {
 	if (!animType || (set[animType] < 0)) return;
 
 
-	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))
-		frame = (ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40;
-	else if (set[E_ANIMSP])
-		frame = ticks / (set[E_ANIMSP] * 40);
-	else
-		frame = ticks / 20;
+	if (set[E_ANIMSP]) frame = ticks / (set[E_ANIMSP] * 40);
+	else frame = ticks / 20;
 
 	anim = level->getAnim(set[animType]);
 	anim->setFrame(frame + gridX + gridY, true);
@@ -140,21 +138,21 @@ void Bridge::draw (unsigned int ticks, int change) {
 
 	// Draw the bridge
 
-	bridgeLength = set[E_MULTIPURPOSE] * F8;
+	bridgeLength = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
 
-	if (dy >= dx) {
+	if (rightDipX >= leftDipX) {
 
-		dipA = (dx <= (bridgeLength >> 1)) ? dx >> 3: (bridgeLength - dx) >> 3;
-		dipB = (dy <= (bridgeLength >> 1)) ? dy >> 3: (bridgeLength - dy) >> 3;
+		leftDipY = (leftDipX <= (bridgeLength >> 1)) ? leftDipX >> 3: (bridgeLength - leftDipX) >> 3;
+		rightDipY = (rightDipX <= (bridgeLength >> 1)) ? rightDipX >> 3: (bridgeLength - rightDipX) >> 3;
 
-		for (count = 0; count < bridgeLength; count += F8) {
+		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
 
-			if (count < dx)
-				anim->draw(x + count, y + (count * dipA / dx));
+			if (count < leftDipX)
+				anim->draw(x + count, y + (count * leftDipY / leftDipX));
 			else if (count < dy)
-				anim->draw(x + count, y + dipA + ((count - dx) * (dipB - dipA) / (dy - dx)));
+				anim->draw(x + count, y + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
 			else
-				anim->draw(x + count, y + ((bridgeLength - count) * dipB / (bridgeLength - dy)));
+				anim->draw(x + count, y + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
 
 		}
 
@@ -162,15 +160,18 @@ void Bridge::draw (unsigned int ticks, int change) {
 
 		// No players on the bridge, de-sagging in progress
 
-		dipA = (dx + dy) >> 1;
-		dipB = (dy < bridgeLength - dx) ? dy >> 3: (bridgeLength - dx) >> 3;
+		// Midpoint
+		leftDipY = (leftDipX + rightDipX) >> 1;
 
-		for (count = 0; count < bridgeLength; count += F8) {
+		// Dip
+		rightDipY = (rightDipX < bridgeLength - leftDipX) ? rightDipX >> 3: (bridgeLength - leftDipX) >> 3;
 
-			if (count < dipA)
-				anim->draw(x + count, y + (count * dipB / dipA));
+		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
+
+			if (count < leftDipY)
+				anim->draw(x + count, y + (count * rightDipY / leftDipY));
 			else
-				anim->draw(x + count, y + ((bridgeLength - count) * dipB / (bridgeLength - dipA)));
+				anim->draw(x + count, y + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
 
 		}
 

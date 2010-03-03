@@ -252,6 +252,9 @@ void Player::control (unsigned int ticks, int msps) {
 
 		}
 
+		// Don't descend through platforms
+		if ((dy > 0) && (event >= 3)) dy = 0;
+
 		if (platform && !lookTime) {
 
 			// If requested, look up or down
@@ -713,14 +716,17 @@ void Player::draw (unsigned int ticks, int change) {
 
 
 	// Uncomment the following to see the area of the player
-	/*drawRect(FTOI(getDrawX(change) + PXO_L - viewX),
-		FTOI(getDrawY(change) + PYO_TOP - viewY),
+	/*drawRect(FTOI(drawX + PXO_L - viewX),
+		FTOI(drawY + PYO_TOP - viewY),
 		FTOI(PXO_R - PXO_L),
 		FTOI(-PYO_TOP), 89);
-	drawRect(FTOI(getDrawX(change) + PXO_ML - viewX),
-		FTOI(getDrawY(change) + PYO_TOP - viewY),
+	drawRect(FTOI(drawX + PXO_ML - viewX),
+		FTOI(drawY + PYO_TOP - viewY),
 		FTOI(PXO_MR - PXO_ML),
 		FTOI(-PYO_TOP), 88);*/
+
+	// Uncomment the following to show the player's event tile
+	// if (event) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
 
 
 	if (reaction == PR_INVINCIBLE) {

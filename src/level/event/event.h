@@ -110,6 +110,10 @@ class Event : public Movable {
 
 class Bridge : public Event {
 
+	private:
+		fixed leftDipX;
+		fixed rightDipX;
+
 	public:
 		Bridge    (unsigned char gX, unsigned char gY, Event *nextEvent);
 

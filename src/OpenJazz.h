@@ -19,7 +19,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -62,9 +62,9 @@
 #define F64  65536
 #define F100 102400
 #define F160 163840
+#define F192 196608
 
 // Files
-
 #define CONFIG_FILE "openjazz.cfg"
 #define LOGO_FILE   "openjazz.000"
 #define LEVEL_FILE  "openjazz.tmp"

@@ -60,7 +60,7 @@ signed char * Event::prepareStep (unsigned int ticks, int msps) {
 	// If the event and its origin are off-screen, the event is not in the
 	// process of self-destruction, remove it
 	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM) &&
-		((x < viewX - F160) || (x > viewX + ITOF(viewW) + F160) ||
+		((x < viewX - F192) || (x > viewX + ITOF(viewW) + F192) ||
 		(y < viewY - F160) || (y > viewY + ITOF(viewH) + F160)) &&
 		((gridX < FTOT(viewX) - 1) ||
 		(gridX > ITOT(FTOI(viewX) + viewW) + 1) ||
@@ -879,7 +879,9 @@ bool Event::step (unsigned int ticks, int msps) {
 					// Player is on a platform
 
 					players[count].setEvent(gridX, gridY);
-					players[count].setPosition(players[count].getX() + ((dx * msps) >> 10), y - height);
+					players[count].setPosition(
+						players[count].getX() + ((dx * msps) >> 10),
+						players[count].getY() + ((dy * msps) >> 10));
 
 				} else players[count].clearEvent(gridX, gridY);
 
