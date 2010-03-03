@@ -42,6 +42,9 @@
 
 void Player::control (unsigned int ticks, int msps) {
 
+	int speed;
+	bool platform;
+
 	// Respond to controls, unless the player has been killed
 
 	// If the player has been killed, drop but otherwise do not move
@@ -145,8 +148,8 @@ void Player::control (unsigned int ticks, int msps) {
 
 		if (event) {
 
-			if (event[E_MODIFIER] == 29) dy = event[E_MULTIPURPOSE] * -F20;
-			else if (event[E_BEHAVIOUR] == 25) dy = PYS_JUMP;
+			if (event == 1) dy = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+			else if (event == 2) dy = PYS_JUMP;
 
 		}
 
@@ -172,7 +175,7 @@ void Player::control (unsigned int ticks, int msps) {
 				if (dx < 0) jumpY += dx >> 4;
 				else if (dx > 0) jumpY -= dx >> 4;
 
-				event = NULL;
+				event = 0;
 
 			}
 
@@ -198,71 +201,50 @@ void Player::control (unsigned int ticks, int msps) {
 
 	} else {
 
-		if ((event && ((event[E_MODIFIER] == 6) ||
-			(event[E_BEHAVIOUR] == 28))) ||
-			level->checkMaskDown(x + PXO_ML, y + F2) ||
-			level->checkMaskDown(x + PXO_MID, y + F2) ||
-			level->checkMaskDown(x + PXO_MR, y + F2)) {
+		platform = isOnPlatform();
 
-			// Mask/platform/bridge below player
+		if (platform && pcontrols[C_JUMP] &&
+			!level->checkMask(x + PXO_MID, y - F36)) {
 
-			if (pcontrols[C_JUMP] && !level->checkMask(x + PXO_MID, y - F36)) {
+			// Jump
 
-				// Jump
+			jumpY = y - jumpHeight;
 
-				jumpY = y - jumpHeight;
+			// Increase jump height if walking/running
+			if (dx < 0) jumpY += dx >> 3;
+			else if (dx > 0) jumpY -= dx >> 3;
 
-				// Increase jump height if walking/running
-				if (dx < 0) jumpY += dx >> 3;
-				else if (dx > 0) jumpY -= dx >> 3;
+			event = 0;
 
-				event = NULL;
-
-				playSound(S_JUMPA);
-
-			}
-
-			if (!lookTime) {
-
-				// If requested, look up or down
-				if (pcontrols[C_UP]) lookTime = -ticks;
-				else if (pcontrols[C_DOWN]) lookTime = ticks;
-
-			}
-
-		} else {
-
-			// No mask/platform/bridge below player
-			// Cannot look up or down
-			lookTime = 0;
+			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!pcontrols[C_JUMP] &&
-			(!event || ((event[E_MODIFIER] != 29) &&
-			(event[E_BEHAVIOUR] != 25)))) jumpY = TTOF(LH);
+		if (!pcontrols[C_JUMP] && (event != 1) && (event != 2))
+			jumpY = TTOF(LH);
 
-		// If jumping, rise
 		if (y >= jumpY) {
+
+			// If jumping, rise
 
 			dy = (jumpY - y - F64) * 4;
 
-			// Spring speed limit
-			if (event && (event[E_MODIFIER] == 29)) {
+			// Spring/float up speed limit
+			if ((event == 1) || (event == 2)) {
 
-				if ((event[E_MULTIPURPOSE] == 0) && (dy < PYS_JUMP))
-					dy = PYS_JUMP;
+				speed = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
 
-				if ((event[E_MULTIPURPOSE] > 0) && (dy < event[E_MULTIPURPOSE] * -F20))
-					dy = event[E_MULTIPURPOSE] * -F20;
+				if (speed == 0) speed = PYS_JUMP;
+
+				if (dy < speed) dy = speed;
 
 			}
 
 			// Avoid jumping too fast, unless caused by an event
 			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
-		} else {
+		} else if (!platform) {
 
 			// Fall under gravity
 			dy += PYA_GRAVITY * msps;
@@ -270,22 +252,29 @@ void Player::control (unsigned int ticks, int msps) {
 
 		}
 
-		// Stop looking
-		if (!pcontrols[C_UP] && (lookTime < 0)) lookTime = 0;
-		if (!pcontrols[C_DOWN] && (lookTime > 0)) lookTime = 0;
+		if (platform && !lookTime) {
+
+			// If requested, look up or down
+			if (pcontrols[C_UP]) lookTime = -ticks;
+			else if (pcontrols[C_DOWN]) lookTime = ticks;
+
+		}
+
+		// Stop looking if there is no platform or the control has been released
+		if (!platform ||
+			(!pcontrols[C_UP] && (lookTime < 0)) ||
+			(!pcontrols[C_DOWN] && (lookTime > 0))) lookTime = 0;
 
 	}
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) &&
-		(!event || event[E_BEHAVIOUR] != 25)) {
+	if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != 2)) {
 
 		jumpY = TTOF(LH);
 		if (dy < 0) dy = 0;
 
-		if (event && (event[E_MODIFIER] != 6) && (event[E_BEHAVIOUR] != 28))
-			event = NULL;
+		if ((event != 3) && (event != 4)) event = 0;
 
 	}
 
@@ -294,8 +283,7 @@ void Player::control (unsigned int ticks, int msps) {
 
 		jumpY = TTOF(LH);
 
-		if (event && (event[E_MODIFIER] != 6) && (event[E_BEHAVIOUR] != 28))
-			event = NULL;
+		if ((event != 3) && (event != 4)) event = 0;
 
 	}
 
@@ -303,7 +291,7 @@ void Player::control (unsigned int ticks, int msps) {
 	// Handle firing
 	if (pcontrols[C_FIRE]) {
 
-		if (ticks > fireTime) {
+		if ((ticks > fireTime) && (level->getBullet(ammoType + 1)[B_SPRITE] != 0)) {
 
 			// Create new bullet
 			level->firstBullet = new Bullet(this, false, ticks);
@@ -395,7 +383,14 @@ void Player::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) break;
+			if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
+
+				y &= ~4095;
+				dy = 0;
+
+				break;
+
+			}
 
 			y -= F4;
 			count--;
@@ -404,8 +399,14 @@ void Player::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 4095;
 
-		if (!level->checkMask(x + PXO_MID, y + PYO_TOP - pdy)) y -= pdy;
-		else y &= ~4095;
+		if (!level->checkMask(x + PXO_MID, y + PYO_TOP - pdy))
+			y -= pdy;
+		else {
+
+			y &= ~4095;
+			dy = 0;
+
+		}
 
 	} else if (pdy > 0) {
 
@@ -417,7 +418,14 @@ void Player::move (unsigned int ticks, int msps) {
 
 			if (level->checkMaskDown(x + PXO_ML, y + F4) ||
 				level->checkMaskDown(x + PXO_MID, y + F4) ||
-				level->checkMaskDown(x + PXO_MR, y + F4)) break;
+				level->checkMaskDown(x + PXO_MR, y + F4)) {
+
+				y |= 4095;
+				dy = 0;
+
+				break;
+
+			}
 
 			y += F4;
 			count--;
@@ -428,8 +436,14 @@ void Player::move (unsigned int ticks, int msps) {
 
 		if (!(level->checkMaskDown(x + PXO_ML, y + pdy) ||
 			level->checkMaskDown(x + PXO_MID, y + pdy) ||
-			level->checkMaskDown(x + PXO_MR, y + pdy))) y += pdy;
-		else y |= 4095;
+			level->checkMaskDown(x + PXO_MR, y + pdy)))
+			y += pdy;
+		else {
+
+			y |= 4095;
+			dy = 0;
+
+		}
 
 	}
 
@@ -446,7 +460,13 @@ void Player::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) break;
+			if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) {
+
+				x &= ~4095;
+
+				break;
+
+			}
 
 			x -= F4;
 			count--;
@@ -475,7 +495,13 @@ void Player::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) break;
+			if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) {
+
+				x |= 4095;
+
+				break;
+
+			}
 
 			x += F4;
 			count--;
@@ -499,11 +525,10 @@ void Player::move (unsigned int ticks, int msps) {
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if (event && (event[E_BEHAVIOUR] == 25) &&
-		level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
+	if ((event == 2) && level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
 
 		jumpY = TTOF(LH);
-		event = NULL;
+		event = 0;
 
 	}
 
@@ -610,17 +635,7 @@ void Player::draw (unsigned int ticks, int change) {
 
 	else if (dy >= 0) {
 
-		if ((event && ((event[E_MODIFIER] == 6) ||
-			(event[E_BEHAVIOUR] == 28))) ||
-			level->checkMaskDown(x + PXO_ML, y + F2) ||
-			level->checkMaskDown(x + PXO_MID, y + F2) ||
-			level->checkMaskDown(x + PXO_MR, y + F2) ||
-			level->checkMaskDown(x + PXO_ML, y + F8) ||
-			level->checkMaskDown(x + PXO_MID, y + F8) ||
-			level->checkMaskDown(x + PXO_MR, y + F8)) {
-
-			drawX = x;
-			drawY = y;
+		if (isOnPlatform()) {
 
 			if (dx) {
 
@@ -634,14 +649,12 @@ void Player::draw (unsigned int ticks, int change) {
 
 				if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
 					!level->checkMaskDown(x + PXO_L, y + F2) &&
-					(!event || ((event[E_MODIFIER] != 6) &&
-					(event[E_BEHAVIOUR] != 28))))
+					(event != 3) && (event != 4))
 					anim = anims[PA_LEDGE];
 
 				else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
 					!level->checkMaskDown(x + PXO_R, y + F2) &&
-					(!event || ((event[E_MODIFIER] != 6) &&
-					(event[E_BEHAVIOUR] != 28))))
+					(event != 3) && (event != 4))
 					anim = anims[PA_REDGE];
 
 				else if (pcontrols[C_FIRE])
@@ -662,7 +675,7 @@ void Player::draw (unsigned int ticks, int change) {
 
 		} else anim = anims[facing? PA_RFALL: PA_LFALL];
 
-	} else if (event && (event[E_MODIFIER] == 29))
+	} else if (event == 1)
 		anim = anims[facing? PA_RSPRING: PA_LSPRING];
 
 	else anim = anims[facing? PA_RJUMP: PA_LJUMP];

@@ -155,7 +155,7 @@ class Level {
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player *source, bool TNT);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player *source);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
 		signed char * getBullet     (unsigned char bullet);
 		Sprite *      getSprite     (unsigned char sprite);

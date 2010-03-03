@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -42,10 +42,12 @@ Anim::~Anim () {
 }
 
 
-void Anim::setData (int amount, signed char x, signed char y) {
+void Anim::setData (int amount, signed char sX, signed char sY, signed char x, signed char y) {
 
 	frames = amount;
-	xOffset = x << 2;
+	shootX = sX;
+	shootY = sY;
+	xOffset = x;
 	yOffset = y;
 
 	return;
@@ -66,7 +68,7 @@ void Anim::setFrame (int nextFrame, bool looping) {
 void Anim::setFrameData (Sprite *sprite, signed char x, signed char y) {
 
 	sprites[frame] = sprite;
-	xOffsets[frame] = x << 2;
+	xOffsets[frame] = x;
 	yOffsets[frame] = y;
 
 	return;
@@ -81,14 +83,28 @@ int Anim::getWidth () {
 }
 
 
-int Anim::getHeight() {
+int Anim::getHeight () {
 
 	return sprites[frame]->getHeight();
 
 }
 
 
-void Anim::draw (int x, int y) {
+fixed Anim::getShootX () {
+
+	return ITOF(shootX + xOffsets[frame] - xOffset);
+
+}
+
+
+fixed Anim::getShootY () {
+
+	return ITOF(shootY + yOffsets[frame] - yOffset);
+
+}
+
+
+void Anim::draw (fixed x, fixed y) {
 
 	sprites[frame]->draw(FTOI(x) + xOffsets[frame] - xOffset - FTOI(viewX),
 		FTOI(y) + yOffsets[frame] - yOffset - FTOI(viewY));

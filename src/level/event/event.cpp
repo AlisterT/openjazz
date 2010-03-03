@@ -11,6 +11,8 @@
  * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 19th July 2009: Created eventframe.cpp from parts of events.cpp
  * 19th July 2009: Renamed events.cpp to event.cpp
+ * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
+ * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  *
  * Part of the OpenJazz project
  *
@@ -41,6 +43,13 @@
 #include <math.h>
 
 
+Event::Event () {
+
+	return;
+
+}
+
+
 Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
 	x = TTOF(gX);
@@ -52,8 +61,6 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 	gridX = gX;
 	gridY = gY;
 	flashTime = 0;
-
-	// Choose initial settings
 
 	switch (getProperty(E_BEHAVIOUR)) {
 
@@ -74,19 +81,6 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 
 			break;
 
-		case 28:
-
-			animType = E_LEFTANIM;
-			x -= F2;
-			y += ITOF(getProperty(E_YAXIS)) - F40;
-
-			// dx and dy used to store leftmost and rightmost player on bridge
-			// Start with minimum values
-			dx = getProperty(E_MULTIPURPOSE) * F8;
-			dy = 0;
-
-			break;
-
 		default:
 
 			animType = E_LEFTANIM;
@@ -94,13 +88,6 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 			break;
 
 	}
-
-	return;
-
-}
-
-
-Event::~Event () {
 
 	return;
 
@@ -145,7 +132,7 @@ void Event::destroy (unsigned int ticks) {
 }
 
 
-bool Event::hit (Player *source, bool TNT, unsigned int ticks) {
+bool Event::hit (Player *source, unsigned int ticks) {
 
 	int hitsRemaining;
 
@@ -155,7 +142,7 @@ bool Event::hit (Player *source, bool TNT, unsigned int ticks) {
 	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM) ||
 		(ticks < flashTime)) return false;
 
-	hitsRemaining = level->hitEvent(gridX, gridY, source, TNT);
+	hitsRemaining = level->hitEvent(gridX, gridY, source);
 
 	// If the event cannot be hit, do not register hit
 	if (hitsRemaining < 0) return false;
@@ -168,6 +155,17 @@ bool Event::hit (Player *source, bool TNT, unsigned int ticks) {
 
 	// Register hit
 	return true;
+
+}
+
+
+bool Event::isEnemy () {
+
+	signed char *set;
+
+	set = level->getEvent(gridX, gridY);
+
+	return set[E_HITSTOKILL] && (set[E_MODIFIER] == 0);
 
 }
 

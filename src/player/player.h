@@ -160,24 +160,22 @@ class Player : public Movable {
 	private:
 		Bird         *bird;
 		char         *name;
-		signed char  *event;    /* A member of the event set (spring, float up,
-			belt, platform) */
 		char          anims[PANIMS];
 		bool          pcontrols[PCONTROLS];
 		SDL_Color     palette[256];
 		unsigned char cols[4];
 		int           ammo[4];
-		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles,
-			2 = bouncer 3 = TNT */
+		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
 		int           score;
 		int           energy;
 		int           lives;
-		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow,
-			3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-		bool          floating; // false = normal, true = boarding/bird/etc.
+		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
+		bool          floating; /* false = normal, true = boarding/bird/etc. */
 		bool          facing;
-		int           lookTime; /* Negative if looking up, positive if looking
-			down, 0 if neither */
+		unsigned char eventX;
+		unsigned char eventY; /* Position of an event (spring, platform, bridge) */
+		int           event;  /* 0 = none, 1 = spring, 2 = float up, 3 = platform, 4 = bridge */
+		int           lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
 		int           reaction;
 		unsigned int  reactionTime;
 		int           fireSpeed;
@@ -190,7 +188,8 @@ class Player : public Movable {
 		int           enemies, items;
 		unsigned char team;
 
-		void addAmmo       (int type, int amount);
+		void addAmmo      (int type, int amount);
+		bool isOnPlatform ();
 
 	public:
 		int teamScore;
@@ -198,18 +197,17 @@ class Player : public Movable {
 		Player                       ();
 		~Player                      ();
 
-		void            init         (char *playerName, unsigned char *cols,
-			unsigned char newTeam);
+		void            init         (char *playerName, unsigned char *cols, unsigned char newTeam);
 		void            deinit       ();
 		void            setAnims     (char *newAnims);
 		char *          getName      ();
 		unsigned char * getCols      ();
 		void            reset        ();
 		void            setControl   (int control, bool state);
-		bool            shootEvent   (unsigned char gridX, unsigned char gridY,
-			unsigned int ticks);
-		bool            touchEvent   (unsigned char gridX, unsigned char gridY,
-			unsigned int ticks);
+		bool            takeEvent    (unsigned char gridX, unsigned char gridY, unsigned int ticks);
+		bool            touchEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
+		void            setEvent     (unsigned char gridX, unsigned char gridY);
+		void            clearEvent   (unsigned char gridX, unsigned char gridY);
 		bool            hit          (Player *source, unsigned int ticks);
 		void            kill         (Player *source, unsigned int ticks);
 		void            addScore     (int addedScore);
@@ -219,17 +217,11 @@ class Player : public Movable {
 		int             getAmmo      (bool amount);
 		int             getEnemies   ();
 		int             getItems     ();
-		bool            overlap      (fixed left, fixed top, fixed width,
-			fixed height);
+		bool            overlap      (fixed left, fixed top, fixed width, fixed height);
 		void            setPosition  (fixed newX, fixed newY);
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
 		unsigned char   getTeam      ();
-		void            floatUp      (signed char *newEvent, int speed);
-		void            belt         (int speed);
-		void            setEvent     (signed char *newEvent);
-		void            clearEvent   (signed char *newEvent,
-			unsigned char property);
 		void            send         (unsigned char *data);
 		void            receive      (unsigned char *buffer);
 		void            control      (unsigned int ticks, int msps);

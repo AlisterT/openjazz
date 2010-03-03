@@ -27,6 +27,7 @@
 
 #include "bullet.h"
 #include "event/event.h"
+#include "event/guardians.h"
 #include "level.h"
 
 #include "game/game.h"
@@ -70,7 +71,31 @@ int Level::step () {
 				}
 
 				// If the event wasn't found, create it
-				if (!nextEvent) firstEvent = new Event(x, y, firstEvent);
+				if (!nextEvent) {
+
+					switch (getEvent(x, y)[E_BEHAVIOUR]) {
+
+						case 28:
+
+							firstEvent = new Bridge(x, y, firstEvent);
+
+							break;
+
+						case 60:
+
+							firstEvent = new DeckGuardian(x, y, firstEvent);
+
+							break;
+
+						default:
+
+							firstEvent = new Event(x, y, firstEvent);
+
+							break;
+
+					}
+
+				}
 
 			}
 

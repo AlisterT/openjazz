@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -24,6 +24,8 @@
 #define _ANIM_H
 
 
+#include "OpenJazz.h"
+
 #include <SDL/SDL.h>
 
 
@@ -35,6 +37,8 @@ class Anim {
 
 	private:
 		Sprite        *sprites[19];
+		signed char    shootX;
+		signed char    shootY;
 		signed char    xOffset;
 		signed char    yOffset;
 		signed char    xOffsets[19];
@@ -46,15 +50,17 @@ class Anim {
 		Anim                ();
 		~Anim               ();
 
-		void setData        (int amount, signed char x, signed char y);
-		void setFrame       (int nextFrame, bool looping);
-		void setFrameData   (Sprite *frameSprite, signed char x, signed char y);
-		int  getWidth       ();
-		int  getHeight      ();
-		void draw           (int x, int y);
-		void setPalette     (SDL_Color *palette, int start, int amount);
-		void flashPalette   (int index);
-		void restorePalette ();
+		void  setData        (int amount, signed char sX, signed char sY, signed char x, signed char y);
+		void  setFrame       (int nextFrame, bool looping);
+		void  setFrameData   (Sprite *frameSprite, signed char x, signed char y);
+		int   getWidth       ();
+		int   getHeight      ();
+		fixed getShootX      ();
+		fixed getShootY      ();
+		void  draw           (fixed x, fixed y);
+		void  setPalette     (SDL_Color *palette, int start, int amount);
+		void  flashPalette   (int index);
+		void  restorePalette ();
 
 };
 

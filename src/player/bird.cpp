@@ -81,7 +81,6 @@ void Bird::hit () {
 bool Bird::step (unsigned int ticks, int msps) {
 
 	Event *nextEvent;
-	fixed eventX, eventY;
 	bool target;
 
 	if (fleeing) {
@@ -161,20 +160,9 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 			if (player->getFacing()) {
 
-				while (nextEvent) {
+				while (nextEvent && !target) {
 
-					eventX = nextEvent->getX();
-					eventY = nextEvent->getY() - nextEvent->getHeight();
-
-					if (nextEvent->getProperty(E_HITSTOKILL) &&
-						(eventX > x) && (eventX < x + F160) && (eventY > y) &&
-						(eventY < y + F100)) {
-
-						target = true;
-
-						break;
-
-					}
+					target = nextEvent->isEnemy() && nextEvent->overlap(x, y, F160, F100);
 
 					nextEvent = nextEvent->getNext();
 
@@ -182,20 +170,9 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 			} else {
 
-				while (nextEvent) {
+				while (nextEvent && !target) {
 
-					eventX = nextEvent->getX();
-					eventY = nextEvent->getY() - nextEvent->getHeight();
-
-					if (nextEvent->getProperty(E_HITSTOKILL) &&
-						(eventX > x - F160) && (eventX < x) && (eventY > y) &&
-						(eventY < y + F100)) {
-
-						target = true;
-
-						break;
-
-					}
+					target = nextEvent->isEnemy() && nextEvent->overlap(x - F160, y, F160, F100);
 
 					nextEvent = nextEvent->getNext();
 

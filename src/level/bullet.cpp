@@ -82,6 +82,8 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 
+	Anim *anim;
+
 	// Properties based on the event
 
 	next = level->firstBullet;
@@ -89,8 +91,9 @@ Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = facing? 1: 0;
 
-	x = sourceEvent->getX() + (sourceEvent->getWidth() >> 1);
-	y = sourceEvent->getY() - (sourceEvent->getHeight() >> 1);
+	anim = level->getAnim(sourceEvent->getProperty(facing? E_LSHOOTANIM: E_RSHOOTANIM));
+	x = sourceEvent->getX() + anim->getShootX();
+	y = sourceEvent->getY() + anim->getShootY();
 	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
@@ -193,7 +196,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 		// If the time has expired, destroy the bullet
 		if (ticks > time) {
 
-			// If the bullet is TNT, destroy all destructible events nearby
+			// If the bullet is TNT, hit all destructible events nearby twice
 			if (type == -1) {
 
 				event = level->firstEvent;
@@ -201,8 +204,12 @@ bool Bullet::step (unsigned int ticks, int msps) {
 				while (event) {
 
 					// If the event is within range, hit it
-					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100))
-						event->hit(source, true, ticks);
+					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100)) {
+
+						event->hit(source, ticks);
+						event->hit(source, ticks);
+
+					}
 
 					event = event->getNext();
 
@@ -245,7 +252,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 				if (event->overlap(x, y, 0, 0)) {
 
 					// If the event is hittable, hit it and destroy the bullet
-					if (event->hit(source, false, ticks)) return true;
+					if (event->hit(source, ticks)) return true;
 
 				}
 

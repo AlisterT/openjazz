@@ -7,6 +7,7 @@
  * 11th February 2009: Created bullet.h from parts of events.h
  * 1st March 2009: Created bird.h from parts of events.h
  * 19th July 2009: Renamed events.h to event.h
+ * 2nd March 2010: Created guardians.h from parts of event.h
  *
  * Part of the OpenJazz project
  *
@@ -23,8 +24,8 @@
  */
 
 
-#ifndef _EVENTS_H
-#define _EVENTS_H
+#ifndef _EVENT_H
+#define _EVENT_H
 
 
 #include "movable.h"
@@ -68,8 +69,8 @@
 #define T_SHOOT  300
 
 // Speed factors
-#define ES_SLOW 80
-#define ES_FAST 240
+#define ES_SLOW ITOF(80)
+#define ES_FAST ITOF(240)
 
 
 // Classes
@@ -78,31 +79,42 @@ class Player;
 
 class Event : public Movable {
 
-	private:
+	protected:
 		Event         *next;
 		unsigned char  gridX, gridY; // Grid position of the event
 		unsigned char  animType;     // E_LEFTANIM, etc, or 0
 		unsigned char  frame;
 		unsigned int   flashTime;
 
-		void destroy (unsigned int ticks);
+		Event                     ();
+
+		void          destroy     (unsigned int ticks);
+		fixed         getWidth    ();
+		fixed         getHeight   ();
+		signed char * prepareStep (unsigned int ticks, int msps);
 
 	public:
-		Event                   (unsigned char gX, unsigned char gY,
-			Event *nextEvent);
-		~Event                  ();
+		Event                    (unsigned char gX, unsigned char gY, Event *nextEvent);
 
-		Event *     getNext     ();
-		void        removeNext  ();
-		bool        hit         (Player *source, bool TNT, unsigned int ticks);
-		bool        isFrom      (unsigned char gX, unsigned char gY);
-		fixed       getWidth    ();
-		fixed       getHeight   ();
-		bool        overlap     (fixed left, fixed top, fixed width,
-			fixed height);
-		signed char getProperty (unsigned char property);
-		bool        step        (unsigned int ticks, int msps);
-		void        draw        (unsigned int ticks, int change);
+		Event *      getNext     ();
+		void         removeNext  ();
+		bool         hit         (Player *source, unsigned int ticks);
+		bool         isEnemy     ();
+		bool         isFrom      (unsigned char gX, unsigned char gY);
+		virtual bool overlap     (fixed left, fixed top, fixed width, fixed height);
+		signed char  getProperty (unsigned char property);
+		virtual bool step        (unsigned int ticks, int msps);
+		virtual void draw        (unsigned int ticks, int change);
+
+};
+
+class Bridge : public Event {
+
+	public:
+		Bridge    (unsigned char gX, unsigned char gY, Event *nextEvent);
+
+		bool step (unsigned int ticks, int msps);
+		void draw (unsigned int ticks, int change);
 
 };
 

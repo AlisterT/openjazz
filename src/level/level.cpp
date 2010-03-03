@@ -272,7 +272,7 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player *source, bool TNT) {
+int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player *source) {
 
 	GridElement *ge;
 	unsigned char buffer[MTL_L_GRID];
@@ -286,15 +286,14 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player *source, b
 	if (!hitsToKill) return -1;
 
 	// Increase the hit count
-	if (TNT) ge->hits = hitsToKill;
-	else ge->hits++;
+	ge->hits++;
 
 	// Check if the event has been killed
 	if (ge->hits == hitsToKill) {
 
 		// Notify the player that shot the bullet
 		// If this returns false, ignore the hit
-		if (!source->shootEvent(gridX, gridY, ticks)) {
+		if (!source->takeEvent(gridX, gridY, ticks)) {
 
 			ge->hits--;
 

@@ -706,15 +706,19 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		for (y = 0; y < LH; y++) {
 
-			// Eliminate event references for events of too high a difficulty
-			if (eventSet[grid[y][x].event][E_DIFFICULTY] > difficulty)
-				grid[y][x].event = 0;
+			type = grid[y][x].event;
 
-			// If the event hurts and can be killed, it is an enemy
-			// Anything else that scores is an item
-			if ((eventSet[grid[y][x].event][E_MODIFIER] == 0) &&
-				eventSet[grid[y][x].event][E_HITSTOKILL]) enemies++;
-			else if (eventSet[grid[y][x].event][E_ADDEDSCORE]) items++;
+			if (type) {
+
+				// Eliminate event references for events of too high a difficulty
+				if (eventSet[type][E_DIFFICULTY] > difficulty) grid[y][x].event = 0;
+
+				// If the event hurts and can be killed, it is an enemy
+				// Anything else that scores is an item
+				if ((eventSet[type][E_MODIFIER] == 0) && eventSet[type][E_HITSTOKILL]) enemies++;
+				else if (eventSet[type][E_ADDEDSCORE]) items++;
+
+			}
 
 		}
 
@@ -727,24 +731,25 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	// Load animation set
 
-	buffer = file->loadRLE(ANIMS * 64);
+	buffer = file->loadRLE(ANIMS << 6);
 
 	// Create animation set based on that data
 	for (count = 0; count < ANIMS; count++) {
 
-		animSet[count].setData(buffer[(count * 64) + 6],
-			buffer[(count * 64) + 4], buffer[(count * 64) + 5]);
+		animSet[count].setData(buffer[(count << 6) + 6],
+			buffer[count << 6], buffer[(count << 6) + 1],
+			buffer[(count << 6) + 4], buffer[(count << 6) + 5]);
 
-		for (y = 0; y < buffer[(count * 64) + 6]; y++) {
+		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
 
 			// Get frame
-			x = buffer[(count * 64) + 7 + y];
+			x = buffer[(count << 6) + 7 + y];
 			if (x > sprites) x = sprites;
 
 			// Assign sprite and vertical offset
 			animSet[count].setFrame(y, true);
 			animSet[count].setFrameData(spriteSet + x,
-				buffer[(count * 64) + 26 + y], buffer[(count * 64) + 45 + y]);
+				buffer[(count << 6) + 26 + y], buffer[(count << 6) + 45 + y]);
 
 		}
 

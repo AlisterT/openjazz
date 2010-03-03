@@ -65,8 +65,7 @@ Player::~Player () {
 }
 
 
-void Player::init (char *playerName, unsigned char *playerCols,
-	unsigned char newTeam) {
+void Player::init (char *playerName, unsigned char *playerCols, unsigned char newTeam) {
 
 	int offsets[15] = {PC_WHITE, PC_SGREEN, PC_BLUE, PC_RED, PC_LGREEN,
 		PC_LEVEL1, PC_YELLOW, PC_LEVEL2, PC_ORANGE, PC_LEVEL3, PC_LEVEL4,
@@ -205,7 +204,7 @@ void Player::reset () {
 
 	if (bird) bird->reset();
 
-	event = NULL;
+	event = 0;
 
 	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
 
@@ -237,14 +236,11 @@ void Player::setControl (int control, bool state) {
 }
 
 
-bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
-	unsigned int ticks) {
+bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
 	signed char *set;
 
 	set = level->getEvent(gridX, gridY);
-
-	addScore(set[E_ADDEDSCORE]);
 
 	switch (set[E_MODIFIER]) {
 
@@ -257,17 +253,57 @@ bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
 		case 8: // Boss
 		case 27: // End of level
 
-			if (getEnergy()) {
+			if (!getEnergy()) return false;
 
-				if (!gameMode) {
+			if (!gameMode) {
 
-					if (game) game->setCheckpoint(gridX, gridY);
+				if (game) game->setCheckpoint(gridX, gridY);
 
-					level->setStage(LS_END);
+				level->setStage(LS_END);
 
-				} else return gameMode->endOfLevel(this, gridX, gridY);
+			} else if (!(gameMode->endOfLevel(this, gridX, gridY))) return false;
 
-			}
+			break;
+
+		case 0: // Enemy
+
+			break;
+
+		case 1: // Invincibility
+
+			if (!getEnergy()) return false;
+
+			reaction = PR_INVINCIBLE;
+			reactionTime = ticks + PRT_INVINCIBLE;
+
+			break;
+
+		case 2:
+		case 3: // Health
+
+			if (energy < 4) energy++;
+
+			break;
+
+		case 4: // Extra life
+
+			if (lives < 99) lives++;
+
+			break;
+
+		case 5: // High-jump feet
+
+			jumpHeight += F16;
+
+			break;
+
+		case 7: // Used with destructible blocks
+
+			break;
+
+		case 9: // Sand timer
+
+			level->addTimer();
 
 			break;
 
@@ -277,31 +313,71 @@ bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
 
 			break;
 
-		case 15:
+		case 11: // Item
+
+			break;
+
+		case 12: // Rapid fire
+
+			fireSpeed++;
+
+			break;
+
+		case 15: // Ammo
 
 			addAmmo(0, 15);
 
 			break;
 
-		case 16:
+		case 16: // Ammo
 
 			addAmmo(1, 15);
 
 			break;
 
-		case 17:
+		case 17: // Ammo
 
 			addAmmo(2, 15);
 
 			break;
 
-		case 26:
+		case 18: // Ammo
+
+			addAmmo(0, 2);
+
+			break;
+
+		case 19: // Ammo
+
+			addAmmo(1, 2);
+
+			break;
+
+		case 20: // Ammo
+
+			addAmmo(2, 2);
+
+			break;
+
+		case 26: // Fast feet box
 
 			fastFeetTime = ticks + T_FASTFEET;
 
 			break;
 
-		case 33:
+		case 30: // TNT
+
+			addAmmo(3, 1);
+
+			break;
+
+		case 31: // Water level
+
+			level->setWaterLevel(gridY);
+
+			break;
+
+		case 33: // 2-hit shield
 
 			if (shield < 2) shield = 2;
 
@@ -313,13 +389,32 @@ bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
 
 			break;
 
-		case 36:
+		case 35: // Airboard, etc.
+
+			floating = true;
+
+			break;
+
+		case 36: // 4-hit shield
 
 			shield = 6;
 
 			break;
 
+		case 37: // Diamond
+
+			// Yellow flash
+			firstPE = new FlashPaletteEffect(255, 255, 0, 320, firstPE);
+
+			break;
+
+		default:
+
+			return false;
+
 	}
+
+	addScore(set[E_ADDEDSCORE]);
 
 	// Add to player's enemy/item tally
 	// If the event hurts and can be killed, it is an enemy
@@ -332,8 +427,7 @@ bool Player::shootEvent (unsigned char gridX, unsigned char gridY,
 }
 
 
-bool Player::touchEvent (unsigned char gridX, unsigned char gridY,
-	unsigned int ticks) {
+bool Player::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
 
 	signed char *set;
 
@@ -349,59 +443,9 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY,
 
 			break;
 
-		case 1: // Invincibility
-
-			if (getEnergy()) {
-
-				reaction = PR_INVINCIBLE;
-				reactionTime = ticks + PRT_INVINCIBLE;
-				addScore(set[E_ADDEDSCORE]);
-
-				return true;
-
-			}
+		case 7: // Used with destructible blocks, but should not destroy on contact
 
 			break;
-
-		case 2:
-		case 3: // Health
-
-			if (energy < 4) energy++;
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
-
-		case 4: // Extra life
-
-			if (lives < 99) lives++;
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
-
-		case 5: // High-jump feet
-
-			jumpHeight += F16;
-
-			return true;
-
-		case 9: // Sand timer
-
-			level->addTimer();
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
-
-		case 11: // Item
-
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
-
-		case 12: // Rapid fire
-
-			fireSpeed++;
-
-			return true;
 
 		case 13: // Warp
 
@@ -419,64 +463,52 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY,
 
 			break;
 
-		case 18: // Ammo
+		case 28: // Belt
 
-			addAmmo(0, 2);
-			addScore(set[E_ADDEDSCORE]);
+			x += set[E_MAGNITUDE] * 4 * msps;
 
-			return true;
-
-		case 19: // Ammo
-
-			addAmmo(1, 2);
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
-
-		case 20: // Ammo
-
-			addAmmo(2, 2);
-			addScore(set[E_ADDEDSCORE]);
-
-			return true;
+			break;
 
 		case 29: // Upwards spring
 
-			setEvent(set);
+			setEvent(gridX, gridY);
 
 			level->playSound(set[E_SOUND]);
 
 			break;
 
-		case 30: // TNT
-
-			addAmmo(3, 1);
-
-			return true;
-
 		case 31: // Water level
 
-			if (!set[E_HITSTOKILL]) level->setWaterLevel(gridY);
+			level->setWaterLevel(gridY);
 
 			break;
 
-		case 35: // Airboard, etc.
+		case 32: // Float up / sideways
 
-			floating = true;
-			addScore(set[E_ADDEDSCORE]);
+			if (set[E_YAXIS]) {
 
-			return true;
+				eventX = gridX;
+				eventY = gridY;
+				event = 2;
 
-		case 37: // Diamond
+				if (dy > set[E_MULTIPURPOSE] * -F20)
+					dy -= set[E_MULTIPURPOSE] * 320 * msps;
 
-			// Yellow flash
-			firstPE = new FlashPaletteEffect(255, 255, 0, 320, firstPE);
+				jumpY = y - (8 * F16);
 
-			return true;
+			} else x += set[E_MAGNITUDE] * 20 * msps;
+
+			break;
 
 		case 38: // Airboard, etc. off
 
 			floating = false;
+
+			break;
+
+		default:
+
+			if (!set[E_HITSTOKILL]) return takeEvent(gridX, gridY, ticks);
 
 			break;
 
@@ -619,8 +651,24 @@ int Player::getItems () {
 
 bool Player::overlap (fixed left, fixed top, fixed width, fixed height) {
 
-	return (x + PXO_R >= left) && (x + PXO_L < left + width) && (y >= top) &&
-		(y + PYO_TOP < top + height);
+	return (x + PXO_R >= left) && (x + PXO_L < left + width) &&
+		(y >= top) && (y + PYO_TOP < top + height);
+
+}
+
+
+bool Player::isOnPlatform () {
+
+	// Check for platform event, bridge or level mask below player
+
+	return
+		(event >= 3) ||
+		level->checkMaskDown(x + PXO_ML, y + F2) ||
+		level->checkMaskDown(x + PXO_MID, y + F2) ||
+		level->checkMaskDown(x + PXO_MR, y + F2) ||
+		level->checkMaskDown(x + PXO_ML, y + F8) ||
+		level->checkMaskDown(x + PXO_MID, y + F8) ||
+		level->checkMaskDown(x + PXO_MR, y + F8);
 
 }
 
@@ -659,49 +707,35 @@ unsigned char Player::getTeam () {
 }
 
 
-void Player::floatUp (signed char *newEvent, int speed) {
+void Player::setEvent (unsigned char gridX, unsigned char gridY) {
 
-	event = newEvent;
+	signed char *set;
 
-	if ((dy > 0) && level->checkMaskDown(x + PXO_MID, y + F4))
-		dy = event[E_MULTIPURPOSE] * -F40;
+	set = level->getEvent(gridX, gridY);
 
-	if (dy > event[E_MULTIPURPOSE] * -F40)
-		dy -= event[E_MULTIPURPOSE] * 320 * speed;
+	if (set[E_MODIFIER] == 29) {
 
-	jumpY = y - (8 * F16);
+		// Upwards spring
+		jumpY = y + (set[E_MAGNITUDE] * (F20 + F1));
+		event = 1;
 
-	return;
+	} else if (set[E_MODIFIER] == 6) event = 3;
+	else if (set[E_BEHAVIOUR] == 28) event = 4;
+	else return;
 
-}
-
-
-void Player::belt (int speed) {
-
-	dx += speed * 20;
+	eventX = gridX;
+	eventY = gridY;
 
 	return;
 
 }
 
 
-void Player::setEvent (signed char *newEvent) {
+void Player::clearEvent (unsigned char gridX, unsigned char gridY) {
 
-	event = newEvent;
+	// If the location matches, clear the event
 
-	if (event[E_MODIFIER] == 29) // Upwards spring
-		jumpY = y + (event[E_MAGNITUDE] * (F20 + F1));
-
-	return;
-
-}
-
-
-void Player::clearEvent (signed char *newEvent, unsigned char property) {
-
-	// If the given property matches, clear the event
-
-	if (event && (event[property] == newEvent[property])) event = NULL;
+	if ((gridX == eventX) && (gridY == eventY)) event = 0;
 
 	return;
 
