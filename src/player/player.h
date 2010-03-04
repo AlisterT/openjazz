@@ -148,7 +148,7 @@
 
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
-#define PCONTROLS   7 /* Number of player controls. */
+#define PCONTROLS   8 /* Number of player controls. */
 
 
 // Classes

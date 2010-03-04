@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -36,14 +36,15 @@
 #define C_LEFT    2
 #define C_RIGHT   3
 #define C_JUMP    4
-#define C_FIRE    5
-#define C_CHANGE  6 /* Change weapon */
-#define C_ENTER   7
-#define C_ESCAPE  8
-#define C_STATS   9
-#define C_PAUSE  10
+#define C_SWIM    5
+#define C_FIRE    6
+#define C_CHANGE  7 /* Change weapon */
+#define C_ENTER   8
+#define C_ESCAPE  9
+#define C_STATS  10
+#define C_PAUSE  11
 // Size of those arrays
-#define CONTROLS 11
+#define CONTROLS 12
 
 // Time interval
 #define T_KEY   200

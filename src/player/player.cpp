@@ -787,6 +787,7 @@ void Player::send (unsigned char *data) {
 	data[42] = (y >> 16) & 255;
 	data[43] = (y >> 8) & 255;
 	data[44] = y & 255;
+	data[45] = pcontrols[C_SWIM];
 
 	return;
 
@@ -795,7 +796,7 @@ void Player::send (unsigned char *data) {
 
 void Player::receive (unsigned char *buffer) {
 
-	// Interpret data recieved from client/server
+	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 
@@ -812,6 +813,7 @@ void Player::receive (unsigned char *buffer) {
 			pcontrols[C_LEFT] = buffer[5];
 			pcontrols[C_RIGHT] = buffer[6];
 			pcontrols[C_JUMP] = buffer[7];
+			pcontrols[C_SWIM] = buffer[45];
 			pcontrols[C_FIRE] = buffer[8];
 			pcontrols[C_CHANGE] = false;
 

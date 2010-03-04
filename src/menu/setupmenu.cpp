@@ -37,10 +37,8 @@
 
 int Menu::setupKeyboard () {
 
-	const char *options[7] = {"up", "down", "left", "right", "jump", "fire",
-		"weapon"};
+	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
 	int progress, count, character;
-	bool used;
 
 	progress = 0;
 
@@ -50,27 +48,25 @@ int Menu::setupKeyboard () {
 
 		if (character == E_QUIT) return E_QUIT;
 
+		if (character == controls.getKey(C_ESCAPE)) return E_NONE;
+
 		if (character > 0) {
 
-			used = false;
+			// If this is a navigation controls (up, down, or enter),
+			// make sure it's not the same as other navigation controls
 
-			// Check if key is already in use
-
-			for (count = 0; count < CONTROLS; count++)
-				if (character == controls.getKey(count)) {
-
-					if (count != progress) used = true;
-
-				}
-
-			// If not, assign it to the current control
-
-			if (!used) {
+			if (((progress != C_UP) &&
+				(progress != C_DOWN) &&
+				(progress != C_ENTER)) ||
+				(controls.getKey(progress) == character) ||
+				((controls.getKey(C_UP) != character) &&
+				(controls.getKey(C_DOWN) != character) &&
+				(controls.getKey(C_ENTER) != character))) {
 
 				controls.setKey(progress, character);
 				progress++;
 
-				if (progress == 7) {
+				if (progress == PCONTROLS) {
 
 					// If all controls have been assigned, return
 
@@ -85,13 +81,11 @@ int Menu::setupKeyboard () {
 		}
 
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
-
 		SDL_Delay(T_FRAME);
 
 		clearScreen(0);
 
-		for (count = 0; count < 7; count++) {
+		for (count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
 				fontmn2->showString("okay", (screenW >> 2) + 176,
@@ -122,10 +116,8 @@ int Menu::setupKeyboard () {
 
 int Menu::setupJoystick () {
 
-	const char *options[7] = {"up", "down", "left", "right", "jump", "fire",
-		"weapon"};
+	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
 	int progress, count, control;
-	bool used;
 
 	progress = 0;
 
@@ -139,20 +131,16 @@ int Menu::setupJoystick () {
 
 			case JOYSTICKB:
 
-				used = false;
+				// If this is a navigation controls (up, down, or enter),
+				// make sure it's not the same as other navigation controls
 
-				// Check if the button is already in use
-
-				for (count = 0; count < CONTROLS; count++)
-					if ((control & 0xFF) == controls.getButton(count)) {
-
-						if (count != progress) used = true;
-
-					}
-
-				// If not, assign it to the current control
-
-				if (!used) {
+				if (((progress != C_UP) &&
+					(progress != C_DOWN) &&
+					(progress != C_ENTER)) ||
+					(controls.getButton(progress) == (control & 0xFF)) ||
+					((controls.getButton(C_UP) != (control & 0xFF)) &&
+					(controls.getButton(C_DOWN) != (control & 0xFF)) &&
+					(controls.getButton(C_ENTER) != (control & 0xFF)))) {
 
 					controls.setButton(progress, control & 0xFF);
 					progress++;
@@ -173,21 +161,16 @@ int Menu::setupJoystick () {
 
 			case JOYSTICKANEG:
 
-				used = false;
+				// If this is a navigation controls (up, down, or enter),
+				// make sure it's not the same as other navigation controls
 
-				// Check if the arrow is already in use
-
-				for (count = 0; count < CONTROLS; count++)
-					if (((control & 0xFF) == controls.getAxis(count)) &&
-						!controls.getAxisDirection(count)) {
-
-						if (count != progress) used = true;
-
-					}
-
-				// If not, assign it to the current control
-
-				if (!used) {
+				if (((progress != C_UP) &&
+					(progress != C_DOWN) &&
+					(progress != C_ENTER)) ||
+					((controls.getAxis(progress) == (control & 0xFF)) && !controls.getAxisDirection(progress)) ||
+					(((controls.getAxis(C_UP) != (control & 0xFF)) || controls.getAxisDirection(C_UP)) &&
+					((controls.getAxis(C_DOWN) != (control & 0xFF)) || controls.getAxisDirection(C_DOWN)) &&
+					((controls.getAxis(C_ENTER) != (control & 0xFF)) || controls.getAxisDirection(C_ENTER)))) {
 
 					controls.setAxis(progress, control & 0xFF, false);
 					progress++;
@@ -208,21 +191,16 @@ int Menu::setupJoystick () {
 
 			case JOYSTICKAPOS:
 
-				used = false;
+				// If this is a navigation controls (up, down, or enter),
+				// make sure it's not the same as other navigation controls
 
-				// Check if the arrow is already in use
-
-				for (count = 0; count < CONTROLS; count++)
-					if (((control & 0xFF) == controls.getAxis(count)) &&
-						controls.getAxisDirection(count)) {
-
-						if (count != progress) used = true;
-
-					}
-
-				// If not, assign it to the current control
-
-				if (!used) {
+				if (((progress != C_UP) &&
+					(progress != C_DOWN) &&
+					(progress != C_ENTER)) ||
+					((controls.getAxis(progress) == (control & 0xFF)) && controls.getAxisDirection(progress)) ||
+					(((controls.getAxis(C_UP) != (control & 0xFF)) || !controls.getAxisDirection(C_UP)) &&
+					((controls.getAxis(C_DOWN) != (control & 0xFF)) || !controls.getAxisDirection(C_DOWN)) &&
+					((controls.getAxis(C_ENTER) != (control & 0xFF)) || !controls.getAxisDirection(C_ENTER)))) {
 
 					controls.setAxis(progress, control & 0xFF, true);
 					progress++;
@@ -424,12 +402,9 @@ int Menu::setupResolution () {
 
 int Menu::setup () {
 
-	const char *setupOptions[4] = {"character", "keyboard", "joystick",
-		"resolution"};
-	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun",
-		"wristband"};
-	const char *setupCharacterColOptions[8] = {"white", "red", "orange",
-		"yellow", "green", "blue", "animation 1", "animation 2"};
+	const char *setupOptions[4] = {"character", "keyboard", "joystick", "resolution"};
+	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
+	const char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
 		PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
 	int ret;

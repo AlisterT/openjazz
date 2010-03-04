@@ -811,19 +811,25 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 
 	// The players' coordinates
-	if (!checkpoint && game) {
+	x = file->loadShort();
+	y = file->loadShort() + 1;
 
-		x = file->loadShort();
-		y = file->loadShort() + 1;
-		game->setCheckpoint(x, y);
+	if (!checkpoint && game) game->setCheckpoint(x, y);
 
-	} else file->seek(4, false);
 
 	// Set the players' initial values
-	if(game) {
+	if (game) {
+
 		for (count = 0; count < nPlayers; count++)
 			game->resetPlayer(players + count);
+
+    } else {
+
+		localPlayer->reset();
+		localPlayer->setPosition(TTOF(x), TTOF(y));
+
     }
+
 
 	// Next level
 	x = file->loadChar();

@@ -10,7 +10,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -70,7 +70,7 @@
 #define MTL_L_STAGE 3
 
 #define MTL_P_ANIMS (PANIMS + 3)
-#define MTL_P_TEMP  45
+#define MTL_P_TEMP  46
 
 #define BUFFER_LENGTH 255 /* Should always be big enough to hold any message */
 

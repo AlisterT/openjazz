@@ -158,7 +158,7 @@ void Player::control (unsigned int ticks, int msps) {
 
 	} else if (y + PYO_MID > level->getWaterLevel()) {
 
-		if (pcontrols[C_JUMP]) {
+		if (pcontrols[C_SWIM]) {
 
 			// Swim upwards
 

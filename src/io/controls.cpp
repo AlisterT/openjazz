@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -46,6 +46,7 @@ Controls::Controls () {
 	keys[C_JUMP].key   = SDLK_SPACE;
 	keys[C_FIRE].key   = SDLK_LALT;
 #endif
+	keys[C_SWIM].key   = keys[C_JUMP].key;
 	keys[C_CHANGE].key = SDLK_RCTRL;
 	keys[C_ENTER].key  = SDLK_RETURN;
 	keys[C_ESCAPE].key = SDLK_ESCAPE;
@@ -77,6 +78,8 @@ Controls::Controls () {
 	buttons[C_STATS].button = -1;
 	buttons[C_PAUSE].button = -1;
 #endif
+	buttons[C_SWIM].button = buttons[C_JUMP].button;
+
 	axes[C_UP].axis = 1;
 	axes[C_UP].direction = false;
 	axes[C_DOWN].axis = 1;
@@ -86,6 +89,7 @@ Controls::Controls () {
 	axes[C_RIGHT].axis = 0;
 	axes[C_RIGHT].direction = true;
 	axes[C_JUMP].axis = -1;
+	axes[C_SWIM].axis = -1;
 	axes[C_FIRE].axis = -1;
 	axes[C_CHANGE].axis = -1;
 	axes[C_ENTER].axis = -1;
@@ -94,6 +98,10 @@ Controls::Controls () {
 	axes[C_PAUSE].axis = -1;
 
 	for (count = 0; count < CONTROLS; count++) {
+
+		keys[count].state = false;
+		buttons[count].state = false;
+		axes[count].state = false;
 
 		controls[count].time = 0;
 		controls[count].state = false;
@@ -108,6 +116,7 @@ Controls::Controls () {
 void Controls::setKey (int control, int key) {
 
 	keys[control].key = key;
+	keys[control].state = false;
 
 	return;
 
@@ -117,6 +126,7 @@ void Controls::setKey (int control, int key) {
 void Controls::setButton (int control, int button) {
 
 	buttons[control].button = button;
+	buttons[control].state = false;
 
 	return;
 
@@ -127,6 +137,7 @@ void Controls::setAxis (int control, int axis, bool direction) {
 
 	axes[control].axis = axis;
 	axes[control].direction = direction;
+	axes[control].state = false;
 
 	return;
 
@@ -171,96 +182,62 @@ int Controls::update (SDL_Event *event, int type) {
 
 		case SDL_KEYDOWN:
 
-			for (count = 0; count < CONTROLS; count++)
-				if (event->key.keysym.sym == keys[count].key) {
-
-					keys[count].state = true;
-
-					break;
-
-				}
-
 			if (type == KEY_LOOP) return event->key.keysym.sym;
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->key.keysym.sym == keys[count].key)
+					keys[count].state = true;
 
 			break;
 
 		case SDL_KEYUP:
 
 			for (count = 0; count < CONTROLS; count++)
-				if (event->key.keysym.sym == keys[count].key) {
-
+				if (event->key.keysym.sym == keys[count].key)
 					keys[count].state = false;
-
-					break;
-
-				}
 
 			break;
 
 		case SDL_JOYBUTTONDOWN:
 
-			for (count = 0; count < CONTROLS; count++)
-				if (event->jbutton.button == buttons[count].button) {
-
-					buttons[count].state = true;
-
-					break;
-
-				}
-
 			if (type == JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->jbutton.button == buttons[count].button)
+					buttons[count].state = true;
 
 			break;
 
 		case SDL_JOYBUTTONUP:
 
 			for (count = 0; count < CONTROLS; count++)
-				if (event->jbutton.button == buttons[count].button) {
-
+				if (event->jbutton.button == buttons[count].button)
 					buttons[count].state = false;
-
-					break;
-
-				}
 
 			break;
 
 		case SDL_JOYAXISMOTION:
 
-			for (count = 0; count < CONTROLS; count++)
-				if (event->jaxis.axis == axes[count].axis) {
-
-					if (!axes[count].direction &&
-						(event->jaxis.value < -16384)) {
-
-						axes[count].state = true;
-
-						break;
-
-					}
-
-					else if (axes[count].direction &&
-						(event->jaxis.value > 16384)) {
-
-						axes[count].state = true;
-
-						break;
-
-					}
-
-					else axes[count].state = false;
-
-				}
-
 			if (type == JOYSTICK_LOOP) {
 
 				if (event->jaxis.value < -16384)
 					return JOYSTICKANEG | event->jaxis.axis;
-
-				if (event->jaxis.value > 16384)
+				else if (event->jaxis.value > 16384)
 					return JOYSTICKAPOS | event->jaxis.axis;
 
 			}
+
+			for (count = 0; count < CONTROLS; count++)
+				if (event->jaxis.axis == axes[count].axis) {
+
+					if (!axes[count].direction && (event->jaxis.value < -16384))
+						axes[count].state = true;
+					else if (axes[count].direction && (event->jaxis.value > 16384))
+						axes[count].state = true;
+					else
+						axes[count].state = false;
+
+				}
 
 			break;
 
