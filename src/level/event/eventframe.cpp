@@ -362,8 +362,7 @@ bool Event::step (unsigned int ticks, int msps) {
 				else if (y > localPlayer->getY()) dy = -ES_SLOW;
 				else dy = 0;
 
-			} else if (!localPlayer->getFacing() &&
-				(x > localPlayer->getX() + F32)) {
+			} else if (!localPlayer->getFacing() && (x > localPlayer->getX() + F32)) {
 
 				dx = -ES_FAST;
 
@@ -382,26 +381,19 @@ bool Event::step (unsigned int ticks, int msps) {
 
 		case 34:
 
-			// Launching platform
+			// Launching event
 
 			if (ticks > level->getEventTime(gridX, gridY)) {
 
-				if (y <= TTOF(gridY) + F16 - (set[E_YAXIS] * F2)) {
-
-					level->setEventTime(gridX, gridY, ticks + (set[E_MOVEMENTSP] * 1000));
-					dy = 0;
-
-				} else dy = -(y + (set[E_YAXIS] * F2) - TTOF(gridY)) / 100;
+				if (animType == E_LEFTANIM)
+					dy = -(F16 + y - (TTOF(gridY) - (set[E_MULTIPURPOSE] * F12))) * 10;
+				else
+					dy = (F16 + y - (TTOF(gridY) - (set[E_MULTIPURPOSE] * F12))) * 10;
 
 			} else {
 
-				if (y < TTOF(gridY) + F16) dy = (y + (set[E_YAXIS] * F2) - TTOF(gridY)) / 100;
-				else {
-
-					y = TTOF(gridY) + F16;
-					dy = 0;
-
-				}
+				dy = TTOF(gridY) + F16 - y;
+				dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
 
 			}
 
@@ -734,6 +726,25 @@ bool Event::step (unsigned int ticks, int msps) {
 
 				break;
 
+			case 34:
+
+				// Launching event
+
+				if (ticks > level->getEventTime(gridX, gridY)) {
+
+					if (y <= F16 + TTOF(gridY) - (set[E_MULTIPURPOSE] * F12))
+						animType = E_RIGHTANIM;
+					else if (y >= F16 + TTOF(gridY)) {
+
+						animType = E_LEFTANIM;
+						level->setEventTime(gridX, gridY, ticks + (set[E_YAXIS] * 50));
+
+					}
+
+				} else animType = E_LEFTANIM;
+
+				break;
+
 			case 36:
 
 				// Walk from side to side and down hills, staying on-screen
@@ -872,8 +883,8 @@ bool Event::step (unsigned int ticks, int msps) {
 			if (set[E_MODIFIER] == 6) {
 
 				if (width && height &&
-					players[count].overlap(x, y - height, width - F8, height) &&
-					(players[count].getY() <= y + (PYS_FALL / msps) - height) &&
+					players[count].overlap(x, y - height, width - F8, F8) &&
+					(players[count].getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
 					!level->checkMaskDown(players[count].getX() + PXO_MID, PYO_TOP + y - height)) {
 
 					// Player is on a platform
@@ -881,7 +892,7 @@ bool Event::step (unsigned int ticks, int msps) {
 					players[count].setEvent(gridX, gridY);
 					players[count].setPosition(
 						players[count].getX() + ((dx * msps) >> 10),
-						players[count].getY() + ((dy * msps) >> 10));
+						F4 + y - height);
 
 				} else players[count].clearEvent(gridX, gridY);
 

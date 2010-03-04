@@ -306,9 +306,9 @@ void Player::control (unsigned int ticks, int msps) {
 			// Remove the bullet from the arsenal
 			if (ammoType != -1) ammo[ammoType]--;
 
-			/* If the current ammo type has been exhausted, use the previous
-			non-exhausted ammo type */
-			while ((ammoType > -1) && !ammo[ammoType]) ammoType--;
+			/* If the current ammo type has been exhausted or TNT has been used,
+			use the previous non-exhausted ammo type */
+			while (((ammoType > -1) && !ammo[ammoType]) || (ammoType == 3)) ammoType--;
 
 		}
 

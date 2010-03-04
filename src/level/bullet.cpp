@@ -52,14 +52,14 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 	direction = source->getFacing()? 1: 0;
 	direction |= lower? 2: 0;
-	x = source->getX() + (source->getFacing()? PXO_R: PXO_L);
-	y = source->getY() - F8;
-	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 
 	if (type == 4) {
 
 		// TNT
 		type = -1;
+
+		sprite = level->getSprite(130);
+		dx = 0;
 		dy = 0;
 		time = ticks + T_TNT;
 
@@ -68,12 +68,17 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 	} else {
 
+		sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
+		dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 		dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 		time = ticks + T_BULLET;
 
 		level->playSound(level->getBullet(type)[B_STARTSOUND]);
 
 	}
+
+	x = source->getX() + (source->getFacing()? PXO_R: PXO_L) - ITOF(sprite->getWidth() >> 1);
+	y = source->getY() - F8 - ITOF(sprite->getHeight() >> 1);
 
 	return;
 
@@ -90,6 +95,7 @@ Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 	source = NULL;
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = facing? 1: 0;
+	sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
 
 	anim = level->getAnim(sourceEvent->getProperty(facing? E_LSHOOTANIM: E_RSHOOTANIM));
 	x = sourceEvent->getX() + anim->getShootX();
@@ -125,6 +131,7 @@ Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
 	type = 30;
 	direction = source->getFacing()? 1: 0;
 	direction |= lower? 2: 0;
+	sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
 	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
 	y = sourceBird->getY();
 	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
@@ -230,7 +237,8 @@ bool Bullet::step (unsigned int ticks, int msps) {
 		// Check if a player has been hit
 		for (count = 0; count < nPlayers; count++) {
 
-			if (players[count].overlap(x, y, F1, F1)) {
+			if (players[count].overlap(x, y,
+				ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 				// If the hit was successful, destroy the bullet
 				if (players[count].hit(source, ticks)) return true;
@@ -249,7 +257,8 @@ bool Bullet::step (unsigned int ticks, int msps) {
 			while (event) {
 
 				// Check if the event has been hit
-				if (event->overlap(x, y, 0, 0)) {
+				if (event->overlap(x, y,
+					ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 					// If the event is hittable, hit it and destroy the bullet
 					if (event->hit(source, ticks)) return true;
@@ -304,19 +313,12 @@ bool Bullet::step (unsigned int ticks, int msps) {
 
 void Bullet::draw (int change) {
 
-	Sprite *sprite;
-
 	if (next) next->draw(change);
-
-	if (type == -1) sprite = level->getSprite(130);
-	else sprite =
-		level->getSprite(((unsigned char *)level->getBullet(type))
-			[B_SPRITE + direction]);
 
 	// Show the bullet
 	sprite->draw(
-		FTOI(getDrawX(change)) - (sprite->getWidth() >> 1) - FTOI(viewX),
-		FTOI(getDrawY(change)) - (sprite->getHeight() >> 1) - FTOI(viewY));
+		FTOI(getDrawX(change)) - FTOI(viewX),
+		FTOI(getDrawY(change)) - FTOI(viewY));
 
 	return;
 

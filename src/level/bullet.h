@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -51,21 +51,21 @@
 class Bird;
 class Event;
 class Player;
+class Sprite;
 
 class Bullet : public Movable {
 
 	private:
 		Bullet      *next;
 		Player      *source;    // If NULL, was fired by an event
+		Sprite      *sprite;
 		int          type;      // -1 is TNT, otherwise indexes the bullet set
 		int          direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
 		unsigned int time;      // Time at which the bullet will self-destruct
 
 	public:
-		Bullet              (Player *sourcePlayer, bool lower,
-			unsigned int ticks);
-		Bullet              (Event *sourceEvent, bool facing,
-			unsigned int ticks);
+		Bullet              (Player *sourcePlayer, bool lower, unsigned int ticks);
+		Bullet              (Event *sourceEvent, bool facing, unsigned int ticks);
 		Bullet              (Bird *sourceBird, bool lower, unsigned int ticks);
 		~Bullet             ();
 
