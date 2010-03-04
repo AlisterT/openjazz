@@ -734,6 +734,7 @@ int Scene::play () {
 	SDL_Rect textRect = {0,0,320,200};
 	 
 	while (true) {
+
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
@@ -741,7 +742,9 @@ int Scene::play () {
 			return E_NONE;
 
 		}
+
 		SDL_Delay(T_FRAME);
+
 		int upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
 		if((sceneIndex > 0 && upOrLeft) || controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) || 
 			((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {
@@ -801,75 +804,128 @@ int Scene::play () {
 		} else {
 			clearScreen(0);
 		}
-		if(fadein)
-			{
-			fadein = false;
-			firstPE = new FadeInPaletteEffect(250, firstPE);			
-			}
+
+
 		// Draw the texts associated with this page
 		int x = 0;
 		int y = 0;
-		int extralineheight = 0;
-		for(int text = 0;text<scriptPages[sceneIndex].noScriptTexts;text++) {
-		Font* font = NULL;
+		int extraLineHeight = 0;
 
-		for(int index = 0; index < noScriptFonts; index++) {
-		if( scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
-			switch(scriptFonts[index].fontType) {
-			case EFONT2Type:
-				font = font2;
-				break;
-			case EFONTBIGType:
-				font = fontbig;
-				break;
-			case EFONTINYType:
-				font = fontiny;
-				break;
-			case EFONTMN1Type:
-				font = fontmn1;
-				break;
-			case EFONTMN2Type:
-				font = fontmn2;
-				break;
-			}
-			continue;
-			}
-		}
+		for (int text = 0; text < scriptPages[sceneIndex].noScriptTexts; text++) {
 
-		if(scriptPages[sceneIndex].scriptTexts[text].x != -1) {
-			x = scriptPages[sceneIndex].scriptTexts[text].x;
-			y = scriptPages[sceneIndex].scriptTexts[text].y;
-		}
+			Font *font = NULL;
+			int xOffset, yOffset;
 
-		if(scriptPages[sceneIndex].scriptTexts[text].textRect.x != -1) {
-			textRect = scriptPages[sceneIndex].scriptTexts[text].textRect;
-			x = 0;
-			y = 0;
-			}
-		
-		if(scriptPages[sceneIndex].scriptTexts[text].extraLineHeight != -1) {
-			extralineheight = scriptPages[sceneIndex].scriptTexts[text].extraLineHeight;
-		}
-		
-		switch(scriptPages[sceneIndex].scriptTexts[text].alignment)
-			{
-			case 0: // left
-				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+x,textRect.y+y);
-			break;
-			case 1: // right
-				{
-				int width = font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
-				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+textRect.w-width, textRect.y+y);						
+			for (int index = 0; index < noScriptFonts; index++) {
+
+				if (scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
+
+					switch (scriptFonts[index].fontType) {
+
+						case EFONT2Type:
+
+							font = font2;
+
+							break;
+
+						case EFONTBIGType:
+
+							font = fontbig;
+
+							break;
+
+						case EFONTINYType:
+
+							font = fontiny;
+
+							break;
+
+						case EFONTMN1Type:
+
+							font = fontmn1;
+
+							break;
+
+						case EFONTMN2Type:
+
+							font = fontmn2;
+
+							break;
+
+					}
+
+					continue;
+
 				}
-			break;
-			case 2: // center
-				{
-				int width = font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)/2;
-				font->showString(scriptPages[sceneIndex].scriptTexts[text].text, textRect.x+(textRect.w/2)-width,textRect.y+ y);
-				}
-				break;
+
 			}
-		y+=(extralineheight+font->getHeight()/2);
+
+			if (scriptPages[sceneIndex].scriptTexts[text].x != -1) {
+
+				x = scriptPages[sceneIndex].scriptTexts[text].x;
+				y = scriptPages[sceneIndex].scriptTexts[text].y;
+
+			}
+
+			if (scriptPages[sceneIndex].scriptTexts[text].textRect.x != -1) {
+
+				textRect = scriptPages[sceneIndex].scriptTexts[text].textRect;
+				x = 0;
+				y = 0;
+
+			}
+
+			if (scriptPages[sceneIndex].scriptTexts[text].extraLineHeight != -1) {
+
+				extraLineHeight = scriptPages[sceneIndex].scriptTexts[text].extraLineHeight;
+
+			}
+
+			xOffset = ((screenW - 320) >> 1) + textRect.x;
+			yOffset = ((screenH - 200) >> 1) + textRect.y + y;
+
+			switch (scriptPages[sceneIndex].scriptTexts[text].alignment) {
+
+				case 0: // left
+
+					xOffset += x;
+
+					break;
+
+				case 1: // right
+
+					xOffset += textRect.w - font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
+
+					break;
+
+				case 2: // center
+
+					xOffset += (textRect.w - font->getStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)) >> 1;
+
+					break;
+
+			}
+
+			// Drop shadow
+			font->mapPalette(0, 256, 0, 1);
+			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, xOffset + 1, yOffset + 1);
+			font->restorePalette();
+
+			// Text itself
+			font->showString(scriptPages[sceneIndex].scriptTexts[text].text, xOffset, yOffset);
+
+			y += extraLineHeight + font->getHeight() / 2;
+
+		}
+
+
+		// Fade in from black
+		if (fadein) {
+
+			fadein = false;
+			firstPE = new FadeInPaletteEffect(250, firstPE);			
+			clearScreen(0);
+
 		}
 
 	}
