@@ -34,6 +34,8 @@ CFILES	=		\
 		io/gfx/video.cpp \
 		io/sound.cpp \
 		io/network.cpp \
+		level/event/bridge.cpp \
+		level/event/guardians.cpp \
 		level/event/event.cpp \
 		level/event/eventframe.cpp \
 		level/levelframe.cpp \

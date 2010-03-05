@@ -6,6 +6,7 @@ objects = src/bonus/bonus.o \
 	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
 	src/io/gfx/sprite.o src/io/gfx/video.o \
 	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/level/event/bridge.o src/level/event/guardians.o \
 	src/level/event/event.o src/level/event/eventframe.o \
 	src/level/bullet.o src/level/demolevel.o src/level/level.o \
 	src/level/levelframe.o src/level/levelload.o \
