@@ -80,6 +80,8 @@ Level::Level (char *fileName, unsigned char diff, bool checkpoint) {
 
 Level::~Level () {
 
+	int count;
+
 	// Free all data
 
 	stopMusic();
@@ -112,8 +114,12 @@ Level::~Level () {
 
 	}
 
-	delete[] pathX;
-	delete[] pathY;
+	for (count = 0; count < PATHS; count++) {
+
+		delete[] path[count].x;
+		delete[] path[count].y;
+
+	}
 
 	SDL_FreeSurface(tileSet);
 

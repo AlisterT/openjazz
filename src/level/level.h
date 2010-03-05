@@ -52,6 +52,7 @@
 #define BULLETS    32
 #define BLENGTH    20 /* Length of bullets, in bytes */
 #define ANIMS     128
+#define PATHS      16
 #define TKEY      127 /* Tileset colour key */
 
 // Stages
@@ -73,7 +74,7 @@
 #define TTOI(x) ((x) << 5)
 
 
-// Datatype
+// Datatypes
 
 typedef struct {
 
@@ -85,6 +86,15 @@ typedef struct {
 		terminate */
 
 } GridElement;
+
+typedef struct {
+
+	short int     *x;
+	short int     *y;
+	unsigned char  length;
+	unsigned char  node;
+
+} EventPath;
 
 
 // Classes
@@ -103,7 +113,7 @@ class Level {
 		Anim           animSet[ANIMS];
 		char           miscAnims[4];
 		signed char    bulletSet[BULLETS][BLENGTH];
-		signed char    eventSet[EVENTS][ELENGTH]; // Not all used
+		signed char    eventSet[EVENTS][ELENGTH];
 		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
 		GridElement    grid[LH][LW]; // All levels are the same size
 		int            soundMap[32];
@@ -114,7 +124,6 @@ class Level {
 		int            sprites;
 		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char  difficulty;
-		int            pathLength;
 		unsigned int   endTime;
 		int            enemies, items;
 		fixed          waterLevel;
@@ -136,11 +145,9 @@ class Level {
 		void timeCalcs (bool paused);
 
 	public:
-		Event  *firstEvent;
-		Bullet *firstBullet;
-		int    *pathX;
-		int    *pathY;
-		int     pathNode;
+		Event     *firstEvent;
+		Bullet    *firstBullet;
+		EventPath  path[PATHS];
 
 		Level                       ();
 		Level                       (char *fileName, unsigned char diff,

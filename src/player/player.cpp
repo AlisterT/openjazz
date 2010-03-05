@@ -496,7 +496,17 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int 
 
 				jumpY = y - (8 * F16);
 
-			} else x += set[E_MAGNITUDE] * 20 * msps;
+			} else if (set[E_MAGNITUDE] < 0) {
+
+				if (!level->checkMaskDown(x + PXO_L + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
+					x += set[E_MAGNITUDE] * 20 * msps;
+
+			} else {
+
+				if (!level->checkMaskDown(x + PXO_R + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
+					x += set[E_MAGNITUDE] * 20 * msps;
+
+			}
 
 			break;
 

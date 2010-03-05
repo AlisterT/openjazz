@@ -107,13 +107,13 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 			// To the left of the player, so move right
 
-			if (dx < F160) dx += 400 * msps;
+			if (dx < F80) dx += 400 * msps;
 
 		} else {
 
 			// To the right of the player, so move left
 
-			if (dx > -F160) dx -= 400 * msps;
+			if (dx > -F80) dx -= 400 * msps;
 
 		}
 
@@ -137,13 +137,13 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 				// Above the player, so move downwards
 
-				if (dy < F160) dy += 400 * msps;
+				if (dy < F80) dy += 400 * msps;
 
 			} else {
 
 				// Below the player, so move upwards
 
-				if (dy > -F160) dy -= 400 * msps;
+				if (dy > -F80) dy -= 400 * msps;
 
 			}
 

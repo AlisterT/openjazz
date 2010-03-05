@@ -110,7 +110,7 @@ int Level::step () {
 
 	// Process active events
 
-	pathNode = (ticks >> 5) % pathLength;
+	for (x = 0; x < PATHS; x++) path[x].node = (ticks >> 5) % path[x].length;
 
 	if (firstEvent) {
 

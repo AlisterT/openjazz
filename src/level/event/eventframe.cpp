@@ -164,8 +164,8 @@ bool Event::step (unsigned int ticks, int msps) {
 		case 6:
 
 			// Use the path from the level file
-			dx = TTOF(gridX) + F16 + (level->pathX[level->pathNode] << 9) - x;
-			dy = TTOF(gridY) + (level->pathY[level->pathNode] << 9) - y;
+			dx = TTOF(gridX) + F16 + (level->path[set[E_MULTIPURPOSE]].x[level->path[set[E_MULTIPURPOSE]].node] << 9) - x;
+			dy = TTOF(gridY) + (level->path[set[E_MULTIPURPOSE]].y[level->path[set[E_MULTIPURPOSE]].node] << 9) - y;
 			dx = ((dx << 10) / msps) * set[E_MOVEMENTSP];
 			dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
 
@@ -607,9 +607,11 @@ bool Event::step (unsigned int ticks, int msps) {
 
 				// Use the path from the level file
 
+				count = level->path[set[E_MULTIPURPOSE]].node;
+
 				// Check movement direction
-				if ((level->pathNode < 3) ||
-					(level->pathX[level->pathNode] <= level->pathX[level->pathNode - 3]))
+				if ((count < 3) ||
+					(level->path[set[E_MULTIPURPOSE]].x[count] <= level->path[set[E_MULTIPURPOSE]].x[count - 3]))
 					animType = E_LEFTANIM;
 				else
 					animType = E_RIGHTANIM;

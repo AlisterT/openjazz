@@ -666,17 +666,22 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	// Load special event path
 
-	buffer = file->loadRLE(8192);
-	pathLength = buffer[0] + (buffer[1] << 8);
-	pathNode = 0;
-	if (pathLength < 1) pathLength = 1;
-	pathX = new int[pathLength];
-	pathY = new int[pathLength];
+	buffer = file->loadRLE(PATHS << 9);
 
-	for (count = 0; count < pathLength; count++) {
+	for (type = 0; type < PATHS; type++) {
 
-		pathX[count] = ((signed char *)buffer)[(count << 1) + 3] << 2;
-		pathY[count] = ((signed char *)buffer)[(count << 1) + 2];
+		path[type].length = buffer[type << 9] + (buffer[(type << 9) + 1] << 8);
+		path[type].node = 0;
+		if (path[type].length < 1) path[type].length = 1;
+		path[type].x = new short int[path[type].length];
+		path[type].y = new short int[path[type].length];
+
+		for (count = 0; count < path[type].length; count++) {
+
+			path[type].x[count] = ((signed char *)buffer)[(type << 9) + (count << 1) + 3] << 2;
+			path[type].y[count] = ((signed char *)buffer)[(type << 9) + (count << 1) + 2] << 2;
+
+		}
 
 	}
 

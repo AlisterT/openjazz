@@ -235,7 +235,7 @@ void Player::control (unsigned int ticks, int msps) {
 
 				speed = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
 
-				if (speed == 0) speed = PYS_JUMP;
+				if (speed >= 0) speed = PYS_JUMP;
 
 				if (dy < speed) dy = speed;
 
