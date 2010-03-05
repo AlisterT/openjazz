@@ -200,27 +200,64 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						// Skip back size header, this is read by the surface reader
 						//f->seek(-2, false);						
 						while(size) {
-							size--;
+						size--;
+						unsigned char header = f->loadChar();
+						log("PL 4c31 block header", header);
+						switch(header)
+							{
+							case 0x7F:
+								{
+								unsigned short fillWidth = f->loadShort();
+								unsigned char fillColor = f->loadChar();
+								log("PL Fillblock width", fillWidth);
+								log("PL Fillblock with color", fillColor);
+								size-=3;
+								}break;
+							case 0xff:
+								{
+								unsigned char x= f->loadChar();
+								unsigned char y= f->loadChar();								
+								log("PL block x", x);
+								log("PL block y", y);
+								size-=2;
+								}break;
+							default:
+								{
+								log("PL Unknown type");
+								}break;
 							}
+						}
 						}break;						
 					case 0x4646:
 						{						
 						while(size) {
-							unsigned char header = f->loadChar();
-							log("PL 4646 block header", header);
-							switch(header)
+						unsigned char header = f->loadChar();
+						log("PL 4646 block header", header);
+						switch(header)
+							{
+							case 0x7F:
 								{
-								case 0xff:
-									{
-									unsigned char x= f->loadChar();
-									unsigned char y= f->loadChar();								
-									log("PL block x", x);
-									log("PL block y", y);
-									size-=2;
-									}break;
-								}
-							size--;
+								unsigned short fillWidth = f->loadShort();
+								unsigned char fillColor = f->loadChar();
+								log("PL Fillblock width", fillWidth);
+								log("PL Fillblock with color", fillColor);
+								size-=3;
+								}break;
+							case 0xff:
+								{
+								unsigned char x= f->loadChar();
+								unsigned char y= f->loadChar();								
+								log("PL block x", x);
+								log("PL block y", y);
+								size-=2;
+								}break;
+							default:
+								{
+								log("PL Unknown type");
+								}break;								
 							}
+						size--;
+						}
 						}break;
 					case 0x4e52:
 					case 0x4252:
