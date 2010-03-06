@@ -571,7 +571,7 @@ int Level::play () {
  	int perfect;
  	int timeBonus;
  	int count;
- 	unsigned int width;
+ 	int width;
 
 
 	// Arbitrary initial value
@@ -744,22 +744,22 @@ int Level::play () {
 
 		if (stats & S_PLAYERS) {
 
-			width = 96;
+			width = 39;
 
 			for (count = 0; count < nPlayers; count++)
-				if ((strlen(players[count].getName()) * 8) + 57 > width)
-					width = (strlen(players[count].getName()) * 8) + 57;
+				if (panelBigFont->getStringWidth(players[count].getName()) > width)
+					width = panelBigFont->getStringWidth(players[count].getName());
 
-			drawRect((viewW >> 1) - 32, 11, width, (nPlayers * 12) + 1, BLACK);
+			drawRect((viewW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, BLACK);
 
 			for (count = 0; count < nPlayers; count++) {
 
-				panelBigFont->showNumber(count + 1, (viewW >> 1) - 8,
-					14 + (count * 12));
+				panelBigFont->showNumber(count + 1,
+					(viewW >> 1) - 24, 14 + (count * 12));
 				panelBigFont->showString(players[count].getName(),
-					viewW >> 1, 14 + (count * 12));
+					(viewW >> 1) - 16, 14 + (count * 12));
 				panelBigFont->showNumber(players[count].teamScore,
-					(viewW >> 1) + width - 40, 14 + (count * 12));
+					(viewW >> 1) + width + 1, 14 + (count * 12));
 
 			}
 

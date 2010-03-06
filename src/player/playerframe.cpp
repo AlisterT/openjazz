@@ -608,7 +608,7 @@ void Player::view (unsigned int ticks, int mspf) {
 void Player::draw (unsigned int ticks, int change) {
 
 	Anim *an;
-	int anim, frame;
+	int frame;
 	fixed drawX, drawY;
 	fixed xOffset, yOffset;
 
@@ -625,68 +625,63 @@ void Player::draw (unsigned int ticks, int change) {
 
 	// Choose player animation
 
-	if (reaction == PR_KILLED) anim = anims[facing? PA_RDIE: PA_LDIE];
+	if (reaction == PR_KILLED) animType = facing? PA_RDIE: PA_LDIE;
 
-	else if ((reaction == PR_HURT) &&
-		(reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
-		anim = anims[facing? PA_RHURT: PA_LHURT];
+	else if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
+		animType = facing? PA_RHURT: PA_LHURT;
 
 	else if (y + PYO_MID > level->getWaterLevel())
-		anim = anims[facing? PA_RSWIM: PA_LSWIM];
+		animType = facing? PA_RSWIM: PA_LSWIM;
 
-	else if (floating) anim = anims[facing? PA_RBOARD: PA_LBOARD];
+	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
 
-	else if (dy >= 0) {
+	else if (dy < 0) {
 
-		if (isOnPlatform()) {
+		if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
+		else animType = facing? PA_RJUMP: PA_LJUMP;
 
-			if (dx) {
+	} else if (isOnPlatform()) {
 
-				if (dx <= -PXS_RUN) anim = anims[PA_LRUN];
-				else if (dx >= PXS_RUN) anim = anims[PA_RRUN];
-				else if ((dx < 0) && facing) anim = anims[PA_LSTOP];
-				else if ((dx > 0) && !facing) anim = anims[PA_RSTOP];
-				else anim = anims[facing? PA_RWALK: PA_LWALK];
+		if (dx) {
 
-			} else {
+			if (dx <= -PXS_RUN) animType = PA_LRUN;
+			else if (dx >= PXS_RUN) animType = PA_RRUN;
+			else if ((dx < 0) && facing) animType = PA_LSTOP;
+			else if ((dx > 0) && !facing) animType = PA_RSTOP;
+			else animType = facing? PA_RWALK: PA_LWALK;
 
-				if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
-					!level->checkMaskDown(x + PXO_L, y + F2) &&
-					(event != 3) && (event != 4))
-					anim = anims[PA_LEDGE];
+		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
+			!level->checkMaskDown(x + PXO_L, y + F2) &&
+			(event != 3) && (event != 4))
+			animType = PA_LEDGE;
 
-				else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
-					!level->checkMaskDown(x + PXO_R, y + F2) &&
-					(event != 3) && (event != 4))
-					anim = anims[PA_REDGE];
+		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
+			!level->checkMaskDown(x + PXO_R, y + F2) &&
+			(event != 3) && (event != 4))
+			animType = PA_REDGE;
 
-				else if (pcontrols[C_FIRE])
-					anim = anims[facing? PA_RSHOOT: PA_LSHOOT];
+		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
+			animType = PA_LOOKUP;
 
-				else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-					anim = anims[PA_LOOKUP];
+		else if (lookTime > 0) {
 
-				else if (lookTime > 0) {
+			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
+			else animType = PA_LOOKDOWN;
 
-					if ((int)ticks < 1000 + lookTime)
-						anim = anims[facing? PA_RCROUCH: PA_LCROUCH];
-					else anim = anims[PA_LOOKDOWN];
+		}
 
-				} else anim = anims[facing? PA_RSTAND: PA_LSTAND];
+		else if (pcontrols[C_FIRE])
+			animType = facing? PA_RSHOOT: PA_LSHOOT;
 
-			}
+		else
+			animType = facing? PA_RSTAND: PA_LSTAND;
 
-		} else anim = anims[facing? PA_RFALL: PA_LFALL];
-
-	} else if (event == 1)
-		anim = anims[facing? PA_RSPRING: PA_LSPRING];
-
-	else anim = anims[facing? PA_RJUMP: PA_LJUMP];
+	} else animType = facing? PA_RFALL: PA_LFALL;
 
 
 	// Choose sprite
 
-	an = level->getAnim(anim);
+	an = getAnim();
 	an->setFrame(frame, reaction != PR_KILLED);
 
 
@@ -789,7 +784,8 @@ void Player::draw (unsigned int ticks, int change) {
 
 	// Show the player's name
 	if (gameMode)
-		panelBigFont->showString(name, FTOI(drawX - viewX),
+		panelBigFont->showString(name,
+			FTOI(drawX + PXO_MID - viewX) - (panelBigFont->getStringWidth(name) >> 1),
 			FTOI(drawY - F32 - F16 - viewY));
 
 	return;

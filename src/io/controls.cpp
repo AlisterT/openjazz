@@ -182,11 +182,13 @@ int Controls::update (SDL_Event *event, int type) {
 
 		case SDL_KEYDOWN:
 
-			if (type == KEY_LOOP) return event->key.keysym.sym;
+			if (type == SET_KEY_LOOP) return event->key.keysym.sym;
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->key.keysym.sym == keys[count].key)
 					keys[count].state = true;
+
+			if (type == TYPING_LOOP) return event->key.keysym.sym;
 
 			break;
 
@@ -200,7 +202,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 		case SDL_JOYBUTTONDOWN:
 
-			if (type == JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
+			if (type == SET_JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->jbutton.button == buttons[count].button)
@@ -218,7 +220,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 		case SDL_JOYAXISMOTION:
 
-			if (type == JOYSTICK_LOOP) {
+			if (type == SET_JOYSTICK_LOOP) {
 
 				if (event->jaxis.value < -16384)
 					return JOYSTICKANEG | event->jaxis.axis;

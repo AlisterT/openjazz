@@ -107,9 +107,10 @@
 #define STRING_LENGTH 32
 
 // Loop return type
-#define NORMAL_LOOP   0
-#define KEY_LOOP      1
-#define JOYSTICK_LOOP 2
+#define NORMAL_LOOP       0
+#define TYPING_LOOP       1
+#define SET_KEY_LOOP      2
+#define SET_JOYSTICK_LOOP 3
 
 // Return values
 #define E_DATA      -14

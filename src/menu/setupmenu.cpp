@@ -44,7 +44,7 @@ int Menu::setupKeyboard () {
 
 	while (true) {
 
-		character = loop(KEY_LOOP);
+		character = loop(SET_KEY_LOOP);
 
 		if (character == E_QUIT) return E_QUIT;
 
@@ -123,7 +123,7 @@ int Menu::setupJoystick () {
 
 	while (true) {
 
-		control = loop(JOYSTICK_LOOP);
+		control = loop(SET_JOYSTICK_LOOP);
 
 		if (control == E_QUIT) return E_QUIT;
 

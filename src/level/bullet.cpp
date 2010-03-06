@@ -34,6 +34,8 @@
 
 Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
+	Anim *anim;
+
 	// Properties based on the player
 
 	source = sourcePlayer;
@@ -77,8 +79,9 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 	}
 
-	x = source->getX() + (source->getFacing()? PXO_R: PXO_L) - ITOF(sprite->getWidth() >> 1);
-	y = source->getY() - F8 - ITOF(sprite->getHeight() >> 1);
+	anim = source->getAnim();
+	x = source->getX() + anim->getShootX() + PXO_MID - F4;
+	y = source->getY() + anim->getShootY() - F4;
 
 	return;
 
@@ -95,7 +98,7 @@ Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 	source = NULL;
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = facing? 1: 0;
-	sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
+	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
 
 	anim = level->getAnim(sourceEvent->getProperty(facing? E_LSHOOTANIM: E_RSHOOTANIM));
 	x = sourceEvent->getX() + anim->getShootX();
@@ -131,7 +134,7 @@ Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
 	type = 30;
 	direction = source->getFacing()? 1: 0;
 	direction |= lower? 2: 0;
-	sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
+	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
 	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
 	y = sourceBird->getY();
 	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;

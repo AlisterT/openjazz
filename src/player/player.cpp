@@ -709,6 +709,13 @@ bool Player::getFacing () {
 }
 
 
+Anim * Player::getAnim () {
+
+	return level->getAnim(anims[animType]);
+
+}
+
+
 unsigned char Player::getTeam () {
 
 	return team;

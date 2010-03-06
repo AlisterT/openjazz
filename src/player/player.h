@@ -153,6 +153,7 @@
 
 // Classes
 
+class Anim;
 class Bird;
 
 class Player : public Movable {
@@ -172,6 +173,7 @@ class Player : public Movable {
 		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
 		bool          floating; /* false = normal, true = boarding/bird/etc. */
 		bool          facing;
+		unsigned char animType;
 		unsigned char eventX;
 		unsigned char eventY; /* Position of an event (spring, platform, bridge) */
 		int           event;  /* 0 = none, 1 = spring, 2 = float up, 3 = platform, 4 = bridge */
@@ -221,6 +223,7 @@ class Player : public Movable {
 		void            setPosition  (fixed newX, fixed newY);
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
+		Anim *          getAnim      ();
 		unsigned char   getTeam      ();
 		void            send         (unsigned char *data);
 		void            receive      (unsigned char *buffer);
