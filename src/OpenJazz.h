@@ -177,5 +177,11 @@ EXTERN void   log                  (const char *message, const char *detail);
 EXTERN void   log                  (const char *message, int number);
 EXTERN void   logError             (const char *message, const char *detail);
 
+#ifdef VERBOSE
+#define LOG(x, y) log(x, y)
+#else
+#define LOG(x, y) x; y
+#endif
+
 #endif
 

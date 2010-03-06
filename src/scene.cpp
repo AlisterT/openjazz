@@ -10,7 +10,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -119,9 +119,9 @@ ScriptPage::~ScriptPage() {
 
 void Scene::ParseAni(File* f, int dataIndex) {
 	unsigned short int aniType = f->loadShort();// should be 0x02
-	log("ParseAni DataLen", aniType);
+	LOG("ParseAni DataLen", aniType);
 	unsigned short int aniOffset = f->loadShort();// unknown, number of frames?
-	log("ParseAni Frames?", aniOffset);
+	LOG("ParseAni Frames?", aniOffset);
 	unsigned short int type = 0;//
 	int loop;
 
@@ -133,14 +133,14 @@ void Scene::ParseAni(File* f, int dataIndex) {
 			unsigned char noSounds = f->loadChar();
 			for(loop = 0;loop<noSounds;loop++) {
 				char* soundName = f->loadString();
-				log("Soundname ", soundName);
+				LOG("Soundname ", soundName);
 				delete[] soundName;
 			}
 		}
 		else if(type == 0x4C50) {// PL		
 			int pos = f->tell();
 			int nextPos = f->tell();
-			log("PL Read position", pos);
+			LOG("PL Read position", pos);
 			unsigned short int len = f->loadShort();
 			unsigned char* buffer = f->loadBlock(len);
 			for (int count = 0; count < 256; count++) {
@@ -165,13 +165,13 @@ void Scene::ParseAni(File* f, int dataIndex) {
 			int validValue = true;
 			pos = f->tell();
 							
-			log("PL Read position start", pos);
+			LOG("PL Read position start", pos);
 			while(validValue)
 				{					
 				value = f->loadShort();
-				log("PL Read block start tag", value);
+				LOG("PL Read block start tag", value);
 				unsigned short int size= f->loadShort();
-				log("PL Anim block size", size);
+				LOG("PL Anim block size", size);
 				nextPos = f->tell();
 				// next pos is intial position + size and four bytes header
 				nextPos+=(size);
@@ -196,34 +196,34 @@ void Scene::ParseAni(File* f, int dataIndex) {
 					case 0x4c31:
 						{								
 						int longvalue = f->loadInt();
-						log("PL Anim block value", longvalue);
+						LOG("PL Anim block value", longvalue);
 						// Skip back size header, this is read by the surface reader
 						//f->seek(-2, false);						
 						while(size) {
 						size--;
 						unsigned char header = f->loadChar();
-						log("PL 4c31 block header", header);
+						LOG("PL 4c31 block header", header);
 						switch(header)
 							{
 							case 0x7F:
 								{
 								unsigned short fillWidth = f->loadShort();
 								unsigned char fillColor = f->loadChar();
-								log("PL Fillblock width", fillWidth);
-								log("PL Fillblock with color", fillColor);
+								LOG("PL Fillblock width", fillWidth);
+								LOG("PL Fillblock with color", fillColor);
 								size-=3;
 								}break;
 							case 0xff:
 								{
 								unsigned char x= f->loadChar();
 								unsigned char y= f->loadChar();								
-								log("PL block x", x);
-								log("PL block y", y);
+								LOG("PL block x", x);
+								LOG("PL block y", y);
 								size-=2;
 								}break;
 							default:
 								{
-								log("PL Unknown type");
+								LOG("PL Unknown type", header);
 								}break;
 							}
 						}
@@ -232,28 +232,28 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						{						
 						while(size) {
 						unsigned char header = f->loadChar();
-						log("PL 4646 block header", header);
+						LOG("PL 4646 block header", header);
 						switch(header)
 							{
 							case 0x7F:
 								{
 								unsigned short fillWidth = f->loadShort();
 								unsigned char fillColor = f->loadChar();
-								log("PL Fillblock width", fillWidth);
-								log("PL Fillblock with color", fillColor);
+								LOG("PL Fillblock width", fillWidth);
+								LOG("PL Fillblock with color", fillColor);
 								size-=3;
 								}break;
 							case 0xff:
 								{
 								unsigned char x= f->loadChar();
 								unsigned char y= f->loadChar();								
-								log("PL block x", x);
-								log("PL block y", y);
+								LOG("PL block x", x);
+								LOG("PL block y", y);
 								size-=2;
 								}break;
 							default:
 								{
-								log("PL Unknown type");
+								LOG("PL Unknown type", header);
 								}break;								
 							}
 						size--;
@@ -270,9 +270,9 @@ void Scene::ParseAni(File* f, int dataIndex) {
 					case 0x5b5d:
 						{
 						unsigned char header = f->loadChar();
-						log("PL 5b5d block header", header);
+						LOG("PL 5b5d block header", header);
 						unsigned short int value = f->loadShort();
-						log("PL 5b5d block value", value);
+						LOG("PL 5b5d block value", value);
 						}
 						break;
 					case 0x5453:
@@ -280,9 +280,9 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						unsigned char soundIndex = f->loadChar();
 						unsigned char soundNote = f->loadChar();
 						unsigned char soundOffset = f->loadChar(); 
-						log("PL Audio tag with index", soundIndex);
-						log("PL Audio tag play at ", soundNote);
-						log("PL Audio tag play offset ", soundOffset);
+						LOG("PL Audio tag with index", soundIndex);
+						LOG("PL Audio tag play at ", soundNote);
+						LOG("PL Audio tag play offset ", soundOffset);
 						}
 						break;
 					
@@ -298,22 +298,22 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						}
 						break;
 					default:
-						log("PL Read Unknown type", value);
+						LOG("PL Read Unknown type", value);
 						validValue = false;
 						break;
 					}
 
 				pos = f->tell();				
-				log("PL Read position after block should be", nextPos);
+				LOG("PL Read position after block should be", nextPos);
 				f->seek(nextPos, true);
 					if(validValue) {
 					items++;
 					}
 				}
 			
-			log("PL Parsed through number of items skipping 0 items", items);		
+			LOG("PL Parsed through number of items skipping 0 items", items);		
 			pos = f->tell();
-			log("PL Read position after parsing anim blocks", pos);
+			LOG("PL Read position after parsing anim blocks", pos);
 		}
 	}
 }
@@ -323,15 +323,15 @@ void Scene::ParseData(File *f) {
 	for(loop = 0;loop < dataItems; loop++) {
 		f->seek(dataOffsets[loop], true); // Seek to data start
 		unsigned short int dataLen = f->loadShort(); // Get get the length of the datablock
-		log("Data dataLen", dataLen);
+		LOG("Data dataLen", dataLen);
 		// AN
 		if(dataLen == 0x4e41) {
-			log("Data Type", "ANI");
+			LOG("Data Type", "ANI");
 			ParseAni(f, loop);			
 		}
 		else {
 			unsigned char type = f->loadChar();
-			log("Data Type", type);
+			LOG("Data Type", type);
 			switch(type)
 			{	
 			case 3: 
@@ -339,8 +339,8 @@ void Scene::ParseData(File *f) {
 			case 5:
 			case 6:
 				{
-					log("Data Type", "Image");
-					log("Data Type Image index", loop);
+					LOG("Data Type", "Image");
+					LOG("Data Type Image index", loop);
 					unsigned short int width = f->loadShort(); // get width
 					unsigned short int height;
 					if(type == 3)
@@ -357,8 +357,8 @@ void Scene::ParseData(File *f) {
 				
 			default:
 				{					
-					log("Data Type", "Palette");
-					log("Data Type Palette index", loop);
+					LOG("Data Type", "Palette");
+					LOG("Data Type Palette index", loop);
 					f->seek(-3, false);
 					f->loadPalette(paletteInfos[paletteIndex].palette);
 					paletteInfos[paletteIndex].dataIndex = loop;
@@ -379,7 +379,7 @@ void Scene::ParseScripts(File *f) {
 	int textFont = 0;   
 	for(loop = 0;loop < scriptItems; loop++)
 	{
-	    log("\nParse Script", loop);
+	    LOG("\nParse Script", loop);
 	    int textPosX = -1;
 	    int textPosY = -1;
 	    	    
@@ -389,9 +389,9 @@ void Scene::ParseScripts(File *f) {
 		f->seek(scriptStarts[loop], true); // Seek to data start
 		if(f->loadChar() == 0x50) { // Script tag		
 			unsigned short int scriptid = f->loadShort();
-			log("Script id:", scriptid);
+			LOG("Script id:", scriptid);
 			int palette = f->loadShort();
-			log("Script default palette", palette);
+			LOG("Script default palette", palette);
 			scriptPages[loop].paletteIndex = palette;
 			
 			unsigned char type = 0;
@@ -405,27 +405,27 @@ void Scene::ParseScripts(File *f) {
 					{
 						signed long int something = f->loadInt();
 						signed long int something2 = f->loadInt();
-						log("ESceneAnimationSetting1", something);
-						log("ESceneAnimationSetting2", something2);
+						LOG("ESceneAnimationSetting1", something);
+						LOG("ESceneAnimationSetting2", something2);
 					}break;
 				case ESceneAnimationIndex:
 					{
 						unsigned char aniIndex = f->loadChar();
-						log("ESceneAnimationIndex:", aniIndex);												
+						LOG("ESceneAnimationIndex:", aniIndex);												
 					}break;
 				case ESceneFadeType:
 					{
 						unsigned char fadein = f->loadChar();
-						log("ESceneFadeType:", fadein);	
+						LOG("ESceneFadeType:", fadein);	
 					}break;
 				case ESceneBackground:
 					{
 						unsigned short int xpos = f->loadShort();
 						unsigned short int ypos = f->loadShort();
 						unsigned short bgImageIndex = f->loadShort();
-						log("ESceneBackground: index", bgImageIndex);
-						log("ESceneBackground: xpos", xpos);
-						log("ESceneBackground: ypos", ypos);
+						LOG("ESceneBackground: index", bgImageIndex);
+						LOG("ESceneBackground: xpos", xpos);
+						LOG("ESceneBackground: ypos", ypos);
 						scriptPages[loop].bgIndex[scriptPages[loop].backgrounds] = bgImageIndex;
 						scriptPages[loop].bgPos[scriptPages[loop].backgrounds] = xpos|(ypos<<16);
 						scriptPages[loop].backgrounds++;
@@ -434,14 +434,14 @@ void Scene::ParseScripts(File *f) {
 					{						
 						// Music file name
 						string = f->loadString();
-						log("ESceneMusic: ", string);
+						LOG("ESceneMusic: ", string);
 						scriptPages[loop].musicfile = createString(string);
 						delete[] string;
 					}break;				
 				case ESceneSomethingElse:
 					{
 					unsigned char value = 0;//f->loadChar();
-					log("ESceneSomethingElse", value);
+					LOG("ESceneSomethingElse", value);
 					}break;
 				case ESceneTextRect: // String
 					{
@@ -450,17 +450,17 @@ void Scene::ParseScripts(File *f) {
 						unsigned short w = textRect.w = (f->loadShort()-x);
 						unsigned short h = textRect.h = (f->loadShort()-y);
 						textRectValid = true;
-						log("Text rectangle xpos:", x);
-						log("Text rectangle ypos:", y);
-						log("Text rectangle w:", w);
-						log("Text rectangle h:", h);
+						LOG("Text rectangle xpos:", x);
+						LOG("Text rectangle ypos:", y);
+						LOG("Text rectangle w:", w);
+						LOG("Text rectangle h:", h);
 					}break;
 				case ESceneFontDefine: // Font defnition
 					{
 						unsigned short fontid = f->loadShort();
 						char* fontname = f->loadString();
-						log("ESceneFontDefine", fontname);
-						log("ESceneFontDefine with id=", fontid);
+						LOG("ESceneFontDefine", fontname);
+						LOG("ESceneFontDefine with id=", fontid);
 						if(strcmp(fontname, "FONT2") == 0)
 							{
 							scriptFonts[noScriptFonts].fontType = EFONT2Type;
@@ -490,8 +490,8 @@ void Scene::ParseScripts(File *f) {
 					{
 						unsigned short newx = f->loadShort();
 						unsigned short newy = f->loadShort();
-						log("TextPosition x", newx);
-						log("TextPosition y", newy);
+						LOG("TextPosition x", newx);
+						LOG("TextPosition y", newy);
 						textPosX = newx;
 						textPosY = newy;
 					}
@@ -499,14 +499,13 @@ void Scene::ParseScripts(File *f) {
 				case ESceneTextColour:
 					{
 					unsigned short value = f->loadShort();
-					log("ESceneTextColour", value);
+					LOG("ESceneTextColour", value);
 					}
 					break;
 				case ESceneFontFun:
-					{					
-					log("ESceneFontFun");
+					{
 					unsigned short len = f->loadShort();
-					log("ESceneFontFun len", len);
+					LOG("ESceneFontFun len", len);
 					/*while(len)
 						{
 						unsigned char data = f->loadChar();
@@ -516,46 +515,46 @@ void Scene::ParseScripts(File *f) {
 				case ESceneFontIndex:
 					{
 					unsigned short value = f->loadShort();
-					log("ESceneFontIndex", value);
+					LOG("ESceneFontIndex", value);
 					textFont = value;
 					}
 					break;					
 				case ESceneTextVAdjust:
 					{
 					unsigned short value = f->loadShort();
-					log("ESceneTextVAdjust", value);
+					LOG("ESceneTextVAdjust", value);
 					extraheight = value;
 					}
 					break;	
 				case ESceneTextSetting:
 					{
 					unsigned short value = f->loadShort();
-					log("ESceneTextSetting", value);
+					LOG("ESceneTextSetting", value);
 					}break;
 				case ESceneTextShadow:
 					{
 					unsigned short value = f->loadShort();
-					log("ESceneTextVAdjust", value);
+					LOG("ESceneTextVAdjust", value);
 					}break;
 				case ESceneTextAlign:
 					{
 					unsigned char alignment = f->loadChar();
-					log("ESceneTextAlign", alignment);
+					LOG("ESceneTextAlign", alignment);
 					textAlignment = alignment;
 					}break;
 				case ESceneTextAlign2:
 					{
 					unsigned char a = f->loadChar();
 					unsigned short b = f->loadShort();
-					log("ESceneTextAlign2 a", a);
-					log("ESceneTextAlign2 b", b);
+					LOG("ESceneTextAlign2 a", a);
+					LOG("ESceneTextAlign2 b", b);
 					}break;
 				case ESceneTextSomething:
 					{
 					unsigned char a = f->loadChar();
 					unsigned short b = f->loadShort();
-					log("ESceneTextSomething a", a);
-					log("ESceneTextSomething b", b);
+					LOG("ESceneTextSomething a", a);
+					LOG("ESceneTextSomething b", b);
 					}break;
 				case ESceneTextLine:
 				case ESceneTextBlock:
@@ -565,7 +564,7 @@ void Scene::ParseScripts(File *f) {
 						unsigned char pos = 0;
 						unsigned char orgdatalen = datalen;
 						char pagebuf[3];
-						log("Text len=", datalen);
+						LOG("Text len=", datalen);
 						// Convert to ascii
 						while(datalen>0) {
 							if(block[pos] == 0x8b) {
@@ -634,12 +633,12 @@ void Scene::ParseScripts(File *f) {
 							memcpy(scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text, block, orgdatalen);
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[orgdatalen] = 0;
 							
-							log("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);																		
+							LOG("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);																		
 							}
 						else {
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[1];							
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[0] = 0;							
-							log("Text data", "Empty line");
+							LOG("Text data", "Empty line");
 							}
 						scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].alignment = textAlignment;
 						scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].fontId = textFont;
@@ -664,23 +663,23 @@ void Scene::ParseScripts(File *f) {
 				case ESceneTime:
 					{
 					unsigned short int sceneTime = f->loadShort();
-					log("Scene time",sceneTime&255);
+					LOG("Scene time",sceneTime&255);
 					scriptPages[loop].pageTime = sceneTime&255;
 					}
 					break;
 				case ESceneBreaker:
 				case 0x3e:									
 					pos = f->tell();
-					log("Parse script end at position", pos);
-					log("Parse script end with", type);
+					LOG("Parse script end at position", pos);
+					LOG("Parse script end with", type);
 					breakloop = true;
 					f->loadChar();
 					break;			
 				default:
 					{
 						pos = f->tell();
-						log("Parse script end at position", pos);
-						log("Parse script breaker", type);
+						LOG("Parse script end at position", pos);
+						LOG("Parse script breaker", type);
 						breakloop = true;												
 					}
 					break;
@@ -697,7 +696,7 @@ Scene::Scene (const char * fileName) {
 	File *file;	
     int loop;
     noScriptFonts = 0;        
-    log("\nScene", fileName);
+    LOG("\nScene", fileName);
 	try {
 
 		file = new File(fileName, false);
@@ -715,20 +714,20 @@ Scene::Scene (const char * fileName) {
 	scriptItems = file->loadShort(); // Get number of script items
 	scriptStarts = new signed long int[scriptItems];
 	scriptPages = new ScriptPage[scriptItems];
-	log("Scene: Script items", scriptItems);
+	LOG("Scene: Script items", scriptItems);
 	for(loop = 0;loop < scriptItems; loop++) {
 		scriptStarts[loop] = file->loadInt();// Load offset to script
-		log("scriptStart:", scriptStarts[loop]);
+		LOG("scriptStart:", scriptStarts[loop]);
 	}
 
 	// Seek to datastart now
 	file->seek(dataOffset, true); // Seek to data offsets
 	dataItems = file->loadShort()+1; // Get number of data items
-	log("Scene: Data items", dataItems);
+	LOG("Scene: Data items", dataItems);
 	dataOffsets = new signed long int[dataItems];
 	for(loop = 0;loop < dataItems; loop++) {
 		dataOffsets[loop] = file->loadInt();// Load offset to script
-		log("dataOffsets:", dataOffsets[loop]);
+		LOG("dataOffsets:", dataOffsets[loop]);
 	}
 
 	ParseData(file);

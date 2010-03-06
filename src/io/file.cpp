@@ -51,7 +51,7 @@ File::~File () {
 
 	fclose(f);
 
-	//log("Closed file", filePath);
+	LOG("Closed file", filePath);
 
 	delete[] filePath;
 
@@ -70,7 +70,7 @@ bool File::open (const char * path, const char * name, bool write) {
 
 	if (f) {
 
-		//log("Opened file", filePath);
+		LOG("Opened file", filePath);
 
 		return true;
 
