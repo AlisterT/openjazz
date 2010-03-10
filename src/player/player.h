@@ -191,7 +191,6 @@ class Player : public Movable {
 		unsigned char team;
 
 		void addAmmo      (int type, int amount);
-		bool isOnPlatform ();
 
 	public:
 		int teamScore;

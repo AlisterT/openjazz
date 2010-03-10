@@ -667,21 +667,6 @@ bool Player::overlap (fixed left, fixed top, fixed width, fixed height) {
 }
 
 
-bool Player::isOnPlatform () {
-
-	// Check for platform event, bridge or level mask below player
-
-	return
-		(event >= 3) ||
-		level->checkMaskDown(x + PXO_ML, y + 1) ||
-		level->checkMaskDown(x + PXO_MID, y + 1) ||
-		level->checkMaskDown(x + PXO_MR, y + 1) ||
-		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
-		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
-
-}
-
-
 void Player::setPosition (fixed newX, fixed newY) {
 
 	x = newX;

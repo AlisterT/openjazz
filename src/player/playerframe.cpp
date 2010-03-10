@@ -60,6 +60,8 @@ void Player::control (unsigned int ticks, int msps) {
 
 		}
 
+		animType = facing? PA_RDIE: PA_LDIE;
+
 		return;
 
 	}
@@ -106,6 +108,15 @@ void Player::control (unsigned int ticks, int msps) {
 
 	if (dx < -PXS_RUN) dx = -PXS_RUN;
 	if (dx > PXS_RUN) dx = PXS_RUN;
+
+
+	// Check for platform event, bridge or level mask below player
+	platform = (event >= 3) ||
+		level->checkMaskDown(x + PXO_ML, y + 1) ||
+		level->checkMaskDown(x + PXO_MID, y + 1) ||
+		level->checkMaskDown(x + PXO_MR, y + 1) ||
+		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
+		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
 
 
 	if (floating) {
@@ -201,8 +212,6 @@ void Player::control (unsigned int ticks, int msps) {
 
 	} else {
 
-		platform = isOnPlatform();
-
 		if (platform && pcontrols[C_JUMP] &&
 			!level->checkMask(x + PXO_MID, y - F36)) {
 
@@ -296,6 +305,9 @@ void Player::control (unsigned int ticks, int msps) {
 
 		if ((ticks > fireTime) && (level->getBullet(ammoType + 1)[B_SPRITE] != 0)) {
 
+			// Make sure bullet position is taken from correct animation
+			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
+
 			// Create new bullet
 			level->firstBullet = new Bullet(this, false, ticks);
 
@@ -341,6 +353,60 @@ void Player::control (unsigned int ticks, int msps) {
 		}
 
 	}
+
+
+	// Choose animation
+
+	if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
+		animType = facing? PA_RHURT: PA_LHURT;
+
+	else if (y + PYO_MID > level->getWaterLevel())
+		animType = facing? PA_RSWIM: PA_LSWIM;
+
+	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
+
+	else if (dy < 0) {
+
+		if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
+		else animType = facing? PA_RJUMP: PA_LJUMP;
+
+	} else if (platform) {
+
+		if (dx) {
+
+			if (dx <= -PXS_RUN) animType = PA_LRUN;
+			else if (dx >= PXS_RUN) animType = PA_RRUN;
+			else if ((dx < 0) && facing) animType = PA_LSTOP;
+			else if ((dx > 0) && !facing) animType = PA_RSTOP;
+			else animType = facing? PA_RWALK: PA_LWALK;
+
+		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
+			!level->checkMaskDown(x + PXO_L, y + F2) &&
+			(event != 3) && (event != 4))
+			animType = PA_LEDGE;
+
+		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
+			!level->checkMaskDown(x + PXO_R, y + F2) &&
+			(event != 3) && (event != 4))
+			animType = PA_REDGE;
+
+		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
+			animType = PA_LOOKUP;
+
+		else if (lookTime > 0) {
+
+			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
+			else animType = PA_LOOKDOWN;
+
+		}
+
+		else if (pcontrols[C_FIRE])
+			animType = facing? PA_RSHOOT: PA_LSHOOT;
+
+		else
+			animType = facing? PA_RSTAND: PA_LSTAND;
+
+	} else animType = facing? PA_RFALL: PA_LFALL;
 
 
 	return;
@@ -621,62 +687,6 @@ void Player::draw (unsigned int ticks, int change) {
 
 	drawX = getDrawX(change);
 	drawY = getDrawY(change);
-
-
-	// Choose player animation
-
-	if (reaction == PR_KILLED) animType = facing? PA_RDIE: PA_LDIE;
-
-	else if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
-		animType = facing? PA_RHURT: PA_LHURT;
-
-	else if (y + PYO_MID > level->getWaterLevel())
-		animType = facing? PA_RSWIM: PA_LSWIM;
-
-	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
-
-	else if (dy < 0) {
-
-		if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
-		else animType = facing? PA_RJUMP: PA_LJUMP;
-
-	} else if (isOnPlatform()) {
-
-		if (dx) {
-
-			if (dx <= -PXS_RUN) animType = PA_LRUN;
-			else if (dx >= PXS_RUN) animType = PA_RRUN;
-			else if ((dx < 0) && facing) animType = PA_LSTOP;
-			else if ((dx > 0) && !facing) animType = PA_RSTOP;
-			else animType = facing? PA_RWALK: PA_LWALK;
-
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
-			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != 3) && (event != 4))
-			animType = PA_LEDGE;
-
-		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
-			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != 3) && (event != 4))
-			animType = PA_REDGE;
-
-		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-			animType = PA_LOOKUP;
-
-		else if (lookTime > 0) {
-
-			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
-			else animType = PA_LOOKDOWN;
-
-		}
-
-		else if (pcontrols[C_FIRE])
-			animType = facing? PA_RSHOOT: PA_LSHOOT;
-
-		else
-			animType = facing? PA_RSTAND: PA_LSTAND;
-
-	} else animType = facing? PA_RFALL: PA_LFALL;
 
 
 	// Choose sprite
