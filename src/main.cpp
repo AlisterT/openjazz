@@ -53,6 +53,9 @@ extern int volume;
 extern int volume_direction;
 #endif
 
+#ifdef __SYMBIAN32__
+extern char KOpenJazzPath[256];
+#endif
 
 int loadMain (int argc, char *argv[]) {
 
@@ -77,6 +80,7 @@ int loadMain (int argc, char *argv[]) {
 	#else
 		firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
 	#endif
+		firstPath = new Path(firstPath, createString(KOpenJazzPath));
 #endif
 
 
@@ -662,10 +666,10 @@ int loop (int type) {
 
 int main(int argc, char *argv[]) {
 
-/*
-	Scene *scene;
-*/
 
+	Scene *scene = NULL;
+    int scene_result = E_NONE;
+    
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
@@ -704,11 +708,11 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	if (scene->play() != E_QUIT) {
-
-		delete scene;
-*/
-
+    scene_result = scene->play();
+    delete scene;
+    scene = NULL;*/
+    
+	if (scene_result != E_QUIT) {		
 		// Load the menu
 		try {
 
@@ -728,7 +732,7 @@ int main(int argc, char *argv[]) {
 
 			// Show the ending cutscene
 
-/*			try {
+			try {
 
 				scene = new Scene(F_END_0SC);
 
@@ -745,15 +749,13 @@ int main(int argc, char *argv[]) {
 			scene->play();
 
 			delete scene;
-*/
+
 
 		}
 
 		delete menu;
 
-/*
-	} else delete scene;
-*/
+	}
 
 	freeMain();
 	SDL_Quit();
