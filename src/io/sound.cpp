@@ -32,11 +32,25 @@
 #include "sound.h"
 #include <SDL/SDL_audio.h>
 
+#ifdef __SYMBIAN32__
+#define SOUND_FREQ 22050
+#else
+#define SOUND_FREQ 44100
+#endif
+
 #ifdef USE_MODPLUG
 #include <modplug.h>
 
 
 ModPlugFile   *musicFile;
+
+#ifdef __SYMBIAN32__
+#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
+#else
+#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
+#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
+#endif
 #endif
 
 SDL_AudioSpec  audioSpec;
@@ -100,7 +114,7 @@ void openAudio () {
 
 	// Set up SDL audio
 
-	asDesired.freq = 44100;
+	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
 	asDesired.samples = 2048;
@@ -170,8 +184,7 @@ void playMusic (const char * fileName) {
 
 	// Set up libmodplug
 
-	settings.mFlags = MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB |
-		MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND;
+	settings.mFlags = MUSIC_FLAGS;
 	settings.mChannels = audioSpec.channels;
 
 	if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
@@ -179,7 +192,7 @@ void playMusic (const char * fileName) {
 	else settings.mBits = 16;
 
 	settings.mFrequency = audioSpec.freq;
-	settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
+	settings.mResamplingMode = MUSIC_RESAMPLEMODE;
 	settings.mReverbDepth = 25;
 	settings.mReverbDelay = 40;
 	settings.mBassAmount = 50;
