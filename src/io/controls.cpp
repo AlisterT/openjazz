@@ -27,7 +27,7 @@
 
 #include "controls.h"
 
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 #include "platforms/wiz.h"
 #endif
 
@@ -53,7 +53,7 @@ Controls::Controls () {
 	keys[C_STATS].key  = SDLK_F9;
 	keys[C_PAUSE].key  = SDLK_p;
 
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 	buttons[C_UP].button		= GP2X_BUTTON_UP;
 	buttons[C_DOWN].button		= GP2X_BUTTON_DOWN;
 	buttons[C_LEFT].button		= GP2X_BUTTON_LEFT;

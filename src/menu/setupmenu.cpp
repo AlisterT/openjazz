@@ -258,8 +258,6 @@ int Menu::setupJoystick () {
 
 int Menu::setupResolution () {
 
-#ifndef FULLSCREEN_ONLY
-
 	int widthOptions[] = {320, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
 		1280, 1440, 1600, 1920};
 	int heightOptions[] = {200, 240, 300, 384, 400, 480, 576, 600, 720, 768,
@@ -269,20 +267,25 @@ int Menu::setupResolution () {
 
 	dimension = 0;
 
-	if (fullscreen)
+#ifndef FULLSCREEN_ONLY
+	if (!fullscreen)
+		resolutions = SDL_ListModes(NULL,
+			SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);	  
+	else 
+#endif	  
 		resolutions = SDL_ListModes(NULL,
 			SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-	else 
-		resolutions = SDL_ListModes(NULL,
-			SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
 
+#if defined(WIZ) || defined(GP2X)
+	maxW = 320;
+	maxH = 240;
+#else
 	if (resolutions == (SDL_Rect **)(-1)) {
 
 		maxW = 1920;
 		maxH = 1200;
 
 	} else {
-
 		maxW = 320;
 		maxH = 200;
 
@@ -292,8 +295,8 @@ int Menu::setupResolution () {
 			if (resolutions[count]->h > maxH) maxH = resolutions[count]->h;
 
 		}
-
 	}
+#endif
 
 	while (true) {
 
@@ -386,14 +389,18 @@ int Menu::setupResolution () {
 
 			playSound(S_ORB);
 
-			if (fullscreen) createFullscreen();
-			else createWindow();
-
+#ifndef FULLSCREEN_ONLY
+			if (!fullscreen)
+			{
+				createWindow();
+				
+			}
+			else
+#endif
+				createFullscreen(); 
 		}
 
 	}
-
-#endif
 
 	return E_NONE;
 
@@ -461,9 +468,9 @@ int Menu::setup () {
 				break;
 
 			case 1:
-
+#if !defined(WIZ) && !defined(GP2X)
 				setupKeyboard();
-
+#endif
 				break;
 
 			case 2:

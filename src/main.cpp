@@ -47,7 +47,7 @@
 
 #include <string.h>
 
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 #include "platforms/wiz.h"
 extern int volume;
 extern int volume_direction;
@@ -570,7 +570,7 @@ int loop (int type) {
 
 				}
 #endif
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 				SDL_ShowCursor(SDL_DISABLE);
 #endif
 				// Break statement intentionally omitted
@@ -584,7 +584,7 @@ int loop (int type) {
 
 				if (ret != E_NONE) return ret;
 
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 				if (event.jbutton.button ==  GP2X_BUTTON_VOLUP ) {
 					if( event.type == SDL_JOYBUTTONDOWN )
 						volume_direction = VOLUME_UP;
@@ -655,7 +655,7 @@ int loop (int type) {
 
 	}
 
-#ifdef WIZ
+#if defined(WIZ) || defined(GP2X)
 	WIZ_AdjustVolume( volume_direction );
 #endif
 

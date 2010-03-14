@@ -61,15 +61,14 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 void createFullscreen () {
 
-	SDL_ShowCursor(SDL_DISABLE);
-
-#ifdef WIZ
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
+#if defined(WIZ) || defined(GP2X)  
+	screen = SDL_SetVideoMode(320, 240, 8,
 		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8,
 		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
 #endif
+	SDL_ShowCursor(SDL_DISABLE);
 
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
