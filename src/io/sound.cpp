@@ -122,7 +122,11 @@ void openAudio () {
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
+#if defined(GP2X)
+	asDesired.samples = 512;
+#else
 	asDesired.samples = 2048;
+#endif
 	asDesired.callback = audioCallback;
 	asDesired.userdata = NULL;
 

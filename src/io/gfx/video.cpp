@@ -61,7 +61,7 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 void createFullscreen () {
 
-#if defined(WIZ) || defined(GP2X)  
+#if defined(WIZ) || defined(GP2X)
 	screen = SDL_SetVideoMode(320, 240, 8,
 		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
 #else
@@ -135,8 +135,12 @@ void restorePalette (SDL_Surface *surface) {
 
 void clearScreen (int index) {
 
-	SDL_FillRect(screen, NULL, index);
-
+#if defined(WIZ) || defined(GP2X)  
+        // always 240 lines cleared to black
+        memset(screen->pixels, index, 320*240);
+#else
+        SDL_FillRect(screen, NULL, index);
+#endif
 	return;
 
 }

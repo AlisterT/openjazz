@@ -1,0 +1,78 @@
+# OpenJazz makefile
+
+PROGRAM = OpenJazz
+
+ifeq ($(BUILDTYPE),PANDORA)
+PROGRAM = OpenJazz
+PREFIX	= /mythtv/media/devel/toolchains/pandora/arm-2007q3
+TARGET	= arm-none-linux-gnueabi-
+else
+ifeq ($(BUILDTYPE),WIZ)
+PROGRAM = OpenJazzWiz
+PREFIX	= /mythtv/media/devel/toolchains/openwiz/arm-openwiz-linux-gnu
+TARGET	= arm-openwiz-linux-gnu-
+else
+ifeq ($(BUILDTYPE),GP2X)
+PROGRAM = OpenJazzGp2x
+PREFIX	= /mythtv/media/devel/toolchains/open2x/gcc-4.1.1-glibc-2.3.6
+TARGET	= arm-open2x-linux-
+else # default linux
+PROGRAM = OpenJazz
+PREFIX	= /usr
+TARGET	= 
+endif
+endif
+endif
+
+OBJS =	src/bonus/bonus.o \
+	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
+	src/game/servergame.o \
+	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
+	src/io/gfx/sprite.o src/io/gfx/video.o \
+	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/level/event/bridge.o src/level/event/guardians.o \
+	src/level/event/event.o src/level/event/eventframe.o \
+	src/level/bullet.o src/level/demolevel.o src/level/level.o \
+	src/level/levelframe.o src/level/levelload.o \
+	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
+	src/menu/menuutil.o src/menu/setupmenu.o \
+	src/player/bird.o src/player/player.o src/player/playerframe.o \
+	src/main.o src/movable.o src/planet.o src/scene.o src/util.o
+
+CXX = $(PREFIX)/bin/$(TARGET)g++
+
+ifeq ($(BUILDTYPE),PANDORA)
+CXXFLAGS += 
+LDFLAGS  += -lts
+else
+ifeq ($(BUILDTYPE),WIZ)
+OBJS += src/platforms/wiz.o
+CXXFLAGS += -DWIZ -DFULLSCREEN_ONLY
+LDFLAGS  += 
+else
+ifeq ($(BUILDTYPE),GP2X)
+OBJS += src/platforms/wiz.o
+CXXFLAGS += -DGP2X -DFULLSCREEN_ONLY
+LDFLAGS  += -static -lpthread
+else # default linux
+CXXFLAGS += 
+LDFLAGS  +=
+endif
+endif
+endif
+
+CXXFLAGS += -g -Wall -O2 -fsigned-char -DUSE_SOCKETS -I$(PREFIX)/include -I$(PREFIX)/include/SDL -Isrc
+LDFLAGS  += -L$(PREFIX)/lib -lSDL
+
+# Uncomment the following two lines for music (requires libmodplug)
+CXXFLAGS += -DUSE_MODPLUG -I$(PREFIX)/include/libmodplug
+LDFLAGS  += -lmodplug
+
+$(PROGRAM): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(PROGRAM) $(OBJS) $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(PROGRAM) $(OBJS)
