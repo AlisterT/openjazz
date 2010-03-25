@@ -265,6 +265,19 @@ int Menu::setupResolution () {
 	SDL_Rect **resolutions;
 	int dimension, count, maxW, maxH;
 
+#ifdef SCALE
+	int minS = 1;
+	int maxS = 4;
+	#define minD 0
+	#define maxD 2
+	
+	if ( scalar < minS || scalar > maxS )
+		scalar = 1;
+#else
+	#define minD 0
+	#define maxD 1
+#endif
+
 	dimension = 0;
 
 #ifndef FULLSCREEN_ONLY
@@ -275,6 +288,7 @@ int Menu::setupResolution () {
 #endif	  
 		resolutions = SDL_ListModes(NULL,
 			SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+
 
 #if defined(WIZ) || defined(GP2X)
 	maxW = 320;
@@ -318,44 +332,84 @@ int Menu::setupResolution () {
 		drawRect(0, screenH - 32, 32, 32, 79);
 
 
+		// X 1
 		fontmn2->showString("x", (screenW >> 2) + 40, screenH >> 1);
+		
+		// X 2
+		fontmn2->showString("x", (screenW >> 2) + 112, screenH >> 1);
 
+		// Width
 		if (dimension == 0) fontmn2->mapPalette(240, 8, 114, 16);
-
+		
 		fontmn2->showNumber(screenW, (screenW >> 2) + 32, screenH >> 1);
 
-		if (dimension == 0) fontmn2->restorePalette();
+		// Height
+		if (dimension == 0 || dimension == 2) fontmn2->restorePalette();
 		else fontmn2->mapPalette(240, 8, 114, 16);
-
+		
 		fontmn2->showNumber(screenH, (screenW >> 2) + 104, screenH >> 1);
+		
+		// Scalar
+		if (dimension == 0 || dimension == 1) fontmn2->restorePalette();
+		else fontmn2->mapPalette(240, 8, 114, 16);
+		
+		fontmn2->showNumber(scalar, (screenW >> 2) + 150, screenH >> 1);
 
 		if (dimension != 0) fontmn2->restorePalette();
 
 
 		count = 0;
 
-		if (controls.release(C_LEFT)) dimension = !dimension;
+		if (controls.release(C_LEFT)) {
+		  
+			dimension--;
 
-		if (controls.release(C_RIGHT)) dimension = !dimension;
+			if(dimension<minD)
+				dimension = minD;
+		}
+
+		if (controls.release(C_RIGHT)) {
+		  
+			dimension++;
+
+			if(dimension>maxD)
+				dimension = maxD;
+		}
 
 		if (controls.release(C_UP)) {
 
-			if ((dimension == 0) && (screenW < maxW)) {
+			if ((dimension == 0) && (screenW*scalar < maxW)) {
 
-				while (screenW >= widthOptions[count]) count++;
+				while (screenW >= widthOptions[count] && (screenW*scalar)<maxW) count++;
+
+				if ((widthOptions[count]*scalar) > maxW)
+					count--;
 
 				screenW = widthOptions[count];
 
 			}
 
-			if ((dimension == 1) && (screenH < maxH)) {
+			if ((dimension == 1) && (screenH*scalar < maxH)) {
 
 				while (screenH >= heightOptions[count]) count++;
+
+				if ((heightOptions[count]*scalar) > maxH)
+					count--;
 
 				screenH = heightOptions[count];
 
 			}
+#ifdef SCALE
+			if ((dimension == 2) && (scalar < maxS)) {
+			  
+				if ( screenH*(scalar+1) <= maxH && screenW*(scalar+1) <= maxW )
+				{
+					scalar++;
+					count = 1;
+				}
 
+			}
+#endif
 		}
 
 		if (controls.release(C_DOWN)) {
@@ -382,6 +436,15 @@ int Menu::setupResolution () {
 
 			}
 
+#ifdef SCALE
+			if ((dimension == 2) && (scalar > minS)) {
+			  
+				scalar--;
+				count = 1;
+
+			}
+#endif
+
 		}
 
 		// Check for a resolution change
@@ -393,7 +456,7 @@ int Menu::setupResolution () {
 			if (!fullscreen)
 			{
 				createWindow();
-				
+
 			}
 			else
 #endif

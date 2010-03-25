@@ -39,6 +39,10 @@
 
 EXTERN SDL_Surface *screen;
 EXTERN int          viewW, viewH, screenW, screenH;
+EXTERN int          scalar;
+#ifdef SCALE
+EXTERN SDL_Surface *screen_scaled;
+#endif
 #ifndef FULLSCREEN_ONLY
 EXTERN bool         fullscreen;
 #endif

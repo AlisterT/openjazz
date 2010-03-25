@@ -57,6 +57,10 @@ extern int volume_direction;
 extern char KOpenJazzPath[256];
 #endif
 
+#ifdef SCALE
+#include "scale2x/scalebit.h"
+#endif
+
 int loadMain (int argc, char *argv[]) {
 
 	File *file;
@@ -191,6 +195,13 @@ int loadMain (int argc, char *argv[]) {
 		// Read video settings
 		screenW = file->loadShort();
 		screenH = file->loadShort();
+#ifdef SCALE
+		scalar  = file->loadChar();
+#else
+		scalar = 1;
+		file->loadChar();
+#endif
+
 #ifdef FULLSCREEN_ONLY
 		file->loadChar();
 #else
@@ -255,8 +266,11 @@ int loadMain (int argc, char *argv[]) {
 	else createWindow();
 #endif
 
+#ifdef SCALE
+	if (!screen_scaled) {
+#else
 	if (!screen) {
-
+#endif
 		logError("Could not set video mode", SDL_GetError());
 
 		delete characterName;
@@ -279,6 +293,9 @@ int loadMain (int argc, char *argv[]) {
  			logicalPalette[count].b = count;
 
 	restorePalette(screen);
+#ifdef SCALE
+	restorePalette(screen_scaled);
+#endif
 
 	firstPE = NULL;
 
@@ -465,6 +482,9 @@ void freeMain () {
 	SDL_FreeSurface(panelAmmo[3]);
 	SDL_FreeSurface(panelAmmo[4]);
 
+#ifdef SCALE
+	SDL_FreeSurface(screen);
+#endif
 
 	closeAudio();
 
@@ -489,6 +509,12 @@ void freeMain () {
 		// Write video settings
 		file->storeShort(screenW);
 		file->storeShort(screenH);
+#ifdef SCALE
+		file->storeChar(scalar);
+#else
+		file->storeChar(1);
+#endif
+		
 #ifdef FULLSCREEN_ONLY
 		file->storeChar(1);
 #else
@@ -544,9 +570,27 @@ int loop (int type) {
 	SDL_Event event;
 	int prevTicks, ret;
 
-
 	// Show everything that has been drawn so far
+#ifdef SCALE
+	if (scalar>1) {
+		int depth = screen_scaled->format->BytesPerPixel;
+	  
+		scale(scalar, screen_scaled->pixels, screen->w*depth*scalar, screen->pixels, screen->w*depth,
+			depth, screen->w, screen->h );
+			
+		//Simple2x((unsigned char*)screen->pixels, screen->w*depth, 0, (unsigned char*)screen_scaled->pixels, screen->w*depth*2,
+		//	 screen->w, screen->h );
+	}
+	else
+	{
+		SDL_BlitSurface(screen, NULL, screen_scaled, NULL);
+	}
+	    
+	SDL_Flip(screen_scaled);
+#else
 	SDL_Flip(screen);
+#endif
+	
 
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
@@ -605,9 +649,20 @@ int loop (int type) {
 
 				screenW = event.resize.w;
 				screenH = event.resize.h;
+#ifdef SCALE
+				screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
+					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
+					SDL_HWPALETTE);
+					
+				if (screen)
+					SDL_FreeSurface(screen);
+				  
+				screen = SDL_CreateRGBSurface(SDL_HWSURFACE, screenW, screenH, 8, 0, 0, 0, 0);
+#else
 				screen = SDL_SetVideoMode(screenW, screenH, 8,
 					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
 					SDL_HWPALETTE);
+#endif
 
 				// The absence of a break statement is intentional
 
@@ -615,6 +670,10 @@ int loop (int type) {
 
 				SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 				SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+#ifdef SCALE
+				SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
+				SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
+#endif
 
 				break;
 #endif
@@ -646,6 +705,10 @@ int loop (int type) {
 			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
 
 			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+			
+#ifdef SCALE
+			SDL_SetPalette(screen_scaled, SDL_PHYSPAL, shownPalette, 0, 256);
+#endif
 
 		} else {
 

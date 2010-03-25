@@ -42,17 +42,20 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 	// Set the surface's palette
 	SDL_SetPalette(ret, SDL_LOGPAL, logicalPalette, 0, 256);
 
-	// Upload pixel data to the surface
-	if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
+	if (pixels != NULL )
+	{
+		// Upload pixel data to the surface
+		if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
 
-	for (y = 0; y < height; y++)
-		memcpy(((unsigned char *)(ret->pixels)) + (ret->pitch * y),
-			pixels + (width * y), width);
+		for (y = 0; y < height; y++)
+			memcpy(((unsigned char *)(ret->pixels)) + (ret->pitch * y),
+				pixels + (width * y), width);
 
-	if (SDL_MUSTLOCK(ret)) SDL_UnlockSurface(ret);
+		if (SDL_MUSTLOCK(ret)) SDL_UnlockSurface(ret);
 
-	// Free redundant pixel data
-	delete[] pixels;
+		// Free redundant pixel data
+		delete[] pixels;
+	}
 
 	return ret;
 
@@ -60,18 +63,34 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 
 void createFullscreen () {
-
+  
 #if defined(WIZ) || defined(GP2X)
 	screen = SDL_SetVideoMode(320, 240, 8,
 		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
 #else
+
+#ifdef SCALE	
+	screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
+		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+
+	if (screen)
+		SDL_FreeSurface(screen);
+
+	screen = createSurface( NULL, screenW, screenH );
+
+	SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
+#else
 	screen = SDL_SetVideoMode(screenW, screenH, 8,
 		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+		
+	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);		
+#endif
 #endif
 	SDL_ShowCursor(SDL_DISABLE);
 
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
 
 	/* A real 8-bit display is quite likely if the user has the right video
 	card, the right video drivers, the right version of DirectX/whatever, and
@@ -90,13 +109,25 @@ void createFullscreen () {
 
 #ifndef FULLSCREEN_ONLY
 void createWindow () {
+  
+#ifdef SCALE
+	screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
+		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE);
 
+	if (screen)
+		SDL_FreeSurface(screen);
+
+	screen = createSurface( NULL, screenW, screenH );
+	
+	SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
+#else
 	screen = SDL_SetVideoMode(screenW, screenH, 8,
 		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-
+		
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
+#endif
 	SDL_ShowCursor(SDL_ENABLE);
 
 	/* Assume that in windowed mode the palette is being emulated.
@@ -114,9 +145,14 @@ void usePalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
 	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
+#ifndef SCALE
 	SDL_Flip(screen);
+#endif
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
+#ifdef SCALE
+	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, palette, 0, 256);
+#endif
 	currentPalette = palette;
 
 	return;
@@ -160,5 +196,3 @@ void drawRect (int x, int y, int width, int height, int index) {
 	return;
 
 }
-
-

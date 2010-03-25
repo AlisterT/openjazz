@@ -13,10 +13,12 @@ objects = src/bonus/bonus.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/menuutil.o src/menu/setupmenu.o \
 	src/player/bird.o src/player/player.o src/player/playerframe.o \
-	src/main.o src/movable.o src/planet.o src/scene.o src/util.o
+	src/main.o src/movable.o src/planet.o src/scene.o src/util.o \
+	src/scale2x/getopt.o src/scale2x/pixel.o src/scale2x/scale2x.o \
+	src/scale2x/scale3x.o src/scale2x/scalebit.o src/scale2x/simple2x.o
 
 
-CXXFLAGS += -g -Wall -O2 -DUSE_SOCKETS
+CXXFLAGS += -g -Wall -O2 -DUSE_SOCKETS -DSCALE
 
 # Uncomment the following two lines for music (requires libmodplug)
 #CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
