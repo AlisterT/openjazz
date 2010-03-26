@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -340,10 +340,8 @@ int Font::showString (const char * s, int x, int y) {
 
 			// Determine the character's position on the screen
 			src.w = w[(int)(map[(int)(s[count])])];
-			if(s[count] == 32) {
-				src.w = src.w /2;
-				}
-			
+			if(s[count] == 32) src.w >>= 1;
+
 			dst.y = yOffset;
 			dst.x = xOffset;
 
@@ -352,8 +350,8 @@ int Font::showString (const char * s, int x, int y) {
 			else src.y = 0;
 
 			// Draw the character to the screen
-			SDL_BlitSurface(surface, &src, screen, &dst);
-							
+			SDL_BlitSurface(surface, &src, canvas, &dst);
+
 			xOffset += src.w-1;
 		}
 
@@ -379,15 +377,15 @@ void Font::showNumber (int n, int x, int y) {
 	if (!n) {
 
 		// Determine 0's position on the screen
-		src.w = w[(int)(map['0'])];
+		src.w = w[(int)(map[(int)'0'])];
 		dst.y = y;
 		dst.x = x - src.w;
 
 		// Determine 0's position in the font
-		src.y = map['0'] * h;
+		src.y = map[(int)'0'] * h;
 
 		// Draw 0 to the screen
-		SDL_BlitSurface(surface, &src, screen, &dst);
+		SDL_BlitSurface(surface, &src, canvas, &dst);
 
 		return;
 
@@ -412,7 +410,7 @@ void Font::showNumber (int n, int x, int y) {
 		src.y = map['0' + (count % 10)] * h;
 
 		// Draw the digit to the screen
-		SDL_BlitSurface(surface, &src, screen, &dst);
+		SDL_BlitSurface(surface, &src, canvas, &dst);
 
 		count /= 10;
 
@@ -422,15 +420,15 @@ void Font::showNumber (int n, int x, int y) {
 	if (n < 0) {
 
 		// Determine the negative sign's position on the screen
-		src.w = w[(int)(map['-'])];
+		src.w = w[(int)(map[(int)'-'])];
 		dst.y = y;
 		dst.x = offset - src.w;
 
 		// Determine the negative sign's position on the screen
-		src.y = map['-'] * h;
+		src.y = map[(int)'-'] * h;
 
 		// Draw the negative sign to the screen
-		SDL_BlitSurface(surface, &src, screen, &dst);
+		SDL_BlitSurface(surface, &src, canvas, &dst);
 
 	}
 

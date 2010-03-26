@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -127,7 +127,7 @@ void Sprite::draw (int x, int y) {
 	dst.x = x + xOffset;
 	dst.y = y + yOffset;
 
-	SDL_BlitSurface(pixels, NULL, screen, &dst);
+	SDL_BlitSurface(pixels, NULL, canvas, &dst);
 
 	return;
 

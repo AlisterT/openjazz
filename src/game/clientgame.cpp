@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -74,8 +74,7 @@ ClientGame::ClientGame (char *address) {
 		SDL_Delay(T_FRAME);
 
 		clearScreen(0);
-		fontmn2->showString("WAITING FOR REPLY", screenW >> 2,
-			(screenH >> 1) - 16);
+		fontmn2->showString("WAITING FOR REPLY", canvasW >> 2, (canvasH >> 1) - 16);
 
 		ret = net->recv(sock, buffer + count, MTL_G_PROPS - count);
 
@@ -207,7 +206,7 @@ ClientGame::ClientGame (char *address) {
 		}
 
 		clearScreen(0);
-		fontmn2->showString("JOINING GAME", screenW >> 2, (screenH >> 1) - 16);
+		fontmn2->showString("JOINING GAME", canvasW >> 2, (canvasH >> 1) - 16);
 
 		ret = step(0);
 
@@ -267,8 +266,7 @@ int ClientGame::setLevel (char *fileName) {
 		SDL_Delay(T_FRAME);
 
 		clearScreen(0);
-		fontmn2->showString("WAITING FOR SERVER", screenW >> 2,
-			(screenH >> 1) - 16);
+		fontmn2->showString("WAITING FOR SERVER", canvasW >> 2, (canvasH >> 1) - 16);
 
 		ret = step(0);
 
@@ -286,9 +284,9 @@ int ClientGame::setLevel (char *fileName) {
 		SDL_Delay(T_FRAME);
 
 		clearScreen(0);
-		fontmn2->showString("downloaded", screenW >> 2, (screenH >> 1) - 16);
-		fontmn2->showNumber(file->tell(), (screenW >> 2) + 56, screenH >> 1);
-		fontmn2->showString("bytes", (screenW >> 2) + 64, screenH >> 1);
+		fontmn2->showString("downloaded", canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showNumber(file->tell(), (canvasW >> 2) + 56, canvasH >> 1);
+		fontmn2->showString("bytes", (canvasW >> 2) + 64, canvasH >> 1);
 
 		ret = step(0);
 

@@ -45,16 +45,16 @@
  *  0x13, 0x04, Offset to datablock
  *  0x17, 0x02, Number of script items
  *  0x19, 0x4* Number of script items, Offset to Scripts
- *   
+ *
  *  ----, 0x02 Number of data items
  *  *  0x19, 0x4* Number of script items, Offset to datablocks
- *  
+ *
  */
 // These are the known script types
 enum
 {
 	ESceneMusic = 0x2A,
-	ESceneFadeType = 0x3F,	
+	ESceneFadeType = 0x3F,
 	ESceneTextBlock = 0x40,
 	ESceneTextColour = 0x41,
 	ESceneFontFun = 0x45,
@@ -96,14 +96,14 @@ ScriptText::ScriptText() {
 		extraLineHeight = -1;
 		text = NULL;
 }
-	
+
 ScriptText::~ScriptText() {
 
 	if (text) delete[] text;
 
 }
 
-ScriptPage::ScriptPage() {		
+ScriptPage::ScriptPage() {
 	pageTime = 0;
 	noScriptTexts = 0;
 	backgrounds = 0;
@@ -127,8 +127,8 @@ void Scene::ParseAni(File* f, int dataIndex) {
 
 	while(type != 0x4C50) {
 		type = f->loadShort();
-		
-		if(type == 0x4C53) { // SL 
+
+		if(type == 0x4C53) { // SL
 			/*unsigned short int offset =*/ f->loadShort();
 			unsigned char noSounds = f->loadChar();
 			for(loop = 0;loop<noSounds;loop++) {
@@ -137,14 +137,14 @@ void Scene::ParseAni(File* f, int dataIndex) {
 				delete[] soundName;
 			}
 		}
-		else if(type == 0x4C50) {// PL		
+		else if(type == 0x4C50) {// PL
 			int pos = f->tell();
 			int nextPos = f->tell();
 			LOG("PL Read position", pos);
 			unsigned short int len = f->loadShort();
 			unsigned char* buffer = f->loadBlock(len);
 			for (int count = 0; count < 256; count++) {
-				
+
 				// Palette entries are 6-bit
 				// Shift them upwards to 8-bit, and fill in the lower 2 bits
 				paletteInfos[paletteIndex].palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
@@ -152,22 +152,22 @@ void Scene::ParseAni(File* f, int dataIndex) {
 					(buffer[(count * 3) + 1] >> 4);
 				paletteInfos[paletteIndex].palette[count].b = (buffer[(count * 3) + 2] << 2) +
 					(buffer[(count * 3) + 2] >> 4);
-				
-				
+
+
 			}
-			
+
 			delete[] buffer;
-			paletteInfos[paletteIndex].dataIndex = dataIndex; 
+			paletteInfos[paletteIndex].dataIndex = dataIndex;
 			paletteIndex++;
-			
+
 			unsigned short int value = 0x4646;
 			int items = 0;
 			int validValue = true;
 			pos = f->tell();
-							
+
 			LOG("PL Read position start", pos);
 			while(validValue)
-				{					
+				{
 				value = f->loadShort();
 				LOG("PL Read block start tag", value);
 				unsigned short int size= f->loadShort();
@@ -176,29 +176,29 @@ void Scene::ParseAni(File* f, int dataIndex) {
 				// next pos is intial position + size and four bytes header
 				nextPos+=(size);
 				switch(value)
-					{					
-					case 0x455F:				
+					{
+					case 0x455F:
 						validValue = false;
 						break;
 					case 0x3131:
-						{						
+						{
 						// Skip back size header, this is read by the surface reader
-						f->seek(-2, false);						
+						f->seek(-2, false);
 
 						SDL_Surface* image = f->loadSurface(320, 200, true);
 						SDL_Rect dst;
 						dst.x = 0;
 						dst.y = 0;
-						SDL_BlitSurface(image, NULL, screen, &dst);
+						SDL_BlitSurface(image, NULL, canvas, &dst);
 						SDL_SetPalette(screen, SDL_PHYSPAL, paletteInfos[paletteIndex-1].palette, 0, 256);
-						currentPalette = paletteInfos[paletteIndex-1].palette;						
+						currentPalette = paletteInfos[paletteIndex-1].palette;
 						}break;
 					case 0x4c31:
-						{								
+						{
 						int longvalue = f->loadInt();
 						LOG("PL Anim block value", longvalue);
 						// Skip back size header, this is read by the surface reader
-						//f->seek(-2, false);						
+						//f->seek(-2, false);
 						while(size) {
 						size--;
 						unsigned char header = f->loadChar();
@@ -216,7 +216,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 							case 0xff:
 								{
 								unsigned char x= f->loadChar();
-								unsigned char y= f->loadChar();								
+								unsigned char y= f->loadChar();
 								LOG("PL block x", x);
 								LOG("PL block y", y);
 								size-=2;
@@ -227,9 +227,9 @@ void Scene::ParseAni(File* f, int dataIndex) {
 								}break;
 							}
 						}
-						}break;						
+						}break;
 					case 0x4646:
-						{						
+						{
 						while(size) {
 						unsigned char header = f->loadChar();
 						LOG("PL 4646 block header", header);
@@ -246,7 +246,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 							case 0xff:
 								{
 								unsigned char x= f->loadChar();
-								unsigned char y= f->loadChar();								
+								unsigned char y= f->loadChar();
 								LOG("PL block x", x);
 								LOG("PL block y", y);
 								size-=2;
@@ -254,7 +254,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 							default:
 								{
 								LOG("PL Unknown type", header);
-								}break;								
+								}break;
 							}
 						size--;
 						}
@@ -263,7 +263,7 @@ void Scene::ParseAni(File* f, int dataIndex) {
 					case 0x4252:
 					case 0x4352:
 					case 0x4c52:
-					case 0x4e41:					
+					case 0x4e41:
 					case 0x584d:
 					case 0x5252:
 						break;
@@ -279,13 +279,13 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						{
 						unsigned char soundIndex = f->loadChar();
 						unsigned char soundNote = f->loadChar();
-						unsigned char soundOffset = f->loadChar(); 
+						unsigned char soundOffset = f->loadChar();
 						LOG("PL Audio tag with index", soundIndex);
 						LOG("PL Audio tag play at ", soundNote);
 						LOG("PL Audio tag play offset ", soundOffset);
 						}
 						break;
-					
+
 					case 0:
 						{
 						int longvalue = f->loadInt();
@@ -303,15 +303,15 @@ void Scene::ParseAni(File* f, int dataIndex) {
 						break;
 					}
 
-				pos = f->tell();				
+				pos = f->tell();
 				LOG("PL Read position after block should be", nextPos);
 				f->seek(nextPos, true);
 					if(validValue) {
 					items++;
 					}
 				}
-			
-			LOG("PL Parsed through number of items skipping 0 items", items);		
+
+			LOG("PL Parsed through number of items skipping 0 items", items);
 			pos = f->tell();
 			LOG("PL Read position after parsing anim blocks", pos);
 		}
@@ -327,14 +327,14 @@ void Scene::ParseData(File *f) {
 		// AN
 		if(dataLen == 0x4e41) {
 			LOG("Data Type", "ANI");
-			ParseAni(f, loop);			
+			ParseAni(f, loop);
 		}
 		else {
 			unsigned char type = f->loadChar();
 			LOG("Data Type", type);
 			switch(type)
-			{	
-			case 3: 
+			{
+			case 3:
 			case 4: // image
 			case 5:
 			case 6:
@@ -354,9 +354,9 @@ void Scene::ParseData(File *f) {
 						imageIndex++;
 					}
 				}break;
-				
+
 			default:
-				{					
+				{
 					LOG("Data Type", "Palette");
 					LOG("Data Type Palette index", loop);
 					f->seek(-3, false);
@@ -376,28 +376,28 @@ void Scene::ParseScripts(File *f) {
 	char *string;
 	/*int bgIndex = 0;*/
 	int textAlignment = 0;
-	int textFont = 0;   
+	int textFont = 0;
 	for(loop = 0;loop < scriptItems; loop++)
 	{
 	    LOG("\nParse Script", loop);
 	    int textPosX = -1;
 	    int textPosY = -1;
-	    	    
+
 	    int extraheight = -1;
 	    SDL_Rect textRect;
 	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
-		if(f->loadChar() == 0x50) { // Script tag		
+		if(f->loadChar() == 0x50) { // Script tag
 			unsigned short int scriptid = f->loadShort();
 			LOG("Script id:", scriptid);
 			int palette = f->loadShort();
 			LOG("Script default palette", palette);
 			scriptPages[loop].paletteIndex = palette;
-			
+
 			unsigned char type = 0;
 			bool breakloop = false;
 			int pos = f->tell();
-			while(!breakloop && pos< dataOffsets[0]) {			
+			while(!breakloop && pos< dataOffsets[0]) {
 				type = f->loadChar();
 				switch(type)
 				{
@@ -411,12 +411,12 @@ void Scene::ParseScripts(File *f) {
 				case ESceneAnimationIndex:
 					{
 						unsigned char aniIndex = f->loadChar();
-						LOG("ESceneAnimationIndex:", aniIndex);												
+						LOG("ESceneAnimationIndex:", aniIndex);
 					}break;
 				case ESceneFadeType:
 					{
 						unsigned char fadein = f->loadChar();
-						LOG("ESceneFadeType:", fadein);	
+						LOG("ESceneFadeType:", fadein);
 					}break;
 				case ESceneBackground:
 					{
@@ -431,13 +431,13 @@ void Scene::ParseScripts(File *f) {
 						scriptPages[loop].backgrounds++;
 					}break;
 				case ESceneMusic:
-					{						
+					{
 						// Music file name
 						string = f->loadString();
 						LOG("ESceneMusic: ", string);
 						scriptPages[loop].musicfile = createString(string);
 						delete[] string;
-					}break;				
+					}break;
 				case ESceneSomethingElse:
 					{
 					unsigned char value = 0;//f->loadChar();
@@ -481,7 +481,7 @@ void Scene::ParseScripts(File *f) {
 							{
 							scriptFonts[noScriptFonts].fontType = EFONTMN2Type;
 							}
-						
+
 						scriptFonts[noScriptFonts].fontId = fontid;
 						noScriptFonts++;
 						delete[] fontname;
@@ -518,14 +518,14 @@ void Scene::ParseScripts(File *f) {
 					LOG("ESceneFontIndex", value);
 					textFont = value;
 					}
-					break;					
+					break;
 				case ESceneTextVAdjust:
 					{
 					unsigned short value = f->loadShort();
 					LOG("ESceneTextVAdjust", value);
 					extraheight = value;
 					}
-					break;	
+					break;
 				case ESceneTextSetting:
 					{
 					unsigned short value = f->loadShort();
@@ -558,7 +558,7 @@ void Scene::ParseScripts(File *f) {
 					}break;
 				case ESceneTextLine:
 				case ESceneTextBlock:
-					{						
+					{
 						unsigned char datalen = f->loadChar();
 						unsigned char* block = f->loadBlock(datalen);
 						unsigned char pos = 0;
@@ -569,14 +569,14 @@ void Scene::ParseScripts(File *f) {
 						while(datalen>0) {
 							if(block[pos] == 0x8b) {
 							sprintf(pagebuf, "%2d", loop+1);
-							memcpy(&block[pos-1], pagebuf,2);							
+							memcpy(&block[pos-1], pagebuf,2);
 							}
 							else if(block[pos] == 0x8a) {
 							sprintf(pagebuf, "%2d", scriptItems);
-							memcpy(&block[pos-1], pagebuf,2);							
+							memcpy(&block[pos-1], pagebuf,2);
 							}
 							else if(block[pos] == 'C') {
-								block[pos]=' ';							
+								block[pos]=' ';
 							}
 							else if(block[pos]>='a'-70 && block[pos]<='z'-70) {
 							block[pos]+=70;
@@ -610,7 +610,7 @@ void Scene::ParseScripts(File *f) {
 							}
 							else if(block[pos] == 0x67) {
 								block[pos]='?';
-							}						
+							}
 							else if(block[pos] == 0x66) {
 								block[pos]='.';
 							}
@@ -623,21 +623,21 @@ void Scene::ParseScripts(File *f) {
 							else if(block[pos] == 't') {
 								block[pos]='\'';
 							}
-							
+
 							pos++;
 							datalen--;
-						}	
-						
-						if(orgdatalen > 0) {							
+						}
+
+						if(orgdatalen > 0) {
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[orgdatalen + 1];
 							memcpy(scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text, block, orgdatalen);
 							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[orgdatalen] = 0;
-							
-							LOG("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);																		
+
+							LOG("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);
 							}
 						else {
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[1];							
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[0] = 0;							
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[1];
+							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[0] = 0;
 							LOG("Text data", "Empty line");
 							}
 						scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].alignment = textAlignment;
@@ -668,19 +668,19 @@ void Scene::ParseScripts(File *f) {
 					}
 					break;
 				case ESceneBreaker:
-				case 0x3e:									
+				case 0x3e:
 					pos = f->tell();
 					LOG("Parse script end at position", pos);
 					LOG("Parse script end with", type);
 					breakloop = true;
 					f->loadChar();
-					break;			
+					break;
 				default:
 					{
 						pos = f->tell();
 						LOG("Parse script end at position", pos);
 						LOG("Parse script breaker", type);
-						breakloop = true;												
+						breakloop = true;
 					}
 					break;
 				}
@@ -693,9 +693,9 @@ void Scene::ParseScripts(File *f) {
 
 Scene::Scene (const char * fileName) {
 
-	File *file;	
+	File *file;
     int loop;
-    noScriptFonts = 0;        
+    noScriptFonts = 0;
     LOG("\nScene", fileName);
 	try {
 
@@ -708,7 +708,7 @@ Scene::Scene (const char * fileName) {
 	}
 	imageIndex = 0;
 	paletteIndex = 0;
-	
+
 	file->seek(0x13, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 	scriptItems = file->loadShort(); // Get number of script items
@@ -733,7 +733,7 @@ Scene::Scene (const char * fileName) {
 	ParseData(file);
 	ParseScripts(file);
 	delete []scriptStarts;
-	delete []dataOffsets;	
+	delete []dataOffsets;
 	delete file;
 
 	return;
@@ -768,13 +768,13 @@ int Scene::play () {
 	int newpage = true;
 	int fadein = false;
 	SDL_Rect textRect = {0,0,320,200};
-	 
+
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
-									
+
 			return E_NONE;
 
 		}
@@ -782,7 +782,7 @@ int Scene::play () {
 		SDL_Delay(T_FRAME);
 
 		int upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
-		if((sceneIndex > 0 && upOrLeft) || controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) || 
+		if((sceneIndex > 0 && upOrLeft) || controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) ||
 			((globalTicks-lastTicks)>=pageTime*1000 && pageTime != 256 && pageTime != 0)) {
 			if(upOrLeft) {
 				sceneIndex--;
@@ -795,47 +795,47 @@ int Scene::play () {
 			}
 			lastTicks = globalTicks;
 			// Get bg for this page
-			newpage = true;			
+			newpage = true;
 
 			pageTime = scriptPages[sceneIndex].pageTime;
 		}
-		if(newpage) {			
-			//firstPE = new FadeOutPaletteEffect(250, firstPE);				
-			
+		if(newpage) {
+			//firstPE = new FadeOutPaletteEffect(250, firstPE);
+
 			textRect.x = 0;
 			textRect.y = 0;
 			textRect.w = 320;
 			textRect.h = 200;
-			PaletteInfo* paletteInfo = NULL; 
+			PaletteInfo* paletteInfo = NULL;
 			for(int palette = 0;palette<paletteIndex;palette++) {
 				if(paletteInfos[palette].dataIndex == scriptPages[sceneIndex].paletteIndex) {
 					paletteInfo = &paletteInfos[palette];
 					break;
 					}
-					
+
 				}
-			
-			if(paletteInfo != NULL) {									
+
+			if(paletteInfo != NULL) {
 					// usePalette(paletteInfo->palette);
 					currentPalette = paletteInfo->palette;
 					fadein = true;
 				}
 			else {
-				restorePalette(screen);				
+				restorePalette(screen);
 				}
-						
+
 			newpage = 0;
 			}
-		
+
 		// First draw the backgrounds associated with this page
 		if(scriptPages[sceneIndex].backgrounds > 0) {
 			for(int bg = 0;bg<scriptPages[sceneIndex].backgrounds;bg++) {
 				imageInfo = FindImage(scriptPages[sceneIndex].bgIndex[bg]);
 				if(imageInfo != NULL) {
-					dst.x = (scriptPages[sceneIndex].bgPos[bg] & 65535)*2+(screenW - 320) >> 1;
-					dst.y = ((scriptPages[sceneIndex].bgPos[bg] & (~65535))>>16)*2+(screenH - 200) >> 1;
-					SDL_BlitSurface(imageInfo->image, NULL, screen, &dst);
-					}		
+					dst.x = (scriptPages[sceneIndex].bgPos[bg] & 65535)*2+(canvasW - 320) >> 1;
+					dst.y = ((scriptPages[sceneIndex].bgPos[bg] & (~65535))>>16)*2+(canvasH - 200) >> 1;
+					SDL_BlitSurface(imageInfo->image, NULL, canvas, &dst);
+					}
 				}
 		} else {
 			clearScreen(0);
@@ -917,8 +917,8 @@ int Scene::play () {
 
 			}
 
-			xOffset = ((screenW - 320) >> 1) + textRect.x;
-			yOffset = ((screenH - 200) >> 1) + textRect.y + y;
+			xOffset = ((canvasW - 320) >> 1) + textRect.x;
+			yOffset = ((canvasH - 200) >> 1) + textRect.y + y;
 
 			switch (scriptPages[sceneIndex].scriptTexts[text].alignment) {
 
@@ -959,7 +959,7 @@ int Scene::play () {
 		if (fadein) {
 
 			fadein = false;
-			firstPE = new FadeInPaletteEffect(250, firstPE);			
+			firstPE = new FadeInPaletteEffect(250, firstPE);
 			clearScreen(0);
 
 		}

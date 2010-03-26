@@ -524,7 +524,7 @@ void Level::timeCalcs (bool paused) {
 	where c = (1 / fps)
 	and fps = 1000 / (ticks - prevTicks)
 	In other words, the response of smoothFPS to changes in FPS decreases as the
-	framerate increases 
+	framerate increases
 	The following version is for c = (1 / smoothfps)
 	*/
 	// smoothfps = (fps / smoothfps) + smoothfps - 1;
@@ -733,7 +733,7 @@ int Level::play () {
 
 		// If paused, draw "PAUSE"
 		if (paused && !pmenu)
-			fontmn1->showString("PAUSE", (screenW >> 1) - 44, 32);
+			fontmn1->showString("PAUSE", (canvasW >> 1) - 44, 32);
 
 
 		// If this is a competitive game, draw the score
@@ -772,9 +772,9 @@ int Level::play () {
 
 			drawRect(viewW - 84, 11, 80, 25, BLACK);
 
-			panelBigFont->showNumber(screenW, viewW - 52, 14);
+			panelBigFont->showNumber(canvasW, viewW - 52, 14);
 			panelBigFont->showString("x", viewW - 48, 14);
-			panelBigFont->showNumber(screenH, viewW - 12, 14);
+			panelBigFont->showNumber(canvasH, viewW - 12, 14);
 			panelBigFont->showString("fps", viewW - 76, 26);
 			panelBigFont->showNumber((int)smoothfps, viewW - 12, 26);
 
@@ -826,38 +826,28 @@ int Level::play () {
 			// Display statistics & bonuses
 			// TODO: Display percentage symbol
 
-			fontmn1->showString("TIME", (screenW >> 1) - 152,
-				(screenH >> 1) - 60);
-			fontmn1->showNumber(timeBonus, (screenW >> 1) + 124,
-				(screenH >> 1) - 60);
+			fontmn1->showString("TIME", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
+			fontmn1->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
 
-			fontmn1->showString("ENEMIES", (screenW >> 1) - 152,
-				(screenH >> 1) - 40);
+			fontmn1->showString("ENEMIES", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
 
 			if (enemies)
-				fontmn1->showNumber((localPlayer->getEnemies() * 100) / enemies,
-					(screenW >> 1) + 124, (screenH >> 1) - 40);
+				fontmn1->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			else
-				fontmn1->showNumber(0, (screenW >> 1) + 124,
-					(screenH >> 1) - 40);
+				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 
-			fontmn1->showString("ITEMS", (screenW >> 1) - 152,
-				(screenH >> 1) - 20);
+			fontmn1->showString("ITEMS", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
 
 			if (items)
-				fontmn1->showNumber((localPlayer->getItems() * 100) / items,
-					(screenW >> 1) + 124, (screenH >> 1) - 20);
+				fontmn1->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			else
-				fontmn1->showNumber(0, (screenW >> 1) + 124,
-					(screenH >> 1) - 20);
+				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 
-			fontmn1->showString("PERFECT", (screenW >> 1) - 152, screenH >> 1);
-			fontmn1->showNumber(perfect, (screenW >> 1) + 124, screenH >> 1);
+			fontmn1->showString("PERFECT", (canvasW >> 1) - 152, canvasH >> 1);
+			fontmn1->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
 
-			fontmn1->showString("SCORE", (screenW >> 1) - 152,
-				(screenH >> 1) + 40);
-			fontmn1->showNumber(localPlayer->getScore(), (screenW >> 1) + 124,
-				(screenH >> 1) + 40);
+			fontmn1->showString("SCORE", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
+			fontmn1->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
 
 		}
 
@@ -866,15 +856,14 @@ int Level::play () {
 
 			// Draw the menu
 
-			drawRect((screenW >> 2) - 8, (screenH >> 1) - 46, 144, 92, BLACK);
+			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, BLACK);
 
 			for (count = 0; count < 5; count++) {
 
 				if (count == option) fontmn2->mapPalette(240, 8, 47, -16);
 				else fontmn2->mapPalette(240, 8, 15, -16);
 
-				fontmn2->showString(options[count], screenW >> 2,
-					(screenH >> 1) + (count << 4) - 38);
+				fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 38);
 
 			}
 

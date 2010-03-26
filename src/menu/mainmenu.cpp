@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -233,13 +233,13 @@ int Menu::main () {
 
 		clearScreen(28);
 
-		dst.x = (screenW >> 2) - 72;
-		dst.y = screenH - (screenH >> 2);
-		SDL_BlitSurface(screens[14], NULL, screen, &dst);
+		dst.x = (canvasW >> 2) - 72;
+		dst.y = canvasH - (canvasH >> 2);
+		SDL_BlitSurface(screens[14], NULL, canvas, &dst);
 
-		dst.x = (screenW - 320) >> 1;
-		dst.y = (screenH - 200) >> 1;
-		SDL_BlitSurface(screens[0], NULL, screen, &dst);
+		dst.x = (canvasW - 320) >> 1;
+		dst.y = (canvasH - 200) >> 1;
+		SDL_BlitSurface(screens[0], NULL, canvas, &dst);
 
 		switch (option) {
 
@@ -299,9 +299,9 @@ int Menu::main () {
 
 		}
 
-		dst.x = ((screenW - 320) >> 1) + src.x;
-		dst.y = ((screenH - 200) >> 1) + src.y;
-		SDL_BlitSurface(screens[1], &src, screen, &dst);
+		dst.x = ((canvasW - 320) >> 1) + src.x;
+		dst.y = ((canvasH - 200) >> 1) + src.y;
+		SDL_BlitSurface(screens[1], &src, canvas, &dst);
 
 	}
 

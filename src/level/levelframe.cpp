@@ -206,20 +206,20 @@ void Level::draw () {
 	vY = FTOI(viewY);
 	dst.w = viewW;
 	dst.h = viewH;
-	SDL_SetClipRect(screen, &dst);
+	SDL_SetClipRect(canvas, &dst);
 
 
-	if ((viewW < screenW) || (viewH < screenH)) clearScreen(15);
+	if ((viewW < canvasW) || (viewH < canvasH)) clearScreen(15);
 
 	// If there is a sky, draw it
 	if (sky) {
 
 		// Background scale
-		if (screenW > 320) bgScale = ((screenH - 1) / 100) + 1;
-		else bgScale = ((screenH - 34) / 100) + 1;
+		if (canvasW > 320) bgScale = ((canvasH - 1) / 100) + 1;
+		else bgScale = ((canvasH - 34) / 100) + 1;
 
 		for (y = 0; y < viewH; y += bgScale)
-			drawRect(0, y, screenW, bgScale, 156 + (y / bgScale));
+			drawRect(0, y, canvasW, bgScale, 156 + (y / bgScale));
 
 
 		// Show sun / moon / etc.
@@ -228,7 +228,7 @@ void Level::draw () {
 			dst.x = (viewW * 4) / 5;
 			dst.y = (viewH * 3) / 25;
 			src.y = TTOI(skyOrb);
-			SDL_BlitSurface(tileSet, &src, screen, &dst);
+			SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 		}
 
@@ -264,7 +264,7 @@ void Level::draw () {
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
-				SDL_BlitSurface(tileSet, &src, screen, &dst);
+				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 			}
 
@@ -317,7 +317,7 @@ void Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				if (ticks & 64) src.y = TTOI(eventSet[ge->event][E_YAXIS]);
 				else src.y = TTOI(eventSet[ge->event][E_MULTIPURPOSE]);
-				SDL_BlitSurface(tileSet, &src, screen, &dst);
+				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 			}
 
@@ -328,7 +328,7 @@ void Level::draw () {
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
-				SDL_BlitSurface(tileSet, &src, screen, &dst);
+				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 			}
 
@@ -337,13 +337,13 @@ void Level::draw () {
 	}
 
 	// Temporary lines showing the water level
-	drawRect(0, FTOI(waterLevel - viewY), screenW, 2, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 3, screenW, 1, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 6, screenW, 1, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 10, screenW, 1, 24);
+	drawRect(0, FTOI(waterLevel - viewY), canvasW, 2, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 3, canvasW, 1, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 24);
+	drawRect(0, FTOI(waterLevel - viewY) + 10, canvasW, 1, 24);
 
 
-	SDL_SetClipRect(screen, NULL);
+	SDL_SetClipRect(canvas, NULL);
 
 
 	// Show panel
@@ -355,48 +355,48 @@ void Level::draw () {
 		&dst);
 
 	dst.x = 0;
-	dst.y = screenH - 33;
-	SDL_BlitSurface(panel, NULL, screen, &dst);
-	drawRect(0, screenH - 1, 320, 1, BLACK);
+	dst.y = canvasH - 33;
+	SDL_BlitSurface(panel, NULL, canvas, &dst);
+	drawRect(0, canvasH - 1, 320, 1, BLACK);
 
 
 	// Show panel data
 
 	// Show score
-	panelSmallFont->showNumber(localPlayer->getScore(), 84, screenH - 27);
+	panelSmallFont->showNumber(localPlayer->getScore(), 84, canvasH - 27);
 
 	// Show time remaining
 	if (endTime > ticks) x = endTime - ticks;
 	else x = 0;
 	y = x / (60 * 1000);
-	panelSmallFont->showNumber(y, 116, screenH - 27);
+	panelSmallFont->showNumber(y, 116, canvasH - 27);
 	x -= (y * 60 * 1000);
 	y = x / 1000;
-	panelSmallFont->showNumber(y, 136, screenH - 27);
+	panelSmallFont->showNumber(y, 136, canvasH - 27);
 	x -= (y * 1000);
 	y = x / 100;
-	panelSmallFont->showNumber(y, 148, screenH - 27);
+	panelSmallFont->showNumber(y, 148, canvasH - 27);
 
 	// Show lives
-	panelSmallFont->showNumber(localPlayer->getLives(), 124, screenH - 13);
+	panelSmallFont->showNumber(localPlayer->getLives(), 124, canvasH - 13);
 
 	// Show planet number
 
-	
+
 	if (worldNum <= 41) // Main game levels
-		panelSmallFont->showNumber((worldNum % 3) + 1, 184, screenH - 13);
+		panelSmallFont->showNumber((worldNum % 3) + 1, 184, canvasH - 13);
 	else if ((worldNum >= 50) && (worldNum <= 52)) // Christmas levels
-		panelSmallFont->showNumber(worldNum - 49, 184, screenH - 13);
-	else panelSmallFont->showNumber(worldNum, 184, screenH - 13);
+		panelSmallFont->showNumber(worldNum - 49, 184, canvasH - 13);
+	else panelSmallFont->showNumber(worldNum, 184, canvasH - 13);
 
 	// Show level number
-	panelSmallFont->showNumber(levelNum + 1, 196, screenH - 13);
+	panelSmallFont->showNumber(levelNum + 1, 196, canvasH - 13);
 
 	// Show ammo
 	if (localPlayer->getAmmo(false) == -1)
-		panelSmallFont->showString(":;", 225, screenH - 13);
+		panelSmallFont->showString(":;", 225, canvasH - 13);
 	else panelSmallFont->showNumber(localPlayer->getAmmo(true), 245,
-		screenH - 13);
+		canvasH - 13);
 
 
 	// Draw the health bar
@@ -428,7 +428,7 @@ void Level::draw () {
 		else if (x <= 1) x = 32 + (((ticks / 75) * 4) & 15);
 
 		// Draw energy bar
-		drawRect(dst.x, screenH - 13, dst.w, 7, x);
+		drawRect(dst.x, canvasH - 13, dst.w, 7, x);
 
 		dst.x += dst.w;
 		dst.w = 64 - dst.w;
@@ -437,7 +437,7 @@ void Level::draw () {
 
 
 	// Fill in remaining energy bar space with black
-	drawRect(dst.x, screenH - 13, dst.w, 7, BLACK);
+	drawRect(dst.x, canvasH - 13, dst.w, 7, BLACK);
 
 
 	return;

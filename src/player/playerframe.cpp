@@ -632,9 +632,9 @@ void Player::view (unsigned int ticks, int mspf) {
 	oldViewY = viewY;
 
 	// Can we see below the panel?
-	viewW = screenW;
-	if (viewW > panel->w) viewH = screenH;
-	else viewH = screenH - 33;
+	viewW = canvasW;
+	if (viewW > panel->w) viewH = canvasH;
+	else viewH = canvasH - 33;
 
 	// Find new position
 

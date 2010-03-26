@@ -53,7 +53,7 @@ int Menu::message (const char *text) {
 		clearScreen(15);
 
 		// Draw the message
-		fontmn2->showString(text, screenW >> 2, (screenH >> 1) - 16);
+		fontmn2->showString(text, canvasW >> 2, (canvasH >> 1) - 16);
 
 	}
 
@@ -86,8 +86,8 @@ int Menu::generic (const char **optionNames, int options, int *chosen) {
 
 			if (count == *chosen) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(optionNames[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - (options << 3));
+			fontmn2->showString(optionNames[count], canvasW >> 2,
+				(canvasH >> 1) + (count << 4) - (options << 3));
 
 			if (count == *chosen) fontmn2->restorePalette();
 
@@ -192,20 +192,20 @@ int Menu::textInput (const char *request, char **text) {
 		clearScreen(15);
 
 		// Draw the prompt
-		fontmn2->showString(request, screenW >> 2, (screenH >> 1) - 16);
+		fontmn2->showString(request, canvasW >> 2, (canvasH >> 1) - 16);
 
 		// Draw the section of the text before the cursor
 		fontmn2->mapPalette(240, 8, 114, 16);
 		terminate = input[cursor];
 		input[cursor] = 0;
-		x = fontmn2->showString(input, (screenW >> 2) + 8, screenH >> 1);
+		x = fontmn2->showString(input, (canvasW >> 2) + 8, canvasH >> 1);
 
 		// Draw the cursor
-		drawRect(x, (screenH >> 1) + 10, 8, 2, 79);
+		drawRect(x, (canvasH >> 1) + 10, 8, 2, 79);
 
 		// Draw the section of text after the cursor
 		input[cursor] = terminate;
-		fontmn2->showString(input + cursor, x, screenH >> 1);
+		fontmn2->showString(input + cursor, x, canvasH >> 1);
 		fontmn2->restorePalette();
 
 

@@ -42,8 +42,8 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 	// Set the surface's palette
 	SDL_SetPalette(ret, SDL_LOGPAL, logicalPalette, 0, 256);
 
-	if (pixels != NULL )
-	{
+	if (pixels != NULL) {
+
 		// Upload pixel data to the surface
 		if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
 
@@ -55,6 +55,7 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 		// Free redundant pixel data
 		delete[] pixels;
+
 	}
 
 	return ret;
@@ -63,33 +64,39 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 
 void createFullscreen () {
-  
+
+#ifdef SCALE
+	if (canvas != screen) SDL_FreeSurface(canvas);
+#endif
+
 #if defined(WIZ) || defined(GP2X)
-	screen = SDL_SetVideoMode(320, 240, 8,
-		SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE);
+	screen = SDL_SetVideoMode(320, 240, 8, V_FULLSCREEN);
 #else
+	screen = SDL_SetVideoMode(screenW, screenH, 8, V_FULLSCREEN);
+#endif
 
-#ifdef SCALE	
-	screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
-		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+#ifdef SCALE
+	if (scaleFactor > 1) {
 
-	if (screen)
-		SDL_FreeSurface(screen);
+		canvasW = screenW / scaleFactor;
+		canvasH = screenH / scaleFactor;
+		canvas = createSurface(NULL, canvasW, canvasH);
 
-	screen = createSurface( NULL, screenW, screenH );
+	} else {
+#endif
 
-	SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
-#else
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
-		SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-		
+		canvasW = screenW;
+		canvasH = screenH;
+		canvas = screen;
+
+#ifdef SCALE
+	}
+#endif
+
+#if !(defined(WIZ) || defined(GP2X))
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);		
+	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 #endif
-#endif
-	SDL_ShowCursor(SDL_DISABLE);
-
 
 
 	/* A real 8-bit display is quite likely if the user has the right video
@@ -109,26 +116,34 @@ void createFullscreen () {
 
 #ifndef FULLSCREEN_ONLY
 void createWindow () {
-  
-#ifdef SCALE
-	screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
-		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE);
 
-	if (screen)
-		SDL_FreeSurface(screen);
+	#ifdef SCALE
+	if (canvas != screen) SDL_FreeSurface(canvas);
+	#endif
 
-	screen = createSurface( NULL, screenW, screenH );
-	
-	SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
-#else
-	screen = SDL_SetVideoMode(screenW, screenH, 8,
-		SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
-		
+	screen = SDL_SetVideoMode(screenW, screenH, 8, V_WINDOWED);
+
+	#ifdef SCALE
+	if (scaleFactor > 1) {
+
+		canvasW = screenW / scaleFactor;
+		canvasH = screenH / scaleFactor;
+		canvas = createSurface(NULL, canvasW, canvasH);
+
+	} else {
+	#endif
+
+		canvasW = screenW;
+		canvasH = screenH;
+		canvas = screen;
+
+	#ifdef SCALE
+	}
+	#endif
+
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-#endif
-	SDL_ShowCursor(SDL_ENABLE);
+
 
 	/* Assume that in windowed mode the palette is being emulated.
 	This is extremely likely. */
@@ -150,9 +165,6 @@ void usePalette (SDL_Color *palette) {
 #endif
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
-#ifdef SCALE
-	SDL_SetPalette(screen_scaled, SDL_PHYSPAL, palette, 0, 256);
-#endif
 	currentPalette = palette;
 
 	return;
@@ -171,12 +183,13 @@ void restorePalette (SDL_Surface *surface) {
 
 void clearScreen (int index) {
 
-#if defined(WIZ) || defined(GP2X)  
-        // always 240 lines cleared to black
-        memset(screen->pixels, index, 320*240);
+#if defined(WIZ) || defined(GP2X)
+	// always 240 lines cleared to black
+	memset(screen->pixels, index, 320*240);
 #else
-        SDL_FillRect(screen, NULL, index);
+	SDL_FillRect(canvas, NULL, index);
 #endif
+
 	return;
 
 }
@@ -191,7 +204,7 @@ void drawRect (int x, int y, int width, int height, int index) {
 	dst.w = width;
 	dst.h = height;
 
-	SDL_FillRect(screen, &dst, index);
+	SDL_FillRect(canvas, &dst, index);
 
 	return;
 

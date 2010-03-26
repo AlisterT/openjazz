@@ -31,17 +31,24 @@
 
 // Constants
 
+#define V_WINDOWED (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
+
+#if defined(WIZ) || defined(GP2X)
+	#define V_FULLSCREEN (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
+#else
+	#define V_FULLSCREEN (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
+#endif
+
 // Black palette index
-#define BLACK      31
+#define BLACK 31
 
 
 // Variables
 
-EXTERN SDL_Surface *screen;
-EXTERN int          viewW, viewH, screenW, screenH;
-EXTERN int          scalar;
+EXTERN SDL_Surface *screen, *canvas;
+EXTERN int          viewW, viewH, canvasW, canvasH, screenW, screenH;
 #ifdef SCALE
-EXTERN SDL_Surface *screen_scaled;
+EXTERN int          scaleFactor;
 #endif
 #ifndef FULLSCREEN_ONLY
 EXTERN bool         fullscreen;
@@ -68,8 +75,7 @@ EXTERN void          createWindow ();
 EXTERN void          usePalette       (SDL_Color *palette);
 EXTERN void          restorePalette   (SDL_Surface *surface);
 EXTERN void          clearScreen      (int index);
-EXTERN void          drawRect         (int x, int y, int width, int height,
-	int index);
+EXTERN void          drawRect         (int x, int y, int width, int height, int index);
 
 #endif
 

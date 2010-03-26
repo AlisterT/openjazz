@@ -88,18 +88,18 @@ int Menu::setupKeyboard () {
 		for (count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
-				fontmn2->showString("okay", (screenW >> 2) + 176,
-					(screenH >> 1) + (count << 4) - 56);
+				fontmn2->showString("okay", (canvasW >> 2) + 176,
+					(canvasH >> 1) + (count << 4) - 56);
 
 			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 56);
+			fontmn2->showString(options[count], canvasW >> 2,
+				(canvasH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("press key", (screenW >> 2) + 112,
-					(screenH >> 1) + (count << 4) - 56);
+				fontmn2->showString("press key", (canvasW >> 2) + 112,
+					(canvasH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
 
@@ -230,18 +230,15 @@ int Menu::setupJoystick () {
 		for (count = 0; count < 7; count++) {
 
 			if (count < progress)
-				fontmn2->showString("okay", (screenW >> 2) + 176,
-					(screenH >> 1) + (count << 4) - 56);
+				fontmn2->showString("okay", (canvasW >> 2) + 176, (canvasH >> 1) + (count << 4) - 56);
 
 			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 56);
+			fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("press control", (screenW >> 2) + 112,
-					(screenH >> 1) + (count << 4) - 56);
+				fontmn2->showString("press control", (canvasW >> 2) + 112, (canvasH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
 
@@ -266,28 +263,24 @@ int Menu::setupResolution () {
 	int dimension, count, maxW, maxH;
 
 #ifdef SCALE
-	int minS = 1;
-	int maxS = 4;
-	#define minD 0
-	#define maxD 2
-	
-	if ( scalar < minS || scalar > maxS )
-		scalar = 1;
+	#define DIMENSIONS 3
+	#define minS 1
+	#define maxS 4
+
+	if ( scaleFactor < minS || scaleFactor > maxS )
+		scaleFactor = 1;
 #else
-	#define minD 0
-	#define maxD 1
+	#define DIMENSIONS 2
 #endif
 
 	dimension = 0;
 
 #ifndef FULLSCREEN_ONLY
 	if (!fullscreen)
-		resolutions = SDL_ListModes(NULL,
-			SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);	  
-	else 
-#endif	  
-		resolutions = SDL_ListModes(NULL,
-			SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE);
+		resolutions = SDL_ListModes(NULL, V_WINDOWED);
+	else
+#endif
+		resolutions = SDL_ListModes(NULL, V_FULLSCREEN);
 
 
 #if defined(WIZ) || defined(GP2X)
@@ -327,84 +320,67 @@ int Menu::setupResolution () {
 
 		// Show screen corners
 		drawRect(0, 0, 32, 32, 79);
-		drawRect(screenW - 32, 0, 32, 32, 79);
-		drawRect(screenW - 32, screenH - 32, 32, 32, 79);
-		drawRect(0, screenH - 32, 32, 32, 79);
+		drawRect(canvasW - 32, 0, 32, 32, 79);
+		drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
+		drawRect(0, canvasH - 32, 32, 32, 79);
 
-
-		// X 1
-		fontmn2->showString("x", (screenW >> 2) + 40, screenH >> 1);
-		
-		// X 2
-		fontmn2->showString("x", (screenW >> 2) + 112, screenH >> 1);
 
 		// Width
 		if (dimension == 0) fontmn2->mapPalette(240, 8, 114, 16);
-		
-		fontmn2->showNumber(screenW, (screenW >> 2) + 32, screenH >> 1);
+		fontmn2->showNumber(screenW, (canvasW >> 2) + 32, canvasH >> 1);
+		if (dimension == 0) fontmn2->restorePalette();
+
+		// X
+		fontmn2->showString("x", (canvasW >> 2) + 40, canvasH >> 1);
 
 		// Height
-		if (dimension == 0 || dimension == 2) fontmn2->restorePalette();
-		else fontmn2->mapPalette(240, 8, 114, 16);
-		
-		fontmn2->showNumber(screenH, (screenW >> 2) + 104, screenH >> 1);
-		
-		// Scalar
-		if (dimension == 0 || dimension == 1) fontmn2->restorePalette();
-		else fontmn2->mapPalette(240, 8, 114, 16);
-		
-		fontmn2->showNumber(scalar, (screenW >> 2) + 150, screenH >> 1);
+		if (dimension == 1) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showNumber(screenH, (canvasW >> 2) + 104, canvasH >> 1);
+		if (dimension == 1) fontmn2->restorePalette();
 
-		if (dimension != 0) fontmn2->restorePalette();
+#ifdef SCALE
+		// X 2
+		fontmn2->showString("x", (canvasW >> 2) + 112, canvasH >> 1);
+
+		// Scale
+		if (dimension == 2) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showNumber(scaleFactor, (canvasW >> 2) + 150, canvasH >> 1);
+		if (dimension == 2) fontmn2->restorePalette();
+#endif
 
 
 		count = 0;
 
-		if (controls.release(C_LEFT)) {
-		  
-			dimension--;
+		if (controls.release(C_LEFT))
+			dimension = (dimension + DIMENSIONS - 1) % DIMENSIONS;
 
-			if(dimension<minD)
-				dimension = minD;
-		}
-
-		if (controls.release(C_RIGHT)) {
-		  
-			dimension++;
-
-			if(dimension>maxD)
-				dimension = maxD;
-		}
+		if (controls.release(C_RIGHT))
+			dimension = (dimension + 1) % DIMENSIONS;
 
 		if (controls.release(C_UP)) {
 
-			if ((dimension == 0) && (screenW*scalar < maxW)) {
+			if ((dimension == 0) && (screenW < maxW)) {
 
-				while (screenW >= widthOptions[count] && (screenW*scalar)<maxW) count++;
-
-				if ((widthOptions[count]*scalar) > maxW)
-					count--;
+				while (screenW >= widthOptions[count]) count++;
 
 				screenW = widthOptions[count];
 
 			}
 
-			if ((dimension == 1) && (screenH*scalar < maxH)) {
+			if ((dimension == 1) && (screenH < maxH)) {
 
 				while (screenH >= heightOptions[count]) count++;
-
-				if ((heightOptions[count]*scalar) > maxH)
-					count--;
 
 				screenH = heightOptions[count];
 
 			}
+
 #ifdef SCALE
-			if ((dimension == 2) && (scalar < maxS)) {
-			  
-				if ( screenH*(scalar+1) <= maxH && screenW*(scalar+1) <= maxW )
+			if ((dimension == 2) && (scaleFactor < maxS)) {
+
+				if ( canvasH*(scaleFactor+1) <= maxH && canvasW*(scaleFactor+1) <= maxW )
 				{
-					scalar++;
+					scaleFactor++;
 					count = 1;
 				}
 
@@ -437,9 +413,9 @@ int Menu::setupResolution () {
 			}
 
 #ifdef SCALE
-			if ((dimension == 2) && (scalar > minS)) {
-			  
-				scalar--;
+			if ((dimension == 2) && (scaleFactor > minS)) {
+
+				scaleFactor--;
 				count = 1;
 
 			}
@@ -453,14 +429,11 @@ int Menu::setupResolution () {
 			playSound(S_ORB);
 
 #ifndef FULLSCREEN_ONLY
-			if (!fullscreen)
-			{
-				createWindow();
-
-			}
+			if (!fullscreen) createWindow();
 			else
 #endif
-				createFullscreen(); 
+				createFullscreen();
+
 		}
 
 	}

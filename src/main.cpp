@@ -58,7 +58,7 @@ extern char KOpenJazzPath[256];
 #endif
 
 #ifdef SCALE
-#include "scale2x/scalebit.h"
+#include "io/gfx/scale2x/scalebit.h"
 #endif
 
 int loadMain (int argc, char *argv[]) {
@@ -66,6 +66,9 @@ int loadMain (int argc, char *argv[]) {
 	File *file;
 	unsigned char *pixels, *sorted;
 	int count, x, y;
+#ifndef SCALE
+	int scaleFactor;
+#endif
 
 
 	// Determine paths
@@ -195,18 +198,14 @@ int loadMain (int argc, char *argv[]) {
 		// Read video settings
 		screenW = file->loadShort();
 		screenH = file->loadShort();
-#ifdef SCALE
-		scalar  = file->loadChar();
-#else
-		scalar = 1;
-		file->loadChar();
-#endif
 
-#ifdef FULLSCREEN_ONLY
-		file->loadChar();
-#else
-		fullscreen = file->loadChar();
+		scaleFactor = file->loadChar();
+#ifndef FULLSCREEN_ONLY
+		fullscreen = scaleFactor & 1;
 #endif
+		scaleFactor >>= 1;
+		if (scaleFactor > 4) scaleFactor = 1;
+
 
 		// Read controls
 		for (count = 0; count < CONTROLS - 4; count++)
@@ -255,22 +254,31 @@ int loadMain (int argc, char *argv[]) {
 #endif
 
 
+	// Generate the logical palette
+	for (count = 0; count < 256; count++)
+		logicalPalette[count].r = logicalPalette[count].g =
+ 			logicalPalette[count].b = count;
+
+
 	// Create the game's window
 
 	currentPalette = logicalPalette;
+	canvas = screen = NULL;
 
-#ifdef FULLSCREEN_ONLY
-	createFullscreen();
-#else
-	if (fullscreen) createFullscreen();
-	else createWindow();
+#ifndef FULLSCREEN_ONLY
+	if (!fullscreen) createWindow();
+	else {
 #endif
 
-#ifdef SCALE
-	if (!screen_scaled) {
-#else
+		SDL_ShowCursor(SDL_DISABLE);
+		createFullscreen();
+
+#ifndef FULLSCREEN_ONLY
+	}
+#endif
+
 	if (!screen) {
-#endif
+
 		logError("Could not set video mode", SDL_GetError());
 
 		delete characterName;
@@ -287,15 +295,7 @@ int loadMain (int argc, char *argv[]) {
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
 
 
-	// Generate the logical palette
-	for (count = 0; count < 256; count++)
-		logicalPalette[count].r = logicalPalette[count].g =
- 			logicalPalette[count].b = count;
-
 	restorePalette(screen);
-#ifdef SCALE
-	restorePalette(screen_scaled);
-#endif
 
 	firstPE = NULL;
 
@@ -464,6 +464,9 @@ void freeMain () {
 
 	File *file;
 	int count;
+#ifndef SCALE
+	int scaleFactor = 1;
+#endif
 
 	delete net;
 
@@ -483,7 +486,7 @@ void freeMain () {
 	SDL_FreeSurface(panelAmmo[4]);
 
 #ifdef SCALE
-	SDL_FreeSurface(screen);
+	if (canvas != screen) SDL_FreeSurface(canvas);
 #endif
 
 	closeAudio();
@@ -509,17 +512,12 @@ void freeMain () {
 		// Write video settings
 		file->storeShort(screenW);
 		file->storeShort(screenH);
-#ifdef SCALE
-		file->storeChar(scalar);
-#else
-		file->storeChar(1);
+		scaleFactor <<= 1;
+#ifndef FULLSCREEN_ONLY
+		scaleFactor |= fullscreen? 1: 0;
 #endif
-		
-#ifdef FULLSCREEN_ONLY
-		file->storeChar(1);
-#else
-		file->storeChar(fullscreen? ~0: 0);
-#endif
+		file->storeChar(scaleFactor);
+
 
 		// Write controls
 		for (count = 0; count < CONTROLS - 4; count++)
@@ -572,25 +570,18 @@ int loop (int type) {
 
 	// Show everything that has been drawn so far
 #ifdef SCALE
-	if (scalar>1) {
-		int depth = screen_scaled->format->BytesPerPixel;
-	  
-		scale(scalar, screen_scaled->pixels, screen->w*depth*scalar, screen->pixels, screen->w*depth,
-			depth, screen->w, screen->h );
-			
-		//Simple2x((unsigned char*)screen->pixels, screen->w*depth, 0, (unsigned char*)screen_scaled->pixels, screen->w*depth*2,
-		//	 screen->w, screen->h );
+	if (canvas != screen) {
+
+		scale(scaleFactor,
+			screen->pixels, screen->pitch,
+			canvas->pixels, canvas->pitch,
+			screen->format->BytesPerPixel, canvas->w, canvas->h);
+
 	}
-	else
-	{
-		SDL_BlitSurface(screen, NULL, screen_scaled, NULL);
-	}
-	    
-	SDL_Flip(screen_scaled);
-#else
-	SDL_Flip(screen);
 #endif
-	
+
+	SDL_Flip(screen);
+
 
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
@@ -609,8 +600,17 @@ int loop (int type) {
 
 					fullscreen = !fullscreen;
 
-					if (fullscreen) createFullscreen();
-					else createWindow();
+					if (fullscreen) {
+
+						SDL_ShowCursor(SDL_DISABLE);
+						createFullscreen();
+
+					} else {
+
+						createWindow();
+						SDL_ShowCursor(SDL_ENABLE);
+
+					}
 
 				}
 #endif
@@ -649,31 +649,15 @@ int loop (int type) {
 
 				screenW = event.resize.w;
 				screenH = event.resize.h;
-#ifdef SCALE
-				screen_scaled = SDL_SetVideoMode(screenW*scalar, screenH*scalar, 8,
-					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-					SDL_HWPALETTE);
-					
-				if (screen)
-					SDL_FreeSurface(screen);
-				  
-				screen = SDL_CreateRGBSurface(SDL_HWSURFACE, screenW, screenH, 8, 0, 0, 0, 0);
-#else
-				screen = SDL_SetVideoMode(screenW, screenH, 8,
-					SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE |
-					SDL_HWPALETTE);
-#endif
 
-				// The absence of a break statement is intentional
+				createWindow();
+
+				break;
 
 			case SDL_VIDEOEXPOSE:
 
 				SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 				SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-#ifdef SCALE
-				SDL_SetPalette(screen_scaled, SDL_LOGPAL, logicalPalette, 0, 256);
-				SDL_SetPalette(screen_scaled, SDL_PHYSPAL, currentPalette, 0, 256);
-#endif
 
 				break;
 #endif
@@ -705,10 +689,6 @@ int loop (int type) {
 			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
 
 			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
-			
-#ifdef SCALE
-			SDL_SetPalette(screen_scaled, SDL_PHYSPAL, shownPalette, 0, 256);
-#endif
 
 		} else {
 
@@ -732,7 +712,7 @@ int main(int argc, char *argv[]) {
 
 	Scene *scene = NULL;
     int scene_result = E_NONE;
-    
+
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
@@ -771,11 +751,11 @@ int main(int argc, char *argv[]) {
 
 	}
 
-    scene_result = scene->play();
-    delete scene;
-    scene = NULL;*/
-    
-	if (scene_result != E_QUIT) {		
+	scene_result = scene->play();
+	delete scene;
+	scene = NULL;*/
+
+	if (scene_result != E_QUIT) {
 		// Load the menu
 		try {
 

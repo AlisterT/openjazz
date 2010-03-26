@@ -173,7 +173,7 @@ int DemoLevel::play () {
 		draw();
 
 
-		fontmn1->showString("DEMO", (screenW >> 1) - 36, 32);
+		fontmn1->showString("DEMO", (canvasW >> 1) - 36, 32);
 
 
 		// Draw graphics statistics
@@ -182,9 +182,9 @@ int DemoLevel::play () {
 
 			drawRect(236, 9, 80, 32, BLACK);
 
-			panelBigFont->showNumber(screenW, 268, 15);
+			panelBigFont->showNumber(canvasW, 268, 15);
 			panelBigFont->showString("x", 272, 15);
-			panelBigFont->showNumber(screenH, 308, 15);
+			panelBigFont->showNumber(canvasH, 308, 15);
 			panelBigFont->showString("fps", 244, 27);
 			panelBigFont->showNumber((int)smoothfps, 308, 27);
 

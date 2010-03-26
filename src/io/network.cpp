@@ -126,7 +126,7 @@ int Network::host () {
 	return sock;
 #elif defined USE_SDL_NET
 	ipAddress.port = NET_PORT;
-	ipAddress.host = 0;	
+	ipAddress.host = 0;
 	socket = SDLNet_TCP_Open(&ipAddress);
 
 	if (socket == NULL) return E_N_SOCKET;
@@ -142,7 +142,7 @@ int Network::join (char *address) {
 
 #ifdef USE_SOCKETS
 	sockaddr_in sockAddr;
-	fd_set writefds; 
+	fd_set writefds;
 	timeval timeouttv;
 	unsigned int timeout;
 	int sock, con;
@@ -181,7 +181,7 @@ int Network::join (char *address) {
 
 	con = 0;
 	timeout = globalTicks + T_TIMEOUT;
- 
+
 	while (!con) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) {
@@ -201,8 +201,7 @@ int Network::join (char *address) {
 		}
 
 		clearScreen(0);
-		fontmn2->showString("CONNECTING TO SERVER", screenW >> 2,
-			(screenH >> 1) - 16);
+		fontmn2->showString("CONNECTING TO SERVER", canvasW >> 2, (canvasH >> 1) - 16);
 
 		FD_ZERO(&writefds);
 		FD_SET(sock, &writefds);
@@ -233,11 +232,10 @@ int Network::join (char *address) {
 	return sock;
 #elif defined USE_SDL_NET
 	clearScreen(0);
-	fontmn2->showString("CONNECTING TO SERVER", screenW >> 2,
-		(screenH >> 1) - 16);
+	fontmn2->showString("CONNECTING TO SERVER", canvasW >> 2, (canvasH >> 1) - 16);
 	loop(NORMAL_LOOP);
 	ipAddress.port = NET_PORT;
-	ipAddress.host = inet_addr(address);	
+	ipAddress.host = inet_addr(address);
 	socket = SDLNet_TCP_Open(&ipAddress);
 
 	if (socket == NULL) return -1;
@@ -301,7 +299,7 @@ int Network::send (int sock, unsigned char *buffer) {
 #ifdef USE_SOCKETS
 	return ::send(sock, (char *)buffer, buffer[0], MSG_NOSIGNAL);
 #elif defined USE_SDL_NET
-	return SDLNet_TCP_Send((TCPsocket)sock, (char *)buffer, buffer[0]);	
+	return SDLNet_TCP_Send((TCPsocket)sock, (char *)buffer, buffer[0]);
 #else
 	return 0;
 #endif

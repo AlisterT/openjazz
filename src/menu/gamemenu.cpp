@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -59,8 +59,8 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 			if (count == difficulty) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], screenW >> 2,
-				(screenH >> 1) + (count << 4) - 32);
+			fontmn2->showString(options[count], canvasW >> 2,
+				(canvasH >> 1) + (count << 4) - 32);
 
 			if (count == difficulty) fontmn2->restorePalette();
 
@@ -70,9 +70,9 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 		src.y = (difficulty & 2) * 50;
 		src.w = 160;
 		src.h = 100;
-		dst.x = (screenW >> 1) - 40;
-		dst.y = (screenH >> 1) - 50;
-		SDL_BlitSurface(screens[2], &src, screen, &dst);
+		dst.x = (canvasW >> 1) - 40;
+		dst.y = (canvasH >> 1) - 50;
+		SDL_BlitSurface(screens[2], &src, canvas, &dst);
 
 		if (controls.release(C_UP)) difficulty = (difficulty + 3) % 4;
 
@@ -171,14 +171,14 @@ int Menu::newGameLevel (int mode) {
 		clearScreen(15);
 
 		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("choose world:", 32, screenH / 3);
-		fontmn2->showNumber(worldNum, 208, screenH / 3);
+		fontmn2->showString("choose world:", 32, canvasH / 3);
+		fontmn2->showNumber(worldNum, 208, canvasH / 3);
 
 		if (option == 0) fontmn2->restorePalette();
 		else fontmn2->mapPalette(240, 8, 114, 16);
 
-		fontmn2->showString("choose level:", 32, (screenH << 1) / 3);
-		fontmn2->showNumber(levelNum, 208, (screenH << 1) / 3);
+		fontmn2->showString("choose level:", 32, (canvasH << 1) / 3);
+		fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
 
 		if (option != 0) fontmn2->restorePalette();
 
@@ -263,15 +263,15 @@ int Menu::newGameEpisode (int mode) {
 
 		if ((episode < episodes - 1) || (episode < 6)) {
 
-			dst.x = screenW - 150;
-			dst.y = (screenH - 110) >> 1;
-			SDL_BlitSurface(screens[episode + 3], NULL, screen, &dst);
+			dst.x = canvasW - 150;
+			dst.y = (canvasH - 110) >> 1;
+			SDL_BlitSurface(screens[episode + 3], NULL, canvas, &dst);
 
 		} else if ((episode == 10) && (episodes > 6)) {
 
-			dst.x = screenW - 160;
-			dst.y = (screenH - 110) >> 1;
-			SDL_BlitSurface(screens[episodes + 2], NULL, screen, &dst);
+			dst.x = canvasW - 160;
+			dst.y = (canvasH - 110) >> 1;
+			SDL_BlitSurface(screens[episodes + 2], NULL, canvas, &dst);
 
 		}
 
@@ -280,14 +280,14 @@ int Menu::newGameEpisode (int mode) {
 			if (count == episode) {
 
 				fontmn2->mapPalette(240, 8, 79, -80);
-				drawRect((screenW >> 3) - 4, (screenH >> 1) + (count << 4) - 94,
+				drawRect((canvasW >> 3) - 4, (canvasH >> 1) + (count << 4) - 94,
 					136, 15, 79);
 
 			} else if (!exists[count])
 				fontmn2->mapPalette(240, 8, 94, -16);
 
-			fontmn2->showString(options[count], screenW >> 3,
-				(screenH >> 1) + (count << 4) - 92);
+			fontmn2->showString(options[count], canvasW >> 3,
+				(canvasH >> 1) + (count << 4) - 92);
 
 			if ((count == episode) || (!exists[count]))
 				fontmn2->mapPalette(240, 8, 9, 80);
