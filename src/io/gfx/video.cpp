@@ -63,7 +63,7 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
-void createFullscreen () {
+void createScreen () {
 
 #ifdef SCALE
 	if (canvas != screen) SDL_FreeSurface(canvas);
@@ -72,7 +72,11 @@ void createFullscreen () {
 #if defined(WIZ) || defined(GP2X)
 	screen = SDL_SetVideoMode(320, 240, 8, V_FULLSCREEN);
 #else
+	#ifdef FULLSCREEN_ONLY
 	screen = SDL_SetVideoMode(screenW, screenH, 8, V_FULLSCREEN);
+	#else
+	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? V_FULLSCREEN: V_WINDOWED);
+	#endif
 #endif
 
 #ifdef SCALE
@@ -113,47 +117,6 @@ void createFullscreen () {
 	return;
 
 }
-
-#ifndef FULLSCREEN_ONLY
-void createWindow () {
-
-	#ifdef SCALE
-	if (canvas != screen) SDL_FreeSurface(canvas);
-	#endif
-
-	screen = SDL_SetVideoMode(screenW, screenH, 8, V_WINDOWED);
-
-	#ifdef SCALE
-	if (scaleFactor > 1) {
-
-		canvasW = screenW / scaleFactor;
-		canvasH = screenH / scaleFactor;
-		canvas = createSurface(NULL, canvasW, canvasH);
-
-	} else {
-	#endif
-
-		canvasW = screenW;
-		canvasH = screenH;
-		canvas = screen;
-
-	#ifdef SCALE
-	}
-	#endif
-
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
-
-
-	/* Assume that in windowed mode the palette is being emulated.
-	This is extremely likely. */
-	// TODO: Find a better way
-	fakePalette = true;
-
-	return;
-
-}
-#endif
 
 
 void usePalette (SDL_Color *palette) {

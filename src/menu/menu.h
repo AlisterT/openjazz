@@ -54,6 +54,9 @@ class Menu {
 		int setupKeyboard     ();
 		int setupJoystick     ();
 		int setupResolution   ();
+#ifdef SCALE
+		int setupScaling      ();
+#endif
 
 	public:
 		SDL_Color      palettes[4][256];

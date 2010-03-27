@@ -19,7 +19,7 @@ TARGET	= arm-open2x-linux-
 else # default linux
 PROGRAM = OpenJazz
 PREFIX	= /usr
-TARGET	= 
+TARGET	=
 endif
 endif
 endif
@@ -38,8 +38,9 @@ OBJS =	src/bonus/bonus.o \
 	src/menu/menuutil.o src/menu/setupmenu.o \
 	src/player/bird.o src/player/player.o src/player/playerframe.o \
 	src/main.o src/movable.o src/planet.o src/scene.o src/util.o \
-	src/scale2x/getopt.o src/scale2x/pixel.o src/scale2x/scale2x.o \
-	src/scale2x/scale3x.o src/scale2x/scalebit.o src/scale2x/simple2x.o
+	src/io/gfx/scale2x/getopt.o src/io/gfx/scale2x/pixel.o \
+	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
+	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o
 
 CXX = $(PREFIX)/bin/$(TARGET)g++
 
@@ -50,7 +51,7 @@ else
 ifeq ($(BUILDTYPE),WIZ)
 OBJS += src/platforms/wiz.o
 CXXFLAGS += -DWIZ -DFULLSCREEN_ONLY
-LDFLAGS  += 
+LDFLAGS  +=
 else
 ifeq ($(BUILDTYPE),GP2X)
 OBJS += src/platforms/wiz.o

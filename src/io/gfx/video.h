@@ -39,6 +39,11 @@
 	#define V_FULLSCREEN (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 #endif
 
+#ifdef SCALE
+	#define MIN_SCALE 1
+	#define MAX_SCALE 4
+#endif
+
 // Black palette index
 #define BLACK 31
 
@@ -68,10 +73,7 @@ EXTERN SDL_Surface *panelAmmo[5];
 
 EXTERN SDL_Surface * createSurface    (unsigned char *pixels, int width,
 	int height);
-EXTERN void          createFullscreen ();
-#ifndef FULLSCREEN_ONLY
-EXTERN void          createWindow ();
-#endif
+EXTERN void          createScreen     ();
 EXTERN void          usePalette       (SDL_Color *palette);
 EXTERN void          restorePalette   (SDL_Surface *surface);
 EXTERN void          clearScreen      (int index);

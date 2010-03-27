@@ -266,16 +266,11 @@ int loadMain (int argc, char *argv[]) {
 	canvas = screen = NULL;
 
 #ifndef FULLSCREEN_ONLY
-	if (!fullscreen) createWindow();
-	else {
+	if (fullscreen)
 #endif
-
 		SDL_ShowCursor(SDL_DISABLE);
-		createFullscreen();
 
-#ifndef FULLSCREEN_ONLY
-	}
-#endif
+	createScreen();
 
 	if (!screen) {
 
@@ -557,6 +552,9 @@ void freeMain () {
 	delete firstPath;
 
 
+	SDL_Quit();
+
+
 	return;
 
 }
@@ -600,17 +598,8 @@ int loop (int type) {
 
 					fullscreen = !fullscreen;
 
-					if (fullscreen) {
-
-						SDL_ShowCursor(SDL_DISABLE);
-						createFullscreen();
-
-					} else {
-
-						createWindow();
-						SDL_ShowCursor(SDL_ENABLE);
-
-					}
+					SDL_ShowCursor(fullscreen? SDL_DISABLE: SDL_ENABLE);
+					createScreen();
 
 				}
 #endif
@@ -650,7 +639,7 @@ int loop (int type) {
 				screenW = event.resize.w;
 				screenH = event.resize.h;
 
-				createWindow();
+				createScreen();
 
 				break;
 
@@ -709,14 +698,12 @@ int loop (int type) {
 
 int main(int argc, char *argv[]) {
 
-
 	Scene *scene = NULL;
-    int scene_result = E_NONE;
+
 
 	// Initialise SDL
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK |
-		SDL_INIT_TIMER) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER) < 0) {
 
 		logError("Could not start SDL", SDL_GetError());
 
@@ -745,63 +732,63 @@ int main(int argc, char *argv[]) {
 	} catch (int e) {
 
 		freeMain();
-		SDL_Quit();
 
 		return e;
 
 	}
 
-	scene_result = scene->play();
-	delete scene;
-	scene = NULL;*/
+	if (scene->play() == E_QUIT) {
 
-	if (scene_result != E_QUIT) {
-		// Load the menu
+		delete scene;
+		freeMain();
+
+		return 0;
+
+	}
+
+	delete scene;*/
+
+
+	// Load the menu
+	try {
+
+		menu = new Menu();
+
+	} catch (int e) {
+
+		freeMain();
+
+		return e;
+
+	}
+
+	// Run the main menu
+	if (menu->main() == E_NONE) {
+
+		// Show the ending cutscene
+
 		try {
 
-			menu = new Menu();
+			scene = new Scene(F_END_0SC);
 
 		} catch (int e) {
 
+			delete menu;
 			freeMain();
-			SDL_Quit();
 
 			return e;
 
 		}
 
-		// Run the main menu
-		if (menu->main() == E_NONE) {
+		scene->play();
 
-			// Show the ending cutscene
+		delete scene;
 
-			try {
-
-				scene = new Scene(F_END_0SC);
-
-			} catch (int e) {
-
-				delete menu;
-				freeMain();
-				SDL_Quit();
-
-				return e;
-
-			}
-
-			scene->play();
-
-			delete scene;
-
-
-		}
-
-		delete menu;
 
 	}
 
+	delete menu;
 	freeMain();
-	SDL_Quit();
 
 
 	return 0;
