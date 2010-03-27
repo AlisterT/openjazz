@@ -6,9 +6,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int volume = 40;
-int volume_direction;
- 
+#include "io/sound.h"
+
+
 void WIZ_AdjustVolume( int direction )
 {
 	if( direction != VOLUME_NOCHG )

@@ -461,9 +461,44 @@ int Menu::setupScaling () {
 #endif
 
 
+int Menu::setupSound () {
+
+	while (true) {
+
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+
+		if (controls.release(C_ESCAPE)) return E_NONE;
+
+		if (controls.release(C_ENTER)) return E_NONE;
+
+		SDL_Delay(T_FRAME);
+
+		clearScreen(0);
+
+
+		// Volume
+		fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("effect volume", canvasW >> 2, canvasH >> 1);
+		fontmn2->restorePalette();
+
+		drawRect((canvasW >> 2) + 120, canvasH >> 1, soundsVolume >> 1, 11, 175);
+
+		if (controls.release(C_LEFT)) soundsVolume -= 4;
+		if (soundsVolume < 0) soundsVolume = 0;
+
+		if (controls.release(C_RIGHT)) soundsVolume += 4;
+		if (soundsVolume > MAX_VOLUME) soundsVolume = MAX_VOLUME;
+
+	}
+
+	return E_NONE;
+
+}
+
+
 int Menu::setup () {
 
-	const char *setupOptions[5] = {"character", "keyboard", "joystick", "resolution", "scaling"};
+	const char *setupOptions[6] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound"};
 	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
 	const char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
@@ -475,7 +510,7 @@ int Menu::setup () {
 
 	while (true) {
 
-		ret = generic(setupOptions, 5, &option);
+		ret = generic(setupOptions, 6, &option);
 
 		if (ret == E_UNUSED) return E_NONE;
 		if (ret < 0) return ret;
@@ -550,6 +585,12 @@ int Menu::setup () {
 #else
 				message("FEATURE NOT AVAILABLE");
 #endif
+
+				break;
+
+			case 5:
+
+				setupSound();
 
 				break;
 

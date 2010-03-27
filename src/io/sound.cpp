@@ -82,7 +82,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position, len,
-					SDL_MIX_MAXVOLUME >> 2);
+					soundsVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
 
 				sounds[count].position += len;
 
@@ -93,7 +93,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position,
 					sounds[count].length - sounds[count].position,
-					SDL_MIX_MAXVOLUME >> 2);
+					soundsVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
 
 				sounds[count].position = -1;
 

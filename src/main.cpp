@@ -48,9 +48,7 @@
 #include <string.h>
 
 #if defined(WIZ) || defined(GP2X)
-#include "platforms/wiz.h"
-extern int volume;
-extern int volume_direction;
+	#include "platforms/wiz.h"
 #endif
 
 #ifdef __SYMBIAN32__
@@ -58,7 +56,7 @@ extern char KOpenJazzPath[256];
 #endif
 
 #ifdef SCALE
-#include "io/gfx/scale2x/scalebit.h"
+	#include "io/gfx/scale2x/scalebit.h"
 #endif
 
 int loadMain (int argc, char *argv[]) {
@@ -83,11 +81,11 @@ int loadMain (int argc, char *argv[]) {
 
 #ifdef __SYMBIAN32__
 	#ifdef UIQ3
-		firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
+	firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
 	#else
-		firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
+	firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
 	#endif
-		firstPath = new Path(firstPath, createString(KOpenJazzPath));
+	firstPath = new Path(firstPath, createString(KOpenJazzPath));
 #endif
 
 
@@ -144,9 +142,9 @@ int loadMain (int argc, char *argv[]) {
 
 #ifdef HOMEDIR
 	#ifdef WIN32
-		firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
+	firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
 	#else
-		firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
+	firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
 	#endif
 #endif
 
@@ -165,6 +163,13 @@ int loadMain (int argc, char *argv[]) {
 #ifndef FULLSCREEN_ONLY
 	fullscreen = false;
 #endif
+
+	// Sound settings
+#if defined(WIZ) || defined(GP2X)
+	volume = 40;
+#endif
+	soundsVolume = MAX_VOLUME >> 2;
+
 
 	// Create the player's name
 	characterName = createEditableString(CHAR_NAME);
@@ -228,6 +233,10 @@ int loadMain (int argc, char *argv[]) {
 		characterCols[1] = file->loadChar();
 		characterCols[2] = file->loadChar();
 		characterCols[3] = file->loadChar();
+
+		// Read the sound effect volume
+		soundsVolume = file->loadChar();
+		if (soundsVolume > MAX_VOLUME) soundsVolume = MAX_VOLUME;
 
 		delete file;
 
@@ -537,6 +546,9 @@ void freeMain () {
 		file->storeChar(characterCols[1]);
 		file->storeChar(characterCols[2]);
 		file->storeChar(characterCols[3]);
+
+		// Write the sound effect volume
+		file->storeChar(soundsVolume);
 
 		delete file;
 

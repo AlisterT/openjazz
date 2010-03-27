@@ -57,6 +57,7 @@ class Menu {
 #ifdef SCALE
 		int setupScaling      ();
 #endif
+		int setupSound        ();
 
 	public:
 		SDL_Color      palettes[4][256];

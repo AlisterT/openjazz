@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -51,6 +51,8 @@
 #define S_STOP    19
 #define S_BLOCK   20
 
+#define MAX_VOLUME 100
+
 
 // Datatype
 
@@ -68,6 +70,12 @@ typedef struct {
 
 EXTERN Sound *sounds;
 EXTERN int    nSounds;
+EXTERN char   soundsVolume;
+
+#if defined(WIZ) || defined(GP2X)
+EXTERN int volume;
+EXTERN int volume_direction;
+#endif
 
 
 // Functions
