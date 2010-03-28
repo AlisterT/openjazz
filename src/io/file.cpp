@@ -321,10 +321,8 @@ void File::loadPalette (SDL_Color *palette) {
 		// Palette entries are 6-bit
 		// Shift them upwards to 8-bit, and fill in the lower 2 bits
 		palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
-		palette[count].g = (buffer[(count * 3) + 1] << 2) +
-			(buffer[(count * 3) + 1] >> 4);
-		palette[count].b = (buffer[(count * 3) + 2] << 2) +
-			(buffer[(count * 3) + 2] >> 4);
+		palette[count].g = (buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
+		palette[count].b = (buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
 
 	}
 

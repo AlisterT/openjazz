@@ -313,7 +313,6 @@ Font::~Font () {
 }
 
 
-
 int Font::showString (const char * s, int x, int y) {
 
 	SDL_Rect src, dst;
@@ -340,8 +339,6 @@ int Font::showString (const char * s, int x, int y) {
 
 			// Determine the character's position on the screen
 			src.w = w[(int)(map[(int)(s[count])])];
-			if(s[count] == 32) src.w >>= 1;
-
 			dst.y = yOffset;
 			dst.x = xOffset;
 
@@ -352,7 +349,8 @@ int Font::showString (const char * s, int x, int y) {
 			// Draw the character to the screen
 			SDL_BlitSurface(surface, &src, canvas, &dst);
 
-			xOffset += src.w-1;
+			xOffset += src.w;
+
 		}
 
 	}
@@ -361,6 +359,44 @@ int Font::showString (const char * s, int x, int y) {
 
 }
 
+
+int Font::showSceneString (const char * s, int x, int y) {
+
+	SDL_Rect src, dst;
+	unsigned int count;
+	int xOffset;
+
+	// Determine the characters' dimensions
+	src.x = 0;
+	src.h = h;
+
+	// Determine the position at which to draw the first character
+	xOffset = x;
+
+	// Go through each character of the string
+	for (count = 0; s[count]; count++) {
+
+		// Determine the character's position on the screen
+		src.w = w[(int)(s[count])];
+		if (s[count] == 0x7F) src.w -= 3;
+
+		dst.y = y;
+		dst.x = xOffset;
+
+		// Determine the character's position in the font
+		if (s[count] >= 0) src.y = s[count] * h;
+		else src.y = 0;
+
+		// Draw the character to the screen
+		SDL_BlitSurface(surface, &src, canvas, &dst);
+
+		xOffset += src.w - 1;
+
+	}
+
+	return xOffset;
+
+}
 
 
 void Font::showNumber (int n, int x, int y) {
@@ -479,21 +515,30 @@ int Font::getStringWidth (const char *string) {
 	// Go through each character of the string
 	for (count = 0; string[count]; count++) {
 
-		if (string[count] == '\n') {
+		// Only get the width of the first line
+		if (string[count] == '\n') return stringWidth;
 
-		} else {
+		stringWidth += w[(int)(string[count])];
 
-			int width = w[(int)(map[(int)(string[count])])];
+	}
 
-			if (string[count] == ' ') {
+	return stringWidth;
 
-				width = width >> 1;
+}
 
-			}
 
-			stringWidth += width - 1;
+int Font::getSceneStringWidth (const char *string) {
 
-		}
+	int count;
+	int width, stringWidth = 0;
+
+	// Go through each character of the string
+	for (count = 0; string[count]; count++) {
+
+		width = w[(int)(string[count])];
+		if (string[count] == 0x7F) width -= 3;
+
+		stringWidth += width - 1;
 
 	}
 

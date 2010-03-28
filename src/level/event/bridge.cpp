@@ -1,7 +1,7 @@
 
 /*
  *
- * guardians.cpp
+ * bridge.cpp
  *
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  *

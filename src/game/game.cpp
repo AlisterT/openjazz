@@ -11,7 +11,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,7 +32,7 @@
 #include "io/sound.h"
 #include "level/level.h"
 #include "player/player.h"
-#include "scene.h"
+#include "scene/scene.h"
 
 
 Game::Game () {

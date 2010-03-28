@@ -43,7 +43,7 @@
 #include "level/level.h"
 #include "menu/menu.h"
 #include "player/player.h"
-#include "scene.h"
+#include "scene/scene.h"
 
 #include <string.h>
 

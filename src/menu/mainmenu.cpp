@@ -35,7 +35,7 @@
 #include "io/sound.h"
 #include "level/level.h"
 #include "player/player.h"
-#include "scene.h"
+#include "scene/scene.h"
 
 
 int Menu::main () {
