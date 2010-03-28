@@ -173,7 +173,7 @@ int Level::step () {
 
 
 
-void Level::draw () {
+void Level::draw (int stats) {
 
 	GridElement *ge;
 	Event *event;
@@ -438,6 +438,36 @@ void Level::draw () {
 
 	// Fill in remaining energy bar space with black
 	drawRect(dst.x, canvasH - 13, dst.w, 7, BLACK);
+
+
+	// Draw graphics statistics
+
+	if (stats & S_SCREEN) {
+
+#ifdef SCALE
+		if (scaleFactor > 1)
+			drawRect(viewW - 84, 11, 80, 37, BLACK);
+		else
+#endif
+			drawRect(viewW - 84, 11, 80, 25, BLACK);
+
+		panelBigFont->showNumber(screenW, viewW - 52, 14);
+		panelBigFont->showString("x", viewW - 48, 14);
+		panelBigFont->showNumber(screenH, viewW - 12, 14);
+		panelBigFont->showString("fps", viewW - 76, 26);
+		panelBigFont->showNumber((int)smoothfps, viewW - 12, 26);
+
+#ifdef SCALE
+		if (scaleFactor > 1) {
+
+			panelBigFont->showNumber(canvasW, viewW - 52, 38);
+			panelBigFont->showString("x", viewW - 48, 39);
+			panelBigFont->showNumber(canvasH, viewW - 12, 38);
+
+		}
+#endif
+
+	}
 
 
 	return;

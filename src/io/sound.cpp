@@ -330,7 +330,7 @@ void freeSounds () {
 
 	int count;
 
-	if (sounds != NULL) {
+	if (sounds) {
 
 		for (count = 0; count < nSounds; count++) {
 
@@ -352,7 +352,7 @@ void playSound (int newSound) {
 
 	// Set the sound to be played
 
-	if ((sounds != NULL) && (newSound >= 0)) sounds[newSound].position = 0;
+	if (sounds && (newSound >= 0)) sounds[newSound].position = 0;
 
 	return;
 

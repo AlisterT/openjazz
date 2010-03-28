@@ -56,7 +56,8 @@
 
 Level::Level () {
 
-	// Do nothing
+	// Arbitrary initial value
+	smoothfps = 50.0f;
 
 	return;
 
@@ -72,6 +73,9 @@ Level::Level (char *fileName, unsigned char diff, bool checkpoint) {
 	ret = load(fileName, diff, checkpoint);
 
 	if (ret < 0) throw ret;
+
+	// Arbitrary initial value
+	smoothfps = 50.0f;
 
 	return;
 
@@ -574,9 +578,6 @@ int Level::play () {
  	int width;
 
 
-	// Arbitrary initial value
-	smoothfps = 50.0f;
-
 	tickOffset = globalTicks;
 	ticks = 16;
 	prevStepTicks = 0;
@@ -728,7 +729,7 @@ int Level::play () {
 
 		// Draw the graphics
 
-		draw();
+		draw(stats);
 
 
 		// If paused, draw "PAUSE"
@@ -762,21 +763,6 @@ int Level::play () {
 					(viewW >> 1) + width + 1, 14 + (count * 12));
 
 			}
-
-		}
-
-
-		// Draw graphics statistics
-
-		if (stats & S_SCREEN) {
-
-			drawRect(viewW - 84, 11, 80, 25, BLACK);
-
-			panelBigFont->showNumber(canvasW, viewW - 52, 14);
-			panelBigFont->showString("x", viewW - 48, 14);
-			panelBigFont->showNumber(canvasH, viewW - 12, 14);
-			panelBigFont->showString("fps", viewW - 76, 26);
-			panelBigFont->showNumber((int)smoothfps, viewW - 12, 26);
 
 		}
 

@@ -64,18 +64,7 @@ enum {
 
 class Font;
 
-class ScriptFont {
-
-	public:
-		// This points to any of the available types (already loaded)
-		Font *font;
-
-		// Font id given this font
-		int   fontId;
-
-};
-
-class ScriptText {
+class SceneText {
 
 	public:
 		char     *text;
@@ -86,12 +75,12 @@ class ScriptText {
 		SDL_Rect  textRect;
 		int       extraLineHeight;
 
-		ScriptText  ();
-		~ScriptText ();
+		SceneText  ();
+		~SceneText ();
 
 };
 
-class ScriptPage {
+class ScenePage {
 
 	public:
 		int           backgrounds;
@@ -100,65 +89,68 @@ class ScriptPage {
 
 		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
 		int           pageTime;
-		ScriptText    scriptTexts[100];
-		int           noScriptTexts;
-		char         *musicfile;
+		SceneText     texts[100];
+		int           nTexts;
+		char         *musicFile;
 		int           paletteIndex;
 
-		ScriptPage();
-		~ScriptPage();
+		ScenePage();
+		~ScenePage();
 
 };
 
-class ImageInfo {
+class SceneImage {
 
 	public:
-		// SDL_Surface with the image
+		SceneImage  *next;
 		SDL_Surface *image;
+		int id;
 
-		// data index of the image (not the palette) to compare with scripts
-		int dataIndex;
-
-		ImageInfo  ();
-		~ImageInfo ();
+		SceneImage  (SceneImage *newNext);
+		~SceneImage ();
 
 };
 
-class PaletteInfo {
+class ScenePalette {
 
 	public:
-		// Palette associated with the image
+		ScenePalette *next;
 		SDL_Color palette[256];
+		int id;
 
-		// data index of the image (not the palette) to compare with scripts
-		int       dataIndex;
+		ScenePalette  (ScenePalette *newNext);
+		~ScenePalette ();
+
+};
+
+class SceneFont {
+
+	public:
+		Font *font;
+		int   id;
 
 };
 
 class Scene {
 
 	private:
-		ImageInfo           imageInfos[100];
-		PaletteInfo         paletteInfos[100];
+		SceneImage         *images;
+		ScenePalette       *palettes;
+		SceneFont           fonts[5];
+		int                 nFonts;
 		unsigned short int  scriptItems;
 		unsigned short int  dataItems;
 		signed long int    *scriptStarts;
 		signed long int    *dataOffsets;
-		int                 imageIndex;
-		int                 paletteIndex;
 
 		// Scripts all information needed to render script pages, text etc
-		ScriptPage         *scriptPages;
+		ScenePage          *pages;
 
-		void        loadScripts (File *f);
-		void        loadData    (File *f);
-		void        loadAni     (File* f, int dataIndex);
-		ImageInfo * FindImage   (int dataIndex);
+		void         loadScripts (File *f);
+		void         loadData    (File *f);
+		void         loadAni     (File* f, int dataIndex);
 
 	public:
-		ScriptFont scriptFonts[5];
-		int        noScriptFonts;
-
 		Scene    (const char * fileName);
 		~Scene   ();
 

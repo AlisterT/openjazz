@@ -97,9 +97,6 @@ int DemoLevel::play () {
 	int ret;
 
 
-	// Arbitrary initial value
-	smoothfps = 50.0f;
-
 	tickOffset = globalTicks;
 	ticks = 16;
 	prevStepTicks = 0;
@@ -170,25 +167,11 @@ int DemoLevel::play () {
 
 		// Draw the graphics
 
-		draw();
+		draw(stats);
 
 
 		fontmn1->showString("DEMO", (canvasW >> 1) - 36, 32);
 
-
-		// Draw graphics statistics
-
-		if (stats & S_SCREEN) {
-
-			drawRect(236, 9, 80, 32, BLACK);
-
-			panelBigFont->showNumber(canvasW, 268, 15);
-			panelBigFont->showString("x", 272, 15);
-			panelBigFont->showNumber(canvasH, 308, 15);
-			panelBigFont->showString("fps", 244, 27);
-			panelBigFont->showNumber((int)smoothfps, 308, 27);
-
-		}
 
 	}
 

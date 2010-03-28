@@ -67,7 +67,7 @@ Game::~Game () {
 
 	if (levelFile) delete[] levelFile;
 
-	if (players != NULL) delete[] players;
+	if (players) delete[] players;
 	localPlayer = NULL;
 
 	return;

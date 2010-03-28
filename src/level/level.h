@@ -131,17 +131,17 @@ class Level {
 		fixed          waterLevelSpeed;
 		fixed          energyBar;
 		int            stage;
+		float          smoothfps;
 
 		int loadSprites (char *fileName);
 		int loadTiles   (char *fileName);
 
 	protected:
-		float        smoothfps;
 		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
 
 		int  load      (char *fileName, unsigned char diff, bool checkpoint);
 		int  step      ();
-		void draw      ();
+		void draw      (int stats);
 		void timeCalcs (bool paused);
 
 	public:

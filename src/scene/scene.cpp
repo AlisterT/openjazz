@@ -49,19 +49,38 @@
  *
  */
 
-ImageInfo::ImageInfo () {
+SceneImage::SceneImage (SceneImage *newNext) {
 
+	next = newNext;
 	image = NULL;
 
 }
 
-ImageInfo::~ImageInfo () {
 
-	if (image != NULL) SDL_FreeSurface(image);
+SceneImage::~SceneImage () {
+
+	if (next) delete next;
+
+	if (image) SDL_FreeSurface(image);
 
 }
 
-ScriptText::ScriptText() {
+
+ScenePalette::ScenePalette (ScenePalette *newNext) {
+
+	next = newNext;
+
+}
+
+
+ScenePalette::~ScenePalette () {
+
+	if (next) delete next;
+
+}
+
+
+SceneText::SceneText() {
 
 		x = -1;
 		y = -1;
@@ -72,25 +91,25 @@ ScriptText::ScriptText() {
 
 }
 
-ScriptText::~ScriptText() {
+SceneText::~SceneText() {
 
 	if (text) delete[] text;
 
 }
 
-ScriptPage::ScriptPage() {
+ScenePage::ScenePage() {
 
 	pageTime = 0;
-	noScriptTexts = 0;
+	nTexts = 0;
 	backgrounds = 0;
-	musicfile = NULL;
+	musicFile = NULL;
 	paletteIndex = 0;
 
 }
 
-ScriptPage::~ScriptPage() {
+ScenePage::~ScenePage() {
 
-	if (musicfile) delete[] musicfile;
+	if (musicFile) delete[] musicFile;
 
 }
 
@@ -100,7 +119,7 @@ Scene::Scene (const char * fileName) {
 	File *file;
     int loop;
 
-    noScriptFonts = 0;
+    nFonts = 0;
     LOG("\nScene", fileName);
 
 	try {
@@ -113,22 +132,22 @@ Scene::Scene (const char * fileName) {
 
 	}
 
-	imageIndex = 0;
-	paletteIndex = 0;
+	images = NULL;
+	palettes = NULL;
 
 	file->seek(0x13, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 
 	scriptItems = file->loadShort(); // Get number of script items
 	scriptStarts = new signed long int[scriptItems];
-	scriptPages = new ScriptPage[scriptItems];
+	pages = new ScenePage[scriptItems];
 
 	LOG("Scene: Script items", scriptItems);
 
 	for (loop = 0; loop < scriptItems; loop++) {
 
 		scriptStarts[loop] = file->loadInt();// Load offset to script
-		LOG("scriptStart:", scriptStarts[loop]);
+		LOG("scriptStart", scriptStarts[loop]);
 
 	}
 
@@ -141,7 +160,7 @@ Scene::Scene (const char * fileName) {
 	for (loop = 0; loop < dataItems; loop++) {
 
 		dataOffsets[loop] = file->loadInt();// Load offset to script
-		LOG("dataOffsets:", dataOffsets[loop]);
+		LOG("dataOffsets", dataOffsets[loop]);
 
 	}
 
@@ -159,30 +178,20 @@ Scene::Scene (const char * fileName) {
 
 Scene::~Scene () {
 
-	delete[] scriptPages;
+	delete[] pages;
+
+	if (images) delete images;
+	if (palettes) delete palettes;
 
 }
 
-ImageInfo * Scene::FindImage (int dataIndex) {
-
-	int loop;
-
-	for (loop = 0; loop < imageIndex; loop++) {
-
-		if (imageInfos[loop].dataIndex == dataIndex) return imageInfos + loop;
-
-	}
-
-	return NULL;
-
-}
 
 int Scene::play () {
 
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
-	ImageInfo* imageInfo;
-	unsigned int pageTime = scriptPages[sceneIndex].pageTime;
+	SceneImage *image;
+	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
 	int fadein = false;
@@ -211,7 +220,7 @@ int Scene::play () {
 			// Get bg for this page
 			newpage = true;
 
-			pageTime = scriptPages[sceneIndex].pageTime;
+			pageTime = pages[sceneIndex].pageTime;
 
 		}
 
@@ -223,24 +232,14 @@ int Scene::play () {
 			textRect.y = 0;
 			textRect.w = 320;
 			textRect.h = 200;
-			PaletteInfo* paletteInfo = NULL;
+			ScenePalette *palette = palettes;
 
-			for (int palette = 0; palette < paletteIndex; palette++) {
+			while (palette && (palette->id != pages[sceneIndex].paletteIndex)) palette = palette->next;
 
-				if (paletteInfos[palette].dataIndex == scriptPages[sceneIndex].paletteIndex) {
+			if (palette) {
 
-					paletteInfo = &paletteInfos[palette];
-
-					break;
-
-				}
-
-			}
-
-			if (paletteInfo != NULL) {
-
-				// usePalette(paletteInfo->palette);
-				currentPalette = paletteInfo->palette;
+				// usePalette(palette);
+				currentPalette = palette->palette;
 				fadein = true;
 
 			} else restorePalette(screen);
@@ -250,17 +249,20 @@ int Scene::play () {
 		}
 
 		// First draw the backgrounds associated with this page
-		if (scriptPages[sceneIndex].backgrounds > 0) {
+		if (pages[sceneIndex].backgrounds > 0) {
 
-			for (int bg = 0; bg < scriptPages[sceneIndex].backgrounds; bg++) {
+			for (int bg = 0; bg < pages[sceneIndex].backgrounds; bg++) {
 
-				imageInfo = FindImage(scriptPages[sceneIndex].bgIndex[bg]);
+				image = images;
 
-				if (imageInfo != NULL) {
+				while (image && (image->id != pages[sceneIndex].bgIndex[bg]))
+					image = image->next;
 
-					dst.x = (scriptPages[sceneIndex].bgPos[bg] & 65535)*2 + (canvasW - 320) >> 1;
-					dst.y = ((scriptPages[sceneIndex].bgPos[bg] & (~65535))>>16)*2 + (canvasH - 200) >> 1;
-					SDL_BlitSurface(imageInfo->image, NULL, canvas, &dst);
+				if (image) {
+
+					dst.x = (pages[sceneIndex].bgPos[bg] & 65535)*2 + (canvasW - 320) >> 1;
+					dst.y = ((pages[sceneIndex].bgPos[bg] & (~65535))>>16)*2 + (canvasH - 200) >> 1;
+					SDL_BlitSurface(image->image, NULL, canvas, &dst);
 
 				}
 
@@ -274,16 +276,17 @@ int Scene::play () {
 		int y = 0;
 		int extraLineHeight = 0;
 
-		for (int text = 0; text < scriptPages[sceneIndex].noScriptTexts; text++) {
+		for (int count = 0; count < pages[sceneIndex].nTexts; count++) {
 
+			SceneText *text = pages[sceneIndex].texts + count;
 			Font *font = NULL;
 			int xOffset, yOffset;
 
-			for (int index = 0; index < noScriptFonts; index++) {
+			for (int index = 0; index < nFonts; index++) {
 
-				if (scriptPages[sceneIndex].scriptTexts[text].fontId == scriptFonts[index].fontId) {
+				if (text->fontId == fonts[index].id) {
 
-					font = scriptFonts[index].font;
+					font = fonts[index].font;
 
 					continue;
 
@@ -291,31 +294,31 @@ int Scene::play () {
 
 			}
 
-			if (scriptPages[sceneIndex].scriptTexts[text].x != -1) {
+			if (text->x != -1) {
 
-				x = scriptPages[sceneIndex].scriptTexts[text].x;
-				y = scriptPages[sceneIndex].scriptTexts[text].y;
+				x = text->x;
+				y = text->y;
 
 			}
 
-			if (scriptPages[sceneIndex].scriptTexts[text].textRect.x != -1) {
+			if (text->textRect.x != -1) {
 
-				textRect = scriptPages[sceneIndex].scriptTexts[text].textRect;
+				textRect = text->textRect;
 				x = 0;
 				y = 0;
 
 			}
 
-			if (scriptPages[sceneIndex].scriptTexts[text].extraLineHeight != -1) {
+			if (text->extraLineHeight != -1) {
 
-				extraLineHeight = scriptPages[sceneIndex].scriptTexts[text].extraLineHeight;
+				extraLineHeight = text->extraLineHeight;
 
 			}
 
 			xOffset = ((canvasW - 320) >> 1) + textRect.x + x;
 			yOffset = ((canvasH - 200) >> 1) + textRect.y + y;
 
-			switch (scriptPages[sceneIndex].scriptTexts[text].alignment) {
+			switch (text->alignment) {
 
 				case 0: // left
 
@@ -323,13 +326,13 @@ int Scene::play () {
 
 				case 1: // right
 
-					xOffset += textRect.w - font->getSceneStringWidth(scriptPages[sceneIndex].scriptTexts[text].text);
+					xOffset += textRect.w - font->getSceneStringWidth(text->text);
 
 					break;
 
 				case 2: // center
 
-					xOffset += (textRect.w - font->getSceneStringWidth(scriptPages[sceneIndex].scriptTexts[text].text)) >> 1;
+					xOffset += (textRect.w - font->getSceneStringWidth(text->text)) >> 1;
 
 					break;
 
@@ -337,11 +340,11 @@ int Scene::play () {
 
 			// Drop shadow
 			font->mapPalette(0, 256, 0, 1);
-			font->showSceneString(scriptPages[sceneIndex].scriptTexts[text].text, xOffset + 1, yOffset + 1);
+			font->showSceneString(text->text, xOffset + 1, yOffset + 1);
 			font->restorePalette();
 
 			// Text itself
-			font->showSceneString(scriptPages[sceneIndex].scriptTexts[text].text, xOffset, yOffset);
+			font->showSceneString(text->text, xOffset, yOffset);
 
 			y += extraLineHeight + font->getHeight() / 2;
 

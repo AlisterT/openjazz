@@ -194,7 +194,7 @@ unsigned char * File::loadBlock (int length) {
 }
 
 
-unsigned char * File::loadRLE (int length, bool dontseek) {
+unsigned char * File::loadRLE (int length) {
 
 	unsigned char *buffer;
 	int rle, pos, byte, count, next;
@@ -236,9 +236,7 @@ unsigned char * File::loadRLE (int length, bool dontseek) {
 
 	}
 
-	if(!dontseek) {
 	fseek(f, next, SEEK_SET);
-	}
 
 	return buffer;
 
@@ -265,18 +263,18 @@ char * File::loadString () {
 	int length, count;
 
 	length = fgetc(f);
-	count = 0;
 
 	if (length) {
 
 		string = new char[length + 1];
-		for (; count < length; count++) string[count] = fgetc(f);
+		fread(string, 1, length, f);
 
 	} else {
 
 		// If the length is not given, assume it is an 8.3 file name
 		string = new char[13];
-		for (; count < 9; count++) {
+
+		for (count = 0; count < 9; count++) {
 
 			string[count] = fgetc(f);
 
@@ -293,18 +291,19 @@ char * File::loadString () {
 
 		}
 
+		length = count;
 
 	}
 
-	string[count] = 0;
+	string[length] = 0;
 
 	return string;
 
 }
 
-SDL_Surface * File::loadSurface (int width, int height, bool dontseek) {
+SDL_Surface * File::loadSurface (int width, int height) {
 
-	return createSurface(loadRLE(width * height, dontseek), width, height);
+	return createSurface(loadRLE(width * height), width, height);
 
 }
 

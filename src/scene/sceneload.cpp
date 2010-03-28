@@ -68,23 +68,21 @@ void Scene::loadAni (File *f, int dataIndex) {
 			unsigned short int len = f->loadShort();
 			unsigned char* buffer = f->loadBlock(len);
 
+			palettes = new ScenePalette(palettes);
+
 			for (int count = 0; count < 256; count++) {
 
 				// Palette entries are 6-bit
 				// Shift them upwards to 8-bit, and fill in the lower 2 bits
-				paletteInfos[paletteIndex].palette[count].r =
-					(buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
-				paletteInfos[paletteIndex].palette[count].g =
-					(buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
-				paletteInfos[paletteIndex].palette[count].b =
-					(buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
+				palettes->palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
+				palettes->palette[count].g = (buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
+				palettes->palette[count].b = (buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
 
 
 			}
 
 			delete[] buffer;
-			paletteInfos[paletteIndex].dataIndex = dataIndex;
-			paletteIndex++;
+			palettes->id = dataIndex;
 
 			unsigned short int value = 0x4646;
 			int items = 0;
@@ -97,11 +95,11 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 				value = f->loadShort();
 				LOG("PL Read block start tag", value);
-				unsigned short int size= f->loadShort();
+				unsigned short int size = f->loadShort();
 				LOG("PL Anim block size", size);
 				nextPos = f->tell();
 				// next pos is intial position + size and four bytes header
-				nextPos+=(size);
+				nextPos += size;
 
 				switch (value) {
 
@@ -118,11 +116,13 @@ void Scene::loadAni (File *f, int dataIndex) {
 							// Skip back size header, this is read by the surface reader
 							f->seek(-2, false);
 
-							SDL_Surface *image = f->loadSurface(320, 200, true);
+							SDL_Surface *image = f->loadSurface(320, 200);
 							SDL_BlitSurface(image, NULL, canvas, NULL);
 							SDL_FreeSurface(image);
-							SDL_SetPalette(screen, SDL_PHYSPAL, paletteInfos[paletteIndex-1].palette, 0, 256);
-							currentPalette = paletteInfos[paletteIndex-1].palette;
+
+							// Use the most recently loaded palette
+							SDL_SetPalette(screen, SDL_PHYSPAL, palettes->palette, 0, 256);
+							currentPalette = palettes->palette;
 
 						}
 
@@ -134,8 +134,6 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 							int longvalue = f->loadInt();
 							LOG("PL Anim block value", longvalue);
-							// Skip back size header, this is read by the surface reader
-							//f->seek(-2, false);
 
 							while (size) {
 
@@ -176,6 +174,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 									default:
 
 										LOG("PL Unknown type", header);
+
 										break;
 
 								}
@@ -327,7 +326,7 @@ void Scene::loadData (File *f) {
 
 	int loop;
 
-	for(loop = 0; loop < dataItems; loop++) {
+	for (loop = 0; loop < dataItems; loop++) {
 
 		f->seek(dataOffsets[loop], true); // Seek to data start
 		unsigned short int dataLen = f->loadShort(); // Get get the length of the datablock
@@ -361,14 +360,10 @@ void Scene::loadData (File *f) {
 						if (type == 3) height = f->loadChar(); // Get height
 						else height = f->loadShort(); // Get height
 
-						if (imageIndex<100) {
-
-							f->seek(-2, false);
-							imageInfos[imageIndex].image = f->loadSurface(width, height);
-							imageInfos[imageIndex].dataIndex = loop;
-							imageIndex++;
-
-						}
+						f->seek(-2, false);
+						images = new SceneImage(images);
+						images->image = f->loadSurface(width, height);
+						images->id = loop;
 
 					}
 
@@ -376,16 +371,13 @@ void Scene::loadData (File *f) {
 
 				default:
 
-					{
+					LOG("Data Type", "Palette");
+					LOG("Data Type Palette index", loop);
+					f->seek(-3, false);
 
-						LOG("Data Type", "Palette");
-						LOG("Data Type Palette index", loop);
-						f->seek(-3, false);
-						f->loadPalette(paletteInfos[paletteIndex].palette);
-						paletteInfos[paletteIndex].dataIndex = loop;
-						paletteIndex++;
-
-					}
+					palettes = new ScenePalette(palettes);
+					f->loadPalette(palettes->palette);
+					palettes->id = loop;
 
 					break;
 
@@ -401,7 +393,6 @@ void Scene::loadData (File *f) {
 void Scene::loadScripts (File *f) {
 
 	int loop;
-	char *string;
 	/*int bgIndex = 0;*/
 	int textAlignment = 0;
 	int textFont = 0;
@@ -420,10 +411,10 @@ void Scene::loadScripts (File *f) {
 		if (f->loadChar() == 0x50) { // Script tag
 
 			unsigned short int scriptid = f->loadShort();
-			LOG("Script id:", scriptid);
+			LOG("Script id", scriptid);
 			int palette = f->loadShort();
 			LOG("Script default palette", palette);
-			scriptPages[loop].paletteIndex = palette;
+			pages[loop].paletteIndex = palette;
 
 			unsigned char type = 0;
 			bool breakloop = false;
@@ -452,7 +443,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 							unsigned char aniIndex = f->loadChar();
-							LOG("ESceneAnimationIndex:", aniIndex);
+							LOG("ESceneAnimationIndex", aniIndex);
 
 						}
 
@@ -462,7 +453,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 							unsigned char fadein = f->loadChar();
-							LOG("ESceneFadeType:", fadein);
+							LOG("ESceneFadeType", fadein);
 
 						}
 
@@ -478,9 +469,9 @@ void Scene::loadScripts (File *f) {
 							LOG("ESceneBackground: index", bgImageIndex);
 							LOG("ESceneBackground: xpos", xpos);
 							LOG("ESceneBackground: ypos", ypos);
-							scriptPages[loop].bgIndex[scriptPages[loop].backgrounds] = bgImageIndex;
-							scriptPages[loop].bgPos[scriptPages[loop].backgrounds] = xpos|(ypos<<16);
-							scriptPages[loop].backgrounds++;
+							pages[loop].bgIndex[pages[loop].backgrounds] = bgImageIndex;
+							pages[loop].bgPos[pages[loop].backgrounds] = xpos | (ypos << 16);
+							pages[loop].backgrounds++;
 
 						}
 
@@ -488,15 +479,9 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneMusic:
 
-						{
-
-							// Music file name
-							string = f->loadString();
-							LOG("ESceneMusic: ", string);
-							scriptPages[loop].musicfile = createString(string);
-							delete[] string;
-
-						}
+						// Music file name
+						pages[loop].musicFile = f->loadString();
+						LOG("ESceneMusic", pages[loop].musicFile);
 
 						break;
 
@@ -513,45 +498,42 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneTextRect: // String
 
-						{
-
-							unsigned short x = textRect.x = f->loadShort();
-							unsigned short y = textRect.y = f->loadShort();
-							unsigned short w = textRect.w = f->loadShort() - x;
-							unsigned short h = textRect.h = f->loadShort() - y;
-							textRectValid = true;
-							LOG("Text rectangle xpos:", x);
-							LOG("Text rectangle ypos:", y);
-							LOG("Text rectangle w:", w);
-							LOG("Text rectangle h:", h);
-
-						}
+						textRect.x = f->loadShort();
+						textRect.y = f->loadShort();
+						textRect.w = f->loadShort() - textRect.x;
+						textRect.h = f->loadShort() - textRect.y;
+						textRectValid = true;
+						LOG("Text rectangle xpos", textRect.x);
+						LOG("Text rectangle ypos", textRect.y);
+						LOG("Text rectangle w", textRect.w);
+						LOG("Text rectangle h", textRect.h);
 
 						break;
 
 					case ESceneFontDefine: // Font defnition
 
-						{
+						if (nFonts < 5) {
 
-							unsigned short fontid = f->loadShort();
-							char* fontname = f->loadString();
+							fonts[nFonts].id = f->loadShort();
+							char *fontname = f->loadString();
+
 							LOG("ESceneFontDefine", fontname);
-							LOG("ESceneFontDefine with id=", fontid);
+							LOG("ESceneFontDefine with id", fonts[nFonts].id);
 
 							if (strcmp(fontname, "FONT2") == 0)
-								scriptFonts[noScriptFonts].font = font2;
+								fonts[nFonts].font = font2;
 							else if (strcmp(fontname, "FONTBIG") == 0)
-								scriptFonts[noScriptFonts].font = fontbig;
+								fonts[nFonts].font = fontbig;
 							else if (strcmp(fontname, "FONTTINY") == 0)
-								scriptFonts[noScriptFonts].font = fontiny;
+								fonts[nFonts].font = fontiny;
 							else if (strcmp(fontname, "FONTMN1") == 0)
-								scriptFonts[noScriptFonts].font = fontmn1;
+								fonts[nFonts].font = fontmn1;
 							else if (strcmp(fontname, "FONTMN2") == 0)
-								scriptFonts[noScriptFonts].font = fontmn2;
-							else scriptFonts[noScriptFonts].font = font2;
+								fonts[nFonts].font = fontmn2;
+							else fonts[nFonts].font = font2;
 
-							scriptFonts[noScriptFonts].fontId = fontid;
-							noScriptFonts++;
+							nFonts++;
+
 							delete[] fontname;
 
 						}
@@ -560,16 +542,10 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneTextPosition:
 
-						{
-
-							unsigned short newx = f->loadShort();
-							unsigned short newy = f->loadShort();
-							LOG("TextPosition x", newx);
-							LOG("TextPosition y", newy);
-							textPosX = newx;
-							textPosY = newy;
-
-						}
+						textPosX = f->loadShort();
+						textPosY = f->loadShort();
+						LOG("TextPosition x", textPosX);
+						LOG("TextPosition y", textPosY);
 
 						break;
 
@@ -604,25 +580,15 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneFontIndex:
 
-						{
-
-							unsigned short value = f->loadShort();
-							LOG("ESceneFontIndex", value);
-							textFont = value;
-
-						}
+						textFont = f->loadShort();
+						LOG("ESceneFontIndex", textFont);
 
 						break;
 
 					case ESceneTextVAdjust:
 
-						{
-
-							unsigned short value = f->loadShort();
-							LOG("ESceneTextVAdjust", value);
-							extraheight = value;
-
-						}
+						extraheight = f->loadShort();
+						LOG("ESceneTextVAdjust", extraheight);
 
 						break;
 
@@ -650,13 +616,8 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneTextAlign:
 
-						{
-
-							unsigned char alignment = f->loadChar();
-							LOG("ESceneTextAlign", alignment);
-							textAlignment = alignment;
-
-						}
+						textAlignment = f->loadChar();
+						LOG("ESceneTextAlign", textAlignment);
 
 						break;
 
@@ -692,54 +653,50 @@ void Scene::loadScripts (File *f) {
 						{
 
 							unsigned char datalen = f->loadChar();
-							LOG("Text len=", datalen);
+							LOG("Text len", datalen);
+
+							SceneText *text = pages[loop].texts + pages[loop].nTexts;
 
 							if (datalen > 0) {
 
 								f->seek(-1, false);
-								char *block = f->loadString();
+								text->text = f->loadString();
 
 								// Convert number placeholders
 								for (int pos = 1; pos < datalen; pos++) {
 
-									if (block[pos] == -117) {
+									if (text->text[pos] == -117) {
 
 										if (loop >= 9)
-											block[pos - 1] = ((loop + 1) / 10) + 53;
+											text->text[pos - 1] = ((loop + 1) / 10) + 53;
 
-										block[pos] = ((loop + 1) % 10) + 53;
+										text->text[pos] = ((loop + 1) % 10) + 53;
 
-									} else if (block[pos] == -118) {
+									} else if (text->text[pos] == -118) {
 
 										if (scriptItems >= 10)
-											block[pos - 1] = (scriptItems / 10) + 53;
+											text->text[pos - 1] = (scriptItems / 10) + 53;
 
-										block[pos] = (scriptItems % 10) + 53;
+										text->text[pos] = (scriptItems % 10) + 53;
 
 									}
 
 								}
 
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = block;
-
-								LOG("Text data",(char*) scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text);
-
 							} else {
 
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text = new char[1];
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].text[0] = 0;
-
-								LOG("Text data", "Empty line");
+								text->text = new char[1];
+								text->text[0] = 0;
 
 							}
 
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].alignment = textAlignment;
-							scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].fontId = textFont;
+							text->alignment = textAlignment;
+							text->fontId = textFont;
 
 							if(textPosX != -1) {
 
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].x = textPosX;
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].y = textPosY;
+								text->x = textPosX;
+								text->y = textPosY;
 								textPosX = -1;
 								textPosY = -1;
 
@@ -747,19 +704,19 @@ void Scene::loadScripts (File *f) {
 
 							if(textRectValid) {
 
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].textRect = textRect;
+								text->textRect = textRect;
 								textRectValid = false;
 
 							}
 
 							if(extraheight != -1) {
 
-								scriptPages[loop].scriptTexts[scriptPages[loop].noScriptTexts].extraLineHeight = extraheight;
+								text->extraLineHeight = extraheight;
 								extraheight = -1;
 
 							}
 
-							scriptPages[loop].noScriptTexts++;
+							pages[loop].nTexts++;
 
 						}
 
@@ -767,12 +724,8 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneTime:
 
-						{
-							unsigned short int sceneTime = f->loadShort();
-							LOG("Scene time",sceneTime&255);
-							scriptPages[loop].pageTime = sceneTime&255;
-
-						}
+						pages[loop].pageTime = f->loadShort() & 255;
+						LOG("Scene time", pages[loop].pageTime);
 
 						break;
 

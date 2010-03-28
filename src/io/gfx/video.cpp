@@ -42,7 +42,7 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 	// Set the surface's palette
 	SDL_SetPalette(ret, SDL_LOGPAL, logicalPalette, 0, 256);
 
-	if (pixels != NULL) {
+	if (pixels) {
 
 		// Upload pixel data to the surface
 		if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
