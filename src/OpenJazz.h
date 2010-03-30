@@ -74,6 +74,7 @@
 	#define F_MENU        "MENU.000"
 	#define F_PANEL       "PANEL.000"
 	#define F_SOUNDS      "SOUNDS.000"
+	#define F_BONUS       "BONUS.000"
 
 	#define F_STARTUP_0SC "STARTUP.0SC"
 	#define F_END_0SC     "END.0SC"
@@ -82,6 +83,7 @@
 
 	// File path prefixes
 	#define F_BLOCKS      "BLOCKS"
+	#define F_BONUSMAP    "BONUSMAP"
 	#define F_LEVEL       "LEVEL"
 	#define F_PLANET      "PLANET"
 	#define F_SPRITES     "SPRITES"
@@ -90,6 +92,7 @@
 	#define F_MENU        "menu.000"
 	#define F_PANEL       "panel.000"
 	#define F_SOUNDS      "sounds.000"
+	#define F_BONUS       "bonus.000"
 
 	#define F_STARTUP_0SC "startup.0sc"
 	#define F_END_0SC     "end.0sc"
@@ -98,6 +101,7 @@
 
 	// File path prefixes
 	#define F_BLOCKS      "blocks"
+	#define F_BONUSMAP    "bonusmap"
 	#define F_LEVEL       "level"
 	#define F_PLANET      "planet"
 	#define F_SPRITES     "sprites"

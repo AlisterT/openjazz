@@ -6,6 +6,7 @@
  * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 4th February 2009: Created events.h from parts of level.h
  * 19th March 2009: Created sprite.h from parts of level.h
+ * 30th March 2010: Created baselevel.h from parts of level.h
  *
  * Part of the OpenJazz project
  *
@@ -31,6 +32,7 @@
 #define _LEVEL_H
 
 
+#include "baselevel.h"
 #include "io/gfx/anim.h"
 #include "OpenJazz.h"
 
@@ -38,11 +40,6 @@
 
 
 // Constants
-
-// Displayed statistics
-#define S_NONE    0
-#define S_PLAYERS 1
-#define S_SCREEN  2
 
 // General
 #define LW        256 /* Level width */
@@ -63,15 +60,6 @@
 // Fade delays
 #define T_START 500
 #define T_END   1000
-
-
-// Macros
-
-// For converting between tile positions and int/fixed values
-#define FTOT(x) ((x) >> 15)
-#define TTOF(x) ((x) << 15)
-#define ITOT(x) ((x) >> 5)
-#define TTOI(x) ((x) << 5)
 
 
 // Datatypes
@@ -104,12 +92,11 @@ class Event;
 class Player;
 class Scene;
 
-class Level {
+class Level : public BaseLevel {
 
 	private:
 		char          *sceneFile;
 		Sprite        *spriteSet; // 208 of which are usually in mainchar.000
-		SDL_Surface   *tileSet;
 		Anim           animSet[ANIMS];
 		char           miscAnims[4];
 		signed char    bulletSet[BULLETS][BLENGTH];
@@ -117,32 +104,26 @@ class Level {
 		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
 		GridElement    grid[LH][LW]; // All levels are the same size
 		int            soundMap[32];
-		SDL_Color      palette[256];
 		SDL_Color      skyPalette[256];
 		bool           sky;
 		unsigned char  skyOrb;
 		int            sprites;
 		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char  difficulty;
-		unsigned int   endTime;
-		int            enemies, items;
+		int            enemies;
 		fixed          waterLevel;
 		fixed          waterLevelTarget;
 		fixed          waterLevelSpeed;
 		fixed          energyBar;
 		int            stage;
-		float          smoothfps;
 
 		int loadSprites (char *fileName);
 		int loadTiles   (char *fileName);
 
 	protected:
-		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
-
-		int  load      (char *fileName, unsigned char diff, bool checkpoint);
-		int  step      ();
-		void draw      (int stats);
-		void timeCalcs (bool paused);
+		int  load (char *fileName, unsigned char diff, bool checkpoint);
+		int  step ();
+		void draw ();
 
 	public:
 		Event     *firstEvent;
@@ -150,9 +131,9 @@ class Level {
 		EventPath  path[PATHS];
 
 		Level                       ();
-		Level                       (char *fileName, unsigned char diff,
-			bool checkpoint);
+		Level                       (char *fileName, unsigned char diff, bool checkpoint);
 		virtual ~Level              ();
+
 		bool          checkMask     (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
 		bool          checkSpikes   (fixed x, fixed y);
@@ -189,6 +170,7 @@ class DemoLevel : public Level {
 	public:
 		DemoLevel  (const char *fileName);
 		~DemoLevel ();
+
 		int play   ();
 
 };
@@ -196,8 +178,8 @@ class DemoLevel : public Level {
 
 // Variables
 
-EXTERN Level         *level;
-EXTERN fixed          viewX, viewY;
+EXTERN Level *level;
+EXTERN fixed  viewX, viewY;
 
 #endif
 

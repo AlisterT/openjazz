@@ -14,7 +14,7 @@ objects = src/bonus/bonus.o \
 	src/menu/menuutil.o src/menu/setupmenu.o \
 	src/player/bird.o src/player/player.o src/player/playerframe.o \
 	src/scene/scene.o src/scene/sceneload.o \
-	src/main.o src/movable.o src/planet.o src/util.o \
+	src/baselevel.o src/main.o src/movable.o src/planet.o src/util.o \
 	src/io/gfx/scale2x/getopt.o src/io/gfx/scale2x/pixel.o \
 	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
 	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o

@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -27,13 +27,50 @@
 
 
 #include "bonus.h"
+#include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/file.h"
+#include "io/gfx/font.h"
+#include "io/gfx/paletteeffects.h"
+#include "io/gfx/video.h"
+#include "io/sound.h"
+#include "menu/menu.h"
+#include "player/player.h"
+
+#include <math.h>
 
 
-Bonus::Bonus (char * fileName) {
+int Bonus::loadTiles (char *fileName) {
 
 	File *file;
+
+	try {
+
+		file = new File(fileName, false);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	file->skipRLE();
+	file->loadPalette(palette);
+	tileSet = file->loadSurface(32, 32 * 60);
+
+	delete file;
+
+	return E_NONE;
+
+}
+
+
+Bonus::Bonus (char * fileName, unsigned char diff) {
+
+	File *file;
+	unsigned char *buffer;
+	char *string, *fileString;
+	int x, y;
 
 	try {
 
@@ -45,9 +82,95 @@ Bonus::Bonus (char * fileName) {
 
 	}
 
-	// TODO: Load bonus level data
+
+	// Load tileset
+
+	file->seek(90, true);
+	string = file->loadString();
+	fileString = createFileName(string, 0);
+	x = loadTiles(fileString);
+	delete[] string;
+	delete[] fileString;
+
+	if (x != E_NONE) throw x;
+
+
+	// Load music
+
+	file->seek(121, true);
+	fileString = file->loadString();
+	playMusic(fileString);
+	delete[] fileString;
+
+
+	// Load tiles
+
+	file->seek(2694, true);
+	buffer = file->loadRLE(BLW * BLH);
+
+	for (y = 0; y < BLH; y++) {
+
+		for (x = 0; x < BLW; x++) {
+
+			tiles[y][x] = buffer[x + (y * BLW)];
+
+			if (tiles[y][x] > 59) tiles[y][x] = 59;
+
+		}
+
+	}
+
+	delete[] buffer;
+
+
+	file->skipRLE(); // Mysterious block
+
+
+	// Load events
+
+	buffer = file->loadRLE(BLW * BLH);
+
+	for (y = 0; y < BLW; y++) {
+
+		for (x = 0; x < BLH; x++) {
+
+			events[y][x] = buffer[x + (y * BLW)];
+
+		}
+
+	}
+
+	delete[] buffer;
+
 
 	delete file;
+
+
+	// Palette animations
+
+	// Free any existing palette effects
+	if (firstPE) delete firstPE;
+
+	// Spinny whirly thing
+	firstPE = new RotatePaletteEffect(112, 16, F32, NULL);
+
+	// Track sides
+	firstPE = new RotatePaletteEffect(192, 16, F32, firstPE);
+
+	// Bouncy things
+	firstPE = new RotatePaletteEffect(240, 16, -F32, firstPE);
+
+
+	// Apply the palette to surfaces that already exist, e.g. fonts
+	usePalette(palette);
+
+	// Adjust fontmn1 to use bonuslevel palette
+	fontmn1->mapPalette(224, 8, 0, 16);
+
+
+	// Set the tick at which the level will end
+	endTime = (5 - diff) * 30 * 1000;
+
 
 	return;
 
@@ -56,7 +179,17 @@ Bonus::Bonus (char * fileName) {
 
 Bonus::~Bonus () {
 
-	// Nothing to do
+	// Free the palette effects
+	if (firstPE) {
+
+		delete firstPE;
+		firstPE = NULL;
+
+	}
+
+	SDL_FreeSurface(tileSet);
+
+	fontmn1->restorePalette();
 
 	return;
 
@@ -65,13 +198,233 @@ Bonus::~Bonus () {
 
 int Bonus::play () {
 
+	const char *options[3] = {"continue game", "setup options", "quit game"};
+	PaletteEffect *levelPE;
+	bool paused, pmenu;
+	int stats, option;
+	SDL_Rect src, dst;
+	int x, y;
+	fixed pX, pY, pDirection;
+	int mspf;
+
+
+	tickOffset = globalTicks;
+	ticks = 16;
+	prevStepTicks = 0;
+
+	pmenu = paused = false;
+	option = 0;
+	stats = S_NONE;
+
+	// Arbitrary position
+	localPlayer->setPosition(TTOF(32) + F16, TTOF(7) + F16);
+	pDirection = FQ;
+
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE)) {
 
-		// TODO: Bonus levels
+			if (!gameMode) paused = !paused;
+			pmenu = !pmenu;
+
+		}
+
+		if (controls.release(C_PAUSE) && !gameMode) paused = !paused;
+
+		if (controls.release(C_STATS)) {
+
+			if (!gameMode) stats ^= S_SCREEN;
+			else stats = (stats + 1) & 3;
+
+		}
+
+		if (pmenu) {
+
+			// Deal with menu controls
+
+			if (controls.release(C_UP)) option = (option + 2) % 3;
+
+			if (controls.release(C_DOWN)) option = (option + 1) % 3;
+
+			if (controls.release(C_ENTER)) {
+
+				switch (option) {
+
+					case 0: // Continue
+
+						paused = pmenu = false;
+
+						break;
+
+					case 1: // Setup
+
+						if (!gameMode) {
+
+							// Don't want palette effects in setup menu
+							levelPE = firstPE;
+							firstPE = NULL;
+
+							if (menu->setup() == E_QUIT) return E_QUIT;
+
+							// Restore level palette
+							usePalette(palette);
+
+							// Restore palette effects
+							firstPE = levelPE;
+
+						}
+
+						break;
+
+					case 2: // Quit game
+
+						return E_NONE;
+
+				}
+
+			}
+
+		}
+
+		timeCalcs(paused);
+
+		mspf = ticks - prevTicks;
+
+
+		pX = localPlayer->getX();
+		pY = localPlayer->getY();
+
+		if (!paused) {
+
+			if (controls.getState(C_UP)) {
+
+				pX += fixed(sin(pDirection * 6.283185 / 1024.0) * 64 * mspf);
+				pY -= fixed(cos(pDirection * 6.283185 / 1024.0) * 64 * mspf);
+
+			}
+
+			if (controls.getState(C_DOWN)) {
+
+				pX -= fixed(sin(pDirection * 6.283185 / 1024.0) * 32 * mspf);
+				pY += fixed(cos(pDirection * 6.283185 / 1024.0) * 32 * mspf);
+
+			}
+
+			if (controls.getState(C_LEFT)) pDirection -= mspf / 2;
+
+			if (controls.getState(C_RIGHT)) pDirection += mspf / 2;
+
+			localPlayer->setPosition(pX, pY);
+
+		}
+
+		src.x = 0;
+		src.w = 32;
+		src.h = 32;
+
+		int vX = FTOI(pX) - (canvasW >> 1);
+		int vY = FTOI(pY) - (canvasH >> 1);
+
+		for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
+
+			for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
+
+				src.y = TTOI(tiles[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]);
+				dst.x = TTOI(x) - (vX & 31);
+				dst.y = TTOI(y) - (vY & 31);
+
+				SDL_BlitSurface(tileSet, &src, canvas, &dst);
+
+				dst.x = 12 + TTOI(x) - (vX & 31);
+				dst.y = 12 + TTOI(y) - (vY & 31);
+
+				switch (events[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]) {
+
+					case 0: // No event
+
+						break;
+
+					case 1: // Extra time
+
+						drawRect(dst.x, dst.y, 8, 8, 60);
+
+						break;
+
+					case 2: // Gem
+
+						drawRect(dst.x, dst.y, 8, 8, 67);
+
+						break;
+
+					case 3: // Hand
+
+						drawRect(dst.x, dst.y, 8, 8, 15);
+
+						break;
+
+					case 4: // Exit
+
+						drawRect(dst.x, dst.y, 8, 8, 45);
+
+						break;
+
+					default:
+
+						drawRect(dst.x, dst.y, 8, 8, 0);
+
+						break;
+
+				}
+
+			}
+
+		}
+
+		// Draw the "player"
+		drawRect(
+			(canvasW >> 1) + fixed(sin(pDirection * 6.283185 / 1024.0) * 3) - 4,
+			(canvasH >> 1) - fixed(cos(pDirection * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
+		drawRect((canvasW >> 1) - 4, (canvasH >> 1) - 4, 8, 8, 22);
+
+
+		// Show time remaining
+		if (endTime > ticks) x = endTime - ticks;
+		else x = 0;
+		y = x / (60 * 1000);
+		fontmn1->showNumber(y, 144, 8);
+		x -= (y * 60 * 1000);
+		y = x / 1000;
+		fontmn1->showNumber(y, 192, 8);
+
+
+		// If paused, draw "PAUSE"
+		if (paused && !pmenu)
+			fontmn1->showString("PAUSE", (canvasW >> 1) - 44, 32);
+
+		// Draw statistics
+		drawStats(stats);
+
+		// Draw the menu
+		if (pmenu) {
+
+			// Draw the menu
+
+			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 60, 0);
+
+			for (x = 0; x < 3; x++) {
+
+				if (x == option) fontmn2->mapPalette(240, 8, 31, 16);
+				else fontmn2->mapPalette(240, 8, 0, 16);
+
+				fontmn2->showString(options[x], canvasW >> 2, (canvasH >> 1) + (x << 4) - 38);
+
+			}
+
+			fontmn2->restorePalette();
+
+		}
 
 	}
 

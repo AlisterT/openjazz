@@ -13,6 +13,8 @@
  *                 levelload.cpp
  * 19th July 2009: Created levelframe.cpp from parts of level.cpp
  * 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
+ *                  levelframe.cpp
  *
  * Part of the OpenJazz project
  *
@@ -56,8 +58,7 @@
 
 Level::Level () {
 
-	// Arbitrary initial value
-	smoothfps = 50.0f;
+	// Do nothing
 
 	return;
 
@@ -518,55 +519,10 @@ void Level::receive (unsigned char *buffer) {
 }
 
 
-void Level::timeCalcs (bool paused) {
-
-	// Calculate smoothed fps
-	smoothfps = smoothfps + 1.0f -
-		(smoothfps * ((float)(ticks - prevTicks)) / 1000.0f);
-	/* This equation is a simplified version of
-	(fps * c) + (smoothfps * (1 - c))
-	where c = (1 / fps)
-	and fps = 1000 / (ticks - prevTicks)
-	In other words, the response of smoothFPS to changes in FPS decreases as the
-	framerate increases
-	The following version is for c = (1 / smoothfps)
-	*/
-	// smoothfps = (fps / smoothfps) + smoothfps - 1;
-
-	// Ignore outlandish values
-	if (smoothfps > 9999.0f) smoothfps = 9999.0f;
-	if (smoothfps < 1.0f) smoothfps = 1.0f;
-
-
-	// Track number of ticks of gameplay since the level started
-
-	if (paused) {
-
-		tickOffset = globalTicks - ticks;
-
-	} else if (globalTicks - tickOffset > ticks + 100) {
-
-		prevTicks = ticks;
-		ticks += 100;
-
-		tickOffset = globalTicks - ticks;
-
-	} else {
-
-		prevTicks = ticks;
-		ticks = globalTicks - tickOffset;
-
-	}
-
-	return;
-
-}
-
-
 int Level::play () {
 
-	const char *options[5] = {"continue game", "save game", "load game",
-		"setup options", "quit game"};
+	const char *options[5] =
+		{"continue game", "save game", "load game", "setup options", "quit game"};
 	PaletteEffect *levelPE;
 	char *string;
 	bool paused, pmenu;
@@ -575,7 +531,6 @@ int Level::play () {
  	int perfect;
  	int timeBonus;
  	int count;
- 	int width;
 
 
 	tickOffset = globalTicks;
@@ -729,7 +684,7 @@ int Level::play () {
 
 		// Draw the graphics
 
-		draw(stats);
+		draw();
 
 
 		// If paused, draw "PAUSE"
@@ -741,30 +696,8 @@ int Level::play () {
 		if (gameMode) gameMode->drawScore();
 
 
-		// Draw player list
-
-		if (stats & S_PLAYERS) {
-
-			width = 39;
-
-			for (count = 0; count < nPlayers; count++)
-				if (panelBigFont->getStringWidth(players[count].getName()) > width)
-					width = panelBigFont->getStringWidth(players[count].getName());
-
-			drawRect((viewW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, BLACK);
-
-			for (count = 0; count < nPlayers; count++) {
-
-				panelBigFont->showNumber(count + 1,
-					(viewW >> 1) - 24, 14 + (count * 12));
-				panelBigFont->showString(players[count].getName(),
-					(viewW >> 1) - 16, 14 + (count * 12));
-				panelBigFont->showNumber(players[count].teamScore,
-					(viewW >> 1) + width + 1, 14 + (count * 12));
-
-			}
-
-		}
+		// Draw statistics
+		drawStats(stats);
 
 
 		if (stage == LS_END) {

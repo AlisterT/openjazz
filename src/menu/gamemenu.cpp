@@ -82,7 +82,8 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 			playSound(S_ORB);
 
-			firstLevel = createFileName(F_LEVEL, levelNum, worldNum);
+			if (levelNum == -1) firstLevel = createFileName(F_BONUSMAP, worldNum);
+			else firstLevel = createFileName(F_LEVEL, levelNum, worldNum);
 
 			if (mode == M_SINGLE) {
 
@@ -118,6 +119,8 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 
 			}
 
+			delete[] firstLevel;
+
 
 			// Play the level(s)
 
@@ -126,7 +129,6 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 				case E_QUIT:
 
 					delete game;
-					delete[] firstLevel;
 
 					return E_QUIT;
 
@@ -139,7 +141,6 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 			}
 
 			delete game;
-			delete[] firstLevel;
 
 			return E_NONE;
 
@@ -178,7 +179,8 @@ int Menu::newGameLevel (int mode) {
 		else fontmn2->mapPalette(240, 8, 114, 16);
 
 		fontmn2->showString("choose level:", 32, (canvasH << 1) / 3);
-		fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
+		if (levelNum >= 0) fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
+		else fontmn2->showString("bonus", 172, (canvasH << 1) / 3);
 
 		if (option != 0) fontmn2->restorePalette();
 
@@ -188,14 +190,14 @@ int Menu::newGameLevel (int mode) {
 
 		if (controls.release(C_LEFT)) {
 
-			if (option) levelNum = (levelNum + 9) % 10;
+			if (option) levelNum = ((levelNum + 11) % 11) - 1;
 			else worldNum = (worldNum + 999) % 1000;
 
 		}
 
 		if (controls.release(C_RIGHT)) {
 
-			if (option) levelNum = (levelNum + 1) % 10;
+			if (option) levelNum = ((levelNum + 2) % 11) - 1;
 			else worldNum = (worldNum + 1) % 1000;
 
 		}
@@ -246,7 +248,10 @@ int Menu::newGameEpisode (int mode) {
 
 	}
 
-	exists[10] = false;
+	check = createFileName(F_BONUSMAP, 0);
+	exists[10] = fileExists(check);
+	delete[] check;
+
 	exists[11] = true;
 
 	episode = 0;
@@ -307,16 +312,14 @@ int Menu::newGameEpisode (int mode) {
 				if (episode < 10) {
 
 					if (episode < 6) worldNum = episode * 3;
-					else if ((episode >= 6) && (episode < 9))
-						worldNum = (episode + 4) * 3;
+					else if ((episode >= 6) && (episode < 9)) worldNum = (episode + 4) * 3;
 					else worldNum = 50;
 
-					if (newGameDifficulty(mode, 0, worldNum) == E_QUIT)
-						return E_QUIT;
+					if (newGameDifficulty(mode, 0, worldNum) == E_QUIT) return E_QUIT;
 
 				} else if (episode == 10) {
 
-					// TODO: Loading and playing of bonus levels
+					if (newGameDifficulty(mode, -1, 0) == E_QUIT) return E_QUIT;
 
 				} else {
 

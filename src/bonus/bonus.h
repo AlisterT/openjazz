@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2009 Alister Thomson
+ * Copyright (c) 2009-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -23,13 +23,30 @@
 #ifndef _BONUS_H
 #define _BONUS_H
 
+#include "baselevel.h"
+
+#include <SDL/SDL.h>
+
+
+// Constants
+
+// General
+#define BLW 256 /* Bonus level width */
+#define BLH 256 /* Bonus level height */
+
 
 // Class
 
-class Bonus {
+class Bonus : public BaseLevel {
+
+	private:
+		unsigned char  tiles[BLH][BLW];
+		unsigned char  events[BLH][BLW];
+
+		int loadTiles (char *fileName);
 
 	public:
-		Bonus    (char * fileName);
+		Bonus    (char * fileName, unsigned char diff);
 		~Bonus   ();
 
 		int play ();

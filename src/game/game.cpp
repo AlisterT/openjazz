@@ -26,6 +26,7 @@
 #include "game.h"
 #include "gamemode.h"
 
+#include "bonus/bonus.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
@@ -34,10 +35,13 @@
 #include "player/player.h"
 #include "scene/scene.h"
 
+#include <string.h>
+
 
 Game::Game () {
 
 	levelFile = NULL;
+	bonusFile = NULL;
 
 	players = NULL;
 
@@ -48,7 +52,18 @@ Game::Game () {
 
 Game::Game (char *firstLevel, int gameDifficulty) {
 
-	levelFile = createString(firstLevel);
+	if (!strncmp(firstLevel, F_BONUSMAP, 8)) {
+
+		levelFile = NULL;
+		bonusFile = createString(firstLevel);
+
+	} else {
+
+		levelFile = createString(firstLevel);
+		bonusFile = NULL;
+
+	}
+
 	difficulty = gameDifficulty;
 
 	gameMode = NULL;
@@ -66,6 +81,7 @@ Game::Game (char *firstLevel, int gameDifficulty) {
 Game::~Game () {
 
 	if (levelFile) delete[] levelFile;
+	if (bonusFile) delete[] levelFile;
 
 	if (players) delete[] players;
 	localPlayer = NULL;
@@ -79,8 +95,20 @@ int Game::setLevel (char *fileName) {
 
 	if (levelFile) delete[] levelFile;
 
-	if (!fileName) levelFile = NULL;
-	else levelFile = createString(fileName);
+	if (fileName) levelFile = createString(fileName);
+	else levelFile = NULL;
+
+	return E_NONE;
+
+}
+
+
+int Game::setBonus (char *fileName) {
+
+	if (bonusFile) delete[] bonusFile;
+
+	if (fileName) bonusFile = createString(fileName);
+	else bonusFile = NULL;
 
 	return E_NONE;
 
@@ -89,9 +117,10 @@ int Game::setLevel (char *fileName) {
 
 int Game::play () {
 
-	Scene * scene;
+	Bonus *bonus;
+	Scene *scene;
 	bool checkpoint;
-	int ret;
+	int levelRet, bonusRet;
 
 	checkpoint = false;
 
@@ -100,21 +129,58 @@ int Game::play () {
 
 		sendTime = checkTime = 0;
 
-		// Load the level
 
-		try {
+		if (levelFile) {
 
-			level = new Level(levelFile, difficulty, checkpoint);
+			// Load and play the level
 
-		} catch (int e) {
+			try {
 
-			return e;
+				level = new Level(levelFile, difficulty, checkpoint);
+
+			} catch (int e) {
+
+				return e;
+
+			}
+
+			levelRet = level->play();
 
 		}
 
-		ret = level->play();
 
-		switch (ret) {
+		if (bonusFile) {
+
+			// Load and play the bonus level
+
+			try {
+
+				bonus = new Bonus(bonusFile, difficulty);
+
+			} catch (int e) {
+
+				return e;
+
+			}
+
+			delete[] bonusFile;
+			bonusFile = NULL;
+
+			bonusRet = bonus->play();
+
+			delete bonus;
+
+			if (bonusRet == E_QUIT) return E_QUIT;
+
+			if (bonusRet == E_NONE) return E_NONE;
+
+		}
+
+
+		if (!levelFile) continue;
+
+
+		switch (levelRet) {
 
 			case E_NONE: // Quit game
 
@@ -141,6 +207,8 @@ int Game::play () {
 
 				}
 
+				delete level;
+
 				// Do not use old level's checkpoint coordinates
 				checkpoint = false;
 
@@ -148,13 +216,9 @@ int Game::play () {
 
 			case LOST: // Lost level
 
-				if (!localPlayer->getLives()) {
+				delete level;
 
-					delete level;
-
-					return E_NONE; // Not really a success...
-
-				}
+				if (!localPlayer->getLives()) return E_NONE; // Not really a success...
 
 				// Use checkpoint coordinates
 				checkpoint = true;
@@ -165,12 +229,9 @@ int Game::play () {
 
 				delete level;
 
-				return ret;
+				return levelRet;
 
 		}
-
-		// Unload the previous level
-		delete level;
 
 	}
 

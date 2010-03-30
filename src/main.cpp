@@ -285,7 +285,7 @@ int loadMain (int argc, char *argv[]) {
 
 		logError("Could not set video mode", SDL_GetError());
 
-		delete characterName;
+		delete[] characterName;
 
 		delete firstPath;
 
@@ -319,7 +319,7 @@ int loadMain (int argc, char *argv[]) {
 
 		closeAudio();
 
-		delete characterName;
+		delete[] characterName;
 
 		delete firstPath;
 
