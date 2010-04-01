@@ -103,11 +103,11 @@ int Game::setLevel (char *fileName) {
 }
 
 
-int Game::setBonus (char *fileName) {
+int Game::setBonus (int ext) {
 
 	if (bonusFile) delete[] bonusFile;
 
-	if (fileName) bonusFile = createString(fileName);
+	if (level >= 0) bonusFile = createFileName(F_BONUSMAP, ext);
 	else bonusFile = NULL;
 
 	return E_NONE;
@@ -130,6 +130,8 @@ int Game::play () {
 		sendTime = checkTime = 0;
 
 
+		level = NULL;
+
 		if (levelFile) {
 
 			// Load and play the level
@@ -146,10 +148,10 @@ int Game::play () {
 
 			levelRet = level->play();
 
-		}
+		} else levelRet = WON;
 
 
-		if (bonusFile) {
+		if (bonusFile && (levelRet == WON)) {
 
 			// Load and play the bonus level
 
@@ -177,7 +179,7 @@ int Game::play () {
 		}
 
 
-		if (!levelFile) continue;
+		if (!level) continue;
 
 
 		switch (levelRet) {

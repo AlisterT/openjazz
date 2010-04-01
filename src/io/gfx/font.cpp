@@ -36,9 +36,9 @@
 Font::Font (const char * fileName) {
 
 	File *file;
-	unsigned char *pixels, *character;
-	int rle, pos, byte, count, next, fileSize;
-	int chr, width, height, y;
+	unsigned char *pixels;
+	int fileSize;
+	int count, size, width, height;
 
 	// Load font from a font file
 
@@ -52,143 +52,96 @@ Font::Font (const char * fileName) {
 
 	}
 
-	file->seek(19, true);
 
-	width = file->loadChar() << 2;
-	h = file->loadChar() << 1;
-	w = new unsigned char[128];
-	pixels = new unsigned char[width * h * 128];
-	memset(pixels, 0, width * h * 128);
+	file->seek(20, true);
+	lineHeight = file->loadChar() << 1;
+
+
+	// Create the first character
+
+	pixels = new unsigned char[3 * lineHeight];
+
+	memset(pixels, 0, 3 * lineHeight);
+	characters[0] = createSurface(pixels, 3, lineHeight);
+	SDL_SetColorKey(characters[0], SDL_SRCCOLORKEY, 0);
+
+	delete[] pixels;
+
+
+	// Create remaining characters
+
+	fileSize = file->getSize();
+	nCharacters = 128;
 
 	file->seek(23, true);
 
-	w[0] = width >> 1;
+	for (count = 1; count < 128; count++) {
 
-	fileSize = file->getSize();
+		size = file->loadShort();
 
-	for (chr = 1; chr < 128; chr++) {
+		if (file->tell() >= fileSize) {
 
-		file->seek(2, false);
-		next = file->loadChar();
+			nCharacters = count;
 
-		if (file->tell() > fileSize) break;
-
-		next += file->loadChar() << 8;
-		next += file->tell();
-
-		file->seek(1, false);
-		w[chr] = file->loadChar();
-		file->seek(1, false);
-		height = file->loadChar();
-
-		character = new unsigned char[(w[chr] * height) + 1];
-
-		pos = 0;
-
-		while (pos < w[chr] * height) {
-
-			rle = file->loadChar();
-
-			if (rle > 127) {
-
-				byte = file->loadChar();
-
-				for (count = 0; count < (rle & 127); count++) {
-
-					character[pos++] = byte;
-					if (pos >= w[chr] * height) break;
-
-				}
-
-			} else if (rle > 0) {
-
-				for (count = 0; count < rle; count++) {
-
-					character[pos++] = file->loadChar();
-					if (pos >= w[chr] * height) break;
-
-				}
-
-			} else break;
+			break;
 
 		}
 
-		character[pos] = character[pos - 1];
+		if (size) {
 
-		for (y = 0; y < height; y++)
-			memcpy(pixels + (((chr * h) + y) * width),
-				character + (y * w[chr]) + 1, w[chr]);
+			pixels = file->loadRLE(size);
 
-		delete[] character;
+			width = pixels[0];
+			width += pixels[1] << 8;
+			height = pixels[2];
+			height += pixels[3] << 8;
 
-		w[chr] += 2;
+			characters[count] = createSurface(pixels + 4, width, height);
+			SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 0);
 
-		file->seek(next, true);
+			delete[] pixels;
+
+		} else characters[count] = createSurface(NULL, 1, 1);
 
 	}
 
 	delete file;
 
 
-	for (; chr < 128; chr++) w[chr] = width >> 1;
-
-	surface = createSurface(pixels, width, h * 128);
-	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, 0);
-
-
 	// Create ASCII->font map
 
-	if (!strcmp(fileName, "fontmn1.0fn")) {
+	for (count = 0; count < 33; count++) map[count] = 0;
+	map[33] = 107; // !
+	map[34] = 116; // "
+	map[35] = 0; // #
+	map[36] = 63; // $
+	map[37] = 0; // %
+	map[38] = 0; // &
+	map[39] = 115; // '
+	map[40] = 111; // (
+	map[41] = 112; // )
+	map[42] = 0; // *
+	map[43] = 105; // +
+	map[44] = 101; // ,
+	map[45] = 104; // -
+	map[46] = 102; // .
+	map[47] = 108; // /
+	for (count = 48; count < 58; count++) map[count] = count + 5;  // Numbers
+	map[58] = 114; // :
+	map[59] = 113; // ;
+	map[60] = 0; // <
+	map[61] = 106; // =
+	map[62] = 0; // >
+	map[63] = 103; // ?
+	map[64] = 0; // @
+	for (count = 65; count < 91; count++) map[count] = count - 38; // Upper-case letters
+	for (; count < 97; count++) map[count] = 0;
+	for (; count < 123; count++) map[count] = count - 96; // Lower-case letters
+	for (; count < 128; count++) map[count] = 0;
 
-		for (count = 0; count < 48; count++) map[count] = 0;
-		for (; count < 58; count++) map[count] = count - 8;
-		for (; count < 65; count++) map[count] = 0;
-		for (; count < 91; count++) map[count] = count - 64;
-		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 96;
-		for (; count < 128; count++) map[count] = 0;
+	for (count = 0; count < 128; count++) {
 
-	} else if (!strcmp(fileName, "fontmn2.0fn")) {
-
-		for (count = 0; count < 43; count++) map[count] = 0;
-		map[33] = 89;
-		map[34] = 96;
-		map[39] = 95;
-		map[43] = 87;
-		map[44] = 83;
-		map[45] = 86;
-		map[46] = 84;
-		map[47] = 90;
-		count = 48;
-		for (; count < 58; count++) map[count] = count + 5;
-		map[58] = 94;
-		map[59] = 93;
-		map[60] = 0;
-		map[61] = 88;
-		map[62] = 0;
-		map[63] = 85;
-		map[64] = 0;
-		count = 65;
-		for (; count < 91; count++) map[count] = count - 38;
-		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 96;
-		for (; count < 128; count++) map[count] = 0;
-
-	} else {
-
-		for (count = 0; count < 40; count++) map[count] = 0;
-		for (; count < 42; count++) map[count] = count + 25;
-		for (; count < 48; count++) map[count] = 0;
-		map[44] = 101;
-		map[45] = 104;
-		map[46] = 102;
-		for (; count < 58; count++) map[count] = count + 5;
-		for (; count < 65; count++) map[count] = 0;
-		map[63] = 103;
-		for (; count < 91; count++) map[count] = count - 64;
-		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 70;
-		for (; count < 128; count++) map[count] = 0;
+		if (map[count] >= nCharacters) map[count] = 0;
 
 	}
 
@@ -204,10 +157,10 @@ Font::Font (File *file, bool big) {
 
 	// Load font from panel.000
 
-	if (big) h = 8;
-	else h = 7;
+	if (big) lineHeight = 8;
+	else lineHeight = 7;
 
-	pixels = new unsigned char[320 * h];
+	pixels = new unsigned char[320 * lineHeight];
 
 	if (big) {
 
@@ -232,7 +185,7 @@ Font::Font (File *file, bool big) {
 	}
 
 	// RLE decompression and horizontal to vertical character rearrangement
-	while (pos < 320 * h) {
+	while (pos < 320 * lineHeight) {
 
 		rle = file->loadChar();
 
@@ -243,7 +196,7 @@ Font::Font (File *file, bool big) {
 			for (count = 0; count < (rle & 127); count++) {
 
 				pixels[(pos & 7) + ((pos / 320) * 8) +
-					(((pos % 320)>>3) * 8 * h)] = index;
+					(((pos % 320)>>3) * 8 * lineHeight)] = index;
 				pos++;
 
 			}
@@ -253,7 +206,7 @@ Font::Font (File *file, bool big) {
 			for (count = 0; count < rle; count++) {
 
 				pixels[(pos & 7) + ((pos / 320) * 8) +
-					(((pos % 320)>>3) * 8 * h)] = file->loadChar();
+					(((pos % 320)>>3) * 8 * lineHeight)] = file->loadChar();
 				pos++;
 
 			}
@@ -261,6 +214,13 @@ Font::Font (File *file, bool big) {
 		} else break;
 
 	}
+
+	for (count = 0; count < 40; count++)
+		characters[count] = createSurface(pixels + (count * 8 * lineHeight), 8, lineHeight);
+
+	nCharacters= 40;
+
+	delete[] pixels;
 
 
 	if (big) {
@@ -278,10 +238,6 @@ Font::Font (File *file, bool big) {
 		for (; count < 123; count++) map[count] = count - 87;
 		for (; count < 128; count++) map[count] = 39;
 
-		// Set font dimensions
-		w = new unsigned char[40];
-		for (count = 0; count < 40; count++) w[count] = 8;
-
 	} else {
 
 		// Create ASCII->font map
@@ -290,13 +246,7 @@ Font::Font (File *file, bool big) {
 		for (; count < 60; count++) map[count] = count - 48;
 		for (; count < 128; count++) map[count] = 12;
 
-		// Set font dimensions
-		w = new unsigned char[13];
-		for (count = 0; count < 13; count++) w[count] = 8;
-
 	}
-
-	surface = createSurface(pixels, 8, 40 * h);
 
 	return;
 
@@ -305,51 +255,47 @@ Font::Font (File *file, bool big) {
 
 Font::~Font () {
 
-	SDL_FreeSurface(surface);
-	delete[] w;
+	int count;
+
+	for (count = 0; count < nCharacters; count++) SDL_FreeSurface(characters[count]);
 
 	return;
 
 }
 
 
-int Font::showString (const char * s, int x, int y) {
+int Font::showString (const char *string, int x, int y) {
 
-	SDL_Rect src, dst;
+	SDL_Surface *surface;
+	SDL_Rect dst;
 	unsigned int count;
 	int xOffset, yOffset;
-
-	// Determine the characters' dimensions
-	src.x = 0;
-	src.h = h;
 
 	// Determine the position at which to draw the first character
 	xOffset = x;
 	yOffset = y;
 
 	// Go through each character of the string
-	for (count = 0; s[count]; count++) {
+	for (count = 0; string[count]; count++) {
 
-		if (s[count] == '\n') {
+		if (string[count] == '\n') {
 
 			xOffset = x;
-			yOffset += h;
+			yOffset += lineHeight;
 
 		} else {
 
 			// Determine the character's position on the screen
-			src.w = w[(int)(map[(int)(s[count])])];
 			dst.y = yOffset;
 			dst.x = xOffset;
 
-			// Determine the character's position in the font
-			if (s[count] >= 0) src.y = map[(int)(s[count])] * h;
-			else src.y = 0;
+			// Determine the character's surface
+			surface = characters[int(map[int(string[count])])];
 
 			// Draw the character to the screen
-			SDL_BlitSurface(surface, &src, canvas, &dst);
+			SDL_BlitSurface(surface, NULL, canvas, &dst);
 
-			xOffset += src.w;
+			xOffset += surface->w + 2;
 
 		}
 
@@ -360,68 +306,58 @@ int Font::showString (const char * s, int x, int y) {
 }
 
 
-int Font::showSceneString (const char * s, int x, int y) {
+int Font::showSceneString (const unsigned char *string, int x, int y) {
 
-	SDL_Rect src, dst;
+	SDL_Surface *surface;
+	SDL_Rect dst;
 	unsigned int count;
-	int xOffset;
-
-	// Determine the characters' dimensions
-	src.x = 0;
-	src.h = h;
+	int offset;
 
 	// Determine the position at which to draw the first character
-	xOffset = x;
+	offset = x;
 
 	// Go through each character of the string
-	for (count = 0; s[count]; count++) {
+	for (count = 0; string[count]; count++) {
 
 		// Determine the character's position on the screen
-		src.w = w[(int)(s[count])];
-		if (s[count] == 0x7F) src.w -= 3;
-
 		dst.y = y;
-		dst.x = xOffset;
+		dst.x = offset;
 
-		// Determine the character's position in the font
-		if (s[count] >= 0) src.y = s[count] * h;
-		else src.y = 0;
+		// Determine the character's surface
+		if (string[count] < nCharacters) surface = characters[int(string[count])];
+		else surface = characters[0];
 
 		// Draw the character to the screen
-		SDL_BlitSurface(surface, &src, canvas, &dst);
+		SDL_BlitSurface(surface, NULL, canvas, &dst);
 
-		xOffset += src.w - 1;
+		offset += surface->w + 1;
 
 	}
 
-	return xOffset;
+	return offset;
 
 }
 
 
 void Font::showNumber (int n, int x, int y) {
 
-	SDL_Rect src, dst;
+	SDL_Surface *surface;
+	SDL_Rect dst;
 	int count, offset;
-
-	// Determine the characters' dimensions
-	src.x = 0;
-	src.h = h;
 
 	// n being 0 is a special case. It must not be considered to be a trailing
 	// zero, as these are not displayed.
 	if (!n) {
 
-		// Determine 0's position on the screen
-		src.w = w[(int)(map[(int)'0'])];
-		dst.y = y;
-		dst.x = x - src.w;
+		// Determine 0's surface
+		surface = characters[int(map[int('0')])];
 
-		// Determine 0's position in the font
-		src.y = map[(int)'0'] * h;
+		// Determine 0's position on the screen
+		dst.y = y;
+		dst.x = x - surface->w;
 
 		// Draw 0 to the screen
-		SDL_BlitSurface(surface, &src, canvas, &dst);
+		SDL_BlitSurface(surface, NULL, canvas, &dst);
 
 		return;
 
@@ -436,17 +372,17 @@ void Font::showNumber (int n, int x, int y) {
 
 	while (count) {
 
+		// Determine the digit's surface
+		surface = characters[int(map['0' + (count % 10)])];
+
+		offset -= surface->w;
+
 		// Determine the digit's position on the screen
-		src.w = w[(int)(map['0' + (count % 10)])];
-		offset -= src.w;
 		dst.y = y;
 		dst.x = offset;
 
-		// Determine the digit's position in the font
-		src.y = map['0' + (count % 10)] * h;
-
 		// Draw the digit to the screen
-		SDL_BlitSurface(surface, &src, canvas, &dst);
+		SDL_BlitSurface(surface, NULL, canvas, &dst);
 
 		count /= 10;
 
@@ -455,16 +391,15 @@ void Font::showNumber (int n, int x, int y) {
 	// If needed, draw the negative sign
 	if (n < 0) {
 
-		// Determine the negative sign's position on the screen
-		src.w = w[(int)(map[(int)'-'])];
-		dst.y = y;
-		dst.x = offset - src.w;
+		// Determine the negative sign's surface
+		surface = characters[int(map[int('-')])];
 
 		// Determine the negative sign's position on the screen
-		src.y = map[(int)'-'] * h;
+		dst.y = y;
+		dst.x = offset - surface->w;
 
 		// Draw the negative sign to the screen
-		SDL_BlitSurface(surface, &src, canvas, &dst);
+		SDL_BlitSurface(surface, NULL, canvas, &dst);
 
 	}
 
@@ -484,7 +419,8 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 		palette[count].r = palette[count].g = palette[count].b =
 			(count * newLength / length) + newStart;
 
-	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
+	for (count = 0; count < nCharacters; count++)
+		SDL_SetPalette(characters[count], SDL_LOGPAL, palette, start, length);
 
 	return;
 
@@ -493,7 +429,10 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
 void Font::restorePalette () {
 
-	::restorePalette(surface);
+	int count;
+
+	for (count = 0; count < nCharacters; count++)
+		::restorePalette(characters[count]);
 
 	return;
 
@@ -502,7 +441,7 @@ void Font::restorePalette () {
 
 int Font::getHeight () {
 
-	return h;
+	return lineHeight;
 
 }
 
@@ -518,7 +457,7 @@ int Font::getStringWidth (const char *string) {
 		// Only get the width of the first line
 		if (string[count] == '\n') return stringWidth;
 
-		stringWidth += w[(int)(string[count])];
+		stringWidth += characters[int(map[int(string[count])])]->w + 2;
 
 	}
 
@@ -527,18 +466,16 @@ int Font::getStringWidth (const char *string) {
 }
 
 
-int Font::getSceneStringWidth (const char *string) {
+int Font::getSceneStringWidth (const unsigned char *string) {
 
 	int count;
-	int width, stringWidth = 0;
+	int stringWidth = 0;
 
 	// Go through each character of the string
 	for (count = 0; string[count]; count++) {
 
-		width = w[(int)(string[count])];
-		if (string[count] == 0x7F) width -= 3;
-
-		stringWidth += width - 1;
+		if (string[count] < nCharacters) stringWidth += characters[int(string[count])]->w + 1;
+		else stringWidth += characters[0]->w + 1;
 
 	}
 

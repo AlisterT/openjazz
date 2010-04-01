@@ -659,20 +659,20 @@ void Scene::loadScripts (File *f) {
 
 							if (datalen > 0) {
 
+								text->text = f->loadBlock(datalen + 1);
 								f->seek(-1, false);
-								text->text = f->loadString();
 
 								// Convert number placeholders
 								for (int pos = 1; pos < datalen; pos++) {
 
-									if (text->text[pos] == -117) {
+									if (text->text[pos] == 0x8B) {
 
 										if (loop >= 9)
 											text->text[pos - 1] = ((loop + 1) / 10) + 53;
 
 										text->text[pos] = ((loop + 1) % 10) + 53;
 
-									} else if (text->text[pos] == -118) {
+									} else if (text->text[pos] == 0x8A) {
 
 										if (scriptItems >= 10)
 											text->text[pos - 1] = (scriptItems / 10) + 53;
@@ -683,9 +683,11 @@ void Scene::loadScripts (File *f) {
 
 								}
 
+								text->text[datalen] = 0;
+
 							} else {
 
-								text->text = new char[1];
+								text->text = new unsigned char[1];
 								text->text[0] = 0;
 
 							}

@@ -346,7 +346,8 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	panelAmmo[0] = createSurface(sorted, 64, 27);
-	sorted = pixels; // Re-use the allocated memory
+
+	delete[] pixels;
 
 	file->seek(8264, true);
 	pixels = file->loadRLE(64 * 27);
@@ -359,7 +360,8 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	panelAmmo[1] = createSurface(sorted, 64, 27);
-	sorted = pixels; // Re-use the allocated memory
+
+	delete[] pixels;
 
 	file->seek(9550, true);
 	pixels = file->loadRLE(64 * 27);
@@ -372,7 +374,8 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	panelAmmo[2] = createSurface(sorted, 64, 27);
-	sorted = pixels; // Re-use the allocated memory
+
+	delete[] pixels;
 
 	file->seek(11060, true);
 	pixels = file->loadRLE(64 * 27);
@@ -385,7 +388,8 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	panelAmmo[3] = createSurface(sorted, 64, 27);
-	sorted = pixels; // Re-use the allocated memory
+
+	delete[] pixels;
 
 	file->seek(12258, true);
 	pixels = file->loadRLE(64 * 27);
@@ -398,7 +402,9 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	panelAmmo[4] = createSurface(sorted, 64, 27);
-	delete[] pixels; // Don't re-use the allocated memory
+
+	delete[] pixels;
+	delete[] sorted;
 
 
 	// Load fonts

@@ -621,6 +621,63 @@ void Player::move (unsigned int ticks, int msps) {
 }
 
 
+void Player::bonusStep (unsigned int ticks, int msps) {
+
+	// Bonus stages use polar coordinates for movement (but not position)
+	// Treat dx as change in radius
+
+	if (pcontrols[C_UP]) {
+
+		// Walk/run forwards
+
+		if (dx < 0) dx += PRA_REVERSE * msps;
+		else if (dx < PRS_RUN) dx += PRA_RUN * msps;
+
+		facing = true;
+
+	} else if (pcontrols[C_DOWN]) {
+
+		// Walk/run back
+
+		if (dx > 0) dx -= PRA_REVERSE * msps;
+		else if (dx > PRS_REVERSE) dx -= PRA_RUN * msps;
+
+		facing = false;
+
+	} else {
+
+		// Slow down
+
+		if (dx > 0) {
+
+			if (dx < PRA_STOP * msps) dx = 0;
+			else dx -= PRA_STOP * msps;
+
+		}
+
+		if (dx < 0) {
+
+			if (dx > -PRA_STOP * msps) dx = 0;
+			else dx += PRA_STOP * msps;
+
+		}
+
+	}
+
+	if (pcontrols[C_LEFT]) direction -= msps >> 1;
+
+	if (pcontrols[C_RIGHT]) direction += msps >> 1;
+
+
+	// Apply trajectory
+	x += fixed(sin(direction * 6.283185 / 1024.0) * dx * msps) >> 10;
+	y -= fixed(cos(direction * 6.283185 / 1024.0) * dx * msps) >> 10;
+
+	return;
+
+}
+
+
 void Player::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;

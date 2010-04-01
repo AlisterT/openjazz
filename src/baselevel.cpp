@@ -37,12 +37,14 @@ BaseLevel::BaseLevel () {
 	// Arbitrary initial value
 	smoothfps = 50.0f;
 
+	paused = false;
+
 	return;
 
 }
 
 
-void BaseLevel::timeCalcs (bool paused) {
+void BaseLevel::timeCalcs () {
 
 	// Calculate smoothed fps
 	smoothfps = smoothfps + 1.0f -

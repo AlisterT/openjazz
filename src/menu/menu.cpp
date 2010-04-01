@@ -14,7 +14,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -44,7 +44,7 @@
 Menu::Menu () {
 
 	File *file;
-	unsigned char *pixels;
+	unsigned char pixel;
 	time_t currentTime;
 	int count, col;
 
@@ -154,9 +154,8 @@ Menu::Menu () {
 
 			for (; count < 11; count++) {
 
-				pixels = new unsigned char[1];
-				*pixels = 0;
-				screens[count + 3] = createSurface(pixels, 1, 1);
+				pixel = 0;
+				screens[count + 3] = createSurface(&pixel, 1, 1);
 
 			}
 

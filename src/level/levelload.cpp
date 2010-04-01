@@ -285,6 +285,7 @@ int Level::loadSprites (char * fileName) {
 
 		// Free redundant data
 		delete[] pixels;
+		delete[] sorted;
 
 
 		// Check if the next sprite exists
@@ -402,6 +403,8 @@ int Level::loadTiles (char * fileName) {
 
 	tileSet = createSurface(buffer, TTOI(1), TTOI(tiles));
 	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
+
+	delete[] buffer;
 
 	return tiles;
 

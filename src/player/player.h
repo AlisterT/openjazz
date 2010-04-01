@@ -114,6 +114,10 @@
 #define PYS_SINK  ITOF(150)
 #define PYS_JUMP  ITOF(-350)
 
+#define PRS_REVERSE ITOF(-32)
+#define PRS_RUN     ITOF(64)
+#define PRS_ROLL    ITOF(96)
+
 // Player accelerations
 #define PXA_REVERSE 900
 #define PXA_STOP    1000
@@ -122,6 +126,10 @@
 #define PXA_FFRUN   200
 #define PYA_GRAVITY 2750
 #define PYA_SINK    1000
+
+#define PRA_REVERSE 450
+#define PRA_STOP    500
+#define PRA_RUN     100
 
 // Player colours
 #define PC_WHITE     0
@@ -173,6 +181,7 @@ class Player : public Movable {
 		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
 		bool          floating; /* false = normal, true = boarding/bird/etc. */
 		bool          facing;
+		fixed         direction;
 		unsigned char animType;
 		unsigned char eventX;
 		unsigned char eventY; /* Position of an event (spring, platform, bridge) */
@@ -222,12 +231,14 @@ class Player : public Movable {
 		void            setPosition  (fixed newX, fixed newY);
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
+		fixed           getDirection  ();
 		Anim *          getAnim      ();
 		unsigned char   getTeam      ();
 		void            send         (unsigned char *data);
 		void            receive      (unsigned char *buffer);
 		void            control      (unsigned int ticks, int msps);
 		void            move         (unsigned int ticks, int msps);
+		void            bonusStep    (unsigned int ticks, int msps);
 		void            view         (unsigned int ticks, int mspf);
 		void            draw         (unsigned int ticks, int change);
 		int             reacted      (unsigned int ticks);

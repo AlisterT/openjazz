@@ -183,6 +183,7 @@ void Level::draw () {
 	SDL_Rect src, dst;
 	int vX, vY;
 	int x, y, bgScale;
+	unsigned int change;
 
 
 	// Set tile drawing dimensions
@@ -275,12 +276,16 @@ void Level::draw () {
 	}
 
 
+	// Calculate change since last step
+	change = paused? 0: ticks - prevStepTicks;
+
+
 	// Show active events
 	event = firstEvent;
 
 	while (event) {
 
-		event->draw(ticks, ticks - prevStepTicks);
+		event->draw(ticks, change);
 		event = event->getNext();
 
 	}
@@ -288,7 +293,7 @@ void Level::draw () {
 
 	// Show the players
 	for (x = 0; x < nPlayers; x++)
-		players[x].draw(ticks, ticks - prevStepTicks);
+		players[x].draw(ticks, change);
 
 
 	// Show bullets
@@ -296,7 +301,7 @@ void Level::draw () {
 
 	while (bullet) {
 
-		bullet->draw(ticks - prevStepTicks);
+		bullet->draw(change);
 		bullet = bullet->getNext();
 
 	}

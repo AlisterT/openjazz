@@ -55,7 +55,11 @@ int Bonus::loadTiles (char *fileName) {
 	}
 
 	file->skipRLE();
+
+	// Load palette
 	file->loadPalette(palette);
+
+	// Load tile graphics
 	tileSet = file->loadSurface(32, 32 * 60);
 
 	delete file;
@@ -200,25 +204,23 @@ int Bonus::play () {
 
 	const char *options[3] = {"continue game", "setup options", "quit game"};
 	PaletteEffect *levelPE;
-	bool paused, pmenu;
+	bool pmenu, pmessage;
 	int stats, option;
 	SDL_Rect src, dst;
 	int x, y;
-	fixed pX, pY, pDirection;
-	int mspf;
+	int msps;
 
 
 	tickOffset = globalTicks;
 	ticks = 16;
 	prevStepTicks = 0;
 
-	pmenu = paused = false;
+	pmessage = pmenu = false;
 	option = 0;
 	stats = S_NONE;
 
 	// Arbitrary position
 	localPlayer->setPosition(TTOF(32) + F16, TTOF(7) + F16);
-	pDirection = FQ;
 
 	while (true) {
 
@@ -226,12 +228,12 @@ int Bonus::play () {
 
 		if (controls.release(C_ESCAPE)) {
 
-			if (!gameMode) paused = !paused;
 			pmenu = !pmenu;
+			option = 0;
 
 		}
 
-		if (controls.release(C_PAUSE) && !gameMode) paused = !paused;
+		if (controls.release(C_PAUSE)) pmessage = !pmessage;
 
 		if (controls.release(C_STATS)) {
 
@@ -254,7 +256,7 @@ int Bonus::play () {
 
 					case 0: // Continue
 
-						paused = pmenu = false;
+						pmenu = false;
 
 						break;
 
@@ -288,35 +290,23 @@ int Bonus::play () {
 
 		}
 
-		timeCalcs(paused);
+		if (!gameMode) paused = pmessage || pmenu;
 
-		mspf = ticks - prevTicks;
+		timeCalcs();
 
+		// Milliseconds per step
+		msps = ticks - prevStepTicks;
+		prevStepTicks = ticks;
 
-		pX = localPlayer->getX();
-		pY = localPlayer->getY();
 
 		if (!paused) {
 
-			if (controls.getState(C_UP)) {
+			// Apply controls to local player
+			for (x = 0; x < PCONTROLS; x++)
+				localPlayer->setControl(x, controls.getState(x));
 
-				pX += fixed(sin(pDirection * 6.283185 / 1024.0) * 64 * mspf);
-				pY -= fixed(cos(pDirection * 6.283185 / 1024.0) * 64 * mspf);
-
-			}
-
-			if (controls.getState(C_DOWN)) {
-
-				pX -= fixed(sin(pDirection * 6.283185 / 1024.0) * 32 * mspf);
-				pY += fixed(cos(pDirection * 6.283185 / 1024.0) * 32 * mspf);
-
-			}
-
-			if (controls.getState(C_LEFT)) pDirection -= mspf / 2;
-
-			if (controls.getState(C_RIGHT)) pDirection += mspf / 2;
-
-			localPlayer->setPosition(pX, pY);
+			// Process players
+			for (x = 0; x < nPlayers; x++) players[x].bonusStep(ticks, msps);
 
 		}
 
@@ -324,8 +314,8 @@ int Bonus::play () {
 		src.w = 32;
 		src.h = 32;
 
-		int vX = FTOI(pX) - (canvasW >> 1);
-		int vY = FTOI(pY) - (canvasH >> 1);
+		int vX = FTOI(localPlayer->getX()) - (canvasW >> 1);
+		int vY = FTOI(localPlayer->getY()) - (canvasH >> 1);
 
 		for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
 
@@ -384,8 +374,8 @@ int Bonus::play () {
 
 		// Draw the "player"
 		drawRect(
-			(canvasW >> 1) + fixed(sin(pDirection * 6.283185 / 1024.0) * 3) - 4,
-			(canvasH >> 1) - fixed(cos(pDirection * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
+			(canvasW >> 1) + fixed(sin(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4,
+			(canvasH >> 1) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
 		drawRect((canvasW >> 1) - 4, (canvasH >> 1) - 4, 8, 8, 22);
 
 
@@ -401,7 +391,7 @@ int Bonus::play () {
 
 		// If paused, draw "PAUSE"
 		if (paused && !pmenu)
-			fontmn1->showString("PAUSE", (canvasW >> 1) - 44, 32);
+			fontmn1->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
 		drawStats(stats);

@@ -57,8 +57,9 @@ class BaseLevel {
 		unsigned int  endTime;
 		float         smoothfps;
 		int           items;
+		bool          paused;
 
-		void timeCalcs (bool paused);
+		void timeCalcs ();
 		void drawStats (int stats);
 
 	public:

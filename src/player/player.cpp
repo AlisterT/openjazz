@@ -212,6 +212,7 @@ void Player::reset () {
 	shield = 0;
 	floating = false;
 	facing = true;
+	direction = FQ;
 	reaction = PR_NONE;
 	reactionTime = 0;
 	jumpHeight = ITOF(92);
@@ -402,6 +403,8 @@ bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int t
 			break;
 
 		case 37: // Diamond
+
+			if (game) game->setBonus(0);
 
 			// Yellow flash
 			firstPE = new FlashPaletteEffect(255, 255, 0, 320, firstPE);
@@ -690,6 +693,13 @@ void Player::setSpeed (fixed newDx, fixed newDy) {
 bool Player::getFacing () {
 
 	return facing;
+
+}
+
+
+fixed Player::getDirection () {
+
+	return direction;
 
 }
 

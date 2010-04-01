@@ -45,13 +45,12 @@ Sprite::~Sprite () {
 
 void Sprite::clearPixels () {
 
-	unsigned char *data;
+	unsigned char data;
 
 	if (pixels) SDL_FreeSurface(pixels);
 
-	data = new unsigned char[1];
-	*data = SKEY;
-	pixels = createSurface(data, 1, 1);
+	data = SKEY;
+	pixels = createSurface(&data, 1, 1);
 	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, SKEY);
 
 	return;

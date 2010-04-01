@@ -113,7 +113,7 @@ int DemoLevel::play () {
 		if (controls.release(C_STATS)) stats ^= S_SCREEN;
 
 
-		timeCalcs(false);
+		timeCalcs();
 
 
 
@@ -171,7 +171,7 @@ int DemoLevel::play () {
 		drawStats(stats);
 
 
-		fontmn1->showString("DEMO", (canvasW >> 1) - 36, 32);
+		fontmn1->showString("demo", (canvasW >> 1) - 36, 32);
 
 
 	}

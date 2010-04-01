@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -36,9 +36,9 @@ class File;
 class Font {
 
 	private:
-		SDL_Surface   *surface;
-		unsigned char *w;
-		unsigned char  h; // Dimensions of the letters
+		SDL_Surface   *characters[128];
+		int            nCharacters;
+		unsigned char  lineHeight;
 		char           map[128]; // Maps ASCII values to letter positions
 
 	public:
@@ -47,13 +47,14 @@ class Font {
 		~Font                    ();
 
 		int  showString          (const char *s, int x, int y);
-		int  showSceneString     (const char *s, int x, int y);
+		int  showSceneString     (const unsigned char *s, int x, int y);
 		void showNumber          (int n, int x, int y);
 		void mapPalette          (int start, int length, int newStart, int newLength);
 		void restorePalette      ();
 		int  getHeight           ();
 		int  getStringWidth      (const char *string);
-		int  getSceneStringWidth (const char *string);
+		int  getSceneStringWidth (const unsigned char *string);
+
 };
 
 // Variables

@@ -525,7 +525,7 @@ int Level::play () {
 		{"continue game", "save game", "load game", "setup options", "quit game"};
 	PaletteEffect *levelPE;
 	char *string;
-	bool paused, pmenu;
+	bool pmessage, pmenu;
 	int stats, option;
 	unsigned int returnTime;
  	int perfect;
@@ -537,7 +537,7 @@ int Level::play () {
 	ticks = 16;
 	prevStepTicks = 0;
 
-	pmenu = paused = false;
+	pmessage = pmenu = false;
 	option = 0;
 	stats = S_NONE;
 
@@ -547,18 +547,16 @@ int Level::play () {
 
 	while (true) {
 
-		// Do general processing
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
 
-			if (!gameMode) paused = !paused;
 			pmenu = !pmenu;
 			option = 0;
 
 		}
 
-		if (controls.release(C_PAUSE) && !gameMode) paused = !paused;
+		if (controls.release(C_PAUSE)) pmessage = !pmessage;
 
 		if (controls.release(C_STATS)) {
 
@@ -581,7 +579,7 @@ int Level::play () {
 
 					case 0: // Continue
 
-						paused = pmenu = false;
+						pmenu = false;
 
 						break;
 
@@ -623,8 +621,9 @@ int Level::play () {
 
 		}
 
+		if (!gameMode) paused = pmessage || pmenu;
 
-		timeCalcs(paused);
+		timeCalcs();
 
 
 
@@ -689,7 +688,7 @@ int Level::play () {
 
 		// If paused, draw "PAUSE"
 		if (paused && !pmenu)
-			fontmn1->showString("PAUSE", (canvasW >> 1) - 44, 32);
+			fontmn1->showString("pause", (canvasW >> 1) - 44, 32);
 
 
 		// If this is a competitive game, draw the score
@@ -745,27 +744,27 @@ int Level::play () {
 			// Display statistics & bonuses
 			// TODO: Display percentage symbol
 
-			fontmn1->showString("TIME", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
+			fontmn1->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
 			fontmn1->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
 
-			fontmn1->showString("ENEMIES", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
+			fontmn1->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
 
 			if (enemies)
 				fontmn1->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			else
 				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 
-			fontmn1->showString("ITEMS", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
+			fontmn1->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
 
 			if (items)
 				fontmn1->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			else
 				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 
-			fontmn1->showString("PERFECT", (canvasW >> 1) - 152, canvasH >> 1);
+			fontmn1->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);
 			fontmn1->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
 
-			fontmn1->showString("SCORE", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
+			fontmn1->showString("score", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
 			fontmn1->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
 
 		}

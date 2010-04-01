@@ -212,7 +212,7 @@ unsigned char * File::loadRLE (int length) {
 
 		rle = fgetc(f);
 
-		if (rle > 127) {
+		if (rle & 128) {
 
 			byte = fgetc(f);
 
@@ -223,7 +223,7 @@ unsigned char * File::loadRLE (int length) {
 
 			}
 
-		} else if (rle > 0) {
+		} else if (rle) {
 
 			for (count = 0; count < rle; count++) {
 
@@ -303,7 +303,16 @@ char * File::loadString () {
 
 SDL_Surface * File::loadSurface (int width, int height) {
 
-	return createSurface(loadRLE(width * height), width, height);
+	SDL_Surface *surface;
+	unsigned char *pixels;
+
+	pixels = loadRLE(width * height);
+
+	surface = createSurface(pixels, width, height);
+
+	delete[] pixels;
+
+	return surface;
 
 }
 

@@ -53,9 +53,6 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 		if (SDL_MUSTLOCK(ret)) SDL_UnlockSurface(ret);
 
-		// Free redundant pixel data
-		delete[] pixels;
-
 	}
 
 	return ret;

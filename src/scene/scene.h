@@ -67,13 +67,13 @@ class Font;
 class SceneText {
 
 	public:
-		char     *text;
-		int       alignment;
-		int       fontId;
-		int       x;
-		int       y;
-		SDL_Rect  textRect;
-		int       extraLineHeight;
+		unsigned char *text;
+		int            alignment;
+		int            fontId;
+		int            x;
+		int            y;
+		SDL_Rect       textRect;
+		int            extraLineHeight;
 
 		SceneText  ();
 		~SceneText ();
