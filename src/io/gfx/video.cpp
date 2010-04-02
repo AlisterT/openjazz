@@ -77,6 +77,13 @@ void createScreen () {
 #endif
 
 #ifdef SCALE
+	// Check that the scale will fit in the current resolution
+	while ( ((screenW/320 < scaleFactor) || (screenH/200 < scaleFactor)) && (scaleFactor > 1) ) {
+
+		scaleFactor--;
+
+	}
+
 	if (scaleFactor > 1) {
 
 		canvasW = screenW / scaleFactor;
