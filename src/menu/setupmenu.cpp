@@ -445,6 +445,13 @@ int Menu::setupScaling () {
 
 		if ((controls.release(C_UP) || controls.release(C_RIGHT)) && (scaleFactor < MAX_SCALE)) scaleFactor++;
 
+		// Check that the scale will fit in the current resolution
+		if ( screenW/320 < scaleFactor || screenH/200 < scaleFactor ) {
+
+			scaleFactor = oldScaleFactor;
+
+		}
+
 		// Check for a scaling change
 		if (scaleFactor != oldScaleFactor) {
 
