@@ -116,7 +116,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 							// Skip back size header, this is read by the surface reader
 							f->seek(-2, false);
 
-							SDL_Surface *image = f->loadSurface(320, 200);
+							SDL_Surface *image = f->loadSurface(SW, SH);
 							SDL_BlitSurface(image, NULL, canvas, NULL);
 							SDL_FreeSurface(image);
 

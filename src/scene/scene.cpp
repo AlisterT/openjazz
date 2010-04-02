@@ -195,7 +195,7 @@ int Scene::play () {
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
 	int fadein = false;
-	SDL_Rect textRect = {0,0,320,200};
+	SDL_Rect textRect = {0, 0, SW, SH};
 
 	while (true) {
 
@@ -230,8 +230,8 @@ int Scene::play () {
 
 			textRect.x = 0;
 			textRect.y = 0;
-			textRect.w = 320;
-			textRect.h = 200;
+			textRect.w = SW;
+			textRect.h = SH;
 			ScenePalette *palette = palettes;
 
 			while (palette && (palette->id != pages[sceneIndex].paletteIndex)) palette = palette->next;
@@ -260,8 +260,8 @@ int Scene::play () {
 
 				if (image) {
 
-					dst.x = (pages[sceneIndex].bgPos[bg] & 65535)*2 + (canvasW - 320) >> 1;
-					dst.y = ((pages[sceneIndex].bgPos[bg] & (~65535))>>16)*2 + (canvasH - 200) >> 1;
+					dst.x = (pages[sceneIndex].bgPos[bg] & 65535)*2 + (canvasW - SW) >> 1;
+					dst.y = ((pages[sceneIndex].bgPos[bg] & (~65535))>>16)*2 + (canvasH - SH) >> 1;
 					SDL_BlitSurface(image->image, NULL, canvas, &dst);
 
 				}
@@ -315,8 +315,8 @@ int Scene::play () {
 
 			}
 
-			xOffset = ((canvasW - 320) >> 1) + textRect.x + x;
-			yOffset = ((canvasH - 200) >> 1) + textRect.y + y;
+			xOffset = ((canvasW - SW) >> 1) + textRect.x + x;
+			yOffset = ((canvasH - SH) >> 1) + textRect.y + y;
 
 			switch (text->alignment) {
 

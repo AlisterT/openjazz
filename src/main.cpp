@@ -158,8 +158,8 @@ int loadMain (int argc, char *argv[]) {
 	// Default settings
 
 	// Video settings
-	screenW = 320;
-	screenH = 200;
+	screenW = SW;
+	screenH = SH;
 #ifndef FULLSCREEN_ONLY
 	fullscreen = false;
 #endif
@@ -327,87 +327,73 @@ int loadMain (int argc, char *argv[]) {
 
 	}
 
-	// Load the panel background
-	panel = file->loadSurface(320, 32);
+	pixels = file->loadRLE(46272);
+
+	delete file;
 
 
-	// Load the panel's ammo graphics
+	// Create the panel background
+	panel = createSurface(pixels, SW, 32);
+
+
+	// De-scramble the panel's ammo graphics
 
 	sorted = new unsigned char[64 * 27];
-
-	file->seek(7537, true);
-	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
 		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
 
 	}
 
 	panelAmmo[0] = createSurface(sorted, 64, 27);
 
-	delete[] pixels;
-
-	file->seek(8264, true);
-	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
 		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (61 * 320)];
 
 	}
 
 	panelAmmo[1] = createSurface(sorted, 64, 27);
 
-	delete[] pixels;
-
-	file->seek(9550, true);
-	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
 		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (68 * 320)];
 
 	}
 
 	panelAmmo[2] = createSurface(sorted, 64, 27);
 
-	delete[] pixels;
-
-	file->seek(11060, true);
-	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
 		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (74 * 320)];
 
 	}
 
 	panelAmmo[3] = createSurface(sorted, 64, 27);
 
-	delete[] pixels;
-
-	file->seek(12258, true);
-	pixels = file->loadRLE(64 * 27);
 
 	for (y = 0; y < 27; y++) {
 
 		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4)];
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (86 * 320)];
 
 	}
 
 	panelAmmo[4] = createSurface(sorted, 64, 27);
 
-	delete[] pixels;
 	delete[] sorted;
 
 
 	// Load fonts
+
 	panelBigFont = NULL;
 	panelSmallFont = NULL;
 	font2 = NULL;
@@ -417,8 +403,8 @@ int loadMain (int argc, char *argv[]) {
 
 	try {
 
-		panelBigFont = new Font(file, true);
-		panelSmallFont = new Font(file, false);
+		panelBigFont = new Font(pixels + (40 * 320), true);
+		panelSmallFont = new Font(pixels + (48 * 320), false);
 		font2 = new Font("font2.0fn");
 		fontbig = new Font("fontbig.0fn");
 		fontiny = new Font("fontiny.0fn");
@@ -434,6 +420,8 @@ int loadMain (int argc, char *argv[]) {
 		if (fontiny) delete fontiny;
 		if (fontmn1) delete fontmn1;
 
+		delete[] pixels;
+
 		SDL_FreeSurface(panel);
 		SDL_FreeSurface(panelAmmo[0]);
 		SDL_FreeSurface(panelAmmo[1]);
@@ -447,14 +435,11 @@ int loadMain (int argc, char *argv[]) {
 
 		delete firstPath;
 
-		delete file;
-
 		return e;
 
 	}
 
-
-	delete file;
+	delete[] pixels;
 
 
 	// Establish arbitrary timing
@@ -578,7 +563,7 @@ void freeMain () {
 }
 
 
-int loop (int type) {
+int loop (LoopType type) {
 
 	SDL_Color shownPalette[256];
 	SDL_Event event;

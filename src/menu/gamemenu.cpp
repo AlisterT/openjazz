@@ -36,7 +36,7 @@
 #include "io/sound.h"
 
 
-int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
+int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 
 	const char *options[4] = {"easy", "medium", "hard", "turbo"};
 	char *firstLevel;
@@ -153,7 +153,7 @@ int Menu::newGameDifficulty (int mode, int levelNum, int worldNum) {
 }
 
 
-int Menu::newGameLevel (int mode) {
+int Menu::newGameLevel (GameModeType mode) {
 
 	int option, worldNum, levelNum;
 
@@ -220,7 +220,7 @@ int Menu::newGameLevel (int mode) {
 }
 
 
-int Menu::newGameEpisode (int mode) {
+int Menu::newGameEpisode (GameModeType mode) {
 
 	const char *options[12] = {"episode 1", "episode 2", "episode 3",
 		"episode 4", "episode 5", "episode 6", "episode a", "episode b",

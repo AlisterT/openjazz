@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -147,7 +147,7 @@ void TeamGameMode::drawScore () {
 }
 
 
-int CoopGameMode::getMode () {
+GameModeType CoopGameMode::getMode () {
 
 	return M_COOP;
 
@@ -166,21 +166,21 @@ bool CoopGameMode::endOfLevel (Player *player, unsigned char gridX,
 }
 
 
-int BattleGameMode::getMode () {
+GameModeType BattleGameMode::getMode () {
 
 	return M_BATTLE;
 
 }
 
 
-int TeamBattleGameMode::getMode () {
+GameModeType TeamBattleGameMode::getMode () {
 
 	return M_TEAMBATTLE;
 
 }
 
 
-int RaceGameMode::getMode () {
+GameModeType RaceGameMode::getMode () {
 
 	return M_RACE;
 
@@ -206,9 +206,13 @@ bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX,
 }
 
 
-GameMode * createGameMode (int mode) {
+GameMode * createGameMode (GameModeType mode) {
 
 	switch (mode) {
+
+		case M_SINGLE:
+
+			return NULL;
 
 		case M_COOP:
 

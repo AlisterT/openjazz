@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -29,14 +29,16 @@
 
 // Constants
 
-// Game modes
-#define M_SINGLE     0
-#define M_COOP       1
-#define M_BATTLE     2
-#define M_TEAMBATTLE 3
-#define M_RACE       4
-
 #define MAX_PLAYERS (MAX_CLIENTS + 1)
+
+
+// Enum
+
+enum GameModeType {
+
+	M_SINGLE = 0, M_COOP = 1, M_BATTLE = 2, M_TEAMBATTLE = 3, M_RACE = 4
+
+};
 
 
 // Classes
@@ -46,13 +48,12 @@ class Player;
 class GameMode {
 
 	public:
-		virtual int           getMode    () = 0;
+		virtual GameModeType  getMode    () = 0;
 		virtual unsigned char chooseTeam () = 0;
 		virtual void          drawScore  () = 0;
 		virtual bool          hit        (Player *source, Player *victim);
 		virtual bool          kill       (Player *source, Player *victim);
-		virtual bool          endOfLevel (Player *player, unsigned char gridX,
-			unsigned char gridY);
+		virtual bool          endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
 		virtual void          outOfTime  ();
 
 };
@@ -84,9 +85,8 @@ class TeamGameMode : public GameMode {
 class CoopGameMode : public CooperativeGameMode {
 
 	public:
-		int  getMode   ();
-		bool endOfLevel (Player *player, unsigned char gridX,
-			unsigned char gridY);
+		GameModeType getMode    ();
+		bool         endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
 
 };
 
@@ -96,7 +96,7 @@ class BattleGameMode : public FreeForAllGameMode {
 		int targetKills;
 
 	public:
-		int getMode ();
+		GameModeType getMode ();
 
 };
 
@@ -106,7 +106,7 @@ class TeamBattleGameMode : public TeamGameMode {
 		int targetKills;
 
 	public:
-		int getMode ();
+		GameModeType getMode ();
 
 };
 
@@ -116,12 +116,12 @@ class RaceGameMode : public FreeForAllGameMode {
 		int targetLaps;
 
 	public:
-		int  getMode    ();
-		bool hit        (Player *source, Player *victim);
-		bool endOfLevel (Player *player, unsigned char gridX,
-			unsigned char gridY);
+		GameModeType getMode    ();
+		bool         hit        (Player *source, Player *victim);
+		bool         endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
 
 };
+
 
 // Variable
 
@@ -130,7 +130,7 @@ EXTERN GameMode *gameMode; // NULL for single-player games
 
 // Function
 
-GameMode * createGameMode (int mode);
+GameMode * createGameMode (GameModeType mode);
 
 
 #endif

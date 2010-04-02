@@ -364,7 +364,7 @@ void Level::draw () {
 	dst.x = 0;
 	dst.y = canvasH - 33;
 	SDL_BlitSurface(panel, NULL, canvas, &dst);
-	drawRect(0, canvasH - 1, 320, 1, BLACK);
+	drawRect(0, canvasH - 1, SW, 1, BLACK);
 
 
 	// Show panel data
@@ -400,10 +400,12 @@ void Level::draw () {
 	panelSmallFont->showNumber(levelNum + 1, 196, canvasH - 13);
 
 	// Show ammo
-	if (localPlayer->getAmmo(false) == -1)
-		panelSmallFont->showString(":;", 225, canvasH - 13);
-	else panelSmallFont->showNumber(localPlayer->getAmmo(true), 245,
-		canvasH - 13);
+	if (localPlayer->getAmmo(false) == -1) {
+
+		panelSmallFont->showString(":", 225, canvasH - 13);
+		panelSmallFont->showString(";", 233, canvasH - 13);
+
+	} else panelSmallFont->showNumber(localPlayer->getAmmo(true), 245, canvasH - 13);
 
 
 	// Draw the health bar

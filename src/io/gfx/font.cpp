@@ -150,101 +150,56 @@ Font::Font (const char * fileName) {
 }
 
 
-Font::Font (File *file, bool big) {
+Font::Font (unsigned char *pixels, bool big) {
 
-	unsigned char *pixels;
-	int rle, pos, index, count;
-
-	// Load font from panel.000
+	unsigned char *chrPixels;
+	int count, y;
 
 	if (big) lineHeight = 8;
 	else lineHeight = 7;
 
-	pixels = new unsigned char[320 * lineHeight];
+	chrPixels = new unsigned char[8 * lineHeight];
 
-	if (big) {
+	for (count = 0; count < 40; count++) {
 
-		// Load the large panel font
-		// Starts at 4691 and goes 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:.
+		for (y = 0; y < lineHeight; y++)
+			memcpy(chrPixels + (y * 8), pixels + (count * 8) + (y * SW), 8);
 
-		pixels[0] = BLACK;
-
-		pos = 1;
-
-		file->seek(4691, true);
-
-	} else {
-
-		// Load the small panel font
-		// Starts at 6975 and goes 0123456789oo (where oo = infinity)
-
-		pos = 0;
-
-		file->seek(6975, true);
+		characters[count] = createSurface(chrPixels, 8, lineHeight);
 
 	}
-
-	// RLE decompression and horizontal to vertical character rearrangement
-	while (pos < 320 * lineHeight) {
-
-		rle = file->loadChar();
-
-		if (rle >= 128) {
-
-			index = file->loadChar();
-
-			for (count = 0; count < (rle & 127); count++) {
-
-				pixels[(pos & 7) + ((pos / 320) * 8) +
-					(((pos % 320)>>3) * 8 * lineHeight)] = index;
-				pos++;
-
-			}
-
-		} else if (rle > 0) {
-
-			for (count = 0; count < rle; count++) {
-
-				pixels[(pos & 7) + ((pos / 320) * 8) +
-					(((pos % 320)>>3) * 8 * lineHeight)] = file->loadChar();
-				pos++;
-
-			}
-
-		} else break;
-
-	}
-
-	for (count = 0; count < 40; count++)
-		characters[count] = createSurface(pixels + (count * 8 * lineHeight), 8, lineHeight);
 
 	nCharacters= 40;
 
-	delete[] pixels;
+	delete[] chrPixels;
 
 
 	if (big) {
 
+		// Goes " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:."
+
 		// Create ASCII->font map
-		for (count = 0; count < 45; count++) map[count] = 39;
-		map[45] = 36;
-		map[46] = 38;
-		for (count = 47; count < 48; count++) map[count] = 39;
-		for (; count < 58; count++) map[count] = count - 48;
-		map[58] = 37;
-		for (count = 59; count < 65; count++) map[count] = 39;
-		for (; count < 91; count++) map[count] = count - 55;
-		for (; count < 97; count++) map[count] = 39;
-		for (; count < 123; count++) map[count] = count - 87;
-		for (; count < 128; count++) map[count] = 39;
+		for (count = 0; count < 45; count++) map[count] = 0;
+		map[45] = 37;
+		map[46] = 39;
+		for (count = 47; count < 48; count++) map[count] = 0;
+		for (; count < 58; count++) map[count] = count - 47;
+		map[58] = 38;
+		for (count = 59; count < 65; count++) map[count] = 0;
+		for (; count < 91; count++) map[count] = count - 54;
+		for (; count < 97; count++) map[count] = 0;
+		for (; count < 123; count++) map[count] = count - 86;
+		for (; count < 128; count++) map[count] = 0;
 
 	} else {
 
+		// Goes " 0123456789oo" (where oo = infinity)
+
 		// Create ASCII->font map
-		for (count = 0; count < 48; count++) map[count] = 12;
+		for (count = 0; count < 48; count++) map[count] = 0;
 		// Use :; to represent the infinity symbol
-		for (; count < 60; count++) map[count] = count - 48;
-		for (; count < 128; count++) map[count] = 12;
+		for (; count < 60; count++) map[count] = count - 47;
+		for (; count < 128; count++) map[count] = 0;
 
 	}
 

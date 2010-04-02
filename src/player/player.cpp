@@ -870,9 +870,9 @@ void Player::receive (unsigned char *buffer) {
 }
 
 
-int Player::reacted (unsigned int ticks) {
+PlayerReaction Player::reacted (unsigned int ticks) {
 
-	int oldReaction;
+	PlayerReaction oldReaction;
 
 	if ((reaction != PR_NONE) && (reactionTime < ticks)) {
 

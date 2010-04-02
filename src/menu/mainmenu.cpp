@@ -89,8 +89,7 @@ int Menu::main () {
 
 						} else {
 
-							if (newGameEpisode(suboption) == E_QUIT)
-								return E_QUIT;
+							if (newGameEpisode(GameModeType(suboption)) == E_QUIT) return E_QUIT;
 
 						}
 
@@ -237,8 +236,8 @@ int Menu::main () {
 		dst.y = canvasH - (canvasH >> 2);
 		SDL_BlitSurface(screens[14], NULL, canvas, &dst);
 
-		dst.x = (canvasW - 320) >> 1;
-		dst.y = (canvasH - 200) >> 1;
+		dst.x = (canvasW - SW) >> 1;
+		dst.y = (canvasH - SH) >> 1;
 		SDL_BlitSurface(screens[0], NULL, canvas, &dst);
 
 		switch (option) {
@@ -299,8 +298,8 @@ int Menu::main () {
 
 		}
 
-		dst.x = ((canvasW - 320) >> 1) + src.x;
-		dst.y = ((canvasH - 200) >> 1) + src.y;
+		dst.x = ((canvasW - SW) >> 1) + src.x;
+		dst.y = ((canvasH - SH) >> 1) + src.y;
 		SDL_BlitSurface(screens[1], &src, canvas, &dst);
 
 	}

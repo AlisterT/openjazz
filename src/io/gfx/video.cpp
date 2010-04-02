@@ -67,18 +67,18 @@ void createScreen () {
 #endif
 
 #if defined(WIZ) || defined(GP2X)
-	screen = SDL_SetVideoMode(320, 240, 8, V_FULLSCREEN);
+	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
 #else
 	#ifdef FULLSCREEN_ONLY
-	screen = SDL_SetVideoMode(screenW, screenH, 8, V_FULLSCREEN);
+	screen = SDL_SetVideoMode(screenW, screenH, 8, FULLSCREEN_FLAGS);
 	#else
-	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? V_FULLSCREEN: V_WINDOWED);
+	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 	#endif
 #endif
 
 #ifdef SCALE
 	// Check that the scale will fit in the current resolution
-	while ( ((screenW/320 < scaleFactor) || (screenH/200 < scaleFactor)) && (scaleFactor > 1) ) {
+	while ( ((screenW/SW < scaleFactor) || (screenH/SH < scaleFactor)) && (scaleFactor > 1) ) {
 
 		scaleFactor--;
 

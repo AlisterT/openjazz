@@ -77,16 +77,6 @@
 #define PA_RSPRING  36
 #define PA_LSPRING  37 /* Surely these are the wrong way round? */
 
-// Player facing
-#define PF_LEFT  0
-#define PF_RIGHT 1
-
-// Player reactions
-#define PR_NONE       0
-#define PR_HURT       1
-#define PR_KILLED     2
-#define PR_INVINCIBLE 3
-
 // Player reaction times
 #define PRT_HURT       1000
 #define PRT_HURTANIM   200
@@ -159,6 +149,15 @@
 #define PCONTROLS   8 /* Number of player controls. */
 
 
+// Enum
+
+enum PlayerReaction {
+
+	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
+
+};
+
+
 // Classes
 
 class Anim;
@@ -167,37 +166,37 @@ class Bird;
 class Player : public Movable {
 
 	private:
-		Bird         *bird;
-		char         *name;
-		char          anims[PANIMS];
-		bool          pcontrols[PCONTROLS];
-		SDL_Color     palette[256];
-		unsigned char cols[4];
-		int           ammo[4];
-		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
-		int           score;
-		int           energy;
-		int           lives;
-		int           shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-		bool          floating; /* false = normal, true = boarding/bird/etc. */
-		bool          facing;
-		fixed         direction;
-		unsigned char animType;
-		unsigned char eventX;
-		unsigned char eventY; /* Position of an event (spring, platform, bridge) */
-		int           event;  /* 0 = none, 1 = spring, 2 = float up, 3 = platform, 4 = bridge */
-		int           lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
-		int           reaction;
-		unsigned int  reactionTime;
-		int           fireSpeed;
-		unsigned int  fireTime;
-		fixed         jumpHeight;
-		fixed         jumpY;
-		unsigned int  fastFeetTime;
-		unsigned char warpX, warpY;
-		unsigned int  warpTime;
-		int           enemies, items;
-		unsigned char team;
+		Bird           *bird;
+		char           *name;
+		char            anims[PANIMS];
+		bool            pcontrols[PCONTROLS];
+		SDL_Color       palette[256];
+		unsigned char   cols[4];
+		int             ammo[4];
+		int             ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
+		int             score;
+		int             energy;
+		int             lives;
+		int             shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
+		bool            floating; /* false = normal, true = boarding/bird/etc. */
+		bool            facing;
+		fixed           direction;
+		unsigned char   animType;
+		unsigned char   eventX;
+		unsigned char   eventY; /* Position of an event (spring, platform, bridge) */
+		int             event;  /* 0 = none, 1 = spring, 2 = float up, 3 = platform, 4 = bridge */
+		int             lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
+		PlayerReaction  reaction;
+		unsigned int    reactionTime;
+		int             fireSpeed;
+		unsigned int    fireTime;
+		fixed           jumpHeight;
+		fixed           jumpY;
+		unsigned int    fastFeetTime;
+		unsigned char   warpX, warpY;
+		unsigned int    warpTime;
+		int             enemies, items;
+		unsigned char   team;
 
 		void addAmmo      (int type, int amount);
 
@@ -241,7 +240,7 @@ class Player : public Movable {
 		void            bonusStep    (unsigned int ticks, int msps);
 		void            view         (unsigned int ticks, int mspf);
 		void            draw         (unsigned int ticks, int change);
-		int             reacted      (unsigned int ticks);
+		PlayerReaction  reacted      (unsigned int ticks);
 
 };
 

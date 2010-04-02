@@ -434,7 +434,7 @@ void Level::playSound (int sound) {
 }
 
 
-void Level::setStage (int newStage) {
+void Level::setStage (LevelStage newStage) {
 
 	unsigned char buffer[MTL_L_STAGE];
 
@@ -456,7 +456,7 @@ void Level::setStage (int newStage) {
 }
 
 
-int Level::getStage () {
+LevelStage Level::getStage () {
 
 	return stage;
 
@@ -508,7 +508,7 @@ void Level::receive (unsigned char *buffer) {
 
 		case MT_L_STAGE:
 
-			stage = buffer[2];
+			stage = LevelStage(buffer[2]);
 
 			break;
 

@@ -387,7 +387,7 @@ void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	position = viewY + (viewH << 9) - F4;
 
-	if (canvasW > 320) y = ((canvasH - 1) / 100) + 1;
+	if (canvasW > SW) y = ((canvasH - 1) / 100) + 1;
 	else y = ((canvasH - 34) / 100) + 1;
 
 	count = (((position * speed) / y) >> 20) % 255;

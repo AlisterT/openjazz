@@ -26,6 +26,8 @@
 #define _GAME_H
 
 
+#include "gamemode.h"
+
 #include "io/network.h"
 
 
@@ -124,7 +126,7 @@ class ServerGame : public Game {
 		int            sock;
 
 	public:
-		ServerGame         (int mode, char *firstLevel, int gameDifficulty);
+		ServerGame         (GameModeType mode, char *firstLevel, int gameDifficulty);
 		~ServerGame        ();
 
 		int  setLevel      (char *fileName);

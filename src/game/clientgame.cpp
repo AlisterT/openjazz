@@ -40,7 +40,8 @@ ClientGame::ClientGame (char *address) {
 
 	unsigned char buffer[BUFFER_LENGTH];
 	unsigned int timeout;
-	int count, ret, mode;
+	int count, ret;
+	GameModeType mode;
 
 	sock = net->join(address);
 
@@ -108,7 +109,7 @@ ClientGame::ClientGame (char *address) {
 	printf("Connected to server (version %d).\n", buffer[2]);
 
 	// Copy game parameters
-	mode = buffer[3];
+	mode = GameModeType(buffer[3]);
 	difficulty = buffer[4];
 	maxPlayers = buffer[5];
 	nPlayers = buffer[6];

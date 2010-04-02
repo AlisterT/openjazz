@@ -267,10 +267,10 @@ int Menu::setupResolution () {
 
 #ifndef FULLSCREEN_ONLY
 	if (!fullscreen)
-		resolutions = SDL_ListModes(NULL, V_WINDOWED);
+		resolutions = SDL_ListModes(NULL, WINDOWED_FLAGS);
 	else
 #endif
-		resolutions = SDL_ListModes(NULL, V_FULLSCREEN);
+		resolutions = SDL_ListModes(NULL, FULLSCREEN_FLAGS);
 
 
 #if defined(WIZ) || defined(GP2X)
@@ -283,8 +283,9 @@ int Menu::setupResolution () {
 		maxH = 1200;
 
 	} else {
-		maxW = 320;
-		maxH = 200;
+
+		maxW = SW;
+		maxH = SH;
 
 		for (count = 0; resolutions[count] != NULL; count++) {
 
@@ -360,7 +361,7 @@ int Menu::setupResolution () {
 
 		if (controls.release(C_DOWN)) {
 
-			if ((!dimension) && (screenW > 320)) {
+			if ((!dimension) && (screenW > SW)) {
 
 				count = 13;
 
@@ -371,7 +372,7 @@ int Menu::setupResolution () {
 
 			}
 
-			if (dimension && (screenH > 200)) {
+			if (dimension && (screenH > SH)) {
 
 				count = 16;
 

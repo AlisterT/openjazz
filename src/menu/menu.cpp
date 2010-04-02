@@ -84,8 +84,8 @@ Menu::Menu () {
 
 	// Load the main menu graphics
 	file->loadPalette(palettes[0]);
-	screens[0] = file->loadSurface(320, 200);
-	screens[1] = file->loadSurface(320, 200);
+	screens[0] = file->loadSurface(SW, SH);
+	screens[1] = file->loadSurface(SW, SH);
 
 
 	if (file->getSize() > 200000) {
@@ -98,8 +98,8 @@ Menu::Menu () {
 			SDL_FreeSurface(screens[0]);
 			SDL_FreeSurface(screens[1]);
 			file->loadPalette(palettes[0]);
-			screens[0] = file->loadSurface(320, 200);
-			screens[1] = file->loadSurface(320, 200);
+			screens[0] = file->loadSurface(SW, SH);
+			screens[1] = file->loadSurface(SW, SH);
 
 		} else {
 
@@ -117,7 +117,7 @@ Menu::Menu () {
 
 	// Load the difficulty graphics
 	file->loadPalette(palettes[1]);
-	screens[2] = file->loadSurface(320, 200);
+	screens[2] = file->loadSurface(SW, SH);
 	SDL_SetColorKey(screens[2], SDL_SRCCOLORKEY, 0);
 
 	// Default difficulty setting

@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -23,6 +23,8 @@
 #ifndef _MENU_H
 #define _MENU_H
 
+
+#include "game/gamemode.h"
 
 #include "OpenJazz.h"
 
@@ -46,9 +48,9 @@ class Menu {
 		int message           (const char *text);
 		int generic           (const char **optionNames, int options, int *chosen);
 		int textInput         (const char *request, char **text);
-		int newGameDifficulty (int mode, int levelNum, int worldNum);
-		int newGameLevel      (int mode);
-		int newGameEpisode    (int mode);
+		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
+		int newGameLevel      (GameModeType mode);
+		int newGameEpisode    (GameModeType mode);
 		int joinGame          ();
 		int loadGame          ();
 		int setupKeyboard     ();
@@ -60,7 +62,7 @@ class Menu {
 		int setupSound        ();
 
 	public:
-		SDL_Color      palettes[4][256];
+		SDL_Color palettes[4][256];
 
 		Menu      ();
 		~Menu     ();

@@ -43,7 +43,7 @@ class Font {
 
 	public:
 		Font                     (const char *fileName);
-		Font                     (File *file, bool big);
+		Font                     (unsigned char *pixels, bool big);
 		~Font                    ();
 
 		int  showString          (const char *s, int x, int y);

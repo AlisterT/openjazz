@@ -110,12 +110,6 @@
 // Standard string length
 #define STRING_LENGTH 32
 
-// Loop return type
-#define NORMAL_LOOP       0
-#define TYPING_LOOP       1
-#define SET_KEY_LOOP      2
-#define SET_JOYSTICK_LOOP 3
-
 // Return values
 #define E_DATA      -14
 #define E_VERSION   -13
@@ -151,6 +145,15 @@
 #define DIV(x, y) (((x) << 10) / (y))
 
 
+// Enum
+
+enum LoopType {
+
+	NORMAL_LOOP, TYPING_LOOP, SET_KEY_LOOP, SET_JOYSTICK_LOOP
+
+};
+
+
 // Datatype
 
 typedef int fixed;
@@ -164,7 +167,7 @@ EXTERN unsigned int globalTicks;
 
 // Functions in main.cpp
 
-EXTERN int loop (int type);
+EXTERN int loop (LoopType type);
 
 
 // Functions in util.cpp

@@ -52,14 +52,18 @@
 #define PATHS      16
 #define TKEY      127 /* Tileset colour key */
 
-// Stages
-#define LS_NORMAL      0
-#define LS_SUDDENDEATH 1
-#define LS_END         2
-
 // Fade delays
 #define T_START 500
 #define T_END   1000
+
+
+// Enum
+
+enum LevelStage {
+
+	LS_NORMAL = 0, LS_SUDDENDEATH = 1, LS_END = 2
+
+};
 
 
 // Datatypes
@@ -115,7 +119,7 @@ class Level : public BaseLevel {
 		fixed          waterLevelTarget;
 		fixed          waterLevelSpeed;
 		fixed          energyBar;
-		int            stage;
+		LevelStage     stage;
 
 		int loadSprites (char *fileName);
 		int loadTiles   (char *fileName);
@@ -153,8 +157,8 @@ class Level : public BaseLevel {
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);
-		void          setStage      (int stage);
-		int           getStage      ();
+		void          setStage      (LevelStage stage);
+		LevelStage    getStage      ();
 		Scene *       createScene   ();
 		void          receive       (unsigned char *buffer);
 		virtual int   play          ();
