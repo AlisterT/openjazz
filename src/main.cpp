@@ -403,16 +403,18 @@ int loadMain (int argc, char *argv[]) {
 
 	try {
 
+		fontsFont = new Font();
 		panelBigFont = new Font(pixels + (40 * 320), true);
 		panelSmallFont = new Font(pixels + (48 * 320), false);
-		font2 = new Font("font2.0fn");
-		fontbig = new Font("fontbig.0fn");
-		fontiny = new Font("fontiny.0fn");
-		fontmn1 = new Font("fontmn1.0fn");
-		fontmn2 = new Font("fontmn2.0fn");
+		font2 = new Font(F_FONT2_0FN);
+		fontbig = new Font(F_FONTBIG_0FN);
+		fontiny = new Font(F_FONTINY_0FN);
+		fontmn1 = new Font(F_FONTMN1_0FN);
+		fontmn2 = new Font(F_FONTMN2_0FN);
 
 	} catch (int e) {
 
+		if (fontsFont) delete fontsFont;
 		if (panelBigFont) delete panelBigFont;
 		if (panelSmallFont) delete panelSmallFont;
 		if (font2) delete font2;
@@ -569,10 +571,11 @@ int loop (LoopType type) {
 	SDL_Event event;
 	int prevTicks, ret;
 
-	// Show everything that has been drawn so far
+
 #ifdef SCALE
 	if (canvas != screen) {
 
+		// Copy everything that has been drawn so far
 		scale(scaleFactor,
 			screen->pixels, screen->pitch,
 			canvas->pixels, canvas->pitch,
@@ -581,11 +584,37 @@ int loop (LoopType type) {
 	}
 #endif
 
-	SDL_Flip(screen);
-
-
+	// Update tick count
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
+
+	// Apply palette effects
+	if (firstPE) {
+
+		/* If the palette is being emulated, compile all palette changes and
+		apply them all at once.
+		If the palette is being used directly, apply all palette effects
+		directly. */
+
+		if (fakePalette) {
+
+			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
+
+			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
+
+			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+
+		} else {
+
+			firstPE->apply(shownPalette, true, globalTicks - prevTicks);
+
+		}
+
+	}
+
+	// Show what has been drawn
+	SDL_Flip(screen);
+
 
 	// Process system events
 	while (SDL_PollEvent(&event)) {
@@ -664,31 +693,6 @@ int loop (LoopType type) {
 
 	controls.loop();
 
-
-	// Apply palette effects
-
-	if (firstPE) {
-
-		/* If the palette is being emulated, compile all palette changes and
-		apply them all at once.
-		If the palette is being used directly, apply all palette effects
-		directly. */
-
-		if (fakePalette) {
-
-			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
-
-			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
-
-			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
-
-		} else {
-
-			firstPE->apply(shownPalette, true, globalTicks - prevTicks);
-
-		}
-
-	}
 
 #if defined(WIZ) || defined(GP2X)
 	WIZ_AdjustVolume( volume_direction );

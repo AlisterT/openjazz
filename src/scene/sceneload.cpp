@@ -111,20 +111,14 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 					case 0x3131:
 
-						{
+						// Skip back size header, this is read by the surface reader
+						f->seek(-2, false);
 
-							// Skip back size header, this is read by the surface reader
-							f->seek(-2, false);
+						if (!background) background = f->loadSurface(SW, SH);
 
-							SDL_Surface *image = f->loadSurface(SW, SH);
-							SDL_BlitSurface(image, NULL, canvas, NULL);
-							SDL_FreeSurface(image);
-
-							// Use the most recently loaded palette
-							SDL_SetPalette(screen, SDL_PHYSPAL, palettes->palette, 0, 256);
-							currentPalette = palettes->palette;
-
-						}
+						// Use the most recently loaded palette
+						SDL_SetPalette(screen, SDL_PHYSPAL, palettes->palette, 0, 256);
+						currentPalette = palettes->palette;
 
 						break;
 
@@ -461,19 +455,15 @@ void Scene::loadScripts (File *f) {
 
 					case ESceneBackground:
 
-						{
+						pages[loop].bgX[pages[loop].backgrounds] = f->loadShort();
+						pages[loop].bgY[pages[loop].backgrounds] = f->loadShort();
+						pages[loop].bgIndex[pages[loop].backgrounds] = f->loadShort();
 
-							unsigned short int xpos = f->loadShort();
-							unsigned short int ypos = f->loadShort();
-							unsigned short bgImageIndex = f->loadShort();
-							LOG("ESceneBackground: index", bgImageIndex);
-							LOG("ESceneBackground: xpos", xpos);
-							LOG("ESceneBackground: ypos", ypos);
-							pages[loop].bgIndex[pages[loop].backgrounds] = bgImageIndex;
-							pages[loop].bgPos[pages[loop].backgrounds] = xpos | (ypos << 16);
-							pages[loop].backgrounds++;
+						LOG("ESceneBackground: xpos", pages[loop].bgX[pages[loop].backgrounds]);
+						LOG("ESceneBackground: ypos", pages[loop].bgY[pages[loop].backgrounds]);
+						LOG("ESceneBackground: index", pages[loop].bgIndex[pages[loop].backgrounds]);
 
-						}
+						pages[loop].backgrounds++;
 
 						break;
 

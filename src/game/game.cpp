@@ -148,6 +148,22 @@ int Game::play () {
 
 			levelRet = level->play();
 
+			if (levelRet < 0) {
+
+				delete level;
+
+				return levelRet;
+
+			} else if (levelRet == E_NONE) {
+
+				delete level;
+
+				playMusic("menusng.psm");
+
+				return E_NONE;
+
+			}
+
 		} else levelRet = WON;
 
 
@@ -165,16 +181,63 @@ int Game::play () {
 
 			}
 
-			delete[] bonusFile;
-			bonusFile = NULL;
+			if (levelFile) {
+
+				delete[] bonusFile;
+				bonusFile = NULL;
+
+			}
 
 			bonusRet = bonus->play();
 
 			delete bonus;
 
-			if (bonusRet == E_QUIT) return E_QUIT;
+			if (bonusRet == E_QUIT) {
 
-			if (bonusRet == E_NONE) return E_NONE;
+				if (level) delete level;
+
+				return E_QUIT;
+
+			} else if (bonusRet == E_NONE) {
+
+				if (level) delete level;
+
+				playMusic("menusng.psm");
+
+				return E_NONE;
+
+			} else if (bonusRet == WON) {
+
+				try {
+
+					scene = new Scene(F_BONUS_0SC);
+
+				} catch (int e) {
+
+					scene = NULL;
+
+				}
+
+				if (scene) {
+
+					if (scene->play() == E_QUIT) {
+
+						delete scene;
+
+						if (level) delete level;
+
+						return E_QUIT;
+
+					}
+
+					delete scene;
+
+				}
+
+				// If part of a bonus-only game, go to next level
+				if (!level) setBonus((bonusFile[10] * 10) + bonusFile[11] - 527);
+
+			}
 
 		}
 
@@ -182,58 +245,50 @@ int Game::play () {
 		if (!level) continue;
 
 
-		switch (levelRet) {
+		if (levelRet == WON) {
 
-			case E_NONE: // Quit game
+			// Won the level
+
+			// If there is no next level, load and play the cutscene
+			if (!levelFile) {
+
+				scene = level->createScene();
 
 				delete level;
 
-				playMusic("menusng.psm");
+				if (scene) {
 
-				return E_NONE;
+					if (scene->play() == E_QUIT) {
 
-			case WON: // Completed level
+						delete scene;
 
-				// If there is no next level, load and play the cutscene
-				if (!levelFile) {
+						return E_QUIT;
 
-					scene = level->createScene();
-
-					delete level;
-
-					scene->play();
+					}
 
 					delete scene;
 
-					return E_NONE;
-
 				}
 
-				delete level;
+				return E_NONE;
 
-				// Do not use old level's checkpoint coordinates
-				checkpoint = false;
+			}
 
-				break;
+			// Do not use old level's checkpoint coordinates
+			checkpoint = false;
 
-			case LOST: // Lost level
+		} else {
 
-				delete level;
+			// Lost the level
 
-				if (!localPlayer->getLives()) return E_NONE; // Not really a success...
+			if (!localPlayer->getLives()) return E_NONE;
 
-				// Use checkpoint coordinates
-				checkpoint = true;
-
-				break;
-
-			default: // Error
-
-				delete level;
-
-				return levelRet;
+			// Use checkpoint coordinates
+			checkpoint = true;
 
 		}
+
+		delete level;
 
 	}
 
@@ -294,10 +349,10 @@ void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 }
 
 
-void Game::resetPlayer (Player *player) {
+void Game::resetPlayer (Player *player, bool bonus) {
 
 	player->reset();
-	player->setPosition(TTOF(checkX), TTOF(checkY));
+	player->setPosition(TTOF(checkX) + (bonus? F16: 0), TTOF(checkY) + (bonus? F16: 0));
 
 	return;
 

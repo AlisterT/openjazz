@@ -60,10 +60,16 @@ void Sprite::clearPixels () {
 
 void Sprite::setPixels (unsigned char *data, int width, int height) {
 
+	unsigned char *sorted;
+
 	if (pixels) SDL_FreeSurface(pixels);
 
-	pixels = createSurface(data, width, height);
+	sorted = sortPixels(data, width * height);
+
+	pixels = createSurface(sorted, width, height);
 	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, SKEY);
+
+	delete[] sorted;
 
 	return;
 

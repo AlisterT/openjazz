@@ -105,7 +105,7 @@ unsigned char FreeForAllGameMode::chooseTeam () {
 
 void FreeForAllGameMode::drawScore () {
 
-	fontmn1->showNumber(localPlayer->teamScore, 64, 4);
+	fontsFont->showNumber(localPlayer->teamScore, 64, 4);
 
 	return;
 
@@ -140,7 +140,7 @@ unsigned char TeamGameMode::chooseTeam () {
 
 void TeamGameMode::drawScore () {
 
-	fontmn1->showNumber(localPlayer->teamScore, 64, 4);
+	fontsFont->showNumber(localPlayer->teamScore, 64, 4);
 
 	return;
 
@@ -199,7 +199,7 @@ bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX,
 
 	if (player == localPlayer) game->score(player->getTeam());
 
-	game->resetPlayer(player);
+	game->resetPlayer(player, false);
 
 	return false;
 

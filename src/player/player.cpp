@@ -602,6 +602,15 @@ void Player::kill (Player *source, unsigned int ticks) {
 }
 
 
+void Player::addItem () {
+
+	items++;
+
+	return;
+
+}
+
+
 void Player::addScore (int addedScore) {
 
 	score += addedScore * 10;

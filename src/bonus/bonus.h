@@ -34,16 +34,20 @@
 #define BLW 256 /* Bonus level width */
 #define BLH 256 /* Bonus level height */
 
+#define T_BONUS_END 1500
+
 
 // Class
 
 class Bonus : public BaseLevel {
 
 	private:
-		unsigned char  tiles[BLH][BLW];
-		unsigned char  events[BLH][BLW];
+		unsigned char tiles[BLH][BLW];
+		unsigned char events[BLH][BLW];
 
-		int loadTiles (char *fileName);
+		int  loadTiles (char *fileName);
+		int  step ();
+		void draw ();
 
 	public:
 		Bonus    (char * fileName, unsigned char diff);

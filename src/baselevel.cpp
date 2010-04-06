@@ -26,6 +26,7 @@
  */
 
 
+#include "game/game.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "player/player.h"
@@ -38,6 +39,9 @@ BaseLevel::BaseLevel () {
 	smoothfps = 50.0f;
 
 	paused = false;
+
+	// Set the level stage
+	stage = LS_NORMAL;
 
 	return;
 
@@ -144,6 +148,31 @@ void BaseLevel::drawStats (int stats) {
 				(canvasW >> 1) + width + 1, 14 + (count * 12));
 
 		}
+
+	}
+
+	return;
+
+}
+
+
+void BaseLevel::addTimer () {
+
+	unsigned char buffer[MTL_L_PROP];
+
+	if (stage != LS_NORMAL) return;
+
+	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+
+	if (gameMode) {
+
+		buffer[0] = MTL_L_PROP;
+		buffer[1] = MT_L_PROP;
+		buffer[2] = 2; // add timer
+		buffer[3] = 0;
+		buffer[4] = 0; // Don't really matter
+
+		game->send(buffer);
 
 	}
 

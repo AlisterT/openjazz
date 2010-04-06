@@ -110,7 +110,7 @@ int Menu::main () {
 
 					try {
 
-						scene = new Scene("instruct.0sc");
+						scene = new Scene(F_INSTRUCT_0SC);
 
 					} catch (int e) {
 
@@ -142,7 +142,7 @@ int Menu::main () {
 
 					try {
 
-						scene = new Scene("order.0sc");
+						scene = new Scene(F_ORDER_0SC);
 
 					} catch (int e) {
 

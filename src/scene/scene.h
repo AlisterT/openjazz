@@ -83,16 +83,17 @@ class SceneText {
 class ScenePage {
 
 	public:
-		int           backgrounds;
-		int           bgIndex[30];
-		unsigned int  bgPos[30];
+		int                 backgrounds;
+		int                 bgIndex[30];
+		unsigned short int  bgX[30];
+		unsigned short int  bgY[30];
 
 		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
-		int           pageTime;
-		SceneText     texts[100];
-		int           nTexts;
-		char         *musicFile;
-		int           paletteIndex;
+		int                 pageTime;
+		SceneText           texts[100];
+		int                 nTexts;
+		char               *musicFile;
+		int                 paletteIndex;
 
 		ScenePage();
 		~ScenePage();
@@ -134,6 +135,7 @@ class SceneFont {
 class Scene {
 
 	private:
+		SDL_Surface        *background;
 		SceneImage         *images;
 		ScenePalette       *palettes;
 		SceneFont           fonts[5];
@@ -146,9 +148,9 @@ class Scene {
 		// Scripts all information needed to render script pages, text etc
 		ScenePage          *pages;
 
-		void         loadScripts (File *f);
-		void         loadData    (File *f);
-		void         loadAni     (File* f, int dataIndex);
+		void loadScripts (File *f);
+		void loadData    (File *f);
+		void loadAni     (File* f, int dataIndex);
 
 	public:
 		Scene    (const char * fileName);

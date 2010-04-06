@@ -46,6 +46,15 @@
 #define TTOI(x) ((x) << 5)
 
 
+// Enum
+
+enum LevelStage {
+
+	LS_NORMAL = 0, LS_SUDDENDEATH = 1, LS_END = 2
+
+};
+
+
 // Classes
 
 class BaseLevel {
@@ -58,12 +67,15 @@ class BaseLevel {
 		float         smoothfps;
 		int           items;
 		bool          paused;
+		LevelStage    stage;
 
 		void timeCalcs ();
 		void drawStats (int stats);
 
 	public:
-		BaseLevel ();
+		BaseLevel     ();
+
+		void addTimer ();
 
 };
 

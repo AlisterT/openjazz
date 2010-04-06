@@ -27,6 +27,7 @@
 
 
 #include "bonus.h"
+#include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/file.h"
@@ -147,6 +148,36 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	delete[] buffer;
 
 
+	file->seek(178, false);
+
+	// Set the tick at which the level will end
+	endTime = file->loadShort() * 1000;
+
+
+	// Number of gems to collect
+	items = file->loadShort();
+
+
+	// The players' coordinates
+	x = file->loadShort();
+	y = file->loadShort();
+
+	if (game) game->setCheckpoint(x, y);
+
+
+	// Set the players' initial values
+	if (game) {
+
+		for (x = 0; x < nPlayers; x++)
+			game->resetPlayer(players + x, true);
+
+    } else {
+
+		localPlayer->reset();
+		localPlayer->setPosition(TTOF(x) + F16, TTOF(y) + F16);
+
+    }
+
 	delete file;
 
 
@@ -168,12 +199,8 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	// Apply the palette to surfaces that already exist, e.g. fonts
 	usePalette(palette);
 
-	// Adjust fontmn1 to use bonuslevel palette
-	fontmn1->mapPalette(224, 8, 0, 16);
-
-
-	// Set the tick at which the level will end
-	endTime = (5 - diff) * 30 * 1000;
+	// Adjust fontmn1 to use bonus level palette
+	fontsFont->mapPalette(0, 16, 15, -16);
 
 
 	return;
@@ -193,7 +220,181 @@ Bonus::~Bonus () {
 
 	SDL_FreeSurface(tileSet);
 
-	fontmn1->restorePalette();
+	fontsFont->restorePalette();
+
+	return;
+
+}
+
+
+int Bonus::step () {
+
+	fixed playerX, playerY;
+	int gridX, gridY;
+	int msps;
+	int count;
+
+	// Milliseconds per step
+	msps = ticks - prevStepTicks;
+	prevStepTicks = ticks;
+
+
+	// Check if time has run out
+	if (ticks > endTime) return LOST;
+
+
+	// Apply controls to local player
+	for (count = 0; count < PCONTROLS; count++)
+		localPlayer->setControl(count, controls.getState(count));
+
+	// Process players
+	for (count = 0; count < nPlayers; count++) {
+
+		players[count].bonusStep(ticks, msps);
+
+		playerX = players[count].getX();
+		playerY = players[count].getY();
+
+		gridX = FTOT(playerX);
+		gridY = FTOT(playerY);
+
+		if ((playerX > TTOF(gridX) + F12) && (playerX < TTOF(gridX) + F20) &&
+			(playerY > TTOF(gridY) + F12) && (playerY < TTOF(gridY) + F20)) {
+
+			while (gridX < 0) gridX += BLW;
+			while (gridY < 0) gridY += BLH;
+
+			switch (events[gridY][gridX]) {
+
+				case 1: // Extra time
+
+					addTimer();
+					events[gridY][gridX] = 0;
+
+					break;
+
+				case 2: // Gem
+
+					players[count].addItem();
+					events[gridY][gridX] = 0;
+
+					if (players[count].getItems() >= items) return WON;
+
+					break;
+
+				case 3: // Hand
+
+					players[count].setSpeed(0, 0);
+
+					break;
+
+				case 4: // Exit
+
+					return LOST;
+
+				default:
+
+					// Do nothing
+
+					break;
+
+			}
+
+		}
+
+	}
+
+	return E_NONE;
+
+}
+
+
+void Bonus::draw () {
+
+	SDL_Rect src, dst;
+	int x, y;
+
+	src.x = 0;
+	src.w = 32;
+	src.h = 32;
+
+	int vX = FTOI(localPlayer->getX()) - (canvasW >> 1);
+	int vY = FTOI(localPlayer->getY()) - (canvasH >> 1);
+
+	for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
+
+		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
+
+			src.y = TTOI(tiles[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]);
+			dst.x = TTOI(x) - (vX & 31);
+			dst.y = TTOI(y) - (vY & 31);
+
+			SDL_BlitSurface(tileSet, &src, canvas, &dst);
+
+			dst.x = 12 + TTOI(x) - (vX & 31);
+			dst.y = 12 + TTOI(y) - (vY & 31);
+
+			switch (events[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]) {
+
+				case 0: // No event
+
+					break;
+
+				case 1: // Extra time
+
+					drawRect(dst.x, dst.y, 8, 8, 60);
+
+					break;
+
+				case 2: // Gem
+
+					drawRect(dst.x, dst.y, 8, 8, 67);
+
+					break;
+
+				case 3: // Hand
+
+					drawRect(dst.x, dst.y, 8, 8, 15);
+
+					break;
+
+				case 4: // Exit
+
+					drawRect(dst.x, dst.y, 8, 8, 45);
+
+					break;
+
+				default:
+
+					drawRect(dst.x, dst.y, 8, 8, 0);
+
+					break;
+
+			}
+
+		}
+
+	}
+
+	// Draw the "player"
+	drawRect(
+		(canvasW >> 1) + fixed(sin(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4,
+		(canvasH >> 1) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
+	drawRect((canvasW >> 1) - 4, (canvasH >> 1) - 4, 8, 8, 22);
+
+
+	// Show gem count
+	fontsFont->showString("x", 15, 0);
+	fontsFont->showNumber(localPlayer->getItems(), 64, 0);
+	fontsFont->showNumber(items, 117, 0);
+
+
+	// Show time remaining
+	if (endTime > ticks) x = (endTime - ticks) / 1000;
+	else x = 0;
+	fontsFont->showNumber(x / 60, 242, 0);
+	fontsFont->showNumber(x % 60, 286, 0);
+
 
 	return;
 
@@ -206,9 +407,8 @@ int Bonus::play () {
 	PaletteEffect *levelPE;
 	bool pmenu, pmessage;
 	int stats, option;
-	SDL_Rect src, dst;
-	int x, y;
-	int msps;
+	unsigned int returnTime;
+	int count;
 
 
 	tickOffset = globalTicks;
@@ -218,9 +418,6 @@ int Bonus::play () {
 	pmessage = pmenu = false;
 	option = 0;
 	stats = S_NONE;
-
-	// Arbitrary position
-	localPlayer->setPosition(TTOF(32) + F16, TTOF(7) + F16);
 
 	while (true) {
 
@@ -294,104 +491,43 @@ int Bonus::play () {
 
 		timeCalcs();
 
-		// Milliseconds per step
-		msps = ticks - prevStepTicks;
-		prevStepTicks = ticks;
 
+		// Check if level has been won
+		if (returnTime && (ticks > returnTime)) {
 
-		if (!paused) {
+			if (localPlayer->getItems() >= items) return WON;
 
-			// Apply controls to local player
-			for (x = 0; x < PCONTROLS; x++)
-				localPlayer->setControl(x, controls.getState(x));
-
-			// Process players
-			for (x = 0; x < nPlayers; x++) players[x].bonusStep(ticks, msps);
+			return LOST;
 
 		}
 
-		src.x = 0;
-		src.w = 32;
-		src.h = 32;
 
-		int vX = FTOI(localPlayer->getX()) - (canvasW >> 1);
-		int vY = FTOI(localPlayer->getY()) - (canvasH >> 1);
+		// Process frame-by-frame activity
 
-		for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
+		if (!paused && (ticks >= prevStepTicks + 16) && (stage == LS_NORMAL)) {
 
-			for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
+			count = step();
 
-				src.y = TTOI(tiles[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]);
-				dst.x = TTOI(x) - (vX & 31);
-				dst.y = TTOI(y) - (vY & 31);
+			if (count < 0) return count;
+			else if (count) {
 
-				SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
-				dst.x = 12 + TTOI(x) - (vX & 31);
-				dst.y = 12 + TTOI(y) - (vY & 31);
-
-				switch (events[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]) {
-
-					case 0: // No event
-
-						break;
-
-					case 1: // Extra time
-
-						drawRect(dst.x, dst.y, 8, 8, 60);
-
-						break;
-
-					case 2: // Gem
-
-						drawRect(dst.x, dst.y, 8, 8, 67);
-
-						break;
-
-					case 3: // Hand
-
-						drawRect(dst.x, dst.y, 8, 8, 15);
-
-						break;
-
-					case 4: // Exit
-
-						drawRect(dst.x, dst.y, 8, 8, 45);
-
-						break;
-
-					default:
-
-						drawRect(dst.x, dst.y, 8, 8, 0);
-
-						break;
-
-				}
+				stage = LS_END;
+				firstPE = new WhiteOutPaletteEffect(T_BONUS_END, firstPE);
+				returnTime = ticks + T_BONUS_END;
 
 			}
 
 		}
 
-		// Draw the "player"
-		drawRect(
-			(canvasW >> 1) + fixed(sin(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4,
-			(canvasH >> 1) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
-		drawRect((canvasW >> 1) - 4, (canvasH >> 1) - 4, 8, 8, 22);
 
+		// Draw the graphics
 
-		// Show time remaining
-		if (endTime > ticks) x = endTime - ticks;
-		else x = 0;
-		y = x / (60 * 1000);
-		fontmn1->showNumber(y, 144, 8);
-		x -= (y * 60 * 1000);
-		y = x / 1000;
-		fontmn1->showNumber(y, 192, 8);
+		draw();
 
 
 		// If paused, draw "PAUSE"
-		if (paused && !pmenu)
-			fontmn1->showString("pause", (canvasW >> 1) - 44, 32);
+		if (pmessage && !pmenu)
+			fontsFont->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
 		drawStats(stats);
@@ -403,12 +539,12 @@ int Bonus::play () {
 
 			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 60, 0);
 
-			for (x = 0; x < 3; x++) {
+			for (count = 0; count < 3; count++) {
 
-				if (x == option) fontmn2->mapPalette(240, 8, 31, 16);
+				if (count == option) fontmn2->mapPalette(240, 8, 31, 16);
 				else fontmn2->mapPalette(240, 8, 0, 16);
 
-				fontmn2->showString(options[x], canvasW >> 2, (canvasH >> 1) + (x << 4) - 38);
+				fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 38);
 
 			}
 

@@ -31,6 +31,25 @@
 #include <string.h>
 
 
+unsigned char * sortPixels (unsigned char * pixels, int length) {
+
+	unsigned char *sorted;
+	int count;
+
+	sorted = new unsigned char[length];
+
+	// Rearrange pixels in correct order
+	for (count = 0; count < length; count++) {
+
+		sorted[count] = pixels[(count >> 2) + ((count & 3) * (length >> 2))];
+
+	}
+
+	return sorted;
+
+}
+
+
 SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 
 	SDL_Surface *ret;

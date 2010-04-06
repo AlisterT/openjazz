@@ -130,8 +130,6 @@ Level::~Level () {
 
 	delete[] spriteSet;
 
-	fontmn1->restorePalette();
-
 	delete[] sceneFile;
 
 	return;
@@ -371,31 +369,6 @@ Anim * Level::getMiscAnim (unsigned char anim) {
 }
 
 
-void Level::addTimer () {
-
-	unsigned char buffer[MTL_L_PROP];
-
-	if (stage != LS_NORMAL) return;
-
-	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
-
-	if (gameMode) {
-
-		buffer[0] = MTL_L_PROP;
-		buffer[1] = MT_L_PROP;
-		buffer[2] = 2; // add timer
-		buffer[3] = 0;
-		buffer[4] = 0; // Don't really matter
-
-		game->send(buffer);
-
-	}
-
-	return;
-
-}
-
-
 void Level::setWaterLevel (unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -417,6 +390,7 @@ void Level::setWaterLevel (unsigned char gridY) {
 	return;
 
 }
+
 
 fixed Level::getWaterLevel () {
 
@@ -465,7 +439,15 @@ LevelStage Level::getStage () {
 
 Scene * Level::createScene () {
 
-	return new Scene(sceneFile);
+	try {
+
+		return new Scene(sceneFile);
+
+	} catch (int e) {
+
+		return NULL;
+
+	}
 
 }
 
@@ -626,7 +608,6 @@ int Level::play () {
 		timeCalcs();
 
 
-
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
@@ -648,35 +629,15 @@ int Level::play () {
 
 		// Process frame-by-frame activity
 
-		if (!paused) {
+		if (!paused && (ticks >= prevStepTicks + 16)) {
 
 			// Apply controls to local player
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
 
+			count = step();
 
-			// Process step
-			if (ticks >= prevStepTicks + 16) {
-
-				count = step();
-
-				if (count < 0) return count;
-
-			}
-
-
-			// Handle player reactions
-			for (count = 0; count < nPlayers; count++) {
-
-				if (players[count].reacted(ticks) == PR_KILLED) {
-
-					if (!gameMode) return LOST;
-
-					game->resetPlayer(players + count);
-
-				}
-
-			}
+			if (count) return count;
 
 		}
 
@@ -687,8 +648,8 @@ int Level::play () {
 
 
 		// If paused, draw "PAUSE"
-		if (paused && !pmenu)
-			fontmn1->showString("pause", (canvasW >> 1) - 44, 32);
+		if (pmessage && !pmenu)
+			fontsFont->showString("pause", (canvasW >> 1) - 44, 32);
 
 
 		// If this is a competitive game, draw the score
@@ -744,28 +705,30 @@ int Level::play () {
 			// Display statistics & bonuses
 			// TODO: Display percentage symbol
 
-			fontmn1->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
-			fontmn1->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
+			fontsFont->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
+			fontsFont->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
 
-			fontmn1->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
+			fontsFont->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
 
 			if (enemies)
-				fontmn1->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+				fontsFont->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			else
-				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+				fontsFont->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+			fontsFont->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 
-			fontmn1->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
+			fontsFont->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
 
 			if (items)
-				fontmn1->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+				fontsFont->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			else
-				fontmn1->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+				fontsFont->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+			fontsFont->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 
-			fontmn1->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);
-			fontmn1->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
+			fontsFont->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);
+			fontsFont->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
 
-			fontmn1->showString("score", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
-			fontmn1->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
+			fontsFont->showString("score", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
+			fontsFont->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
 
 		}
 

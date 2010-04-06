@@ -105,7 +105,7 @@ class Game {
 		virtual int  step          (unsigned int ticks);
 		virtual void score         (unsigned char team);
 		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY);
-		void         resetPlayer   (Player *player);
+		void         resetPlayer   (Player *player, bool bonus);
 
 };
 

@@ -36,7 +36,7 @@
 Font::Font (const char * fileName) {
 
 	File *file;
-	unsigned char *pixels;
+	unsigned char *pixels, *blank;
 	int fileSize;
 	int count, size, width, height;
 
@@ -52,30 +52,24 @@ Font::Font (const char * fileName) {
 
 	}
 
+	fileSize = file->getSize();
+
+	nCharacters = 128;
+
 
 	file->seek(20, true);
 	lineHeight = file->loadChar() << 1;
 
 
-	// Create the first character
+	// Create blank character data
 
-	pixels = new unsigned char[3 * lineHeight];
-
-	memset(pixels, 0, 3 * lineHeight);
-	characters[0] = createSurface(pixels, 3, lineHeight);
-	SDL_SetColorKey(characters[0], SDL_SRCCOLORKEY, 0);
-
-	delete[] pixels;
+	blank = new unsigned char[3];
+	memset(blank, 0, 3);
 
 
-	// Create remaining characters
+	// Load characters
 
-	fileSize = file->getSize();
-	nCharacters = 128;
-
-	file->seek(23, true);
-
-	for (count = 1; count < 128; count++) {
+	for (count = 0; count < 128; count++) {
 
 		size = file->loadShort();
 
@@ -97,13 +91,16 @@ Font::Font (const char * fileName) {
 			height += pixels[3] << 8;
 
 			characters[count] = createSurface(pixels + 4, width, height);
-			SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 0);
 
 			delete[] pixels;
 
-		} else characters[count] = createSurface(NULL, 1, 1);
+		} else characters[count] = createSurface(blank, 3, 1);
+
+		SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 0);
 
 	}
+
+	delete[] blank;
 
 	delete file;
 
@@ -174,18 +171,19 @@ Font::Font (unsigned char *pixels, bool big) {
 	delete[] chrPixels;
 
 
+	// Create ASCII->font map
+
 	if (big) {
 
 		// Goes " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:."
 
-		// Create ASCII->font map
 		for (count = 0; count < 45; count++) map[count] = 0;
-		map[45] = 37;
-		map[46] = 39;
-		for (count = 47; count < 48; count++) map[count] = 0;
+		map[count++] = 37;
+		map[count++] = 39;
+		for (; count < 48; count++) map[count] = 0;
 		for (; count < 58; count++) map[count] = count - 47;
-		map[58] = 38;
-		for (count = 59; count < 65; count++) map[count] = 0;
+		map[count++] = 38;
+		for (; count < 65; count++) map[count] = 0;
 		for (; count < 91; count++) map[count] = count - 54;
 		for (; count < 97; count++) map[count] = 0;
 		for (; count < 123; count++) map[count] = count - 86;
@@ -194,12 +192,103 @@ Font::Font (unsigned char *pixels, bool big) {
 	} else {
 
 		// Goes " 0123456789oo" (where oo = infinity)
-
-		// Create ASCII->font map
-		for (count = 0; count < 48; count++) map[count] = 0;
 		// Use :; to represent the infinity symbol
+
+		for (count = 0; count < 48; count++) map[count] = 0;
 		for (; count < 60; count++) map[count] = count - 47;
 		for (; count < 128; count++) map[count] = 0;
+
+	}
+
+	return;
+
+}
+
+
+Font::Font () {
+
+	File *file;
+	unsigned char *pixels, *sorted;
+	int fileSize;
+	int count, width, height;
+
+	// Load font from FONTS.000
+
+	try {
+
+		file = new File(F_FONTS, false);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
+
+	fileSize = file->getSize();
+
+	nCharacters = file->loadShort();
+
+
+	// Load characters
+
+	for (count = 0; count < nCharacters; count++) {
+
+		width = file->loadShort() << 2;
+		height = file->loadShort();
+
+		file->seek(4, false);
+
+		if (file->tell() >= fileSize) {
+
+			nCharacters = count;
+
+			break;
+
+		}
+
+		pixels = file->loadBlock(width * height);
+		sorted = sortPixels(pixels, width * height);
+
+		characters[count] = createSurface(sorted, width, height);
+		SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 254);
+
+		delete[] sorted;
+		delete[] pixels;
+
+	}
+
+	delete file;
+
+	lineHeight = characters[0]->h;
+
+
+	// Create blank character data
+
+	pixels = new unsigned char[3];
+	memset(pixels, 254, 3);
+	characters[nCharacters] = createSurface(pixels, 3, 1);
+	SDL_SetColorKey(characters[nCharacters], SDL_SRCCOLORKEY, 254);
+	delete[] pixels;
+
+
+	// Create ASCII->font map
+
+	for (count = 0; count < 37; count++) map[count] = nCharacters;
+	map[count++] = 36;
+	for (; count < 48; count++) map[count] = nCharacters;
+	for (; count < 58; count++) map[count] = count - 22;
+	for (; count < 65; count++) map[count] = nCharacters;
+	for (; count < 91; count++) map[count] = count - 65;
+	for (; count < 97; count++) map[count] = nCharacters;
+	for (; count < 123; count++) map[count] = count - 97;
+	for (; count < 128; count++) map[count] = nCharacters;
+
+	nCharacters++;
+
+	for (count = 0; count < 128; count++) {
+
+		if (map[count] >= nCharacters) map[count] = 0;
 
 	}
 

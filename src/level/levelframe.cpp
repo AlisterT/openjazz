@@ -34,6 +34,7 @@
 
 #include "game/game.h"
 #include "game/gamemode.h"
+#include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "player/player.h"
@@ -169,6 +170,20 @@ int Level::step () {
 	waterLevel += (waterLevelSpeed * msps) >> 10;
 
 
+	// Handle player reactions
+	for (x = 0; x < nPlayers; x++) {
+
+		if (players[x].reacted(ticks) == PR_KILLED) {
+
+			if (!gameMode) return LOST;
+
+			game->resetPlayer(players + x, false);
+
+		}
+
+	}
+
+
 	return E_NONE;
 
 }
@@ -186,15 +201,9 @@ void Level::draw () {
 	unsigned int change;
 
 
-	// Set tile drawing dimensions
-	src.w = TTOI(1);
-	src.h = TTOI(1);
-	src.x = 0;
-
-
 	// Calculate viewport
-	if (game && (stage == LS_END)) game->view((ticks - prevTicks) * 160);
-	else localPlayer->view(ticks, ticks - prevTicks);
+	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
+	else localPlayer->view(ticks, paused? 0: (ticks - prevTicks));
 
 	// Ensure the new viewport is within the level
 	if (viewX < 0) viewX = 0;
@@ -211,8 +220,14 @@ void Level::draw () {
 	dst.h = viewH;
 	SDL_SetClipRect(canvas, &dst);
 
-
 	if ((viewW < canvasW) || (viewH < canvasH)) clearScreen(15);
+
+
+	// Set tile drawing dimensions
+	src.w = TTOI(1);
+	src.h = TTOI(1);
+	src.x = 0;
+
 
 	// If there is a sky, draw it
 	if (sky) {

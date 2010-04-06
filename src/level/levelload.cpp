@@ -50,7 +50,7 @@
 int Level::loadSprites (char * fileName) {
 
 	File *file, *mainFile, *specFile;
-	unsigned char *pixels, *sorted;
+	unsigned char *pixels, *mask;
 	int mainPos, specPos;
 	int count, x, y, width, height, m;
 
@@ -157,11 +157,10 @@ int Level::loadSprites (char * fileName) {
 
 		}
 
-		// m is for MAGIC
 		m = file->loadShort();
 
-		// Allocate space for descrambling
-		sorted = new unsigned char[width * height];
+		// Allocate space for mask
+		mask = new unsigned char[width * height];
 
 		// Actually, m is for mask offset.
 		// Sprites can be either masked or not masked.
@@ -219,9 +218,7 @@ int Level::loadSprites (char * fileName) {
 
 				for (x = 0; x < width; x++) {
 
-					sorted[(((y >> 2) + ((x & 3) * (height >> 2))) * width) +
-						(x >> 2) +
-						(((y & 3) + ((height & 3) * (x & 3))) * (width >> 2))] =
+					mask[((y + ((x & 3) * height)) * (width >> 2)) + (x >> 2)] =
 						pixels[(y * width) + x];
 
 				}
@@ -240,7 +237,7 @@ int Level::loadSprites (char * fileName) {
 
 				for (x = 0; x < width; x++) {
 
-					if (sorted[(y * width) + x] == 1) {
+					if (mask[(y * width) + x] == 1) {
 
 						// The unmasked portions are transparent, so no masked
 						// portion should be transparent.
@@ -265,27 +262,13 @@ int Level::loadSprites (char * fileName) {
 
 		}
 
-		// Rearrange pixels in correct order
-		for (y = 0; y < height; y++) {
 
-			for (x = 0; x < width; x++) {
-
-				sorted[(y * width) + x] =
-					pixels[(((y >> 2) + ((x & 3) * (height >> 2))) * width) +
-						(x >> 2) +
-						(((y & 3) + ((height & 3) * (x & 3))) * (width >> 2))];
-
-			}
-
-		}
-
-
-		// Convert the sprite to an SDL surface
-		spriteSet[count].setPixels(sorted, width, height);
+		// Convert the scrambled sprite to an SDL surface
+		spriteSet[count].setPixels(pixels, width, height);
 
 		// Free redundant data
 		delete[] pixels;
-		delete[] sorted;
+		delete[] mask;
 
 
 		// Check if the next sprite exists
@@ -829,7 +812,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	if (game) {
 
 		for (count = 0; count < nPlayers; count++)
-			game->resetPlayer(players + count);
+			game->resetPlayer(players + count, false);
 
     } else {
 
@@ -1016,15 +999,9 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	// Apply the palette to surfaces that already exist, e.g. fonts
 	usePalette(palette);
 
-	// Adjust fontmn1 to use level palette
-	fontmn1->mapPalette(224, 8, 14, -16);
-
 
 	// Set the tick at which the level will end
 	endTime = (5 - difficulty) * 2 * 60 * 1000;
-
-	// Set the level stage
-	stage = LS_NORMAL;
 
 
 	firstBullet = NULL;

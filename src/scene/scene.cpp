@@ -132,6 +132,7 @@ Scene::Scene (const char * fileName) {
 
 	}
 
+	background = NULL;
 	images = NULL;
 	palettes = NULL;
 
@@ -180,6 +181,8 @@ Scene::~Scene () {
 
 	delete[] pages;
 
+	if (background) SDL_FreeSurface(background);
+
 	if (images) delete images;
 	if (palettes) delete palettes;
 
@@ -194,8 +197,9 @@ int Scene::play () {
 	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
-	int fadein = false;
 	SDL_Rect textRect = {0, 0, SW, SH};
+
+	clearScreen(0);
 
 	while (true) {
 
@@ -240,7 +244,9 @@ int Scene::play () {
 
 				// usePalette(palette);
 				currentPalette = palette->palette;
-				fadein = true;
+
+				// Fade in from black
+				firstPE = new FadeInPaletteEffect(250, firstPE);
 
 			} else restorePalette(screen);
 
@@ -260,13 +266,19 @@ int Scene::play () {
 
 				if (image) {
 
-					dst.x = (pages[sceneIndex].bgPos[bg] & 65535)*2 + (canvasW - SW) >> 1;
-					dst.y = ((pages[sceneIndex].bgPos[bg] & (~65535))>>16)*2 + (canvasH - SH) >> 1;
+					dst.x = pages[sceneIndex].bgX[bg] + ((canvasW - SW) >> 1);
+					dst.y = pages[sceneIndex].bgY[bg] + ((canvasH - SH) >> 1);
 					SDL_BlitSurface(image->image, NULL, canvas, &dst);
 
 				}
 
 			}
+
+		} else if (background) {
+
+			dst.x = (canvasW - SW) >> 1;
+			dst.y = (canvasH - SH) >> 1;
+			SDL_BlitSurface(background, NULL, canvas, &dst);
 
 		} else clearScreen(0);
 
@@ -347,16 +359,6 @@ int Scene::play () {
 			font->showSceneString(text->text, xOffset, yOffset);
 
 			y += extraLineHeight + font->getHeight() / 2;
-
-		}
-
-
-		// Fade in from black
-		if (fadein) {
-
-			fadein = false;
-			firstPE = new FadeInPaletteEffect(250, firstPE);
-			clearScreen(0);
 
 		}
 

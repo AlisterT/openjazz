@@ -75,12 +75,13 @@ EXTERN SDL_Surface *panelAmmo[5];
 
 // Functions
 
-EXTERN SDL_Surface * createSurface    (unsigned char *pixels, int width, int height);
-EXTERN void          createScreen     ();
-EXTERN void          usePalette       (SDL_Color *palette);
-EXTERN void          restorePalette   (SDL_Surface *surface);
-EXTERN void          clearScreen      (int index);
-EXTERN void          drawRect         (int x, int y, int width, int height, int index);
+EXTERN unsigned char * sortPixels     (unsigned char *pixels, int length);
+EXTERN SDL_Surface   * createSurface  (unsigned char *pixels, int width, int height);
+EXTERN void            createScreen   ();
+EXTERN void            usePalette     (SDL_Color *palette);
+EXTERN void            restorePalette (SDL_Surface *surface);
+EXTERN void            clearScreen    (int index);
+EXTERN void            drawRect       (int x, int y, int width, int height, int index);
 
 #endif
 

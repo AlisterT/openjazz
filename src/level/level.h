@@ -57,15 +57,6 @@
 #define T_END   1000
 
 
-// Enum
-
-enum LevelStage {
-
-	LS_NORMAL = 0, LS_SUDDENDEATH = 1, LS_END = 2
-
-};
-
-
 // Datatypes
 
 typedef struct {
@@ -119,7 +110,6 @@ class Level : public BaseLevel {
 		fixed          waterLevelTarget;
 		fixed          waterLevelSpeed;
 		fixed          energyBar;
-		LevelStage     stage;
 
 		int loadSprites (char *fileName);
 		int loadTiles   (char *fileName);
@@ -153,7 +143,6 @@ class Level : public BaseLevel {
 		Sprite *      getSprite     (unsigned char sprite);
 		Anim *        getAnim       (unsigned char anim);
 		Anim *        getMiscAnim   (unsigned char anim);
-		void          addTimer      ();
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);

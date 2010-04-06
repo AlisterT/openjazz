@@ -198,7 +198,7 @@ class Player : public Movable {
 		int             enemies, items;
 		unsigned char   team;
 
-		void addAmmo      (int type, int amount);
+		void addAmmo (int type, int amount);
 
 	public:
 		int teamScore;
@@ -219,6 +219,7 @@ class Player : public Movable {
 		void            clearEvent   (unsigned char gridX, unsigned char gridY);
 		bool            hit          (Player *source, unsigned int ticks);
 		void            kill         (Player *source, unsigned int ticks);
+		void            addItem      ();
 		void            addScore     (int addedScore);
 		int             getScore     ();
 		int             getEnergy    ();
