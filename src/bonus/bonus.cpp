@@ -39,11 +39,15 @@
 #include "player/player.h"
 
 #include <math.h>
+#include <string.h>
 
 
 int Bonus::loadTiles (char *fileName) {
 
 	File *file;
+	unsigned char *pixels;
+	unsigned char *sorted;
+	int count;
 
 	try {
 
@@ -55,7 +59,16 @@ int Bonus::loadTiles (char *fileName) {
 
 	}
 
-	file->skipRLE();
+	// Load background
+	pixels = file->loadRLE(832 * 20);
+	sorted = new unsigned char[512 * 20];
+
+	for (count = 0; count < 20; count++) memcpy(sorted + (count * 512), pixels + (count * 832), 512);
+
+	background = createSurface(sorted, 512, 20);
+
+	delete[] sorted;
+	delete[] pixels;
 
 	// Load palette
 	file->loadPalette(palette);
@@ -196,11 +209,8 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	firstPE = new RotatePaletteEffect(240, 16, -F32, firstPE);
 
 
-	// Apply the palette to surfaces that already exist, e.g. fonts
-	usePalette(palette);
-
-	// Adjust fontmn1 to use bonus level palette
-	fontsFont->mapPalette(0, 16, 15, -16);
+	// Adjust fontsFont to use bonus level palette
+	fontsFont->mapPalette(0, 32, 15, -16);
 
 
 	return;
@@ -278,7 +288,13 @@ int Bonus::step () {
 					players[count].addItem();
 					events[gridY][gridX] = 0;
 
-					if (players[count].getItems() >= items) return WON;
+					if (players[count].getItems() >= items) {
+
+						players[count].addLife();
+
+						return WON;
+
+					}
 
 					break;
 
@@ -314,25 +330,27 @@ void Bonus::draw () {
 	SDL_Rect src, dst;
 	int x, y;
 
+	// Draw the ground
+
 	src.x = 0;
 	src.w = 32;
 	src.h = 32;
 
 	int vX = FTOI(localPlayer->getX()) - (canvasW >> 1);
-	int vY = FTOI(localPlayer->getY()) - (canvasH >> 1);
+	int vY = FTOI(localPlayer->getY()) - (canvasH >> 2);
 
-	for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
+	for (y = 0; y <= ITOT((canvasH >> 1) - 1) + 1; y++) {
 
 		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
 
 			src.y = TTOI(tiles[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]);
 			dst.x = TTOI(x) - (vX & 31);
-			dst.y = TTOI(y) - (vY & 31);
+			dst.y = (canvasH >> 1) + TTOI(y) - (vY & 31);
 
 			SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 			dst.x = 12 + TTOI(x) - (vX & 31);
-			dst.y = 12 + TTOI(y) - (vY & 31);
+			dst.y = (canvasH >> 1) + 12 + TTOI(y) - (vY & 31);
 
 			switch (events[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]) {
 
@@ -376,11 +394,29 @@ void Bonus::draw () {
 
 	}
 
+
+	// Draw the background
+
+	for (x = -(localPlayer->getDirection() & 1023); x < canvasW; x += background->w) {
+
+		dst.x = x;
+		dst.y = (canvasH >> 1) - 4;
+		SDL_BlitSurface(background, NULL, canvas, &dst);
+
+	}
+
+	x = 171;
+
+	for (y = (canvasH >> 1) - 5; (y >= 0) && (x > 128); y--) drawRect(0, y, canvasW, 1, x--);
+
+	if (y > 0) drawRect(0, 0, canvasW, y + 1, 128);
+
+
 	// Draw the "player"
 	drawRect(
 		(canvasW >> 1) + fixed(sin(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4,
-		(canvasH >> 1) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
-	drawRect((canvasW >> 1) - 4, (canvasH >> 1) - 4, 8, 8, 22);
+		((canvasH * 3) >> 2) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
+	drawRect((canvasW >> 1) - 4, ((canvasH * 3) >> 2) - 4, 8, 8, 22);
 
 
 	// Show gem count
@@ -418,6 +454,10 @@ int Bonus::play () {
 	pmessage = pmenu = false;
 	option = 0;
 	stats = S_NONE;
+
+	returnTime = 0;
+
+	usePalette(palette);
 
 	while (true) {
 

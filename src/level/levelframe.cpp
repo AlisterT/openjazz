@@ -220,8 +220,6 @@ void Level::draw () {
 	dst.h = viewH;
 	SDL_SetClipRect(canvas, &dst);
 
-	if ((viewW < canvasW) || (viewH < canvasH)) clearScreen(15);
-
 
 	// Set tile drawing dimensions
 	src.w = TTOI(1);

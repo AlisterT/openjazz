@@ -103,6 +103,8 @@ int DemoLevel::play () {
 
 	stats = S_NONE;
 
+	usePalette(palette);
+
 	while (true) {
 
 		// Do general processing

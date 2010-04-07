@@ -527,6 +527,8 @@ int Level::play () {
 	timeBonus = -1;
 	perfect = 0;
 
+	usePalette(palette);
+
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;

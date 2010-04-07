@@ -220,6 +220,7 @@ class Player : public Movable {
 		bool            hit          (Player *source, unsigned int ticks);
 		void            kill         (Player *source, unsigned int ticks);
 		void            addItem      ();
+		void            addLife      ();
 		void            addScore     (int addedScore);
 		int             getScore     ();
 		int             getEnergy    ();

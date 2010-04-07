@@ -242,8 +242,7 @@ int Scene::play () {
 
 			if (palette) {
 
-				// usePalette(palette);
-				currentPalette = palette->palette;
+				usePalette(palette->palette);
 
 				// Fade in from black
 				firstPE = new FadeInPaletteEffect(250, firstPE);

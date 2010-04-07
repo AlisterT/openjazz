@@ -55,7 +55,8 @@
 // Variables
 
 EXTERN SDL_Surface *screen, *canvas;
-EXTERN int          viewW, viewH, canvasW, canvasH, screenW, screenH;
+EXTERN int          viewH, canvasW, canvasH, screenW, screenH;
+#define viewW canvasW
 #ifdef SCALE
 EXTERN int          scaleFactor;
 #endif

@@ -117,8 +117,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						if (!background) background = f->loadSurface(SW, SH);
 
 						// Use the most recently loaded palette
-						SDL_SetPalette(screen, SDL_PHYSPAL, palettes->palette, 0, 256);
-						currentPalette = palettes->palette;
+						usePalette(palettes->palette);
 
 						break;
 

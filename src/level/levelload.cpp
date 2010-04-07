@@ -996,10 +996,6 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	delete file;
 
 
-	// Apply the palette to surfaces that already exist, e.g. fonts
-	usePalette(palette);
-
-
 	// Set the tick at which the level will end
 	endTime = (5 - difficulty) * 2 * 60 * 1000;
 

@@ -42,8 +42,9 @@
 class Bonus : public BaseLevel {
 
 	private:
-		unsigned char tiles[BLH][BLW];
-		unsigned char events[BLH][BLW];
+		SDL_Surface   *background;
+		unsigned char  tiles[BLH][BLW];
+		unsigned char  events[BLH][BLW];
 
 		int  loadTiles (char *fileName);
 		int  step ();

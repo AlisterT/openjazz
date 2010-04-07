@@ -288,7 +288,7 @@ bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int t
 
 		case 4: // Extra life
 
-			if (lives < 99) lives++;
+			addLife();
 
 			break;
 
@@ -629,6 +629,15 @@ int Player::getScore () {
 int Player::getEnergy () {
 
 	return energy;
+
+}
+
+
+void Player::addLife () {
+
+	if (lives < 99) lives++;
+
+	return;
 
 }
 
