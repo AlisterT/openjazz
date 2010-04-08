@@ -107,7 +107,7 @@ int Game::setBonus (int ext) {
 
 	if (bonusFile) delete[] bonusFile;
 
-	if (level >= 0) bonusFile = createFileName(F_BONUSMAP, ext);
+	if (level != NULL) bonusFile = createFileName(F_BONUSMAP, ext);
 	else bonusFile = NULL;
 
 	return E_NONE;
