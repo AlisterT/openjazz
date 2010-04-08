@@ -32,10 +32,11 @@
 #include "level/level.h"
 #include "player/player.h"
 
+#include <iostream>
 #include <string.h>
 
 
-ServerGame::ServerGame (GameModeType mode, char *firstLevel, int gameDifficulty) {
+ServerGame::ServerGame (GameModeType mode, char* firstLevel, int gameDifficulty) {
 
 	int count;
 
@@ -104,9 +105,9 @@ ServerGame::~ServerGame () {
 }
 
 
-int ServerGame::setLevel (char *fileName) {
+int ServerGame::setLevel (char* fileName) {
 
-	File *file;
+	File* file;
 	int count;
 
 	if (levelFile) delete[] levelFile;
@@ -161,7 +162,7 @@ int ServerGame::setLevel (char *fileName) {
 }
 
 
-void ServerGame::send (unsigned char *buffer) {
+void ServerGame::send (unsigned char* buffer) {
 
 	int count;
 
@@ -247,8 +248,8 @@ int ServerGame::step (unsigned int ticks) {
 						if ((recvBuffers[count][1] == MT_G_PJOIN) &&
 							(clientPlayer[count] == -1)) {
 
-							printf("Player %d (client %d) joined the game.\n",
-								nPlayers, count);
+							std::cout << "Player " << nPlayers << " (client " <<
+								count <<") joined the game.\n";
 
 
 							// Set up the new player
@@ -260,8 +261,8 @@ int ServerGame::step (unsigned int ticks) {
 								recvBuffers[count][4]);
 							players[nPlayers].reset();
 
-							printf("Player %d joined team %d.\n",
-								nPlayers, recvBuffers[count][4]);
+							std::cout << "Player " << nPlayers << " joined team " <<
+								recvBuffers[count][4] << ".\n";
 
 							recvBuffers[count][3] = clientPlayer[count] =
 								nPlayers;
@@ -329,7 +330,7 @@ int ServerGame::step (unsigned int ticks) {
 
 				if (clientSock[count] != -1) {
 
-					printf("Client %d connected.\n", count);
+					std::cout << "Client " << count << " connected.\n";
 
 					clientPlayer[count] = -1;
 					received[count] = 0;
@@ -349,6 +350,13 @@ int ServerGame::step (unsigned int ticks) {
 
 					// Initiate sending of level data
 					clientStatus[count] = 0;
+
+					// Inform the new client of the checkpoint
+					sendBuffer[0] = MTL_G_CHECK;
+					sendBuffer[1] = MT_G_CHECK;
+					sendBuffer[2] = checkX;
+					sendBuffer[3] = checkY;
+					net->send(clientSock[count], sendBuffer);
 
 					// Inform the new client of the existing players
 
@@ -377,8 +385,8 @@ int ServerGame::step (unsigned int ticks) {
 
 				if (!(net->isConnected(clientSock[count]))) {
 
-					printf("Client %d disconnected (code: %d).\n", count,
-						net->getError());
+					std::cout << "Client " << count << " disconnected (code: " <<
+						net->getError() << ").\n";
 
 					// Disconnect client
 					net->close(clientSock[count]);
@@ -388,8 +396,8 @@ int ServerGame::step (unsigned int ticks) {
 
 						// Remove the client's player
 
-						printf("Player %d (client %d) left the game.\n",
-							clientPlayer[count], count);
+						std::cout << "Player " << clientPlayer[count] <<
+							" (client " << count << ") left the game.\n";
 
 						nPlayers--;
 
@@ -475,15 +483,11 @@ void ServerGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];
 
-	if (gameMode) {
-
-		buffer[0] = MTL_G_CHECK;
-		buffer[1] = MT_G_CHECK;
-		buffer[2] = gridX;
-		buffer[3] = gridY;
-		send(buffer);
-
-	}
+	buffer[0] = MTL_G_CHECK;
+	buffer[1] = MT_G_CHECK;
+	buffer[2] = gridX;
+	buffer[3] = gridY;
+	send(buffer);
 
 	checkX = gridX;
 	checkY = gridY;

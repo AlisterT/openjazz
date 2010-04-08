@@ -65,7 +65,7 @@ Level::Level () {
 }
 
 
-Level::Level (char *fileName, unsigned char diff, bool checkpoint) {
+Level::Level (char* fileName, unsigned char diff, bool checkpoint) {
 
 	int ret;
 
@@ -228,7 +228,7 @@ void Level::setTile (unsigned char gridX, unsigned char gridY,
 }
 
 
-signed char * Level::getEvent (unsigned char gridX, unsigned char gridY) {
+signed char* Level::getEvent (unsigned char gridX, unsigned char gridY) {
 
 	int event = grid[gridY][gridX].event;
 
@@ -281,9 +281,9 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player *source) {
+int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player* source) {
 
-	GridElement *ge;
+	GridElement* ge;
 	unsigned char buffer[MTL_L_GRID];
 	int hitsToKill;
 
@@ -341,28 +341,28 @@ void Level::setEventTime (unsigned char gridX, unsigned char gridY,
 }
 
 
-signed char * Level::getBullet (unsigned char bullet) {
+signed char* Level::getBullet (unsigned char bullet) {
 
 	return bulletSet[bullet];
 
 }
 
 
-Sprite * Level::getSprite (unsigned char sprite) {
+Sprite* Level::getSprite (unsigned char sprite) {
 
 	return spriteSet + sprite;
 
 }
 
 
-Anim * Level::getAnim (unsigned char anim) {
+Anim* Level::getAnim (unsigned char anim) {
 
 	return animSet + anim;
 
 }
 
 
-Anim * Level::getMiscAnim (unsigned char anim) {
+Anim* Level::getMiscAnim (unsigned char anim) {
 
 	return animSet + miscAnims[anim];
 
@@ -437,7 +437,7 @@ LevelStage Level::getStage () {
 }
 
 
-Scene * Level::createScene () {
+Scene* Level::createScene () {
 
 	try {
 
@@ -452,7 +452,7 @@ Scene * Level::createScene () {
 }
 
 
-void Level::receive (unsigned char *buffer) {
+void Level::receive (unsigned char* buffer) {
 
 	// Interpret data received from client/server
 
@@ -503,7 +503,7 @@ void Level::receive (unsigned char *buffer) {
 
 int Level::play () {
 
-	const char *options[5] =
+	const char* options[5] =
 		{"continue game", "save game", "load game", "setup options", "quit game"};
 	PaletteEffect *levelPE;
 	char *string;
@@ -521,7 +521,7 @@ int Level::play () {
 
 	pmessage = pmenu = false;
 	option = 0;
-	stats = S_NONE;
+	stats = 0;
 
 	returnTime = 0;
 	timeBonus = -1;

@@ -33,10 +33,11 @@
 #include <string.h>
 
 
-Font::Font (const char * fileName) {
+Font::Font (const char* fileName) {
 
-	File *file;
-	unsigned char *pixels, *blank;
+	File* file;
+	unsigned char* pixels;
+	unsigned char* blank;
 	int fileSize;
 	int count, size, width, height;
 
@@ -71,8 +72,6 @@ Font::Font (const char * fileName) {
 
 	for (count = 0; count < 128; count++) {
 
-		size = file->loadShort();
-
 		if (file->tell() >= fileSize) {
 
 			nCharacters = count;
@@ -80,6 +79,8 @@ Font::Font (const char * fileName) {
 			break;
 
 		}
+
+		size = file->loadShort();
 
 		if (size) {
 
@@ -147,9 +148,9 @@ Font::Font (const char * fileName) {
 }
 
 
-Font::Font (unsigned char *pixels, bool big) {
+Font::Font (unsigned char* pixels, bool big) {
 
-	unsigned char *chrPixels;
+	unsigned char* chrPixels;
 	int count, y;
 
 	if (big) lineHeight = 8;
@@ -207,8 +208,9 @@ Font::Font (unsigned char *pixels, bool big) {
 
 Font::Font () {
 
-	File *file;
-	unsigned char *pixels, *sorted;
+	File* file;
+	unsigned char* pixels;
+	unsigned char* sorted;
 	int fileSize;
 	int count, width, height;
 
@@ -234,11 +236,6 @@ Font::Font () {
 
 	for (count = 0; count < nCharacters; count++) {
 
-		width = file->loadShort() << 2;
-		height = file->loadShort();
-
-		file->seek(4, false);
-
 		if (file->tell() >= fileSize) {
 
 			nCharacters = count;
@@ -246,6 +243,11 @@ Font::Font () {
 			break;
 
 		}
+
+		width = file->loadShort() << 2;
+		height = file->loadShort();
+
+		file->seek(4, false);
 
 		pixels = file->loadBlock(width * height);
 		sorted = sortPixels(pixels, width * height);
@@ -308,9 +310,9 @@ Font::~Font () {
 }
 
 
-int Font::showString (const char *string, int x, int y) {
+int Font::showString (const char* string, int x, int y) {
 
-	SDL_Surface *surface;
+	SDL_Surface* surface;
 	SDL_Rect dst;
 	unsigned int count;
 	int xOffset, yOffset;
@@ -350,9 +352,9 @@ int Font::showString (const char *string, int x, int y) {
 }
 
 
-int Font::showSceneString (const unsigned char *string, int x, int y) {
+int Font::showSceneString (const unsigned char* string, int x, int y) {
 
-	SDL_Surface *surface;
+	SDL_Surface* surface;
 	SDL_Rect dst;
 	unsigned int count;
 	int offset;

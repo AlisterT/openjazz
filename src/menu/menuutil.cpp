@@ -35,7 +35,7 @@
 #include <string.h>
 
 
-int Menu::message (const char *text) {
+int Menu::message (const char* text) {
 
 	// Display a message to the user
 
@@ -62,7 +62,7 @@ int Menu::message (const char *text) {
 }
 
 
-int Menu::generic (const char **optionNames, int options, int *chosen) {
+int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 	// Let the user select from a menu of the given options
 
@@ -70,7 +70,7 @@ int Menu::generic (const char **optionNames, int options, int *chosen) {
 
 	usePalette(palettes[1]);
 
-	if (*chosen >= options) *chosen = 0;
+	if (chosen >= options) chosen = 0;
 
 	while (true) {
 
@@ -84,18 +84,18 @@ int Menu::generic (const char **optionNames, int options, int *chosen) {
 
 		for (count = 0; count < options; count++) {
 
-			if (count == *chosen) fontmn2->mapPalette(240, 8, 114, 16);
+			if (count == chosen) fontmn2->mapPalette(240, 8, 114, 16);
 
 			fontmn2->showString(optionNames[count], canvasW >> 2,
 				(canvasH >> 1) + (count << 4) - (options << 3));
 
-			if (count == *chosen) fontmn2->restorePalette();
+			if (count == chosen) fontmn2->restorePalette();
 
 		}
 
-		if (controls.release(C_UP)) *chosen = (*chosen + options - 1) % options;
+		if (controls.release(C_UP)) chosen = (chosen + options - 1) % options;
 
-		if (controls.release(C_DOWN)) *chosen = (*chosen + 1) % options;
+		if (controls.release(C_DOWN)) chosen = (chosen + 1) % options;
 
 		if (controls.release(C_ENTER)) {
 
@@ -112,7 +112,7 @@ int Menu::generic (const char **optionNames, int options, int *chosen) {
 }
 
 
-int Menu::textInput (const char *request, char **text) {
+int Menu::textInput (const char* request, char*& text) {
 
 	// Let the user to edit a text string
 
@@ -121,7 +121,7 @@ int Menu::textInput (const char *request, char **text) {
 	unsigned int cursor;
 
 	// Create input string
-	input = createEditableString(*text);
+	input = createEditableString(text);
 
 	cursor = strlen(input);
 
@@ -218,8 +218,8 @@ int Menu::textInput (const char *request, char **text) {
 			playSound(S_ORB);
 
 			// Replace the original string with the input string
-			delete[] *text;
-			*text = input;
+			delete[] text;
+			text = input;
 
 			return E_NONE;
 

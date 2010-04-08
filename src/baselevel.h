@@ -29,14 +29,6 @@
 #include <SDL/SDL.h>
 
 
-// Constants
-
-// Displayed statistics
-#define S_NONE    0
-#define S_PLAYERS 1
-#define S_SCREEN  2
-
-
 // Macros
 
 // For converting between tile positions and int/fixed values
@@ -46,7 +38,13 @@
 #define TTOI(x) ((x) << 5)
 
 
-// Enum
+// Enums
+
+enum LevelStats {
+
+	S_PLAYERS = 1, S_SCREEN = 2
+
+};
 
 enum LevelStage {
 
@@ -60,14 +58,14 @@ enum LevelStage {
 class BaseLevel {
 
 	protected:
-		SDL_Surface  *tileSet;
-		SDL_Color     palette[256];
-		unsigned int  tickOffset, prevStepTicks, prevTicks, ticks;
-		unsigned int  endTime;
-		float         smoothfps;
-		int           items;
-		bool          paused;
-		LevelStage    stage;
+		SDL_Surface* tileSet;
+		SDL_Color    palette[256];
+		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
+		unsigned int endTime;
+		float        smoothfps;
+		int          items;
+		bool         paused;
+		LevelStage   stage;
 
 		void timeCalcs ();
 		void drawStats (int stats);

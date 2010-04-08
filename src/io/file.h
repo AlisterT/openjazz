@@ -27,21 +27,21 @@
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
-#include <stdio.h>
+#include <fstream>
 
 
-// Class
+// Classes
 
 class File {
 
 	private:
-		FILE *f;
-		char *filePath;
+		std::fstream stream;
+		char*        filePath;
 
-		bool open (const char * path, const char * name, bool write);
+		bool open (const char* path, const char* name, bool write);
 
 	public:
-		File                           (const char * name, bool write);
+		File                           (const char* name, bool write);
 		~File                          ();
 
 		int                getSize     ();
@@ -53,11 +53,11 @@ class File {
 		void               storeShort  (unsigned short int val);
 		signed long int    loadInt     ();
 		void               storeInt    (signed long int val);
-		unsigned char *    loadBlock   (int length);
-		unsigned char *    loadRLE     (int length);
+		unsigned char*     loadBlock   (int length);
+		unsigned char*     loadRLE     (int length);
 		void               skipRLE     ();
-		char *             loadString  ();
-		SDL_Surface *      loadSurface (int width, int height);
+		char*              loadString  ();
+		SDL_Surface*       loadSurface (int width, int height);
 		void               loadPalette (SDL_Color *palette);
 
 };
@@ -65,10 +65,10 @@ class File {
 class Path {
 
 	public:
-		Path *next;
-		char *path;
+		Path* next;
+		char* path;
 
-		Path  (Path *newNext, char *newPath);
+		Path  (Path* newNext, char* newPath);
 		~Path ();
 
 };
@@ -77,7 +77,7 @@ class Path {
 // Variable
 
 // Paths to files
-EXTERN Path *firstPath;
+EXTERN Path* firstPath;
 
 #endif
 

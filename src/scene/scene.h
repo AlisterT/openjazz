@@ -24,7 +24,7 @@
 #define _SCENE_H
 
 
-#include <io/file.h>
+#include "io/file.h"
 
 #include <SDL/SDL.h>
 
@@ -67,7 +67,7 @@ class Font;
 class SceneText {
 
 	public:
-		unsigned char *text;
+		unsigned char* text;
 		int            alignment;
 		int            fontId;
 		int            x;
@@ -83,17 +83,17 @@ class SceneText {
 class ScenePage {
 
 	public:
-		int                 backgrounds;
-		int                 bgIndex[30];
-		unsigned short int  bgX[30];
-		unsigned short int  bgY[30];
+		int                backgrounds;
+		int                bgIndex[30];
+		unsigned short int bgX[30];
+		unsigned short int bgY[30];
 
 		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
-		int                 pageTime;
-		SceneText           texts[100];
-		int                 nTexts;
-		char               *musicFile;
-		int                 paletteIndex;
+		int                pageTime;
+		SceneText          texts[100];
+		int                nTexts;
+		char*              musicFile;
+		int                paletteIndex;
 
 		ScenePage();
 		~ScenePage();
@@ -103,11 +103,11 @@ class ScenePage {
 class SceneImage {
 
 	public:
-		SceneImage  *next;
-		SDL_Surface *image;
+		SceneImage*  next;
+		SDL_Surface* image;
 		int id;
 
-		SceneImage  (SceneImage *newNext);
+		SceneImage  (SceneImage* newNext);
 		~SceneImage ();
 
 };
@@ -119,7 +119,7 @@ class ScenePalette {
 		SDL_Color palette[256];
 		int id;
 
-		ScenePalette  (ScenePalette *newNext);
+		ScenePalette  (ScenePalette* newNext);
 		~ScenePalette ();
 
 };
@@ -135,25 +135,25 @@ class SceneFont {
 class Scene {
 
 	private:
-		SDL_Surface        *background;
-		SceneImage         *images;
-		ScenePalette       *palettes;
-		SceneFont           fonts[5];
-		int                 nFonts;
-		unsigned short int  scriptItems;
-		unsigned short int  dataItems;
-		signed long int    *scriptStarts;
-		signed long int    *dataOffsets;
+		SDL_Surface*       background;
+		SceneImage*        images;
+		ScenePalette*      palettes;
+		SceneFont          fonts[5];
+		int                nFonts;
+		unsigned short int scriptItems;
+		unsigned short int dataItems;
+		signed long int*   scriptStarts;
+		signed long int*   dataOffsets;
 
 		// Scripts all information needed to render script pages, text etc
-		ScenePage          *pages;
+		ScenePage*         pages;
 
-		void loadScripts (File *f);
-		void loadData    (File *f);
+		void loadScripts (File* f);
+		void loadData    (File* f);
 		void loadAni     (File* f, int dataIndex);
 
 	public:
-		Scene    (const char * fileName);
+		Scene    (const char* fileName);
 		~Scene   ();
 
 		int play ();

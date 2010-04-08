@@ -12,7 +12,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -31,6 +31,7 @@
 
 #include "io/file.h"
 
+#include <iostream>
 #include <string.h>
 
 
@@ -38,7 +39,9 @@ bool fileExists (const char * fileName) {
 
 	File *file;
 
-	//printf("Check: ");
+#ifdef VERBOSE
+	std::cout << "Check: ";
+#endif
 
 	try {
 
@@ -151,7 +154,7 @@ char * createEditableString (const char *string) {
 
 void log (const char *message) {
 
-	printf("%s\n", message);
+	std::cout << message << std::endl;
 
 	return;
 
@@ -160,7 +163,7 @@ void log (const char *message) {
 
 void log (const char *message, const char *detail) {
 
-	printf("%s: %s\n", message, detail);
+	std::cout << message << ": " << detail << std::endl;
 
 	return;
 
@@ -169,7 +172,7 @@ void log (const char *message, const char *detail) {
 
 void log (const char *message, int number) {
 
-	printf("%s: %d\n", message, number);
+	std::cout << message << ": " << number << std::endl;
 
 	return;
 
@@ -178,7 +181,7 @@ void log (const char *message, int number) {
 
 void logError (const char *message, const char *detail) {
 
-	fprintf(stderr, "%s: %s\n", message, detail);
+	std::cerr << message << ": " << detail << std::endl;
 
 	return;
 

@@ -25,9 +25,9 @@
 #include "io/gfx/video.h"
 
 
-File::File (const char * name, bool write) {
+File::File (const char* name, bool write) {
 
-	Path *path;
+	Path* path;
 
 	// Try opening the file from all the available directories
 
@@ -49,9 +49,11 @@ File::File (const char * name, bool write) {
 
 File::~File () {
 
-	fclose(f);
+	stream.close();
 
-	LOG("Closed file", filePath);
+#ifdef VERBOSE
+	log("Closed file", filePath);
+#endif
 
 	delete[] filePath;
 
@@ -60,17 +62,20 @@ File::~File () {
 }
 
 
-bool File::open (const char * path, const char * name, bool write) {
+bool File::open (const char* path, const char* name, bool write) {
 
 	// Create the file path for the given directory
 	filePath = createString(path, name);
 
 	// Open the file from the path
-	f = fopen(filePath, write ? "wb": "rb");
+	stream.clear();
+	stream.open(filePath, (write ? std::ios::out: std::ios::in) | std::ios::binary);
 
-	if (f) {
+	if (stream.is_open() && stream.good()) {
 
-		LOG("Opened file", filePath);
+#ifdef VERBOSE
+		log("Opened file", filePath);
+#endif
 
 		return true;
 
@@ -87,13 +92,13 @@ int File::getSize () {
 
 	int pos, size;
 
-	pos = ftell(f);
+	pos = stream.tellg();
 
-	fseek(f, 0, SEEK_END);
+	stream.seekg(0, std::ios::end);
 
-	size = ftell(f);
+	size = stream.tellg();
 
-	fseek(f, pos, SEEK_SET);
+	stream.seekg(pos, std::ios::beg);
 
 	return size;
 
@@ -101,13 +106,13 @@ int File::getSize () {
 
 int File::tell () {
 
-	return ftell(f);
+	return stream.tellg();
 
 }
 
 void File::seek (int offset, bool reset) {
 
-	fseek(f, offset, reset ? SEEK_SET: SEEK_CUR);
+	stream.seekg(offset, reset ? std::ios::beg: std::ios::cur);
 
 	return;
 
@@ -115,14 +120,14 @@ void File::seek (int offset, bool reset) {
 
 unsigned char File::loadChar () {
 
-	return fgetc(f);
+	return stream.get();
 
 }
 
 
 void File::storeChar (unsigned char val) {
 
-	fputc(val, f);
+	stream.put(val);
 
 	return;
 
@@ -133,8 +138,8 @@ unsigned short int File::loadShort () {
 
 	unsigned short int val;
 
-	val = fgetc(f);
-	val += fgetc(f) << 8;
+	val = stream.get();
+	val += stream.get() << 8;
 
 	return val;
 
@@ -143,8 +148,8 @@ unsigned short int File::loadShort () {
 
 void File::storeShort (unsigned short int val) {
 
-	fputc(val & 255, f);
-	fputc(val >> 8, f);
+	stream.put(val & 255);
+	stream.put(val >> 8);
 
 	return;
 
@@ -155,10 +160,10 @@ signed long int File::loadInt () {
 
 	unsigned long int val;
 
-	val = fgetc(f);
-	val += fgetc(f) << 8;
-	val += fgetc(f) << 16;
-	val += fgetc(f) << 24;
+	val = stream.get();
+	val += stream.get() << 8;
+	val += stream.get() << 16;
+	val += stream.get() << 24;
 
 	return *((signed long int *)&val);
 
@@ -171,38 +176,38 @@ void File::storeInt (signed long int val) {
 
 	uval = *((unsigned long int *)&val);
 
-	fputc(uval & 255, f);
-	fputc((uval >> 8) & 255, f);
-	fputc((uval >> 16) & 255, f);
-	fputc(uval >> 24, f);
+	stream.put(uval & 255);
+	stream.put((uval >> 8) & 255);
+	stream.put((uval >> 16) & 255);
+	stream.put(uval >> 24);
 
 	return;
 
 }
 
 
-unsigned char * File::loadBlock (int length) {
+unsigned char* File::loadBlock (int length) {
 
 	unsigned char *buffer;
 
 	buffer = new unsigned char[length];
 
-	fread(buffer, 1, length, f);
+	stream.read((char *)buffer, length);
 
 	return buffer;
 
 }
 
 
-unsigned char * File::loadRLE (int length) {
+unsigned char* File::loadRLE (int length) {
 
-	unsigned char *buffer;
+	unsigned char* buffer;
 	int rle, pos, byte, count, next;
 
 	// Determine the offset that follows the block
-	next = fgetc(f);
-	next += fgetc(f) << 8;
-	next += ftell(f);
+	next = stream.get();
+	next += stream.get() << 8;
+	next += stream.tellg();
 
 	buffer = new unsigned char[length];
 
@@ -210,11 +215,11 @@ unsigned char * File::loadRLE (int length) {
 
 	while (pos < length) {
 
-		rle = fgetc(f);
+		rle = stream.get();
 
 		if (rle & 128) {
 
-			byte = fgetc(f);
+			byte = stream.get();
 
 			for (count = 0; count < (rle & 127); count++) {
 
@@ -227,16 +232,16 @@ unsigned char * File::loadRLE (int length) {
 
 			for (count = 0; count < rle; count++) {
 
-				buffer[pos++] = fgetc(f);
+				buffer[pos++] = stream.get();
 				if (pos >= length) break;
 
 			}
 
-		} else buffer[pos++] = fgetc(f);
+		} else buffer[pos++] = stream.get();
 
 	}
 
-	fseek(f, next, SEEK_SET);
+	stream.seekg(next, std::ios::beg);
 
 	return buffer;
 
@@ -247,27 +252,27 @@ void File::skipRLE () {
 
 	int next;
 
-	next = fgetc(f);
-	next += fgetc(f) << 8;
+	next = stream.get();
+	next += stream.get() << 8;
 
-	fseek(f, next, SEEK_CUR);
+	stream.seekg(next, std::ios::cur);
 
 	return;
 
 }
 
 
-char * File::loadString () {
+char* File::loadString () {
 
-	char *string;
+	char* string;
 	int length, count;
 
-	length = fgetc(f);
+	length = stream.get();
 
 	if (length) {
 
 		string = new char[length + 1];
-		fread(string, 1, length, f);
+		stream.read(string, length);
 
 	} else {
 
@@ -276,13 +281,13 @@ char * File::loadString () {
 
 		for (count = 0; count < 9; count++) {
 
-			string[count] = fgetc(f);
+			string[count] = stream.get();
 
 			if (string[count] == '.') {
 
-				string[++count] = fgetc(f);
-				string[++count] = fgetc(f);
-				string[++count] = fgetc(f);
+				string[++count] = stream.get();
+				string[++count] = stream.get();
+				string[++count] = stream.get();
 				count++;
 
 				break;
@@ -301,10 +306,10 @@ char * File::loadString () {
 
 }
 
-SDL_Surface * File::loadSurface (int width, int height) {
+SDL_Surface* File::loadSurface (int width, int height) {
 
-	SDL_Surface *surface;
-	unsigned char *pixels;
+	SDL_Surface* surface;
+	unsigned char* pixels;
 
 	pixels = loadRLE(width * height);
 
@@ -317,9 +322,9 @@ SDL_Surface * File::loadSurface (int width, int height) {
 }
 
 
-void File::loadPalette (SDL_Color *palette) {
+void File::loadPalette (SDL_Color* palette) {
 
-	unsigned char *buffer;
+	unsigned char* buffer;
 	int count;
 
 	buffer = loadRLE(768);
@@ -341,7 +346,7 @@ void File::loadPalette (SDL_Color *palette) {
 }
 
 
-Path::Path (Path *newNext, char *newPath) {
+Path::Path (Path* newNext, char* newPath) {
 
 	next = newNext;
 	path = newPath;

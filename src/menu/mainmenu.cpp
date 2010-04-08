@@ -78,7 +78,7 @@ int Menu::main () {
 #if (defined USE_SOCKETS) || (defined USE_SDL_NET)
 					while (true) {
 
-						ret = generic(newGameOptions, 6, &suboption);
+						ret = generic(newGameOptions, 6, suboption);
 
 						if (ret == E_QUIT) return E_QUIT;
 						if (ret < 0) break;

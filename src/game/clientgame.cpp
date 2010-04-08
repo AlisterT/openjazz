@@ -33,10 +33,11 @@
 #include "menu/menu.h"
 #include "player/player.h"
 
+#include <iostream>
 #include <string.h>
 
 
-ClientGame::ClientGame (char *address) {
+ClientGame::ClientGame (char* address) {
 
 	unsigned char buffer[BUFFER_LENGTH];
 	unsigned int timeout;
@@ -106,7 +107,7 @@ ClientGame::ClientGame (char *address) {
 
 	}
 
-	printf("Connected to server (version %d).\n", buffer[2]);
+	std::cout << "Connected to server (version " << int(buffer[2]) << ").\n";
 
 	// Copy game parameters
 	mode = GameModeType(buffer[3]);
@@ -115,8 +116,8 @@ ClientGame::ClientGame (char *address) {
 	nPlayers = buffer[6];
 	clientID = buffer[7];
 
-	printf("Game mode %d, difficulty %d, %d of %d players.\n", mode,
-		difficulty, nPlayers, maxPlayers);
+	std::cout << "Game mode " << mode << ", difficulty " << difficulty << ", " <<
+		nPlayers << " of " << maxPlayers << " players.\n";
 
 	if (nPlayers > maxPlayers) {
 
@@ -243,7 +244,7 @@ ClientGame::~ClientGame () {
 }
 
 
-int ClientGame::setLevel (char *fileName) {
+int ClientGame::setLevel (char* fileName) {
 
 	int ret;
 
@@ -300,7 +301,7 @@ int ClientGame::setLevel (char *fileName) {
 }
 
 
-void ClientGame::send (unsigned char *buffer) {
+void ClientGame::send (unsigned char* buffer) {
 
 	net->send(sock, buffer);
 
@@ -397,19 +398,18 @@ int ClientGame::step (unsigned int ticks) {
 					if ((recvBuffer[1] == MT_G_PJOIN) &&
 						(recvBuffer[3] < maxPlayers)) {
 
-						printf("Player %d joined the game.\n", recvBuffer[3]);
+						std::cout << "Player " << int(recvBuffer[3]) << " joined the game.\n";
 
 						// Add the new player, and any that have been missed
 
-						for (count = nPlayers; count <= recvBuffer[3]; count++)
-							{
+						for (count = nPlayers; count <= recvBuffer[3]; count++) {
 
 							players[count].init((char *)recvBuffer + 9,
 								recvBuffer + 5, recvBuffer[4]);
-							players[count].reset();
+							resetPlayer(players + count, false);
 
-							printf("Player %d joined team %d.\n",
-								count, recvBuffer[4]);
+							std::cout << "Player " << count << " joined team " <<
+								recvBuffer[4] << ".\n";
 
 						}
 
@@ -423,7 +423,7 @@ int ClientGame::step (unsigned int ticks) {
 					if ((recvBuffer[1] == MT_G_PQUIT) &&
 						(recvBuffer[2] < nPlayers)) {
 
-						printf("Player %d left the game.\n", recvBuffer[2]);
+						std::cout << "Player " << int(recvBuffer[2]) << " left the game.\n";
 
 						// Remove the player
 

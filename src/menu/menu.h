@@ -41,13 +41,13 @@
 class Menu {
 
 	private:
-		SDL_Surface   *screens[15];
-		int            episodes;
-		unsigned char  difficulty;
+		SDL_Surface*  screens[15];
+		int           episodes;
+		unsigned char difficulty;
 
-		int message           (const char *text);
-		int generic           (const char **optionNames, int options, int *chosen);
-		int textInput         (const char *request, char **text);
+		int message           (const char* text);
+		int generic           (const char** optionNames, int options, int& chosen);
+		int textInput         (const char* request, char*& text);
 		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
 		int newGameLevel      (GameModeType mode);
 		int newGameEpisode    (GameModeType mode);
@@ -75,7 +75,7 @@ class Menu {
 
 // Variable
 
-EXTERN Menu          *menu;
+EXTERN Menu* menu;
 
 #endif
 

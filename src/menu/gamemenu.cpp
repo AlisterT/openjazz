@@ -344,7 +344,7 @@ int Menu::joinGame () {
 
 	int ret;
 
-	ret = textInput("ip address:", &netAddress);
+	ret = textInput("ip address:", netAddress);
 
 	if (ret < 0) return ret;
 

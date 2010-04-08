@@ -511,7 +511,7 @@ int Menu::setup () {
 
 	while (true) {
 
-		ret = generic(setupOptions, 6, &option);
+		ret = generic(setupOptions, 6, option);
 
 		if (ret == E_UNUSED) return E_NONE;
 		if (ret < 0) return ret;
@@ -524,7 +524,7 @@ int Menu::setup () {
 
 				while (true) {
 
-					ret = generic(setupCharacterOptions, 5, &suboption);
+					ret = generic(setupCharacterOptions, 5, suboption);
 
 					if (ret == E_QUIT) return E_QUIT;
 					if (ret < 0) break;
@@ -533,15 +533,14 @@ int Menu::setup () {
 
 						case 0: // Character name
 
-							textInput("character name:", &characterName);
+							textInput("character name:", characterName);
 
 							break;
 
 						default: // Character colour
 
 							subsuboption = 0;
-							ret = generic(setupCharacterColOptions, 8,
-								&subsuboption);
+							ret = generic(setupCharacterColOptions, 8, subsuboption);
 
 							if (ret == E_QUIT) return E_QUIT;
 

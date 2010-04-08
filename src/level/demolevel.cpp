@@ -37,10 +37,10 @@
 #include "player/player.h"
 
 
-DemoLevel::DemoLevel (const char *fileName) {
+DemoLevel::DemoLevel (const char* fileName) {
 
-	File *file;
-	char *levelFile;
+	File* file;
+	char* levelFile;
 	int lNum, wNum, diff, ret;
 
 	gameMode = NULL;
@@ -101,7 +101,7 @@ int DemoLevel::play () {
 	ticks = 16;
 	prevStepTicks = 0;
 
-	stats = S_NONE;
+	stats = 0;
 
 	usePalette(palette);
 

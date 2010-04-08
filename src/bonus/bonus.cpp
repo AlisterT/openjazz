@@ -453,7 +453,7 @@ int Bonus::play () {
 
 	pmessage = pmenu = false;
 	option = 0;
-	stats = S_NONE;
+	stats = 0;
 
 	returnTime = 0;
 
