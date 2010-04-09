@@ -32,7 +32,6 @@
 #include "level/level.h"
 #include "player/player.h"
 
-#include <iostream>
 #include <string.h>
 
 
@@ -248,8 +247,7 @@ int ServerGame::step (unsigned int ticks) {
 						if ((recvBuffers[count][1] == MT_G_PJOIN) &&
 							(clientPlayer[count] == -1)) {
 
-							std::cout << "Player " << nPlayers << " (client " <<
-								count <<") joined the game.\n";
+							printf("Player %d (client %d) joined the game.\n", nPlayers, count);
 
 
 							// Set up the new player
@@ -261,8 +259,7 @@ int ServerGame::step (unsigned int ticks) {
 								recvBuffers[count][4]);
 							players[nPlayers].reset();
 
-							std::cout << "Player " << nPlayers << " joined team " <<
-								recvBuffers[count][4] << ".\n";
+							printf("Player %d joined team %d.\n", nPlayers, recvBuffers[count][4]);
 
 							recvBuffers[count][3] = clientPlayer[count] =
 								nPlayers;
@@ -330,7 +327,7 @@ int ServerGame::step (unsigned int ticks) {
 
 				if (clientSock[count] != -1) {
 
-					std::cout << "Client " << count << " connected.\n";
+					printf("Client %d connected.\n", count);
 
 					clientPlayer[count] = -1;
 					received[count] = 0;
@@ -385,8 +382,7 @@ int ServerGame::step (unsigned int ticks) {
 
 				if (!(net->isConnected(clientSock[count]))) {
 
-					std::cout << "Client " << count << " disconnected (code: " <<
-						net->getError() << ").\n";
+					printf("Client %d disconnected (code: %d).\n", count, net->getError());
 
 					// Disconnect client
 					net->close(clientSock[count]);
@@ -396,8 +392,7 @@ int ServerGame::step (unsigned int ticks) {
 
 						// Remove the client's player
 
-						std::cout << "Player " << clientPlayer[count] <<
-							" (client " << count << ") left the game.\n";
+						printf("Player %d (client %d) left the game.\n", clientPlayer[count], count);
 
 						nPlayers--;
 

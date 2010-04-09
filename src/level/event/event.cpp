@@ -50,14 +50,14 @@ Event::Event () {
 }
 
 
-Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
+Event::Event (unsigned char gX, unsigned char gY) {
 
 	x = TTOF(gX);
 	y = TTOF(gY + 1);
 	dx = 0;
 	dy = 0;
 
-	next = nextEvent;
+	next = level->events;
 	gridX = gX;
 	gridY = gY;
 	flashTime = 0;
@@ -94,26 +94,31 @@ Event::Event (unsigned char gX, unsigned char gY, Event *nextEvent) {
 }
 
 
-Event * Event::getNext () {
+Event::~Event () {
 
-	return next;
+	if (next) delete next;
+
+	return;
 
 }
 
 
-void Event::removeNext () {
+Event* Event::remove () {
 
-	Event *newNext;
+	Event *oldNext;
 
-	if (next) {
+	oldNext = next;
+	next = NULL;
+	delete this;
 
-		newNext = next->getNext();
-		delete next;
-		next = newNext;
+	return oldNext;
 
-	}
+}
 
-	return;
+
+Event * Event::getNext () {
+
+	return next;
 
 }
 

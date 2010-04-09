@@ -472,7 +472,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	}
 
-	usePalette(menu->palettes[1]);
+	video.setPalette(menu->palettes[1]);
 
 	clearScreen(0);
 
@@ -909,7 +909,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	sky = false;
 
 	// Free any existing palette effects
-	if (firstPE) delete firstPE;
+	if (paletteEffects) delete paletteEffects;
 
 	switch (type) {
 
@@ -918,35 +918,35 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 			sky = true;
 
 			// Sky background effect
-			firstPE = new SkyPaletteEffect(156, 100, FH, skyPalette, NULL);
+			paletteEffects = new SkyPaletteEffect(156, 100, FH, skyPalette, NULL);
 
 			break;
 
 		case 8:
 
 			// Parallaxing background effect
-			firstPE = new P2DPaletteEffect(128, 64, FE, NULL);
+			paletteEffects = new P2DPaletteEffect(128, 64, FE, NULL);
 
 			break;
 
 		case 9:
 
 			// Diagonal stripes "parallaxing" background effect
-			firstPE = new P1DPaletteEffect(128, 32, FH, NULL);
+			paletteEffects = new P1DPaletteEffect(128, 32, FH, NULL);
 
 			break;
 
 		case 11:
 
 			// The deeper below water, the darker it gets
-			firstPE = new WaterPaletteEffect(TTOF(32), NULL);
+			paletteEffects = new WaterPaletteEffect(TTOF(32), NULL);
 
 			break;
 
 		default:
 
 			// No effect
-			firstPE = NULL;
+			paletteEffects = NULL;
 
 			break;
 
@@ -958,31 +958,31 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	// be
 
 	// In Diamondus: The red/yellow palette animation
-	firstPE = new RotatePaletteEffect(112, 4, F32, firstPE);
+	paletteEffects = new RotatePaletteEffect(112, 4, F32, paletteEffects);
 
 	// In Diamondus: The waterfall palette animation
-	firstPE = new RotatePaletteEffect(116, 8, F16, firstPE);
+	paletteEffects = new RotatePaletteEffect(116, 8, F16, paletteEffects);
 
 	// The following were discoverd by Unknown/Violet
 
-	firstPE = new RotatePaletteEffect(124, 3, F16, firstPE);
+	paletteEffects = new RotatePaletteEffect(124, 3, F16, paletteEffects);
 
 	if ((type != PE_1D) && (type != PE_2D))
-		firstPE = new RotatePaletteEffect(132, 8, F16, firstPE);
+		paletteEffects = new RotatePaletteEffect(132, 8, F16, paletteEffects);
 
 	if ((type != PE_SKY) && (type != PE_2D))
-		firstPE = new RotatePaletteEffect(160, 32, -F16, firstPE);
+		paletteEffects = new RotatePaletteEffect(160, 32, -F16, paletteEffects);
 
 	if (type != PE_SKY) {
 
-		firstPE = new RotatePaletteEffect(192, 32, -F32, firstPE);
-		firstPE = new RotatePaletteEffect(224, 16, F16, firstPE);
+		paletteEffects = new RotatePaletteEffect(192, 32, -F32, paletteEffects);
+		paletteEffects = new RotatePaletteEffect(224, 16, F16, paletteEffects);
 
 	}
 
 	// Level fade-in/white-in effect
-	if (checkpoint) firstPE = new FadeInPaletteEffect(T_START, firstPE);
-	else firstPE = new WhiteInPaletteEffect(T_START, firstPE);
+	if (checkpoint) paletteEffects = new FadeInPaletteEffect(T_START, paletteEffects);
+	else paletteEffects = new WhiteInPaletteEffect(T_START, paletteEffects);
 
 
 	file->seek(1, false);
@@ -1000,8 +1000,8 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	endTime = (5 - difficulty) * 2 * 60 * 1000;
 
 
-	firstBullet = NULL;
-	firstEvent = NULL;
+	events = NULL;
+	bullets = NULL;
 
 	energyBar = 0;
 

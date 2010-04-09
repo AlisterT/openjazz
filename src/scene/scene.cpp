@@ -230,7 +230,7 @@ int Scene::play () {
 
 		if (newpage) {
 
-			//firstPE = new FadeOutPaletteEffect(250, firstPE);
+			//paletteEffects = new FadeOutPaletteEffect(250, paletteEffects);
 
 			textRect.x = 0;
 			textRect.y = 0;
@@ -242,12 +242,12 @@ int Scene::play () {
 
 			if (palette) {
 
-				usePalette(palette->palette);
+				video.setPalette(palette->palette);
 
 				// Fade in from black
-				firstPE = new FadeInPaletteEffect(250, firstPE);
+				paletteEffects = new FadeInPaletteEffect(250, paletteEffects);
 
-			} else restorePalette(screen);
+			}
 
 			newpage = 0;
 

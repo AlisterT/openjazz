@@ -43,7 +43,7 @@ int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 	SDL_Rect src, dst;
 	int count;
 
-	usePalette(palettes[1]);
+	video.setPalette(palettes[1]);
 
 	while (true) {
 
@@ -159,7 +159,7 @@ int Menu::newGameLevel (GameModeType mode) {
 
 	worldNum = levelNum = option = 0;
 
-	usePalette(palettes[1]);
+	video.setPalette(palettes[1]);
 
 	while (true) {
 
@@ -209,7 +209,7 @@ int Menu::newGameLevel (GameModeType mode) {
 			if (newGameDifficulty(mode, levelNum, worldNum) == E_QUIT)
 				return E_QUIT;
 
-			usePalette(palettes[1]);
+			video.setPalette(palettes[1]);
 
 		}
 
@@ -230,7 +230,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 	SDL_Rect dst;
 	int episode, count, worldNum;
 
-	usePalette(palettes[2]);
+	video.setPalette(palettes[2]);
 
 	for (count = 0; count < 10; count++) {
 
@@ -242,7 +242,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 		exists[count] = fileExists(check);
 		delete[] check;
 
-		if (exists[count]) restorePalette(screens[count + 3]);
+		if (exists[count]) video.restoreSurfacePalette(screens[count + 3]);
 		else
 			SDL_SetPalette(screens[count + 3], SDL_LOGPAL, palettes[3], 0, 256);
 
@@ -327,7 +327,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 
 				}
 
-				usePalette(palettes[2]);
+				video.setPalette(palettes[2]);
 
 			}
 

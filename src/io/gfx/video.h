@@ -48,41 +48,73 @@
 	#define MAX_SCALE 4
 #endif
 
-// Black palette index
-#define BLACK 31
+
+// Class
+
+class Video {
+
+	private:
+		SDL_Surface* screen;
+
+		// Palettes
+		SDL_Color*   currentPalette;
+		SDL_Color    logicalPalette[256];
+		bool         fakePalette;
+
+		int          screenW, screenH;
+#ifdef SCALE
+		int          scaleFactor;
+#endif
+#ifndef FULLSCREEN_ONLY
+		bool         fullscreen;
+#endif
+
+	public:
+		Video  ();
+
+		bool       create                (int width, int height);
+
+		void       setPalette            (SDL_Color *palette);
+		SDL_Color* getPalette            ();
+		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned char amount);
+		void       restoreSurfacePalette (SDL_Surface *surface);
+
+		int        getWidth              ();
+		int        getHeight             ();
+#ifdef SCALE
+		int        getScaleFactor        ();
+		void       setScaleFactor        (int newScaleFactor);
+#endif
+#ifndef FULLSCREEN_ONLY
+		bool       isFullscreen          ();
+		void       flipFullscreen        ();
+#endif
+
+		void       expose                ();
+		void       flip                  (int mspf);
+
+};
 
 
 // Variables
 
-EXTERN SDL_Surface *screen, *canvas;
-EXTERN int          viewH, canvasW, canvasH, screenW, screenH;
+EXTERN SDL_Surface* canvas;
+EXTERN int          viewH, canvasW, canvasH;
 #define viewW canvasW
-#ifdef SCALE
-EXTERN int          scaleFactor;
-#endif
-#ifndef FULLSCREEN_ONLY
-EXTERN bool         fullscreen;
-#endif
-EXTERN bool         fakePalette;
-
-// Palettes
-EXTERN SDL_Color *currentPalette;
-EXTERN SDL_Color  logicalPalette[256];
 
 // Panel
-EXTERN SDL_Surface *panel;
-EXTERN SDL_Surface *panelAmmo[5];
+EXTERN SDL_Surface* panel;
+EXTERN SDL_Surface* panelAmmo[5];
+
+EXTERN Video video;
 
 
 // Functions
 
-EXTERN unsigned char * sortPixels     (unsigned char *pixels, int length);
-EXTERN SDL_Surface   * createSurface  (unsigned char *pixels, int width, int height);
-EXTERN void            createScreen   ();
-EXTERN void            usePalette     (SDL_Color *palette);
-EXTERN void            restorePalette (SDL_Surface *surface);
-EXTERN void            clearScreen    (int index);
-EXTERN void            drawRect       (int x, int y, int width, int height, int index);
+EXTERN unsigned char* sortPixels     (unsigned char* pixels, int length);
+EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
+EXTERN void           clearScreen    (int index);
+EXTERN void           drawRect       (int x, int y, int width, int height, int index);
 
 #endif
 

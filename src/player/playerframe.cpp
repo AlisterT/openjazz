@@ -309,7 +309,7 @@ void Player::control (unsigned int ticks, int msps) {
 			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 			// Create new bullet
-			level->firstBullet = new Bullet(this, false, ticks);
+			level->bullets = new Bullet(this, false, ticks);
 
 			// Set when the next bullet can be fired
 			if (fireSpeed) fireTime = ticks + (1000 / fireSpeed);

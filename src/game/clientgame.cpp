@@ -33,7 +33,6 @@
 #include "menu/menu.h"
 #include "player/player.h"
 
-#include <iostream>
 #include <string.h>
 
 
@@ -107,7 +106,7 @@ ClientGame::ClientGame (char* address) {
 
 	}
 
-	std::cout << "Connected to server (version " << int(buffer[2]) << ").\n";
+	printf("Connected to server (version %d).\n", buffer[2]);
 
 	// Copy game parameters
 	mode = GameModeType(buffer[3]);
@@ -116,8 +115,7 @@ ClientGame::ClientGame (char* address) {
 	nPlayers = buffer[6];
 	clientID = buffer[7];
 
-	std::cout << "Game mode " << mode << ", difficulty " << difficulty << ", " <<
-		nPlayers << " of " << maxPlayers << " players.\n";
+	printf("Game mode %d, difficulty %d, %d of %d players.\n", mode, difficulty, nPlayers, maxPlayers);
 
 	if (nPlayers > maxPlayers) {
 
@@ -249,14 +247,14 @@ int ClientGame::setLevel (char* fileName) {
 	int ret;
 
 	// Free the palette effects
-	if (firstPE) {
+	if (paletteEffects) {
 
-		delete firstPE;
-		firstPE = NULL;
+		delete paletteEffects;
+		paletteEffects = NULL;
 
 	}
 
-	usePalette(menu->palettes[1]);
+	video.setPalette(menu->palettes[1]);
 
 	// Wait for level data to start arriving
 	while (!file && levelFile) {
@@ -398,7 +396,7 @@ int ClientGame::step (unsigned int ticks) {
 					if ((recvBuffer[1] == MT_G_PJOIN) &&
 						(recvBuffer[3] < maxPlayers)) {
 
-						std::cout << "Player " << int(recvBuffer[3]) << " joined the game.\n";
+						printf("Player %d joined the game.\n", recvBuffer[3]);
 
 						// Add the new player, and any that have been missed
 
@@ -408,8 +406,7 @@ int ClientGame::step (unsigned int ticks) {
 								recvBuffer + 5, recvBuffer[4]);
 							resetPlayer(players + count, false);
 
-							std::cout << "Player " << count << " joined team " <<
-								recvBuffer[4] << ".\n";
+							printf("Player %d joined team %d.\n", count, recvBuffer[4]);
 
 						}
 
@@ -423,7 +420,7 @@ int ClientGame::step (unsigned int ticks) {
 					if ((recvBuffer[1] == MT_G_PQUIT) &&
 						(recvBuffer[2] < nPlayers)) {
 
-						std::cout << "Player " << int(recvBuffer[2]) << " left the game.\n";
+						printf("Player %d left the game.\n", recvBuffer[2]);
 
 						// Remove the player
 

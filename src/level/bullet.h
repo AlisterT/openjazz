@@ -56,24 +56,24 @@ class Sprite;
 class Bullet : public Movable {
 
 	private:
-		Bullet      *next;
-		Player      *source;    // If NULL, was fired by an event
-		Sprite      *sprite;
+		Bullet*      next;
+		Player*      source;    // If NULL, was fired by an event
+		Sprite*      sprite;
 		int          type;      // -1 is TNT, otherwise indexes the bullet set
 		int          direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
 		unsigned int time;      // Time at which the bullet will self-destruct
 
-	public:
-		Bullet              (Player *sourcePlayer, bool lower, unsigned int ticks);
-		Bullet              (Event *sourceEvent, bool facing, unsigned int ticks);
-		Bullet              (Bird *sourceBird, bool lower, unsigned int ticks);
-		~Bullet             ();
+		Bullet* remove ();
 
-		Bullet * getNext    ();
-		void     removeNext ();
-		Player * getSource  ();
-		bool     step       (unsigned int ticks, int msps);
-		void     draw       (int change);
+	public:
+		Bullet  (Player* sourcePlayer, bool lower, unsigned int ticks);
+		Bullet  (Event* sourceEvent, bool facing, unsigned int ticks);
+		Bullet  (Bird* sourceBird, bool lower, unsigned int ticks);
+		~Bullet ();
+
+		Player* getSource  ();
+		Bullet* step       (unsigned int ticks, int msps);
+		void    draw       (int change);
 
 };
 

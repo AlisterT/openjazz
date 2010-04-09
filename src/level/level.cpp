@@ -92,32 +92,18 @@ Level::~Level () {
 	stopMusic();
 
 	// Free the palette effects
-	if (firstPE) {
+	if (paletteEffects) {
 
-		delete firstPE;
-		firstPE = NULL;
+		delete paletteEffects;
+		paletteEffects = NULL;
 
 	}
 
 	// Free events
-	if (firstEvent) {
-
-		while (firstEvent->getNext()) firstEvent->removeNext();
-
-		delete firstEvent;
-		firstEvent = NULL;
-
-	}
+	if (events) delete events;
 
 	// Free bullets
-	if (firstBullet) {
-
-		while (firstBullet->getNext()) firstBullet->removeNext();
-
-		delete firstBullet;
-		firstBullet = NULL;
-
-	}
+	if (bullets) delete bullets;
 
 	for (count = 0; count < PATHS; count++) {
 
@@ -527,7 +513,7 @@ int Level::play () {
 	timeBonus = -1;
 	perfect = 0;
 
-	usePalette(palette);
+	video.setPalette(palette);
 
 	while (true) {
 
@@ -580,16 +566,16 @@ int Level::play () {
 						if (!gameMode) {
 
 							// Don't want palette effects in setup menu
-							levelPE = firstPE;
-							firstPE = NULL;
+							levelPE = paletteEffects;
+							paletteEffects = NULL;
 
 							if (menu->setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
-							usePalette(palette);
+							video.setPalette(palette);
 
 							// Restore palette effects
-							firstPE = levelPE;
+							paletteEffects = levelPE;
 
 						}
 
@@ -659,7 +645,7 @@ int Level::play () {
 
 
 		// Draw statistics
-		drawStats(stats);
+		drawStats(stats, BLACK);
 
 
 		if (stage == LS_END) {
@@ -697,7 +683,7 @@ int Level::play () {
 				if (timeBonus == 0) {
 
 					returnTime = ticks + T_END;
-					firstPE = new WhiteOutPaletteEffect(T_END, firstPE);
+					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
 					::playSound(S_UPLOOP);
 
 				}

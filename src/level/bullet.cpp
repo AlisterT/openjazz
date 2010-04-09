@@ -32,9 +32,9 @@
 #include "player/player.h"
 
 
-Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
+Bullet::Bullet (Player* sourcePlayer, bool lower, unsigned int ticks) {
 
-	Anim *anim;
+	Anim* anim;
 
 	// Properties based on the player
 
@@ -48,7 +48,7 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 
 	} else {
 
-		next = level->firstBullet;
+		next = level->bullets;
 
 	}
 
@@ -66,7 +66,7 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 		time = ticks + T_TNT;
 
 		// Red flash
-		firstPE = new FlashPaletteEffect(255, 0, 0, T_TNT, firstPE);
+		paletteEffects = new FlashPaletteEffect(255, 0, 0, T_TNT, paletteEffects);
 
 	} else {
 
@@ -88,13 +88,13 @@ Bullet::Bullet (Player *sourcePlayer, bool lower, unsigned int ticks) {
 }
 
 
-Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
+Bullet::Bullet (Event* sourceEvent, bool facing, unsigned int ticks) {
 
-	Anim *anim;
+	Anim* anim;
 
 	// Properties based on the event
 
-	next = level->firstBullet;
+	next = level->bullets;
 	source = NULL;
 	type = sourceEvent->getProperty(E_BULLET);
 	direction = facing? 1: 0;
@@ -114,7 +114,7 @@ Bullet::Bullet (Event *sourceEvent, bool facing, unsigned int ticks) {
 }
 
 
-Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
+Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 
 	// Properties based on the bird and its player
 
@@ -127,7 +127,7 @@ Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
 
 	} else {
 
-		next = level->firstBullet;
+		next = level->bullets;
 
 	}
 
@@ -150,54 +150,41 @@ Bullet::Bullet (Bird *sourceBird, bool lower, unsigned int ticks) {
 
 Bullet::~Bullet () {
 
-	return;
-
-}
-
-
-Bullet * Bullet::getNext () {
-
-	return next;
-
-}
-
-
-void Bullet::removeNext () {
-
-	Bullet *newNext;
-
-	if (next) {
-
-		newNext = next->getNext();
-		delete next;
-		next = newNext;
-
-	}
+	if (next) delete next;
 
 	return;
 
 }
 
 
-Player * Bullet::getSource () {
+Bullet* Bullet::remove () {
+
+	Bullet* oldNext;
+
+	oldNext = next;
+	next = NULL;
+	delete this;
+
+	return oldNext;
+
+}
+
+
+Player* Bullet::getSource () {
 
 	return source;
 
 }
 
 
-bool Bullet::step (unsigned int ticks, int msps) {
+Bullet* Bullet::step (unsigned int ticks, int msps) {
 
-	signed char *set;
-	Event *event;
+	signed char* set;
+	Event* event;
 	int count;
 
 	// Process the next bullet
-	if (next) {
-
-		if (next->step(ticks, msps)) removeNext();
-
-	}
+	if (next) next = next->step(ticks, msps);
 
 
 	if (level->getStage() != LS_END) {
@@ -209,7 +196,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 			// If the bullet is TNT, hit all destructible events nearby twice
 			if (type == -1) {
 
-				event = level->firstEvent;
+				event = level->events;
 
 				while (event) {
 
@@ -228,13 +215,13 @@ bool Bullet::step (unsigned int ticks, int msps) {
 			}
 
 			// Destroy the bullet
-			return true;
+			return remove();
 
 		}
 
 
 		// If this is TNT, don't need to do anything else
-		if (type == -1) return false;
+		if (type == -1) return this;
 
 
 		// Check if a player has been hit
@@ -244,7 +231,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 				ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 				// If the hit was successful, destroy the bullet
-				if (players[count].hit(source, ticks)) return true;
+				if (players[count].hit(source, ticks)) return remove();
 
 			}
 
@@ -255,7 +242,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 
 			// Check if an event has been hit
 
-			event = level->firstEvent;
+			event = level->events;
 
 			while (event) {
 
@@ -264,7 +251,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 					ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 					// If the event is hittable, hit it and destroy the bullet
-					if (event->hit(source, ticks)) return true;
+					if (event->hit(source, ticks)) return remove();
 
 				}
 
@@ -285,7 +272,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 
 		level->playSound(set[B_FINISHSOUND]);
 
-		return true;
+		return remove();
 
 	}
 
@@ -309,7 +296,7 @@ bool Bullet::step (unsigned int ticks, int msps) {
 
 
 	// Do not destroy the bullet
-	return false;
+	return this;
 
 }
 

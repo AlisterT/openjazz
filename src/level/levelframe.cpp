@@ -42,8 +42,7 @@
 
 int Level::step () {
 
-	Bullet *nextBullet;
-	Event *nextEvent;
+	Event *event;
 	int x, y;
 	int msps;
 
@@ -62,37 +61,37 @@ int Level::step () {
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
 				grid[y][x].event && (grid[y][x].event < 121)) {
 
-				nextEvent = firstEvent;
+				event = events;
 
-				while (nextEvent) {
+				while (event) {
 
 					// If the event has been found, stop searching
-					if (nextEvent->isFrom(x, y)) break;
+					if (event->isFrom(x, y)) break;
 
-					nextEvent = nextEvent->getNext();
+					event = event->getNext();
 
 				}
 
 				// If the event wasn't found, create it
-				if (!nextEvent) {
+				if (!event) {
 
 					switch (getEvent(x, y)[E_BEHAVIOUR]) {
 
 						case 28:
 
-							firstEvent = new Bridge(x, y, firstEvent);
+							events = new Bridge(x, y);
 
 							break;
 
 						case 60:
 
-							firstEvent = new DeckGuardian(x, y, firstEvent);
+							events = new DeckGuardian(x, y);
 
 							break;
 
 						default:
 
-							firstEvent = new Event(x, y, firstEvent);
+							events = new Event(x, y);
 
 							break;
 
@@ -115,32 +114,12 @@ int Level::step () {
 
 	for (x = 0; x < PATHS; x++) path[x].node = (ticks >> 5) % path[x].length;
 
-	if (firstEvent) {
-
-		if (firstEvent->step(ticks, msps)) {
-
-			nextEvent = firstEvent->getNext();
-			delete firstEvent;
-			firstEvent = nextEvent;
-
-		}
-
-	}
+	if (events) events = events->step(ticks, msps);
 
 
 	// Process bullets
 
-	if (firstBullet) {
-
-		if (firstBullet->step(ticks, msps)) {
-
-			nextBullet = firstBullet->getNext();
-			delete firstBullet;
-			firstBullet = nextBullet;
-
-		}
-
-	}
+	if (bullets) bullets = bullets->step(ticks, msps);
 
 
 	// Apply as much of those trajectories as possible, without going into the
@@ -193,8 +172,6 @@ int Level::step () {
 void Level::draw () {
 
 	GridElement *ge;
-	Event *event;
-	Bullet *bullet;
 	SDL_Rect src, dst;
 	int vX, vY;
 	int x, y, bgScale;
@@ -294,14 +271,7 @@ void Level::draw () {
 
 
 	// Show active events
-	event = firstEvent;
-
-	while (event) {
-
-		event->draw(ticks, change);
-		event = event->getNext();
-
-	}
+	if (events) events->draw(ticks, change);
 
 
 	// Show the players
@@ -310,14 +280,7 @@ void Level::draw () {
 
 
 	// Show bullets
-	bullet = firstBullet;
-
-	while (bullet) {
-
-		bullet->draw(change);
-		bullet = bullet->getNext();
-
-	}
+	if (bullets) bullets->draw(change);
 
 
 

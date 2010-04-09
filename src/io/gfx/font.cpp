@@ -478,7 +478,7 @@ void Font::restorePalette () {
 	int count;
 
 	for (count = 0; count < nCharacters; count++)
-		::restorePalette(characters[count]);
+		video.restoreSurfacePalette(characters[count]);
 
 	return;
 

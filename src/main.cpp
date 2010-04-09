@@ -55,17 +55,16 @@
 extern char KOpenJazzPath[256];
 #endif
 
-#ifdef SCALE
-	#include "io/gfx/scale2x/scalebit.h"
-#endif
 
 int loadMain (int argc, char *argv[]) {
 
 	File *file;
 	unsigned char *pixels, *sorted;
 	int count, x, y;
-#ifndef SCALE
+	int screenW, screenH;
 	int scaleFactor;
+#ifndef FULLSCREEN_ONLY
+	bool fullscreen;
 #endif
 
 
@@ -160,6 +159,9 @@ int loadMain (int argc, char *argv[]) {
 	// Video settings
 	screenW = SW;
 	screenH = SH;
+#ifdef SCALE
+	scaleFactor = 1;
+#endif
 #ifndef FULLSCREEN_ONLY
 	fullscreen = false;
 #endif
@@ -208,8 +210,10 @@ int loadMain (int argc, char *argv[]) {
 #ifndef FULLSCREEN_ONLY
 		fullscreen = scaleFactor & 1;
 #endif
+#ifdef SCALE
 		scaleFactor >>= 1;
 		if (scaleFactor > 4) scaleFactor = 1;
+#endif
 
 
 		// Read controls
@@ -263,25 +267,21 @@ int loadMain (int argc, char *argv[]) {
 #endif
 
 
-	// Generate the logical palette
-	for (count = 0; count < 256; count++)
-		logicalPalette[count].r = logicalPalette[count].g =
- 			logicalPalette[count].b = count;
-
-
 	// Create the game's window
 
-	currentPalette = logicalPalette;
-	canvas = screen = NULL;
+	canvas = NULL;
 
-#ifndef FULLSCREEN_ONLY
-	if (fullscreen)
+#ifdef SCALE
+	video.setScaleFactor(scaleFactor);
 #endif
-		SDL_ShowCursor(SDL_DISABLE);
 
-	createScreen();
+#ifdef FULLSCREEN_ONLY
+	SDL_ShowCursor(SDL_DISABLE);
+#else
+	if (fullscreen) video.flipFullscreen();
+#endif
 
-	if (!screen) {
+	if (!video.create(screenW, screenH)) {
 
 		logError("Could not set video mode", SDL_GetError());
 
@@ -299,9 +299,7 @@ int loadMain (int argc, char *argv[]) {
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
 
 
-	restorePalette(screen);
-
-	firstPE = NULL;
+	paletteEffects = NULL;
 
 
 	// Set up audio
@@ -461,9 +459,7 @@ void freeMain () {
 
 	File *file;
 	int count;
-#ifndef SCALE
-	int scaleFactor = 1;
-#endif
+	int scaleFactor;
 
 	delete net;
 
@@ -483,7 +479,11 @@ void freeMain () {
 	SDL_FreeSurface(panelAmmo[4]);
 
 #ifdef SCALE
-	if (canvas != screen) SDL_FreeSurface(canvas);
+	scaleFactor = video.getScaleFactor();
+
+	if (scaleFactor > 1) SDL_FreeSurface(canvas);
+#else
+	scaleFactor = 1;
 #endif
 
 	closeAudio();
@@ -507,11 +507,11 @@ void freeMain () {
 		file->storeChar(2);
 
 		// Write video settings
-		file->storeShort(screenW);
-		file->storeShort(screenH);
+		file->storeShort(video.getWidth());
+		file->storeShort(video.getHeight());
 		scaleFactor <<= 1;
 #ifndef FULLSCREEN_ONLY
-		scaleFactor |= fullscreen? 1: 0;
+		scaleFactor |= video.isFullscreen()? 1: 0;
 #endif
 		file->storeChar(scaleFactor);
 
@@ -567,53 +567,16 @@ void freeMain () {
 
 int loop (LoopType type) {
 
-	SDL_Color shownPalette[256];
 	SDL_Event event;
 	int prevTicks, ret;
 
-
-#ifdef SCALE
-	if (canvas != screen) {
-
-		// Copy everything that has been drawn so far
-		scale(scaleFactor,
-			screen->pixels, screen->pitch,
-			canvas->pixels, canvas->pitch,
-			screen->format->BytesPerPixel, canvas->w, canvas->h);
-
-	}
-#endif
 
 	// Update tick count
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
 
-	// Apply palette effects
-	if (firstPE) {
-
-		/* If the palette is being emulated, compile all palette changes and
-		apply them all at once.
-		If the palette is being used directly, apply all palette effects
-		directly. */
-
-		if (fakePalette) {
-
-			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
-
-			firstPE->apply(shownPalette, false, globalTicks - prevTicks);
-
-			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
-
-		} else {
-
-			firstPE->apply(shownPalette, true, globalTicks - prevTicks);
-
-		}
-
-	}
-
 	// Show what has been drawn
-	SDL_Flip(screen);
+	video.flip(globalTicks - prevTicks);
 
 
 	// Process system events
@@ -628,10 +591,7 @@ int loop (LoopType type) {
 				if ((event.key.keysym.sym == SDLK_RETURN) &&
 					(event.key.keysym.mod & KMOD_ALT)) {
 
-					fullscreen = !fullscreen;
-
-					SDL_ShowCursor(fullscreen? SDL_DISABLE: SDL_ENABLE);
-					createScreen();
+					video.flipFullscreen();
 
 				}
 #endif
@@ -668,17 +628,13 @@ int loop (LoopType type) {
 #ifndef FULLSCREEN_ONLY
 			case SDL_VIDEORESIZE:
 
-				screenW = event.resize.w;
-				screenH = event.resize.h;
-
-				createScreen();
+				video.create(event.resize.w, event.resize.h);
 
 				break;
 
 			case SDL_VIDEOEXPOSE:
 
-				SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-				SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+				video.expose();
 
 				break;
 #endif

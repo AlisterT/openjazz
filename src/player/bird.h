@@ -8,7 +8,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -45,19 +45,19 @@ class Player;
 class Bird : public Movable {
 
 	private:
-		Player       *player;
-		bool          fleeing;
-		unsigned int  fireTime;
+		Player*      player;
+		bool         fleeing;
+		unsigned int fireTime;
 
 	public:
-		Bird               (Player *player, unsigned char gX, unsigned char gY);
-		~Bird              ();
+		Bird  (Player* player, unsigned char gX, unsigned char gY);
+		~Bird ();
 
-		void     reset     ();
-		Player * getPlayer ();
-		void     hit       ();
-		bool     step      (unsigned int ticks, int msps);
-		void     draw      (unsigned int ticks, int change);
+		void    reset     ();
+		Player* getPlayer ();
+		void    hit       ();
+		bool    step      (unsigned int ticks, int msps);
+		void    draw      (unsigned int ticks, int change);
 
 };
 

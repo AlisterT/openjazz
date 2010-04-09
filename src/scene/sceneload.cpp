@@ -117,7 +117,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						if (!background) background = f->loadSurface(SW, SH);
 
 						// Use the most recently loaded palette
-						usePalette(palettes->palette);
+						video.setPalette(palettes->palette);
 
 						break;
 

@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,7 +30,7 @@
 
 // Constant
 
-#define SKEY      254 /* Sprite colour key */
+#define SKEY 254 /* Sprite colour key */
 
 
 // Class
@@ -38,7 +38,7 @@
 class Sprite {
 
 	private:
-		SDL_Surface *pixels;
+		SDL_Surface* pixels;
 
 	public:
 		unsigned char xOffset;
@@ -48,11 +48,11 @@ class Sprite {
 		~Sprite             ();
 
 		void clearPixels    ();
-		void setPixels      (unsigned char *data, int width, int height);
+		void setPixels      (unsigned char* data, int width, int height);
 		int  getWidth       ();
 		int  getHeight      ();
 		void draw           (int x, int y);
-		void setPalette     (SDL_Color *palette, int start, int amount);
+		void setPalette     (SDL_Color* palette, int start, int amount);
 		void flashPalette   (int index);
 		void restorePalette ();
 

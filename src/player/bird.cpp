@@ -80,7 +80,7 @@ void Bird::hit () {
 
 bool Bird::step (unsigned int ticks, int msps) {
 
-	Event *nextEvent;
+	Event *event;
 	bool target;
 
 	if (fleeing) {
@@ -156,25 +156,25 @@ bool Bird::step (unsigned int ticks, int msps) {
 			// Check for nearby targets
 
 			target = false;
-			nextEvent = level->firstEvent;
+			event = level->events;
 
 			if (player->getFacing()) {
 
-				while (nextEvent && !target) {
+				while (event && !target) {
 
-					target = nextEvent->isEnemy() && nextEvent->overlap(x, y, F160, F100);
+					target = event->isEnemy() && event->overlap(x, y, F160, F100);
 
-					nextEvent = nextEvent->getNext();
+					event = event->getNext();
 
 				}
 
 			} else {
 
-				while (nextEvent && !target) {
+				while (event && !target) {
 
-					target = nextEvent->isEnemy() && nextEvent->overlap(x - F160, y, F160, F100);
+					target = event->isEnemy() && event->overlap(x - F160, y, F160, F100);
 
-					nextEvent = nextEvent->getNext();
+					event = event->getNext();
 
 				}
 
@@ -183,7 +183,7 @@ bool Bird::step (unsigned int ticks, int msps) {
 			// If there is a target in the vicinity, generate bullets
 			if (target) {
 
-				level->firstBullet = new Bullet(this, false, ticks);
+				level->bullets = new Bullet(this, false, ticks);
 
 				fireTime = ticks + T_BIRD_FIRE;
 

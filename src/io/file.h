@@ -27,7 +27,7 @@
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
-#include <fstream>
+#include <stdio.h>
 
 
 // Classes
@@ -35,8 +35,8 @@
 class File {
 
 	private:
-		std::fstream stream;
-		char*        filePath;
+		FILE* file;
+		char* filePath;
 
 		bool open (const char* path, const char* name, bool write);
 

@@ -197,16 +197,16 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	// Palette animations
 
 	// Free any existing palette effects
-	if (firstPE) delete firstPE;
+	if (paletteEffects) delete paletteEffects;
 
 	// Spinny whirly thing
-	firstPE = new RotatePaletteEffect(112, 16, F32, NULL);
+	paletteEffects = new RotatePaletteEffect(112, 16, F32, NULL);
 
 	// Track sides
-	firstPE = new RotatePaletteEffect(192, 16, F32, firstPE);
+	paletteEffects = new RotatePaletteEffect(192, 16, F32, paletteEffects);
 
 	// Bouncy things
-	firstPE = new RotatePaletteEffect(240, 16, -F32, firstPE);
+	paletteEffects = new RotatePaletteEffect(240, 16, -F32, paletteEffects);
 
 
 	// Adjust fontsFont to use bonus level palette
@@ -221,10 +221,10 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 Bonus::~Bonus () {
 
 	// Free the palette effects
-	if (firstPE) {
+	if (paletteEffects) {
 
-		delete firstPE;
-		firstPE = NULL;
+		delete paletteEffects;
+		paletteEffects = NULL;
 
 	}
 
@@ -457,7 +457,7 @@ int Bonus::play () {
 
 	returnTime = 0;
 
-	usePalette(palette);
+	video.setPalette(palette);
 
 	while (true) {
 
@@ -502,16 +502,16 @@ int Bonus::play () {
 						if (!gameMode) {
 
 							// Don't want palette effects in setup menu
-							levelPE = firstPE;
-							firstPE = NULL;
+							levelPE = paletteEffects;
+							paletteEffects = NULL;
 
 							if (menu->setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
-							usePalette(palette);
+							video.setPalette(palette);
 
 							// Restore palette effects
-							firstPE = levelPE;
+							paletteEffects = levelPE;
 
 						}
 
@@ -552,7 +552,7 @@ int Bonus::play () {
 			else if (count) {
 
 				stage = LS_END;
-				firstPE = new WhiteOutPaletteEffect(T_BONUS_END, firstPE);
+				paletteEffects = new WhiteOutPaletteEffect(T_BONUS_END, paletteEffects);
 				returnTime = ticks + T_BONUS_END;
 
 			}
@@ -570,7 +570,7 @@ int Bonus::play () {
 			fontsFont->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
-		drawStats(stats);
+		drawStats(stats, 0);
 
 		// Draw the menu
 		if (pmenu) {

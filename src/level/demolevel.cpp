@@ -103,7 +103,7 @@ int DemoLevel::play () {
 
 	stats = 0;
 
-	usePalette(palette);
+	video.setPalette(palette);
 
 	while (true) {
 
@@ -170,7 +170,7 @@ int DemoLevel::play () {
 		// Draw the graphics
 
 		draw();
-		drawStats(stats);
+		drawStats(stats, BLACK);
 
 
 		fontsFont->showString("demo", (canvasW >> 1) - 36, 32);

@@ -52,6 +52,9 @@
 #define PATHS      16
 #define TKEY      127 /* Tileset colour key */
 
+// Black palette index
+#define BLACK 31
+
 // Fade delays
 #define T_START 500
 #define T_END   1000
@@ -72,10 +75,10 @@ typedef struct {
 
 typedef struct {
 
-	short int     *x;
-	short int     *y;
-	unsigned char  length;
-	unsigned char  node;
+	short int*    x;
+	short int*    y;
+	unsigned char length;
+	unsigned char node;
 
 } EventPath;
 
@@ -90,42 +93,42 @@ class Scene;
 class Level : public BaseLevel {
 
 	private:
-		char          *sceneFile;
-		Sprite        *spriteSet; // 208 of which are usually in mainchar.000
-		Anim           animSet[ANIMS];
-		char           miscAnims[4];
-		signed char    bulletSet[BULLETS][BLENGTH];
-		signed char    eventSet[EVENTS][ELENGTH];
-		char           mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
-		GridElement    grid[LH][LW]; // All levels are the same size
-		int            soundMap[32];
-		SDL_Color      skyPalette[256];
-		bool           sky;
-		unsigned char  skyOrb;
-		int            sprites;
-		int            levelNum, worldNum, nextLevelNum, nextWorldNum;
-		unsigned char  difficulty;
-		int            enemies;
-		fixed          waterLevel;
-		fixed          waterLevelTarget;
-		fixed          waterLevelSpeed;
-		fixed          energyBar;
+		char*         sceneFile;
+		Sprite*       spriteSet; // 208 of which are usually in mainchar.000
+		Anim          animSet[ANIMS];
+		char          miscAnims[4];
+		signed char   bulletSet[BULLETS][BLENGTH];
+		signed char   eventSet[EVENTS][ELENGTH];
+		char          mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
+		GridElement   grid[LH][LW]; // All levels are the same size
+		int           soundMap[32];
+		SDL_Color     skyPalette[256];
+		bool          sky;
+		unsigned char skyOrb;
+		int           sprites;
+		int           levelNum, worldNum, nextLevelNum, nextWorldNum;
+		unsigned char difficulty;
+		int           enemies;
+		fixed         waterLevel;
+		fixed         waterLevelTarget;
+		fixed         waterLevelSpeed;
+		fixed         energyBar;
 
-		int loadSprites (char *fileName);
-		int loadTiles   (char *fileName);
+		int loadSprites (char* fileName);
+		int loadTiles   (char* fileName);
 
 	protected:
-		int  load (char *fileName, unsigned char diff, bool checkpoint);
+		int  load (char* fileName, unsigned char diff, bool checkpoint);
 		int  step ();
 		void draw ();
 
 	public:
-		Event     *firstEvent;
-		Bullet    *firstBullet;
-		EventPath  path[PATHS];
+		Event*    events;
+		Bullet*   bullets;
+		EventPath path[PATHS];
 
 		Level                       ();
-		Level                       (char *fileName, unsigned char diff, bool checkpoint);
+		Level                       (char* fileName, unsigned char diff, bool checkpoint);
 		virtual ~Level              ();
 
 		bool          checkMask     (fixed x, fixed y);
@@ -133,23 +136,23 @@ class Level : public BaseLevel {
 		bool          checkSpikes   (fixed x, fixed y);
 		void          setNext       (int nextLevel, int nextWorld);
 		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
-		signed char * getEvent      (unsigned char gridX, unsigned char gridY);
+		signed char*  getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player *source);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player* source);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
-		signed char * getBullet     (unsigned char bullet);
-		Sprite *      getSprite     (unsigned char sprite);
-		Anim *        getAnim       (unsigned char anim);
-		Anim *        getMiscAnim   (unsigned char anim);
+		signed char*  getBullet     (unsigned char bullet);
+		Sprite*       getSprite     (unsigned char sprite);
+		Anim*         getAnim       (unsigned char anim);
+		Anim*         getMiscAnim   (unsigned char anim);
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);
 		void          setStage      (LevelStage stage);
 		LevelStage    getStage      ();
-		Scene *       createScene   ();
-		void          receive       (unsigned char *buffer);
+		Scene*        createScene   ();
+		void          receive       (unsigned char* buffer);
 		virtual int   play          ();
 
 };
@@ -158,10 +161,10 @@ class Level : public BaseLevel {
 class DemoLevel : public Level {
 
 	private:
-		unsigned char *macro;
+		unsigned char* macro;
 
 	public:
-		DemoLevel  (const char *fileName);
+		DemoLevel  (const char* fileName);
 		~DemoLevel ();
 
 		int play   ();
@@ -171,7 +174,7 @@ class DemoLevel : public Level {
 
 // Variables
 
-EXTERN Level *level;
+EXTERN Level* level;
 EXTERN fixed  viewX, viewY;
 
 #endif

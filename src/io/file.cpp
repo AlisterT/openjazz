@@ -49,7 +49,7 @@ File::File (const char* name, bool write) {
 
 File::~File () {
 
-	stream.close();
+	fclose(file);
 
 #ifdef VERBOSE
 	log("Closed file", filePath);
@@ -68,10 +68,9 @@ bool File::open (const char* path, const char* name, bool write) {
 	filePath = createString(path, name);
 
 	// Open the file from the path
-	stream.clear();
-	stream.open(filePath, (write ? std::ios::out: std::ios::in) | std::ios::binary);
+	file = fopen(filePath, write ? "wb": "rb");
 
-	if (stream.is_open() && stream.good()) {
+	if (file) {
 
 #ifdef VERBOSE
 		log("Opened file", filePath);
@@ -92,13 +91,13 @@ int File::getSize () {
 
 	int pos, size;
 
-	pos = stream.tellg();
+	pos = ftell(file);
 
-	stream.seekg(0, std::ios::end);
+	fseek(file, 0, SEEK_END);
 
-	size = stream.tellg();
+	size = ftell(file);
 
-	stream.seekg(pos, std::ios::beg);
+	fseek(file, pos, SEEK_SET);
 
 	return size;
 
@@ -106,13 +105,13 @@ int File::getSize () {
 
 int File::tell () {
 
-	return stream.tellg();
+	return ftell(file);
 
 }
 
 void File::seek (int offset, bool reset) {
 
-	stream.seekg(offset, reset ? std::ios::beg: std::ios::cur);
+	fseek(file, offset, reset ? SEEK_SET: SEEK_CUR);
 
 	return;
 
@@ -120,14 +119,14 @@ void File::seek (int offset, bool reset) {
 
 unsigned char File::loadChar () {
 
-	return stream.get();
+	return fgetc(file);
 
 }
 
 
 void File::storeChar (unsigned char val) {
 
-	stream.put(val);
+	fputc(val, file);
 
 	return;
 
@@ -138,8 +137,8 @@ unsigned short int File::loadShort () {
 
 	unsigned short int val;
 
-	val = stream.get();
-	val += stream.get() << 8;
+	val = fgetc(file);
+	val += fgetc(file) << 8;
 
 	return val;
 
@@ -148,8 +147,8 @@ unsigned short int File::loadShort () {
 
 void File::storeShort (unsigned short int val) {
 
-	stream.put(val & 255);
-	stream.put(val >> 8);
+	fputc(val & 255, file);
+	fputc(val >> 8, file);
 
 	return;
 
@@ -160,10 +159,10 @@ signed long int File::loadInt () {
 
 	unsigned long int val;
 
-	val = stream.get();
-	val += stream.get() << 8;
-	val += stream.get() << 16;
-	val += stream.get() << 24;
+	val = fgetc(file);
+	val += fgetc(file) << 8;
+	val += fgetc(file) << 16;
+	val += fgetc(file) << 24;
 
 	return *((signed long int *)&val);
 
@@ -176,23 +175,23 @@ void File::storeInt (signed long int val) {
 
 	uval = *((unsigned long int *)&val);
 
-	stream.put(uval & 255);
-	stream.put((uval >> 8) & 255);
-	stream.put((uval >> 16) & 255);
-	stream.put(uval >> 24);
+	fputc(uval & 255, file);
+	fputc((uval >> 8) & 255, file);
+	fputc((uval >> 16) & 255, file);
+	fputc(uval >> 24, file);
 
 	return;
 
 }
 
 
-unsigned char* File::loadBlock (int length) {
+unsigned char * File::loadBlock (int length) {
 
 	unsigned char *buffer;
 
 	buffer = new unsigned char[length];
 
-	stream.read((char *)buffer, length);
+	fread(buffer, 1, length, file);
 
 	return buffer;
 
@@ -205,9 +204,9 @@ unsigned char* File::loadRLE (int length) {
 	int rle, pos, byte, count, next;
 
 	// Determine the offset that follows the block
-	next = stream.get();
-	next += stream.get() << 8;
-	next += stream.tellg();
+	next = fgetc(file);
+	next += fgetc(file) << 8;
+	next += ftell(file);
 
 	buffer = new unsigned char[length];
 
@@ -215,11 +214,11 @@ unsigned char* File::loadRLE (int length) {
 
 	while (pos < length) {
 
-		rle = stream.get();
+		rle = fgetc(file);
 
 		if (rle & 128) {
 
-			byte = stream.get();
+			byte = fgetc(file);
 
 			for (count = 0; count < (rle & 127); count++) {
 
@@ -232,16 +231,16 @@ unsigned char* File::loadRLE (int length) {
 
 			for (count = 0; count < rle; count++) {
 
-				buffer[pos++] = stream.get();
+				buffer[pos++] = fgetc(file);
 				if (pos >= length) break;
 
 			}
 
-		} else buffer[pos++] = stream.get();
+		} else buffer[pos++] = fgetc(file);
 
 	}
 
-	stream.seekg(next, std::ios::beg);
+	fseek(file, next, SEEK_SET);
 
 	return buffer;
 
@@ -252,27 +251,27 @@ void File::skipRLE () {
 
 	int next;
 
-	next = stream.get();
-	next += stream.get() << 8;
+	next = fgetc(file);
+	next += fgetc(file) << 8;
 
-	stream.seekg(next, std::ios::cur);
+	fseek(file, next, SEEK_CUR);
 
 	return;
 
 }
 
 
-char* File::loadString () {
+char * File::loadString () {
 
-	char* string;
+	char *string;
 	int length, count;
 
-	length = stream.get();
+	length = fgetc(file);
 
 	if (length) {
 
 		string = new char[length + 1];
-		stream.read(string, length);
+		fread(string, 1, length, file);
 
 	} else {
 
@@ -281,13 +280,13 @@ char* File::loadString () {
 
 		for (count = 0; count < 9; count++) {
 
-			string[count] = stream.get();
+			string[count] = fgetc(file);
 
 			if (string[count] == '.') {
 
-				string[++count] = stream.get();
-				string[++count] = stream.get();
-				string[++count] = stream.get();
+				string[++count] = fgetc(file);
+				string[++count] = fgetc(file);
+				string[++count] = fgetc(file);
 				count++;
 
 				break;

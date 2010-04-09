@@ -93,7 +93,7 @@ void BaseLevel::timeCalcs () {
 }
 
 
-void BaseLevel::drawStats (int stats) {
+void BaseLevel::drawStats (int stats, unsigned char bg) {
 
 	int count, width;
 
@@ -102,20 +102,20 @@ void BaseLevel::drawStats (int stats) {
 	if (stats & S_SCREEN) {
 
 #ifdef SCALE
-		if (scaleFactor > 1)
-			drawRect(canvasW - 84, 11, 80, 37, BLACK);
+		if (video.getScaleFactor() > 1)
+			drawRect(canvasW - 84, 11, 80, 37, bg);
 		else
 #endif
-			drawRect(canvasW - 84, 11, 80, 25, BLACK);
+			drawRect(canvasW - 84, 11, 80, 25, bg);
 
-		panelBigFont->showNumber(screenW, canvasW - 52, 14);
+		panelBigFont->showNumber(video.getWidth(), canvasW - 52, 14);
 		panelBigFont->showString("x", canvasW - 48, 14);
-		panelBigFont->showNumber(screenH, canvasW - 12, 14);
+		panelBigFont->showNumber(video.getHeight(), canvasW - 12, 14);
 		panelBigFont->showString("fps", canvasW - 76, 26);
 		panelBigFont->showNumber((int)smoothfps, canvasW - 12, 26);
 
 #ifdef SCALE
-		if (scaleFactor > 1) {
+		if (video.getScaleFactor() > 1) {
 
 			panelBigFont->showNumber(canvasW, canvasW - 52, 38);
 			panelBigFont->showString("x", canvasW - 48, 39);
@@ -136,7 +136,7 @@ void BaseLevel::drawStats (int stats) {
 			if (panelBigFont->getStringWidth(players[count].getName()) > width)
 				width = panelBigFont->getStringWidth(players[count].getName());
 
-		drawRect((canvasW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, BLACK);
+		drawRect((canvasW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, bg);
 
 		for (count = 0; count < nPlayers; count++) {
 

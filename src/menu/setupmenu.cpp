@@ -260,13 +260,16 @@ int Menu::setupResolution () {
 	int heightOptions[] = {200, 240, 300, 384, 400, 480, 576, 600, 720, 768,
 		800, 864, 900, 960, 1024, 1080, 1200};
 	SDL_Rect **resolutions;
-	int count, maxW, maxH;
+	int count, screenW, screenH, maxW, maxH;
 	bool dimension;
+
+	screenW = video.getWidth();
+	screenH = video.getHeight();
 
 	dimension = false;
 
 #ifndef FULLSCREEN_ONLY
-	if (!fullscreen)
+	if (!video.isFullscreen())
 		resolutions = SDL_ListModes(NULL, WINDOWED_FLAGS);
 	else
 #endif
@@ -389,7 +392,7 @@ int Menu::setupResolution () {
 		if (count) {
 
 			playSound(S_ORB);
-			createScreen();
+			video.create(screenW, screenH);
 
 		}
 
@@ -403,7 +406,9 @@ int Menu::setupResolution () {
 #ifdef SCALE
 int Menu::setupScaling () {
 
-	int oldScaleFactor;
+	int scaleFactor;
+
+	scaleFactor = video.getScaleFactor();
 
 	if ( scaleFactor < MIN_SCALE || scaleFactor > MAX_SCALE )
 		scaleFactor = 1;
@@ -432,7 +437,7 @@ int Menu::setupScaling () {
 		fontmn2->mapPalette(240, 8, 114, 16);
 
 		// Scale
-		fontmn2->showNumber(scaleFactor, (canvasW >> 2) + 32, canvasH >> 1);
+		fontmn2->showNumber(video.getScaleFactor(), (canvasW >> 2) + 32, canvasH >> 1);
 
 		// X
 		fontmn2->showString("x", (canvasW >> 2) + 40, canvasH >> 1);
@@ -440,17 +445,15 @@ int Menu::setupScaling () {
 		fontmn2->restorePalette();
 
 
-		oldScaleFactor = scaleFactor;
-
 		if ((controls.release(C_DOWN) || controls.release(C_LEFT)) && (scaleFactor > MIN_SCALE)) scaleFactor--;
 
 		if ((controls.release(C_UP) || controls.release(C_RIGHT)) && (scaleFactor < MAX_SCALE)) scaleFactor++;
 
 		// Check for a scaling change
-		if (scaleFactor != oldScaleFactor) {
+		if (scaleFactor != video.getScaleFactor()) {
 
 			playSound(S_ORB);
-			createScreen();
+			video.setScaleFactor(scaleFactor);
 
 		}
 

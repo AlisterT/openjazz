@@ -38,16 +38,12 @@
 #include <math.h>
 
 
-signed char * Event::prepareStep (unsigned int ticks, int msps) {
+signed char* Event::prepareStep (unsigned int ticks, int msps) {
 
-	signed char *set;
+	signed char* set;
 
 	// Process the next event
-	if (next) {
-
-		if (next->step(ticks, msps)) removeNext();
-
-	}
+	if (next) next = next->step(ticks, msps);
 
 
 	// Get the event properties
@@ -85,10 +81,10 @@ signed char * Event::prepareStep (unsigned int ticks, int msps) {
 }
 
 
-bool Event::step (unsigned int ticks, int msps) {
+Event* Event::step (unsigned int ticks, int msps) {
 
 	fixed width, height;
-	signed char *set;
+	signed char* set;
 	int count;
 	fixed offset;
 	float angle;
@@ -96,7 +92,7 @@ bool Event::step (unsigned int ticks, int msps) {
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return true;
+	if (!set) return remove();
 
 
 	// Find dimensions
@@ -696,7 +692,7 @@ bool Event::step (unsigned int ticks, int msps) {
 					    animType = E_LEFTANIM;
 
 				}
- 
+
 				break;
 
 			case 32:
@@ -845,13 +841,13 @@ bool Event::step (unsigned int ticks, int msps) {
 			// The event has been destroyed, so remove it
 			level->clearEvent(gridX, gridY);
 
-			return true;
+			return remove();
 
 		} else if (animType == E_LSHOOTANIM) {
 
 			if ((set[E_BULLET] < 32) &&
 				(level->getBullet(set[E_BULLET])[B_SPRITE] != 0))
-				level->firstBullet = new Bullet(this, false, ticks);
+				level->bullets = new Bullet(this, false, ticks);
 
 			animType = E_LEFTANIM;
 
@@ -859,7 +855,7 @@ bool Event::step (unsigned int ticks, int msps) {
 
 			if ((set[E_BULLET] < 32) &&
 				(level->getBullet(set[E_BULLET])[B_SPRITE + 1] != 0))
-				level->firstBullet = new Bullet(this, true, ticks);
+				level->bullets = new Bullet(this, true, ticks);
 
 			animType = E_RIGHTANIM;
 
@@ -872,43 +868,41 @@ bool Event::step (unsigned int ticks, int msps) {
 	}
 
 
-	if (level->getStage() == LS_END) return false;
+	if (level->getStage() == LS_END) return this;
+
+	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM)) return this;
 
 
 	// Handle contact with player
 
-	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM)) {
+	for (count = 0; count < nPlayers; count++) {
 
-		for (count = 0; count < nPlayers; count++) {
+		// Check if the player is touching the event
+		if (set[E_MODIFIER] == 6) {
+
+			if (width && height &&
+				players[count].overlap(x, y - height, width - F8, F8) &&
+				(players[count].getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
+				!level->checkMaskDown(players[count].getX() + PXO_MID, PYO_TOP + y - height)) {
+
+				// Player is on a platform
+
+				players[count].setEvent(gridX, gridY);
+				players[count].setPosition(
+					players[count].getX() + ((dx * msps) >> 10),
+					F4 + y - height);
+
+			} else players[count].clearEvent(gridX, gridY);
+
+		} else {
 
 			// Check if the player is touching the event
-			if (set[E_MODIFIER] == 6) {
+			if (width && height &&
+				players[count].overlap(x, y - height, width, height)) {
 
-				if (width && height &&
-					players[count].overlap(x, y - height, width - F8, F8) &&
-					(players[count].getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
-					!level->checkMaskDown(players[count].getX() + PXO_MID, PYO_TOP + y - height)) {
-
-					// Player is on a platform
-
-					players[count].setEvent(gridX, gridY);
-					players[count].setPosition(
-						players[count].getX() + ((dx * msps) >> 10),
-						F4 + y - height);
-
-				} else players[count].clearEvent(gridX, gridY);
-
-			} else {
-
-				// Check if the player is touching the event
-				if (width && height &&
-					players[count].overlap(x, y - height, width, height)) {
-
-					// If the player picks up the event, destroy it
-					if (players[count].touchEvent(gridX, gridY, ticks, msps))
-						destroy(ticks);
-
-				}
+				// If the player picks up the event, destroy it
+				if (players[count].touchEvent(gridX, gridY, ticks, msps))
+					destroy(ticks);
 
 			}
 
@@ -917,16 +911,19 @@ bool Event::step (unsigned int ticks, int msps) {
 	}
 
 
-	return false;
+	return this;
 
 }
 
 
 void Event::draw (unsigned int ticks, int change) {
 
-	Anim *anim;
-	signed char *set;
+	Anim* anim;
+	signed char* set;
 	int count;
+
+
+	if (next) next->draw(ticks, change);
 
 
 	// Uncomment the following to see the area of the event

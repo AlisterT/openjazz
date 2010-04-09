@@ -52,7 +52,7 @@ int Menu::main () {
 
 	option = suboption = 0;
 
-	usePalette(palettes[0]);
+	video.setPalette(palettes[0]);
 
 	// Demo timeout
 	idleTime = globalTicks + T_DEMO;
@@ -171,7 +171,7 @@ int Menu::main () {
 			}
 
 			// Restore the main menu palette
-			usePalette(palettes[0]);
+			video.setPalette(palettes[0]);
 
 			// New demo timeout
 			idleTime = globalTicks + T_DEMO;
@@ -222,7 +222,7 @@ int Menu::main () {
 			playMusic("menusng.psm");
 
 			// Restore the main menu palette
-			usePalette(palettes[0]);
+			video.setPalette(palettes[0]);
 
 			idleTime = globalTicks + T_DEMO;
 

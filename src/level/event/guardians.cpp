@@ -32,14 +32,14 @@
 #include "player/player.h"
 
 
-DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY, Event *nextEvent) {
+DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) {
 
 	x = TTOF(gX);
 	y = TTOF(gY + 1);
 	dx = 0;
 	dy = 0;
 
-	next = nextEvent;
+	next = level->events;
 	gridX = gX;
 	gridY = gY;
 	flashTime = 0;
@@ -70,15 +70,15 @@ bool DeckGuardian::overlap (fixed left, fixed top, fixed width, fixed height) {
 }
 
 
-bool DeckGuardian::step (unsigned int ticks, int msps) {
+Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
-	signed char *set;
+	signed char* set;
 	int count;
 
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return true;
+	if (!set) return remove();
 
 
 	// Handle behaviour
@@ -111,7 +111,7 @@ bool DeckGuardian::step (unsigned int ticks, int msps) {
 			// The event has been destroyed, so remove it
 			level->clearEvent(gridX, gridY);
 
-			return true;
+			return remove();
 
 		} else {
 
@@ -122,19 +122,19 @@ bool DeckGuardian::step (unsigned int ticks, int msps) {
 	}
 
 
-	if (level->getStage() == LS_END) return false;
-
-
-	return false;
+	return this;
 
 }
 
 
 void DeckGuardian::draw (unsigned int ticks, int change) {
 
-	Anim *anim;
-	signed char *set;
+	Anim* anim;
+	signed char* set;
 	int count;
+
+
+	if (next) next->draw(ticks, change);
 
 
 	// Get the event properties

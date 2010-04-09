@@ -9,7 +9,7 @@
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -49,13 +49,13 @@
 class PaletteEffect {
 
 	protected:
-		PaletteEffect *next; // Next effect to use
+		PaletteEffect* next; // Next effect to use
 
 	public:
-		PaletteEffect          (PaletteEffect * nextPE);
+		PaletteEffect          (PaletteEffect* nextPE);
 		virtual ~PaletteEffect ();
 
-		virtual void apply     (SDL_Color *shownPalette, bool direct, int mspf);
+		virtual void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -67,9 +67,9 @@ class WhiteInPaletteEffect : public PaletteEffect {
 		fixed whiteness;
 
 	public:
-		WhiteInPaletteEffect (int newDuration, PaletteEffect * nextPE);
+		WhiteInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply           (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -81,9 +81,9 @@ class FadeInPaletteEffect : public PaletteEffect {
 		fixed blackness;
 
 	public:
-		FadeInPaletteEffect (int newDuration, PaletteEffect * nextPE);
+		FadeInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply          (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -95,9 +95,9 @@ class WhiteOutPaletteEffect : public PaletteEffect {
 		fixed whiteness;
 
 	public:
-		WhiteOutPaletteEffect (int newDuration, PaletteEffect * nextPE);
+		WhiteOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply            (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply  (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -109,9 +109,9 @@ class FadeOutPaletteEffect : public PaletteEffect {
 		fixed blackness;
 
 	public:
-		FadeOutPaletteEffect (int newDuration, PaletteEffect * nextPE);
+		FadeOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply           (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -125,9 +125,9 @@ class FlashPaletteEffect : public PaletteEffect {
 
 	public:
 		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen,
-			unsigned char newBlue, int newDuration, PaletteEffect * nextPE);
+			unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
 
-		void apply         (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -135,18 +135,16 @@ class FlashPaletteEffect : public PaletteEffect {
 class RotatePaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;    /* The first palette index affected by the
-			effect */
-		int           amount;   /* The number of (consecutive) palette indices
-			affected by the effect */
+		unsigned char first;    /* The first palette index affected */
+		int           amount;   /* The number of (consecutive) palette indices affected */
 		fixed         speed;    // Rotations per second
 		fixed         position;
 
 	public:
 		RotatePaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect * nextPE);
+			fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply          (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -155,17 +153,15 @@ class SkyPaletteEffect : public PaletteEffect {
 
 	private:
 		SDL_Color     *skyPalette;
-		unsigned char  first;      /* The first palette index affected by the
-			effect */
-		int            amount;     /* The number of (consecutive) palette
-			indices affected by the effect */
+		unsigned char  first;      /* The first palette index affected */
+		int            amount;     /* The number of (consecutive) palette indices affected */
 		fixed          speed;      // Relative Y speed - as in Jazz 2
 
 	public:
 		SkyPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, SDL_Color *newSkyPalette, PaletteEffect * nextPE);
+			fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
 
-		void apply       (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -173,17 +169,15 @@ class SkyPaletteEffect : public PaletteEffect {
 class P2DPaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;  /* The first palette index affected by the
-			effect */
-		int           amount; /* The number of (consecutive) palette indices
-			affected by the effect */
+		unsigned char first;  /* The first palette index affected */
+		int           amount; /* The number of (consecutive) palette indices affected */
 		fixed         speed;  // Relative X & Y speed - as in Jazz 2
 
 	public:
 		P2DPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect * nextPE);
+			fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply       (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -191,17 +185,15 @@ class P2DPaletteEffect : public PaletteEffect {
 class P1DPaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;    /* The first palette index affected by the
-			effect */
-		int           amount;   /* The number of (consecutive) palette indices
-			affected by the effect */
+		unsigned char first;    /* The first palette index affected */
+		int           amount;   /* The number of (consecutive) palette indices affected */
 		fixed         speed;    // Relative X & Y speed - as in Jazz 2
 
 	public:
 		P1DPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect * nextPE);
+			fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply       (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
@@ -209,20 +201,19 @@ class P1DPaletteEffect : public PaletteEffect {
 class WaterPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed depth; /* Number of pixels between water surface and total
-			darkness */
+		fixed depth; /* Number of pixels between water surface and total darkness */
 
 	public:
-		WaterPaletteEffect (fixed newDepth, PaletteEffect * nextPE);
+		WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE);
 
-		void apply         (SDL_Color *shownPalette, bool direct, int mspf);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
 };
 
 
 // Variable
 
-EXTERN PaletteEffect *firstPE;
+EXTERN PaletteEffect* paletteEffects;
 
 #endif
 

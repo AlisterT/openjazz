@@ -31,9 +31,9 @@
 #include "player/player.h"
 
 
-Bridge::Bridge (unsigned char gX, unsigned char gY, Event *nextEvent) {
+Bridge::Bridge (unsigned char gX, unsigned char gY) {
 
-	signed char *set;
+	signed char* set;
 
 	set = level->getEvent(gX, gY);
 
@@ -42,7 +42,7 @@ Bridge::Bridge (unsigned char gX, unsigned char gY, Event *nextEvent) {
 	dx = 0;
 	dy = 0;
 
-	next = nextEvent;
+	next = level->events;
 	gridX = gX;
 	gridY = gY;
 	animType = E_LEFTANIM;
@@ -58,16 +58,16 @@ Bridge::Bridge (unsigned char gX, unsigned char gY, Event *nextEvent) {
 }
 
 
-bool Bridge::step (unsigned int ticks, int msps) {
+Event* Bridge::step (unsigned int ticks, int msps) {
 
-	signed char *set;
+	signed char* set;
 	int count;
 	fixed bridgeLength, playerDipX, playerDipY;
 
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return true;
+	if (!set) return remove();
 
 
 	bridgeLength = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
@@ -105,7 +105,7 @@ bool Bridge::step (unsigned int ticks, int msps) {
 	}
 
 
-	return false;
+	return this;
 
 }
 
@@ -116,6 +116,9 @@ void Bridge::draw (unsigned int ticks, int change) {
 	signed char *set;
 	int count;
 	fixed bridgeLength, leftDipY, rightDipY;
+
+
+	if (next) next->draw(ticks, change);
 
 
 	// Get the event properties

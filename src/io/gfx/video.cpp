@@ -26,7 +26,12 @@
  */
 
 
+#include "paletteeffects.h"
 #include "video.h"
+
+#ifdef SCALE
+	#include "io/gfx/scale2x/scalebit.h"
+#endif
 
 #include <string.h>
 
@@ -50,7 +55,7 @@ unsigned char * sortPixels (unsigned char * pixels, int length) {
 }
 
 
-SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
+SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 
 	SDL_Surface *ret;
 	int y;
@@ -59,7 +64,7 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 	ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
 	// Set the surface's palette
-	SDL_SetPalette(ret, SDL_LOGPAL, logicalPalette, 0, 256);
+	video.restoreSurfacePalette(ret);
 
 	if (pixels) {
 
@@ -79,7 +84,37 @@ SDL_Surface * createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
-void createScreen () {
+Video::Video () {
+
+	int count;
+
+	screen = NULL;
+
+	screenW = SW;
+	screenH = SH;
+#ifdef SCALE
+	scaleFactor = 1;
+#endif
+#ifndef FULLSCREEN_ONLY
+	fullscreen = false;
+#endif
+
+	// Generate the logical palette
+	for (count = 0; count < 256; count++)
+		logicalPalette[count].r = logicalPalette[count].g =
+ 			logicalPalette[count].b = count;
+
+	currentPalette = logicalPalette;
+
+	return;
+
+}
+
+
+bool Video::create (int width, int height) {
+
+	screenW = width;
+	screenH = height;
 
 #ifdef SCALE
 	if (canvas != screen) SDL_FreeSurface(canvas);
@@ -94,6 +129,9 @@ void createScreen () {
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 	#endif
 #endif
+
+	if (!screen) return false;
+
 
 #ifdef SCALE
 	// Check that the scale will fit in the current resolution
@@ -121,8 +159,7 @@ void createScreen () {
 #endif
 
 #if !(defined(WIZ) || defined(GP2X))
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+	expose();
 #endif
 
 
@@ -137,12 +174,12 @@ void createScreen () {
 	// TODO: Find a better way
 	fakePalette = true;
 
-	return;
+	return true;
 
 }
 
 
-void usePalette (SDL_Color *palette) {
+void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
 	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
@@ -158,9 +195,139 @@ void usePalette (SDL_Color *palette) {
 }
 
 
-void restorePalette (SDL_Surface *surface) {
+SDL_Color* Video::getPalette () {
+
+	return currentPalette;
+
+}
+
+
+void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned char amount) {
+
+	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
+
+	return;
+
+}
+
+
+void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
 	SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
+
+	return;
+
+}
+
+
+int Video::getWidth () {
+
+	return screenW;
+
+}
+
+
+int Video::getHeight () {
+
+	return screenH;
+
+}
+
+
+int Video::getScaleFactor () {
+
+	return scaleFactor;
+
+}
+
+
+void Video::setScaleFactor (int newScaleFactor) {
+
+	scaleFactor = newScaleFactor;
+
+	if (screen) create(screenW, screenH);
+
+	return;
+
+}
+
+
+#ifndef FULLSCREEN_ONLY
+bool Video::isFullscreen () {
+
+	return fullscreen;
+
+}
+#endif
+
+
+#ifndef FULLSCREEN_ONLY
+void Video::flipFullscreen () {
+
+	fullscreen = !fullscreen;
+
+	SDL_ShowCursor(fullscreen? SDL_DISABLE: SDL_ENABLE);
+
+	if (screen) create(screenW, screenH);
+
+	return;
+
+}
+#endif
+
+
+void Video::expose () {
+
+	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
+	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+	return;
+
+}
+
+
+void Video::flip (int mspf) {
+
+	SDL_Color shownPalette[256];
+
+#ifdef SCALE
+	if (canvas != screen) {
+
+		// Copy everything that has been drawn so far
+		scale(scaleFactor,
+			screen->pixels, screen->pitch,
+			canvas->pixels, canvas->pitch,
+			screen->format->BytesPerPixel, canvas->w, canvas->h);
+
+	}
+#endif
+
+	// Apply palette effects
+	if (paletteEffects) {
+
+		/* If the palette is being emulated, compile all palette changes and
+		apply them all at once.
+		If the palette is being used directly, apply all palette effects
+		directly. */
+
+		if (fakePalette) {
+
+			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
+
+			paletteEffects->apply(shownPalette, false, mspf);
+
+			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+
+		} else {
+
+			paletteEffects->apply(shownPalette, true, mspf);
+
+		}
+
+	}
+
+	// Show what has been drawn
+	SDL_Flip(screen);
 
 	return;
 
@@ -171,7 +338,7 @@ void clearScreen (int index) {
 
 #if defined(WIZ) || defined(GP2X)
 	// always 240 lines cleared to black
-	memset(screen->pixels, index, 320*240);
+	memset(video->pixels, index, 320*240);
 #else
 	SDL_FillRect(canvas, NULL, index);
 #endif
@@ -195,3 +362,4 @@ void drawRect (int x, int y, int width, int height, int index) {
 	return;
 
 }
+

@@ -30,7 +30,7 @@
 #include <string.h>
 
 
-PaletteEffect::PaletteEffect (PaletteEffect * nextPE) {
+PaletteEffect::PaletteEffect (PaletteEffect* nextPE) {
 
 	next = nextPE;
 
@@ -48,7 +48,7 @@ PaletteEffect::~PaletteEffect () {
 }
 
 
-void PaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
+void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	// Apply the next palette effect
 	if (next) next->apply(shownPalette, direct, mspf);
@@ -58,8 +58,8 @@ void PaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 }
 
 
-WhiteInPaletteEffect::WhiteInPaletteEffect (fixed newDuration,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+WhiteInPaletteEffect::WhiteInPaletteEffect
+	(fixed newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	whiteness = F1 + FH;
@@ -69,8 +69,7 @@ WhiteInPaletteEffect::WhiteInPaletteEffect (fixed newDuration,
 }
 
 
-void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
 
@@ -101,16 +100,15 @@ void WhiteInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	}
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-FadeInPaletteEffect::FadeInPaletteEffect (int newDuration,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+FadeInPaletteEffect::FadeInPaletteEffect
+	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	blackness = F1 + FH;
@@ -120,8 +118,7 @@ FadeInPaletteEffect::FadeInPaletteEffect (int newDuration,
 }
 
 
-void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
 
@@ -152,16 +149,15 @@ void FadeInPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	}
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-WhiteOutPaletteEffect::WhiteOutPaletteEffect (int newDuration,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+WhiteOutPaletteEffect::WhiteOutPaletteEffect
+	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	whiteness = 0;
@@ -171,8 +167,7 @@ WhiteOutPaletteEffect::WhiteOutPaletteEffect (int newDuration,
 }
 
 
-void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
 
@@ -201,16 +196,15 @@ void WhiteOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	} else whiteness += ITOF(mspf) / duration;
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-FadeOutPaletteEffect::FadeOutPaletteEffect (int newDuration,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+FadeOutPaletteEffect::FadeOutPaletteEffect
+	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	blackness = -(F2 + F1);
@@ -220,8 +214,7 @@ FadeOutPaletteEffect::FadeOutPaletteEffect (int newDuration,
 }
 
 
-void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
 
@@ -249,17 +242,17 @@ void FadeOutPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	} else blackness += ITOF(mspf) / duration;
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-FlashPaletteEffect::FlashPaletteEffect (unsigned char newRed,
-	unsigned char newGreen, unsigned char newBlue, int newDuration,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+FlashPaletteEffect::FlashPaletteEffect
+	(unsigned char newRed, unsigned char newGreen, unsigned char newBlue,
+		int newDuration, PaletteEffect* nextPE) :
+	PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	progress = -F1;
@@ -272,8 +265,7 @@ FlashPaletteEffect::FlashPaletteEffect (unsigned char newRed,
 }
 
 
-void FlashPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
 
@@ -312,16 +304,15 @@ void FlashPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	}
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 
 }
 
 
-RotatePaletteEffect::RotatePaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+RotatePaletteEffect::RotatePaletteEffect
+	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (nextPE) {
 
 	first = newFirst;
@@ -334,14 +325,16 @@ RotatePaletteEffect::RotatePaletteEffect (unsigned char newFirst,
 }
 
 
-void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
+	SDL_Color* currentPalette;
 	int count;
 
 	// Apply the next palette effect
 	if (next) next->apply(shownPalette, direct, mspf);
 
+
+	currentPalette = video.getPalette();
 
 	for (count = 0; count < amount; count++) {
 
@@ -354,18 +347,17 @@ void RotatePaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 	position -= (mspf * speed) >> 10;
 	while (position < 0) position += ITOF(amount);
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+	if (direct) video.changePalette(shownPalette + first, first, amount);
 
 	return;
 
 }
 
 
-SkyPaletteEffect::SkyPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, SDL_Color *newSkyPalette,
-	PaletteEffect * nextPE) : PaletteEffect (nextPE) {
+SkyPaletteEffect::SkyPaletteEffect
+	(unsigned char newFirst, int newAmount, fixed newSpeed,
+		SDL_Color* newSkyPalette, PaletteEffect* nextPE) :
+	PaletteEffect (nextPE) {
 
 	skyPalette = newSkyPalette;
 	first = newFirst;
@@ -377,7 +369,7 @@ SkyPaletteEffect::SkyPaletteEffect (unsigned char newFirst,
 }
 
 
-void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
+void SkyPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int position, count, y;
 
@@ -396,15 +388,12 @@ void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 		if (count > 255 - amount) {
 
-			SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette + count, first,
-				255 - count);
-			SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette,
-				first + (255 - count), count + amount - 255);
+			video.changePalette(skyPalette + count, first, 255 - count);
+			video.changePalette(skyPalette, first + (255 - count), count + amount - 255);
 
 		} else {
 
-			SDL_SetPalette(screen, SDL_PHYSPAL, skyPalette + count,
-				first, amount);
+			video.changePalette(skyPalette + count, first, amount);
 
 		}
 
@@ -431,8 +420,8 @@ void SkyPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 }
 
 
-P2DPaletteEffect::P2DPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+P2DPaletteEffect::P2DPaletteEffect
+	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE) :
 	PaletteEffect (nextPE) {
 
 	first = newFirst;
@@ -444,14 +433,16 @@ P2DPaletteEffect::P2DPaletteEffect (unsigned char newFirst,
 }
 
 
-void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
+void P2DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
+	SDL_Color* currentPalette;
 	int count, x, y, j;
 
 	// Apply the next palette effect
 	if (next) next->apply(shownPalette, direct, mspf);
 
 
+	currentPalette = video.getPalette();
 	x = FTOI(((256 * 32) - FTOI(viewX)) * speed);
 	y = FTOI(((64 * 32) - FTOI(viewY)) * speed);
 
@@ -467,17 +458,15 @@ void P2DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	}
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+	if (direct) video.changePalette(shownPalette + first, first, amount);
 
 	return;
 
 }
 
 
-P1DPaletteEffect::P1DPaletteEffect (unsigned char newFirst,
-	int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
+P1DPaletteEffect::P1DPaletteEffect
+	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE) :
 	PaletteEffect (nextPE) {
 
 	first = newFirst;
@@ -489,8 +478,9 @@ P1DPaletteEffect::P1DPaletteEffect (unsigned char newFirst,
 }
 
 
-void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
+void P1DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
+	SDL_Color* currentPalette;
 	fixed position;
 	int count;
 
@@ -498,6 +488,7 @@ void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 	if (next) next->apply(shownPalette, direct, mspf);
 
 
+	currentPalette = video.getPalette();
 	position = viewX + viewY;
 
 	for (count = 0; count < amount; count++) {
@@ -509,16 +500,14 @@ void P1DPaletteEffect::apply (SDL_Color *shownPalette, bool direct, int mspf) {
 
 	}
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette + first, first,
-			amount);
+	if (direct) video.changePalette(shownPalette + first, first, amount);
 
 	return;
 
 }
 
 
-WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect * nextPE)
+WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE)
 	: PaletteEffect (nextPE) {
 
 	depth = newDepth;
@@ -528,15 +517,16 @@ WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect * nextPE)
 }
 
 
-void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
-	int mspf) {
+void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
+	SDL_Color* currentPalette;
 	int position, count;
 
 	// Apply the next palette effect
 	if (next) next->apply(shownPalette, direct, mspf);
 
 
+	currentPalette = video.getPalette();
 	position = localPlayer->getY() - level->getWaterLevel();
 
 	if (position <= 0) return;
@@ -556,8 +546,7 @@ void WaterPaletteEffect::apply (SDL_Color *shownPalette, bool direct,
 
 	} else memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
-	if (direct)
-		SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, 256);
 
 	return;
 

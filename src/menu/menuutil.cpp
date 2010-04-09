@@ -39,7 +39,7 @@ int Menu::message (const char* text) {
 
 	// Display a message to the user
 
-	usePalette(palettes[1]);
+	video.setPalette(palettes[1]);
 
 	while (true) {
 
@@ -68,7 +68,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 	int count;
 
-	usePalette(palettes[1]);
+	video.setPalette(palettes[1]);
 
 	if (chosen >= options) chosen = 0;
 

@@ -35,11 +35,11 @@ class DeckGuardian : public Event {
 		int stage;
 
 	public:
-		DeckGuardian (unsigned char gX, unsigned char gY, Event *nextEvent);
+		DeckGuardian (unsigned char gX, unsigned char gY);
 
-		bool overlap (fixed left, fixed top, fixed width, fixed height);
-		bool step    (unsigned int ticks, int msps);
-		void draw    (unsigned int ticks, int change);
+		bool   overlap (fixed left, fixed top, fixed width, fixed height);
+		Event* step    (unsigned int ticks, int msps);
+		void   draw    (unsigned int ticks, int change);
 
 };
 

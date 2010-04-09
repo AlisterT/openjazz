@@ -68,7 +68,7 @@ class BaseLevel {
 		LevelStage   stage;
 
 		void timeCalcs ();
-		void drawStats (int stats);
+		void drawStats (int stats, unsigned char bg);
 
 	public:
 		BaseLevel     ();

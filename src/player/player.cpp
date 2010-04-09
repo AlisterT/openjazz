@@ -407,7 +407,7 @@ bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int t
 			if (game) game->setBonus(0);
 
 			// Yellow flash
-			firstPE = new FlashPaletteEffect(255, 255, 0, 320, firstPE);
+			paletteEffects = new FlashPaletteEffect(255, 255, 0, 320, paletteEffects);
 
 			break;
 
@@ -459,8 +459,7 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int 
 				warpTime = ticks + T_WARP;
 
 				// White flash
-				firstPE =
-					new FlashPaletteEffect(255, 255, 255, T_WARP, firstPE);
+				paletteEffects = new FlashPaletteEffect(255, 255, 255, T_WARP, paletteEffects);
 
 			}
 
@@ -595,7 +594,7 @@ void Player::kill (Player *source, unsigned int ticks) {
 
 	}
 
-	if (!gameMode) firstPE = new FadeOutPaletteEffect(T_END, firstPE);
+	if (!gameMode) paletteEffects = new FadeOutPaletteEffect(T_END, paletteEffects);
 
 	return;
 

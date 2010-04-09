@@ -118,7 +118,7 @@ void Sprite::flashPalette (int index) {
 
 void Sprite::restorePalette () {
 
-	::restorePalette(pixels);
+	video.restoreSurfacePalette(pixels);
 
 	return;
 

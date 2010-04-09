@@ -31,7 +31,6 @@
 
 #include "io/file.h"
 
-#include <iostream>
 #include <string.h>
 
 
@@ -40,7 +39,7 @@ bool fileExists (const char * fileName) {
 	File *file;
 
 #ifdef VERBOSE
-	std::cout << "Check: ";
+	printf("Check: ");
 #endif
 
 	try {
@@ -154,7 +153,7 @@ char * createEditableString (const char *string) {
 
 void log (const char *message) {
 
-	std::cout << message << std::endl;
+	printf("%s\n", message);
 
 	return;
 
@@ -163,7 +162,7 @@ void log (const char *message) {
 
 void log (const char *message, const char *detail) {
 
-	std::cout << message << ": " << detail << std::endl;
+	printf("%s: %s\n", message, detail);
 
 	return;
 
@@ -172,7 +171,7 @@ void log (const char *message, const char *detail) {
 
 void log (const char *message, int number) {
 
-	std::cout << message << ": " << number << std::endl;
+	printf("%s: %d\n", message, number);
 
 	return;
 
@@ -181,7 +180,7 @@ void log (const char *message, int number) {
 
 void logError (const char *message, const char *detail) {
 
-	std::cerr << message << ": " << detail << std::endl;
+	fprintf(stderr, "%s: %s\n", message, detail);
 
 	return;
 

@@ -80,31 +80,32 @@ class Player;
 class Event : public Movable {
 
 	protected:
-		Event         *next;
-		unsigned char  gridX, gridY; // Grid position of the event
-		unsigned char  animType;     // E_LEFTANIM, etc, or 0
-		unsigned char  frame;
-		unsigned int   flashTime;
+		Event*        next;
+		unsigned char gridX, gridY; // Grid position of the event
+		unsigned char animType;     // E_LEFTANIM, etc, or 0
+		unsigned char frame;
+		unsigned int  flashTime;
 
-		Event                     ();
+		Event ();
 
-		void          destroy     (unsigned int ticks);
-		fixed         getWidth    ();
-		fixed         getHeight   ();
-		signed char * prepareStep (unsigned int ticks, int msps);
+		Event*       remove      ();
+		void         destroy     (unsigned int ticks);
+		fixed        getWidth    ();
+		fixed        getHeight   ();
+		signed char* prepareStep (unsigned int ticks, int msps);
 
 	public:
-		Event                    (unsigned char gX, unsigned char gY, Event *nextEvent);
+		Event  (unsigned char gX, unsigned char gY);
+		virtual ~Event ();
 
-		Event *      getNext     ();
-		void         removeNext  ();
-		bool         hit         (Player *source, unsigned int ticks);
-		bool         isEnemy     ();
-		bool         isFrom      (unsigned char gX, unsigned char gY);
-		virtual bool overlap     (fixed left, fixed top, fixed width, fixed height);
-		signed char  getProperty (unsigned char property);
-		virtual bool step        (unsigned int ticks, int msps);
-		virtual void draw        (unsigned int ticks, int change);
+		Event*         getNext     ();
+		bool           hit         (Player *source, unsigned int ticks);
+		bool           isEnemy     ();
+		bool           isFrom      (unsigned char gX, unsigned char gY);
+		virtual bool   overlap     (fixed left, fixed top, fixed width, fixed height);
+		signed char    getProperty (unsigned char property);
+		virtual Event* step        (unsigned int ticks, int msps);
+		virtual void   draw        (unsigned int ticks, int change);
 
 };
 
@@ -115,10 +116,10 @@ class Bridge : public Event {
 		fixed rightDipX;
 
 	public:
-		Bridge    (unsigned char gX, unsigned char gY, Event *nextEvent);
+		Bridge (unsigned char gX, unsigned char gY);
 
-		bool step (unsigned int ticks, int msps);
-		void draw (unsigned int ticks, int change);
+		Event* step (unsigned int ticks, int msps);
+		void   draw (unsigned int ticks, int change);
 
 };
 
