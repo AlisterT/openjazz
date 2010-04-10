@@ -233,7 +233,7 @@ int Video::getHeight () {
 
 }
 
-
+#ifdef SCALE
 int Video::getScaleFactor () {
 
 	return scaleFactor;
@@ -250,7 +250,7 @@ void Video::setScaleFactor (int newScaleFactor) {
 	return;
 
 }
-
+#endif
 
 #ifndef FULLSCREEN_ONLY
 bool Video::isFullscreen () {
