@@ -47,7 +47,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 		type = f->loadShort();
 
-		if (type == 0x4C53) { // SL
+		if (type == EAnimationSoundList) { // SL
 
 			/*unsigned short int offset =*/ f->loadShort();
 			unsigned char noSounds = f->loadChar();
@@ -60,7 +60,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 			}
 
-		} else if (type == 0x4C50) {// PL
+		} else if (type == EAnimationPlayList) {// PL
 
 			int pos = f->tell();
 			int nextPos = f->tell();
@@ -326,7 +326,7 @@ void Scene::loadData (File *f) {
 		LOG("Data dataLen", dataLen);
 		// AN
 
-		if (dataLen == 0x4e41) {
+		if (dataLen == EAnimationData) {
 
 			LOG("Data Type", "ANI");
 			loadAni(f, loop);
@@ -389,7 +389,7 @@ void Scene::loadScripts (File *f) {
 	/*int bgIndex = 0;*/
 	int textAlignment = 0;
 	int textFont = 0;
-	int textShadow = 0;
+	int textShadow = -1;
 	
 	for(loop = 0; loop < scriptItems; loop++) {
 
@@ -423,30 +423,30 @@ void Scene::loadScripts (File *f) {
 					case ESceneYesNo:
 						{
 						pages[loop].askForYesNo = 1;
+						LOG("ESceneYesNo", 1);
 						}break;
 					case ESceneStopMusic:
 						{
 						pages[loop].stopMusic = 1;
+						LOG("ESceneStopMusic", 1);
 						}break;
 					case ESceneAnimationSetting:
-
 						{
 
-							signed long int something = f->loadInt();
-							signed long int something2 = f->loadInt();
-							LOG("ESceneAnimationSetting1", something);
-							LOG("ESceneAnimationSetting2", something2);
-
+							signed long int loop = f->loadInt();
+							signed short int speed = f->loadShort();
+							signed short int graphnum = f->loadShort();
+							LOG("ESceneAnimationSetting loop", loop);
+							LOG("ESceneAnimationSetting speed", speed);
+							LOG("ESceneAnimationSetting graphnum", graphnum);
 						}
 
 						break;
 
 					case ESceneAnimationIndex:
-
 						{
 							unsigned char aniIndex = f->loadChar();
 							LOG("ESceneAnimationIndex", aniIndex);
-
 						}
 
 						break;
@@ -604,7 +604,16 @@ void Scene::loadScripts (File *f) {
 					case ESceneTextShadow:
 
 						{
-							textShadow = f->loadShort();
+							char enableShadow = f->loadChar();
+							if(enableShadow) {
+								textShadow = f->loadChar();
+							}
+							else
+								{
+								f->loadChar(); // Skip this value since shadows are turned off
+								textShadow = -1; // Turn off shadow , -1 means no shadow colour
+								}
+							
 							LOG("ESceneTextShadow", textShadow);
 						}
 

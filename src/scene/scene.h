@@ -35,8 +35,8 @@ enum
     ESignatureLength = 0x13,
     EScriptStartTag = 0x50,
     EAnimationSoundList = 0x4C53,
-    EAnimationPlayList = 0x4C50
-    
+    EAnimationPlayList = 0x4C50,
+    EAnimationData = 0x4e41
 };
 
 // These are the known script types
