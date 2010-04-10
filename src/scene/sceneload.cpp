@@ -389,7 +389,8 @@ void Scene::loadScripts (File *f) {
 	/*int bgIndex = 0;*/
 	int textAlignment = 0;
 	int textFont = 0;
-
+	int textShadow = 0;
+	
 	for(loop = 0; loop < scriptItems; loop++) {
 
 	    LOG("\nParse Script", loop);
@@ -401,7 +402,7 @@ void Scene::loadScripts (File *f) {
 	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
 
-		if (f->loadChar() == 0x50) { // Script tag
+		if (f->loadChar() == EScriptStartTag) { // Script tag
 
 			unsigned short int scriptid = f->loadShort();
 			LOG("Script id", scriptid);
@@ -419,6 +420,14 @@ void Scene::loadScripts (File *f) {
 
 				switch(type) {
 
+					case ESceneYesNo:
+						{
+						pages[loop].askForYesNo = 1;
+						}break;
+					case ESceneStopMusic:
+						{
+						pages[loop].stopMusic = 1;
+						}break;
 					case ESceneAnimationSetting:
 
 						{
@@ -446,7 +455,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 							unsigned char fadein = f->loadChar();
-							LOG("ESceneFadeType", fadein);
+							LOG("ESceneFadeType", fadein); 
 
 						}
 
@@ -595,10 +604,8 @@ void Scene::loadScripts (File *f) {
 					case ESceneTextShadow:
 
 						{
-
-							unsigned short value = f->loadShort();
-							LOG("ESceneTextVAdjust", value);
-
+							textShadow = f->loadShort();
+							LOG("ESceneTextShadow", textShadow);
 						}
 
 						break;
@@ -640,7 +647,6 @@ void Scene::loadScripts (File *f) {
 					case ESceneTextBlock:
 
 						{
-
 							unsigned char datalen = f->loadChar();
 							LOG("Text len", datalen);
 
@@ -683,7 +689,8 @@ void Scene::loadScripts (File *f) {
 
 							text->alignment = textAlignment;
 							text->fontId = textFont;
-
+							text->shadowColour = textShadow;
+							
 							if(textPosX != -1) {
 
 								text->x = textPosX;

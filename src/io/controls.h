@@ -43,8 +43,10 @@
 #define C_ESCAPE  9
 #define C_STATS  10
 #define C_PAUSE  11
+#define C_YES    12
+#define C_NO     13
 // Size of those arrays
-#define CONTROLS 12
+#define CONTROLS 14
 
 // Time interval
 #define T_KEY   200

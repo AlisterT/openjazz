@@ -30,11 +30,20 @@
 
 
 // Enums
+enum
+{
+    ESignatureLength = 0x13,
+    EScriptStartTag = 0x50,
+    EAnimationSoundList = 0x4C53,
+    EAnimationPlayList = 0x4C50
+    
+};
 
 // These are the known script types
 enum {
-
+	ESceneYesNo = 0x23,
 	ESceneMusic = 0x2A,
+	ESceneStopMusic = 0x2D,
 	ESceneFadeType = 0x3F,
 	ESceneTextBlock = 0x40,
 	ESceneTextColour = 0x41,
@@ -74,7 +83,7 @@ class SceneText {
 		int            y;
 		SDL_Rect       textRect;
 		int            extraLineHeight;
-
+		int			   shadowColour;
 		SceneText  ();
 		~SceneText ();
 
@@ -94,7 +103,8 @@ class ScenePage {
 		int                nTexts;
 		char*              musicFile;
 		int                paletteIndex;
-
+		int				   askForYesNo;
+		int				   stopMusic;
 		ScenePage();
 		~ScenePage();
 

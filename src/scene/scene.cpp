@@ -88,7 +88,7 @@ SceneText::SceneText() {
 		textRect.y = -1;
 		extraLineHeight = -1;
 		text = NULL;
-
+		shadowColour = 0;
 }
 
 SceneText::~SceneText() {
@@ -104,7 +104,8 @@ ScenePage::ScenePage() {
 	backgrounds = 0;
 	musicFile = NULL;
 	paletteIndex = 0;
-
+	askForYesNo = 0;
+	stopMusic = 0;
 }
 
 ScenePage::~ScenePage() {
@@ -136,7 +137,7 @@ Scene::Scene (const char * fileName) {
 	images = NULL;
 	palettes = NULL;
 
-	file->seek(0x13, true); // Skip Digital Dimensions header
+	file->seek(ESignatureLength, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 
 	scriptItems = file->loadShort(); // Get number of script items
@@ -205,14 +206,23 @@ int Scene::play () {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE) || (controls.release(C_NO) && pages[sceneIndex].askForYesNo)) return E_NONE;
 
 		SDL_Delay(T_FRAME);
 
-		int upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
-
+		int upOrLeft = 0;
+		int downOrRight = 0;
+		
+		if(pages[sceneIndex].askForYesNo) {
+			// Should check for Y also
+			downOrRight = controls.release(C_ENTER) || controls.release(C_YES);;
+		} else {
+			upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
+			downOrRight = (controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER));			
+		}
+		
 		if ((sceneIndex > 0 && upOrLeft) ||
-			controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER) ||
+			 downOrRight ||
 			((globalTicks-lastTicks) >= pageTime * 1000 && pageTime != 256 && pageTime != 0)) {
 
 			if (upOrLeft) sceneIndex--;

@@ -52,7 +52,8 @@ Controls::Controls () {
 	keys[C_ESCAPE].key = SDLK_ESCAPE;
 	keys[C_STATS].key  = SDLK_F9;
 	keys[C_PAUSE].key  = SDLK_p;
-
+	keys[C_YES].key    = SDLK_y;
+	keys[C_NO].key     = SDLK_n;
 #if defined(WIZ) || defined(GP2X)
 	buttons[C_UP].button		= GP2X_BUTTON_UP;
 	buttons[C_DOWN].button		= GP2X_BUTTON_DOWN;
@@ -77,6 +78,8 @@ Controls::Controls () {
 	buttons[C_ESCAPE].button = -1;
 	buttons[C_STATS].button = -1;
 	buttons[C_PAUSE].button = -1;
+	buttons[C_YES].button = -1;
+	buttons[C_NO].button = -1; 
 #endif
 	buttons[C_SWIM].button = buttons[C_JUMP].button;
 
@@ -96,6 +99,8 @@ Controls::Controls () {
 	axes[C_ESCAPE].axis = -1;
 	axes[C_STATS].axis = -1;
 	axes[C_PAUSE].axis = -1;
+	axes[C_YES].axis = -1;
+	axes[C_NO].axis = -1;
 
 	for (count = 0; count < CONTROLS; count++) {
 
