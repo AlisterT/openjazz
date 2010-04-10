@@ -9,6 +9,8 @@
 #include <BAUTILS.H>
 
 char KOpenJazzPath[256];
+FILE* mystdout = NULL;
+FILE *mystderr = NULL;
 
 class COpenJazzApp: public CSDLApp {
 public:
@@ -48,6 +50,12 @@ COpenJazzApp::COpenJazzApp() {
 }
 
 COpenJazzApp::~COpenJazzApp() {
+	fflush(mystdout);
+	fflush(mystderr);
+	fflush(stdout);
+	fflush(stderr);
+	fclose(stdout);
+	fclose(stderr);
 }
 #ifdef UIQ3
 #include <OpenJazz.rsg>
@@ -59,8 +67,7 @@ TInt COpenJazzApp::ViewResourceId() {
 	return R_SDL_VIEW_UI_CONFIGURATIONS;
 }
 #endif
-FILE* mystdout = NULL;
-FILE *mystderr = NULL;
+
 /**
  * This has a default empty implementation.
  * Is called just before SDL_Main is called to allow init of system vars
