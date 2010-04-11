@@ -7,6 +7,7 @@
 #include <e32base.h>
 #include <sdlapp.h>
 #include <BAUTILS.H>
+#include <e32math.h>
 
 char KOpenJazzPath[256];
 FILE* mystdout = NULL;
@@ -111,6 +112,27 @@ void COpenJazzApp::PreInitializeAppL()
  **/
 TUid COpenJazzApp::AppDllUid() const {
 	return TUid::Uid(0xA000A005);
+}
+
+float cosf(float value)
+{
+	TReal ret;
+	Math::Cos(ret, value);
+	return ret;
+}
+
+float sinf(float value)
+{
+	TReal ret;
+	Math::Sin(ret, value);
+	return ret;
+}
+
+float tanf(float value)
+{
+	TReal ret;
+	Math::Tan(ret, value);
+	return ret;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
