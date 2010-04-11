@@ -200,7 +200,7 @@ int loadMain (int argc, char *argv[]) {
 	}
 
 	// Check that the config file was opened, and has the correct version
-	if (file && (file->loadChar() == 2)) {
+	if (file && (file->loadChar() == 3)) {
 
 		// Read video settings
 		screenW = file->loadShort();
@@ -504,7 +504,7 @@ void freeMain () {
 	if (file) {
 
 		// Write the version number
-		file->storeChar(2);
+		file->storeChar(3);
 
 		// Write video settings
 		file->storeShort(video.getWidth());
