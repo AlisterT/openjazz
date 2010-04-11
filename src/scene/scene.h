@@ -60,7 +60,7 @@ enum {
 	ESceneTime = 0x5d,
 	ESceneTextLine = 0x5e,
 	ESceneTextVAdjust = 0x5f,
-	ESceneAnimationIndex = 0xA7,
+	ESceneAnimationPlayAndContinue = 0xA7,
 	ESceneAnimationSetting = 0xA6,
 	ESceneTextSetting = 0xb1,
 	ESceneTextSomething = 0xd9,
@@ -141,6 +141,12 @@ class SceneFont {
 		int   id;
 
 };
+
+class SceneAnimation
+	{
+public:
+	
+	};
 
 class Scene {
 

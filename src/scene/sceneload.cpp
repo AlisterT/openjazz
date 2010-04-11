@@ -443,10 +443,10 @@ void Scene::loadScripts (File *f) {
 
 						break;
 
-					case ESceneAnimationIndex:
+					case ESceneAnimationPlayAndContinue:
 						{
-							unsigned char aniIndex = f->loadChar();
-							LOG("ESceneAnimationIndex", aniIndex);
+							unsigned char playAndContinue = f->loadChar();
+							LOG("ESceneAnimationPlayAndContinue", playAndContinue);
 						}
 
 						break;
