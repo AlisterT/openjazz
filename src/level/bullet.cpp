@@ -268,7 +268,7 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 	set = level->getBullet(type);
 
 	// If the scenery has been hit and this is not a bouncer, destroy the bullet
-	if (level->checkMask(x, y) && (set[B_BEHAVIOUR] != 4)) {
+	if (level->checkMaskUp(x, y) && (set[B_BEHAVIOUR] != 4)) {
 
 		level->playSound(set[B_FINISHSOUND]);
 

@@ -165,6 +165,8 @@ Font::Font (unsigned char* pixels, bool big) {
 
 		characters[count] = createSurface(chrPixels, 8, lineHeight);
 
+		if (big) SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 0);
+
 	}
 
 	nCharacters= 40;

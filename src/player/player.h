@@ -162,12 +162,13 @@ enum PlayerReaction {
 
 class Anim;
 class Bird;
+class Bonus;
 
 class Player : public Movable {
 
 	private:
-		Bird           *bird;
-		char           *name;
+		Bird*           bird;
+		char*           name;
 		char            anims[PANIMS];
 		bool            pcontrols[PCONTROLS];
 		SDL_Color       palette[256];
@@ -206,19 +207,19 @@ class Player : public Movable {
 		Player                       ();
 		~Player                      ();
 
-		void            init         (char *playerName, unsigned char *cols, unsigned char newTeam);
+		void            init         (char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit       ();
-		void            setAnims     (char *newAnims);
-		char *          getName      ();
-		unsigned char * getCols      ();
+		void            setAnims     (char* newAnims);
+		char*           getName      ();
+		unsigned char*  getCols      ();
 		void            reset        ();
 		void            setControl   (int control, bool state);
 		bool            takeEvent    (unsigned char gridX, unsigned char gridY, unsigned int ticks);
 		bool            touchEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
 		void            setEvent     (unsigned char gridX, unsigned char gridY);
 		void            clearEvent   (unsigned char gridX, unsigned char gridY);
-		bool            hit          (Player *source, unsigned int ticks);
-		void            kill         (Player *source, unsigned int ticks);
+		bool            hit          (Player* source, unsigned int ticks);
+		void            kill         (Player* source, unsigned int ticks);
 		void            addItem      ();
 		void            addLife      ();
 		void            addScore     (int addedScore);
@@ -232,14 +233,14 @@ class Player : public Movable {
 		void            setPosition  (fixed newX, fixed newY);
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
-		fixed           getDirection  ();
-		Anim *          getAnim      ();
+		fixed           getDirection ();
+		Anim*           getAnim      ();
 		unsigned char   getTeam      ();
-		void            send         (unsigned char *data);
-		void            receive      (unsigned char *buffer);
+		void            send         (unsigned char* data);
+		void            receive      (unsigned char* buffer);
 		void            control      (unsigned int ticks, int msps);
 		void            move         (unsigned int ticks, int msps);
-		void            bonusStep    (unsigned int ticks, int msps);
+		void            bonusStep    (unsigned int ticks, int msps, Bonus* bonus);
 		void            view         (unsigned int ticks, int mspf);
 		void            draw         (unsigned int ticks, int change);
 		PlayerReaction  reacted      (unsigned int ticks);
@@ -249,13 +250,13 @@ class Player : public Movable {
 
 // Variables
 
-EXTERN Player *players;
-EXTERN Player *localPlayer;
+EXTERN Player* players;
+EXTERN Player* localPlayer;
 EXTERN int     nPlayers;
 
 // Configuration data
-EXTERN char          *characterName;
-EXTERN unsigned char  characterCols[4];
+EXTERN char*         characterName;
+EXTERN unsigned char characterCols[4];
 
 #endif
 

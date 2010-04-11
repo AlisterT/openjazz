@@ -28,6 +28,7 @@
 #include "bird.h"
 #include "player.h"
 
+#include "bonus/bonus.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
@@ -179,7 +180,7 @@ void Player::control (unsigned int ticks, int msps) {
 
 			// Prepare to jump upon leaving the water
 
-			if (!level->checkMask(x + PXO_MID, y - F36)) {
+			if (!level->checkMaskUp(x + PXO_MID, y - F36)) {
 
 				jumpY = y - jumpHeight;
 
@@ -213,7 +214,7 @@ void Player::control (unsigned int ticks, int msps) {
 	} else {
 
 		if (platform && pcontrols[C_JUMP] &&
-			!level->checkMask(x + PXO_MID, y - F36)) {
+			!level->checkMaskUp(x + PXO_MID, y - F36)) {
 
 			// Jump
 
@@ -281,7 +282,7 @@ void Player::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != 2)) {
+	if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != 2)) {
 
 		jumpY = TTOF(LH);
 		if (dy < 0) dy = 0;
@@ -452,7 +453,7 @@ void Player::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
+			if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
 
 				y &= ~4095;
 				dy = 0;
@@ -468,7 +469,7 @@ void Player::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 4095;
 
-		if (!level->checkMask(x + PXO_MID, y + PYO_TOP - pdy))
+		if (!level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
 			y -= pdy;
 		else {
 
@@ -529,7 +530,7 @@ void Player::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMask(x + PXO_L - F4, y + PYO_MID)) {
+			if (level->checkMaskUp(x + PXO_L - F4, y + PYO_MID)) {
 
 				x &= ~4095;
 
@@ -541,19 +542,19 @@ void Player::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (level->checkMask(x + PXO_ML, y) &&
-				!level->checkMask(x + PXO_ML, y - F4)) y -= F4;
+			if (level->checkMaskUp(x + PXO_ML, y) &&
+				!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
 
 		}
 
 		pdx = (-pdx) & 4095;
 
-		if (!level->checkMask(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
+		if (!level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
 		else x &= ~4095;
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMask(x + PXO_ML, y) &&
-			!level->checkMask(x + PXO_ML, y - F4)) y -= F1;
+		while (level->checkMaskUp(x + PXO_ML, y) &&
+			!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F1;
 
 	} else if (pdx > 0) {
 
@@ -564,7 +565,7 @@ void Player::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMask(x + PXO_R + F4, y + PYO_MID)) {
+			if (level->checkMaskUp(x + PXO_R + F4, y + PYO_MID)) {
 
 				x |= 4095;
 
@@ -576,25 +577,25 @@ void Player::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (level->checkMask(x + PXO_MR, y) &&
-				!level->checkMask(x + PXO_MR, y - F4)) y -= F4;
+			if (level->checkMaskUp(x + PXO_MR, y) &&
+				!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
 
 		}
 
 		pdx &= 4095;
 
-		if (!level->checkMask(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
+		if (!level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
 		else x |= 4095;
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMask(x + PXO_MR, y) &&
-			!level->checkMask(x + PXO_MR, y - F4)) y -= F1;
+		while (level->checkMaskUp(x + PXO_MR, y) &&
+			!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F1;
 
 	}
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == 2) && level->checkMask(x + PXO_MID, y + PYO_TOP - F4)) {
+	if ((event == 2) && level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
 
 		jumpY = TTOF(LH);
 		event = 0;
@@ -621,7 +622,9 @@ void Player::move (unsigned int ticks, int msps) {
 }
 
 
-void Player::bonusStep (unsigned int ticks, int msps) {
+void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
+
+	fixed cdx, cdy;
 
 	// Bonus stages use polar coordinates for movement (but not position)
 	// Treat dx as change in radius
@@ -664,14 +667,17 @@ void Player::bonusStep (unsigned int ticks, int msps) {
 
 	}
 
-	if (pcontrols[C_LEFT]) direction -= msps >> 1;
+	if (pcontrols[C_LEFT]) direction -= msps >> 2;
 
-	if (pcontrols[C_RIGHT]) direction += msps >> 1;
+	if (pcontrols[C_RIGHT]) direction += msps >> 2;
 
 
 	// Apply trajectory
-	x += fixed(sin(direction * 6.283185 / 1024.0) * dx * msps) >> 10;
-	y -= fixed(cos(direction * 6.283185 / 1024.0) * dx * msps) >> 10;
+	cdx = fixed(sin(direction * 6.283185f / 1024.0f) * dx * msps) >> 10;
+	cdy = fixed(-cos(direction * 6.283185f / 1024.0f) * dx * msps) >> 10;
+
+	if (!bonus->checkMask(x + cdx, y)) x += cdx;
+	if (!bonus->checkMask(x, y + cdy)) y += cdy;
 
 	return;
 

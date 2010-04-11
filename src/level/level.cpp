@@ -123,17 +123,21 @@ Level::~Level () {
 }
 
 
-bool Level::checkMask (fixed x, fixed y) {
+bool Level::checkMaskUp (fixed x, fixed y) {
+
+	GridElement *ge;
 
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (x > TTOF(LW)) || (y > TTOF(LH)))
 		return true;
 
+	ge = grid[FTOT(y)] + FTOT(x);
+
 	// Event 122 is one-way
-	if (grid[FTOT(y)][FTOT(x)].event == 122) return false;
+	if (ge->event == 122) return false;
 
 	// Check the mask in the tile in question
-	return mask[grid[FTOT(y)][FTOT(x)].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+	return mask[ge->tile][((y >> 9) & 56) + ((x >> 12) & 7)];
 
 }
 
@@ -152,15 +156,19 @@ bool Level::checkMaskDown (fixed x, fixed y) {
 
 bool Level::checkSpikes (fixed x, fixed y) {
 
+	GridElement *ge;
+
 	// Anything off the edge of the map is not spikes
 	// Ignore the bottom, as it is deadly anyway
 	if ((x < 0) || (y < 0) || (x > TTOF(LW))) return false;
 
+	ge = grid[FTOT(y)] + FTOT(x);
+
 	// Event 126 is spikes
-	if (grid[FTOT(y)][FTOT(x)].event != 126) return false;
+	if (ge->event != 126) return false;
 
 	// Check the mask in the tile in question
-	return mask[grid[FTOT(y)][FTOT(x)].tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+	return mask[ge->tile][((y >> 9) & 56) + ((x >> 12) & 7)];
 
 }
 

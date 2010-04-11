@@ -34,7 +34,17 @@
 #define BLW 256 /* Bonus level width */
 #define BLH 256 /* Bonus level height */
 
-#define T_BONUS_END 1500
+#define T_BONUS_END 2000
+
+
+// Datatype
+
+typedef struct {
+
+	unsigned char tile;  // Indexes the tile set
+	unsigned char event;
+
+} BonusGridElement;
 
 
 // Class
@@ -42,19 +52,22 @@
 class Bonus : public BaseLevel {
 
 	private:
-		SDL_Surface   *background;
-		unsigned char  tiles[BLH][BLW];
-		unsigned char  events[BLH][BLW];
+		SDL_Surface*     background;
+		BonusGridElement grid[BLH][BLW];
+		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks
+		fixed            direction;
 
-		int  loadTiles (char *fileName);
-		int  step ();
-		void draw ();
+		int  loadTiles (char* fileName);
+		bool isEvent   (fixed x, fixed y);
+		int  step      ();
+		void draw      ();
 
 	public:
-		Bonus    (char * fileName, unsigned char diff);
-		~Bonus   ();
+		Bonus  (char* fileName, unsigned char diff);
+		~Bonus ();
 
-		int play ();
+		bool checkMask (fixed x, fixed y);
+		int  play      ();
 
 };
 

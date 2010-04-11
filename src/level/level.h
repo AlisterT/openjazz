@@ -68,8 +68,7 @@ typedef struct {
 	unsigned char bg;    // 0 = Effect background, 1 = Black background
 	unsigned char event; // Indexes the event set
 	unsigned char hits;  // Number of times the event has been shot
-	int           time;  /* Point at which the event will do something, e.g.
-		terminate */
+	int           time;  /* Point at which the event will do something, e.g. terminate */
 
 } GridElement;
 
@@ -131,7 +130,7 @@ class Level : public BaseLevel {
 		Level                       (char* fileName, unsigned char diff, bool checkpoint);
 		virtual ~Level              ();
 
-		bool          checkMask     (fixed x, fixed y);
+		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
 		bool          checkSpikes   (fixed x, fixed y);
 		void          setNext       (int nextLevel, int nextWorld);

@@ -41,13 +41,15 @@
 #include <math.h>
 #include <string.h>
 
+#define PI 3.141592f
+
 
 int Bonus::loadTiles (char *fileName) {
 
 	File *file;
 	unsigned char *pixels;
 	unsigned char *sorted;
-	int count;
+	int count, x, y;
 
 	try {
 
@@ -74,7 +76,28 @@ int Bonus::loadTiles (char *fileName) {
 	file->loadPalette(palette);
 
 	// Load tile graphics
-	tileSet = file->loadSurface(32, 32 * 60);
+	pixels = file->loadRLE(1024 * 60);
+	tileSet = createSurface(pixels, 32, 32 * 60);
+
+	// Create mask
+	for (count = 0; count < 60; count++) {
+
+		memset(mask[count], 0, 64);
+
+		for (y = 0; y < 32; y++) {
+
+			for (x = 0; x < 32; x++) {
+
+				if ((pixels[(count << 10) + (y << 5) + x] & 240) == 192)
+					mask[count][((y << 1) & 56) + ((x >> 2) & 7)] = 1;
+
+			}
+
+		}
+
+	}
+
+	delete[] pixels;
 
 	delete file;
 
@@ -130,9 +153,9 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 		for (x = 0; x < BLW; x++) {
 
-			tiles[y][x] = buffer[x + (y * BLW)];
+			grid[y][x].tile = buffer[x + (y * BLW)];
 
-			if (tiles[y][x] > 59) tiles[y][x] = 59;
+			if (grid[y][x].tile > 59) grid[y][x].tile = 59;
 
 		}
 
@@ -152,7 +175,7 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 		for (x = 0; x < BLH; x++) {
 
-			events[y][x] = buffer[x + (y * BLW)];
+			grid[y][x].event = buffer[x + (y * BLW)];
 
 		}
 
@@ -206,7 +229,7 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	paletteEffects = new RotatePaletteEffect(192, 16, F32, paletteEffects);
 
 	// Bouncy things
-	paletteEffects = new RotatePaletteEffect(240, 16, -F32, paletteEffects);
+	paletteEffects = new RotatePaletteEffect(240, 16, F32, paletteEffects);
 
 
 	// Adjust fontsFont to use bonus level palette
@@ -237,6 +260,29 @@ Bonus::~Bonus () {
 }
 
 
+bool Bonus::isEvent (fixed x, fixed y) {
+
+	return ((x & 32767) > F12) && ((x & 32767) < F20) &&
+		((y & 32767) > F12) && ((y & 32767) < F20);
+
+}
+
+
+bool Bonus::checkMask (fixed x, fixed y) {
+
+	BonusGridElement *ge;
+
+	ge = grid[FTOT(y) & 255] + (FTOT(x) & 255);
+
+	// Hand
+	if ((ge->event == 3) && isEvent(x, y)) return true;
+
+	// Check the mask in the tile in question
+	return mask[ge->tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+
+}
+
+
 int Bonus::step () {
 
 	fixed playerX, playerY;
@@ -260,33 +306,29 @@ int Bonus::step () {
 	// Process players
 	for (count = 0; count < nPlayers; count++) {
 
-		players[count].bonusStep(ticks, msps);
-
 		playerX = players[count].getX();
 		playerY = players[count].getY();
 
-		gridX = FTOT(playerX);
-		gridY = FTOT(playerY);
+		players[count].bonusStep(ticks, msps, this);
 
-		if ((playerX > TTOF(gridX) + F12) && (playerX < TTOF(gridX) + F20) &&
-			(playerY > TTOF(gridY) + F12) && (playerY < TTOF(gridY) + F20)) {
+		if (isEvent(playerX, playerY)) {
 
-			while (gridX < 0) gridX += BLW;
-			while (gridY < 0) gridY += BLH;
+			gridX = FTOT(playerX) & 255;
+			gridY = FTOT(playerY) & 255;
 
-			switch (events[gridY][gridX]) {
+			switch (grid[gridY][gridX].event) {
 
 				case 1: // Extra time
 
 					addTimer();
-					events[gridY][gridX] = 0;
+					grid[gridY][gridX].event = 0;
 
 					break;
 
 				case 2: // Gem
 
 					players[count].addItem();
-					events[gridY][gridX] = 0;
+					grid[gridY][gridX].event = 0;
 
 					if (players[count].getItems() >= items) {
 
@@ -295,12 +337,6 @@ int Bonus::step () {
 						return WON;
 
 					}
-
-					break;
-
-				case 3: // Hand
-
-					players[count].setSpeed(0, 0);
 
 					break;
 
@@ -320,6 +356,8 @@ int Bonus::step () {
 
 	}
 
+	direction = localPlayer->getDirection();
+
 	return E_NONE;
 
 }
@@ -327,72 +365,12 @@ int Bonus::step () {
 
 void Bonus::draw () {
 
-	SDL_Rect src, dst;
+	SDL_Rect dst;
+	fixed playerX, playerY, playerSin, playerCos;
+	fixed distance, opposite, adjacent;
+	int levelX, levelY;
+	int spriteW, spriteH;
 	int x, y;
-
-	// Draw the ground
-
-	src.x = 0;
-	src.w = 32;
-	src.h = 32;
-
-	int vX = FTOI(localPlayer->getX()) - (canvasW >> 1);
-	int vY = FTOI(localPlayer->getY()) - (canvasH >> 2);
-
-	for (y = 0; y <= ITOT((canvasH >> 1) - 1) + 1; y++) {
-
-		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
-
-			src.y = TTOI(tiles[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]);
-			dst.x = TTOI(x) - (vX & 31);
-			dst.y = (canvasH >> 1) + TTOI(y) - (vY & 31);
-
-			SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
-			dst.x = 12 + TTOI(x) - (vX & 31);
-			dst.y = (canvasH >> 1) + 12 + TTOI(y) - (vY & 31);
-
-			switch (events[(y + ITOT(vY) + BLH) % BLH][(x + ITOT(vX) + BLW) % BLW]) {
-
-				case 0: // No event
-
-					break;
-
-				case 1: // Extra time
-
-					drawRect(dst.x, dst.y, 8, 8, 60);
-
-					break;
-
-				case 2: // Gem
-
-					drawRect(dst.x, dst.y, 8, 8, 67);
-
-					break;
-
-				case 3: // Hand
-
-					drawRect(dst.x, dst.y, 8, 8, 15);
-
-					break;
-
-				case 4: // Exit
-
-					drawRect(dst.x, dst.y, 8, 8, 45);
-
-					break;
-
-				default:
-
-					drawRect(dst.x, dst.y, 8, 8, 0);
-
-					break;
-
-			}
-
-		}
-
-	}
 
 
 	// Draw the background
@@ -412,11 +390,105 @@ void Bonus::draw () {
 	if (y > 0) drawRect(0, 0, canvasW, y + 1, 128);
 
 
-	// Draw the "player"
-	drawRect(
-		(canvasW >> 1) + fixed(sin(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4,
-		((canvasH * 3) >> 2) - fixed(cos(localPlayer->getDirection() * 6.283185 / 1024.0) * 3) - 4, 8, 8, 0);
-	drawRect((canvasW >> 1) - 4, ((canvasH * 3) >> 2) - 4, 8, 8, 22);
+	// Draw the ground
+
+	playerX = localPlayer->getX();
+	playerY = localPlayer->getY();
+	playerSin = fixed(1024.0f * sinf(PI * float(direction) / 512.0f));
+	playerCos = fixed(1024.0f * cosf(PI * float(direction) / 512.0f));
+
+	if (SDL_MUSTLOCK(canvas)) SDL_LockSurface(canvas);
+
+	for (y = 1; y <= (canvasH >> 1) - 15; y++) {
+
+		distance = fixed(1024.0f * tanf((float(y) / float(canvasH >> 1)) + ((PI / 2.0f) - 1.0f)) * 20.0f);
+		opposite = MUL(distance, playerSin);
+		adjacent = MUL(distance, playerCos);
+
+		for (x = 0; x < canvasW; x++) {
+
+			fixed nX = ITOF(x - (canvasW >> 1)) / canvasW;
+
+			levelX = FTOI(playerX + opposite + MUL(nX, adjacent));
+			levelY = FTOI(playerY - adjacent + MUL(nX, opposite));
+
+			((unsigned char *)(canvas->pixels))[(canvas->pitch * (canvasH - y)) + x] =
+				((unsigned char *)(tileSet->pixels))
+					[(grid[ITOT(levelY) & 255][ITOT(levelX) & 255].tile * 1024) +
+						((levelY & 31) * tileSet->pitch) + (levelX & 31)];
+
+		}
+
+	}
+
+	if (SDL_MUSTLOCK(canvas)) SDL_UnlockSurface(canvas);
+
+
+	// Draw the events
+
+	for (y = -7; y < 8; y++) {
+
+		fixed sY = TTOF(y) + F16 - (playerY & 32767);
+
+		for (x = -7; x < 8; x++) {
+
+			fixed sX = TTOF(x) + F16 - (playerX & 32767);
+
+			fixed divisor = MUL(sX, playerSin) - MUL(sY, playerCos);
+
+			if (FTOI(divisor) > 0) {
+
+				spriteW = 1000 / FTOI(divisor);
+				spriteH = 1000 / FTOI(divisor);
+
+				fixed nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
+
+				dst.x = FTOI(nX * canvasW) + ((canvasW - spriteW) >> 1);
+				dst.y = (canvasH - spriteH) >> 1;
+
+				switch (grid[(y + FTOT(playerY)) & 255][(x + FTOT(playerX)) & 255].event) {
+
+					case 0: // No event
+
+						break;
+
+					case 1: // Extra time
+
+						drawRect(dst.x, dst.y, spriteW, spriteH, 60);
+
+						break;
+
+					case 2: // Gem
+
+						drawRect(dst.x, dst.y, spriteW, spriteH, 67);
+
+						break;
+
+					case 3: // Hand
+
+						drawRect(dst.x, dst.y, spriteW, spriteH, 15);
+
+						break;
+
+					case 4: // Exit
+
+						drawRect(dst.x, dst.y, spriteW, spriteH, 45);
+
+						break;
+
+					default:
+
+						drawRect(dst.x, dst.y, spriteW, spriteH, 0);
+
+						break;
+
+				}
+
+			}
+
+		}
+
+	}
 
 
 	// Show gem count
@@ -561,6 +633,8 @@ int Bonus::play () {
 
 
 		// Draw the graphics
+
+		if (ticks < returnTime) direction += (ticks - prevTicks) * T_BONUS_END / (returnTime - ticks);
 
 		draw();
 
