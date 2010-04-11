@@ -41,6 +41,12 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __SYMBIAN32__
+extern float cosf (float);
+extern float sinf (float);
+extern float tanf (float);
+#endif
+
 #define PI 3.141592f
 
 
