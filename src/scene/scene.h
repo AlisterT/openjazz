@@ -33,9 +33,7 @@
 enum
 {
     ESignatureLength = 0x13,
-    EScriptStartTag = 0x50,
-    EAnimationSoundList = 0x4C53,
-    EAnimationPlayList = 0x4C50,
+    EScriptStartTag = 0x50,  
     EAnimationData = 0x4e41
 };
 
@@ -89,6 +87,7 @@ class SceneText {
 
 };
 
+
 class ScenePage {
 
 	public:
@@ -96,7 +95,11 @@ class ScenePage {
 		int                bgIndex[30];
 		unsigned short int bgX[30];
 		unsigned short int bgY[30];
-
+	
+		int animLoops;
+		int animSpeed;
+		int animIndex;	
+		
 		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
 		int                pageTime;
 		SceneText          texts[100];
@@ -145,13 +148,18 @@ class SceneFont {
 class SceneAnimation
 	{
 public:
-	
+		SDL_Surface*       background;
+		SceneAnimation*  next;		
+		int id;
+
+		SceneAnimation  (SceneAnimation* newNext);
+		~SceneAnimation ();			
 	};
 
 class Scene {
 
-	private:
-		SDL_Surface*       background;
+	private:		
+		SceneAnimation*    animations;
 		SceneImage*        images;
 		ScenePalette*      palettes;
 		SceneFont          fonts[5];

@@ -33,6 +33,43 @@
 
 #include <string.h>
 
+/**
+11
+1L
+/0/0
+PB
+FF 
+RN
+RB
+RC
+RL
+RR
+][
+PL
+AN
+_E
+MX
+ST
+SL 
+*/
+enum ANIHeaders
+	{
+	E11AniHeader = 0x3131,
+	E1LAniHeader = 0x4c31,
+	EPBAniHeader = 0x4250,
+	EFFAniHeader = 0x4646, // Floodfill? or full frame?
+	ERNAniHeader = 0x4e52,
+	ERBAniHeader = 0x4252,
+	ERCAniHeader = 0x4352,
+	ERLAniHeader = 0x4c52,
+	ERRAniHeader = 0x5252,
+	E_EHeader = 0x455F,
+	ESquareAniHeader = 0x5b5d,
+	EMXAniHeader = 0x584d,
+	ESTAniHeader = 0x5453, // Sound tag
+	ESoundListAniHeader = 0x4C53,
+	EPlayListAniHeader = 0x4C50
+	};
 
 void Scene::loadAni (File *f, int dataIndex) {
 
@@ -43,11 +80,11 @@ void Scene::loadAni (File *f, int dataIndex) {
 	unsigned short int type = 0;//
 	int loop;
 
-	while (type != 0x4C50) {
+	while (type != EPlayListAniHeader) {
 
 		type = f->loadShort();
 
-		if (type == EAnimationSoundList) { // SL
+		if (type == ESoundListAniHeader) { // SL
 
 			/*unsigned short int offset =*/ f->loadShort();
 			unsigned char noSounds = f->loadChar();
@@ -60,7 +97,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 			}
 
-		} else if (type == EAnimationPlayList) {// PL
+		} else if (type == EPlayListAniHeader) {// PL
 
 			int pos = f->tell();
 			int nextPos = f->tell();
@@ -84,7 +121,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 			delete[] buffer;
 			palettes->id = dataIndex;
 
-			unsigned short int value = 0x4646;
+			unsigned short int value = 0;
 			int items = 0;
 			int validValue = true;
 			pos = f->tell();
@@ -103,25 +140,25 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 				switch (value) {
 
-					case 0x455F:
+					case E_EHeader: // END MARKER
 
 						validValue = false;
 
 						break;
 
-					case 0x3131:
+					case E11AniHeader: //11
 
 						// Skip back size header, this is read by the surface reader
 						f->seek(-2, false);
 
-						if (!background) background = f->loadSurface(SW, SH);
+						animations->background = f->loadSurface(SW, SH);
 
 						// Use the most recently loaded palette
 						video.setPalette(palettes->palette);
 
 						break;
 
-					case 0x4c31:
+					case E1LAniHeader:
 
 						{
 
@@ -166,7 +203,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 									default:
 
-										LOG("PL Unknown type", header);
+										//LOG("PL Unknown type", header);
 
 										break;
 
@@ -178,7 +215,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 						break;
 
-					case 0x4646:
+					case EFFAniHeader:
 
 						while (size) {
 
@@ -217,7 +254,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 								default:
 
-									LOG("PL Unknown type", header);
+									//LOG("PL Unknown type", header);
 
 									break;
 
@@ -229,17 +266,16 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 						break;
 
-					case 0x4e52:
-					case 0x4252:
-					case 0x4352:
-					case 0x4c52:
-					case 0x4e41:
-					case 0x584d:
-					case 0x5252:
+					case ERNAniHeader:
+					case ERBAniHeader:
+					case ERCAniHeader:
+					case ERLAniHeader:					
+					case EMXAniHeader:
+					case ERRAniHeader:
 
 						break;
 
-					case 0x5b5d:
+					case ESquareAniHeader: // ][ Flip??
 
 						{
 
@@ -252,7 +288,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 						break;
 
-					case 0x5453:
+					case ESTAniHeader: // Sound item
 
 						{
 
@@ -289,7 +325,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 					default:
 
-						LOG("PL Read Unknown type", value);
+						//LOG("PL Read Unknown type", value);
 						validValue = false;
 
 						break;
@@ -329,6 +365,8 @@ void Scene::loadData (File *f) {
 		if (dataLen == EAnimationData) {
 
 			LOG("Data Type", "ANI");
+			animations = new SceneAnimation(animations);
+			animations->id = loop;
 			loadAni(f, loop);
 
 		} else {
@@ -432,15 +470,14 @@ void Scene::loadScripts (File *f) {
 						}break;
 					case ESceneAnimationSetting:
 						{
-
-							signed long int loop = f->loadInt();
-							signed short int speed = f->loadShort();
-							signed short int graphnum = f->loadShort();
-							LOG("ESceneAnimationSetting loop", loop);
-							LOG("ESceneAnimationSetting speed", speed);
-							LOG("ESceneAnimationSetting graphnum", graphnum);
+							pages[loop].animLoops = f->loadInt();
+							pages[loop].animSpeed = f->loadShort();							
+							pages[loop].animIndex = f->loadShort();
+							
+							LOG("ESceneAnimationSetting loops", pages[loop].animLoops);
+							LOG("ESceneAnimationSetting speed", pages[loop].animSpeed);
+							LOG("ESceneAnimationSetting anim num", pages[loop].animIndex);							
 						}
-
 						break;
 
 					case ESceneAnimationPlayAndContinue:

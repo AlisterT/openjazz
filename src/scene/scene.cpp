@@ -49,6 +49,19 @@
  *
  */
 
+SceneAnimation::SceneAnimation  (SceneAnimation* newNext)
+	{
+	next = newNext;
+	background = NULL;
+	}
+
+SceneAnimation::~SceneAnimation ()
+	{
+	if (next) delete next;
+
+	if (background) SDL_FreeSurface(background);
+	}
+
 SceneImage::SceneImage (SceneImage *newNext) {
 
 	next = newNext;
@@ -106,6 +119,7 @@ ScenePage::ScenePage() {
 	paletteIndex = 0;
 	askForYesNo = 0;
 	stopMusic = 0;
+	animIndex = -1; // no anim
 }
 
 ScenePage::~ScenePage() {
@@ -132,11 +146,11 @@ Scene::Scene (const char * fileName) {
 		throw e;
 
 	}
-
-	background = NULL;
+	
 	images = NULL;
 	palettes = NULL;
-
+	animations = NULL;
+	
 	file->seek(ESignatureLength, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 
@@ -182,8 +196,6 @@ Scene::~Scene () {
 
 	delete[] pages;
 
-	if (background) SDL_FreeSurface(background);
-
 	if (images) delete images;
 	if (palettes) delete palettes;
 
@@ -195,6 +207,7 @@ int Scene::play () {
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
 	SceneImage *image;
+	SceneAnimation* animation;
 	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
@@ -291,11 +304,19 @@ int Scene::play () {
 
 			}
 
-		} else if (background) {
+		} else if (pages[sceneIndex].animIndex != -1) {
 
+			animation = animations;
+	
+			while (animation && (animation->id != pages[sceneIndex].animIndex))
+				animation = animation->next;
+	
+			if (animation && animation->background) {
+	
 			dst.x = (canvasW - SW) >> 1;
 			dst.y = (canvasH - SH) >> 1;
-			SDL_BlitSurface(background, NULL, canvas, &dst);
+			SDL_BlitSurface(animation->background, NULL, canvas, &dst);	
+			}						
 
 		} else clearScreen(0);
 
