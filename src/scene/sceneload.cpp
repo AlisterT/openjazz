@@ -82,7 +82,7 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 	int pixels = 0;
 	unsigned char* endpixdata = pixdata+width*height;
 	unsigned char* fillstart = NULL;
-	while (size>0) {
+	while (size > 0) {
 		unsigned char header = f->loadChar();		
 	
 		switch (header)  {
@@ -121,7 +121,9 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 					unsigned char fillColor = f->loadChar();
 					unsigned char fillWidth = ((header-0x40)+1);										
 					memset(pixdata, fillColor, fillWidth);
+					
 					fillstart = pixdata;
+				
 					while(fillstart+fillWidth < endpixdata) {
 						memset(fillstart, fillColor, fillWidth);
 						fillstart+=width;
@@ -132,13 +134,15 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 					size--;
 					}
 				else {
-					int copyWidth = (header&0x3f)+1;
+					int copyWidth = (header & 0x3f)+1;
 					unsigned char color;
 					
-					for(int col = 0;col<copyWidth;col++) {						
+					for(int col = 0;col < copyWidth;col++) {						
 						color= f->loadChar();
+					
 						fillstart = pixdata;
-						while(fillstart<endpixdata) {
+						
+						while(fillstart < endpixdata) {
 							*fillstart = color;
 							fillstart+=width;
 							}
@@ -152,7 +156,6 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 		}
 	
 		size--;
-	
 	}
 	
 	LOG("PL Compacts pixels", pixels);
@@ -245,11 +248,8 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 						break;
 
-					case E1LAniHeader:
-
-						{
-						LOG("PL 1L Background Type", 1);
-						SDL_Surface* surface;
+					case E1LAniHeader: {
+						LOG("PL 1L Background Type", 1);						
 						unsigned char* pixels;
 						pixels = new unsigned char[SW* SH];							
 						memset(pixels, 0, SW*SH);
@@ -258,9 +258,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						delete[] pixels;
 						// Use the most recently loaded palette
 						video.setPalette(palettes->palette);					
-
 						}
-
 						break;
 
 					case EFFAniHeader:
@@ -293,14 +291,12 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case ESTAniHeader: // Sound item
 
 						{
-
 							unsigned char soundIndex = f->loadChar();
 							unsigned char soundNote = f->loadChar();
 							unsigned char soundOffset = f->loadChar();
 							LOG("PL Audio tag with index", soundIndex);
 							LOG("PL Audio tag play at ", soundNote);
 							LOG("PL Audio tag play offset ", soundOffset);
-
 						}
 
 						break;
