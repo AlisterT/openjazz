@@ -34,7 +34,7 @@
 #include "io/gfx/font.h"
 #include "io/gfx/paletteeffects.h"
 #include "io/gfx/video.h"
-
+#include "io/sound.h"
 
 /**
  *  This is the 0sc format
@@ -225,6 +225,10 @@ int Scene::play () {
 			 downOrRight ||
 			((globalTicks-lastTicks) >= pageTime * 1000 && pageTime != 256 && pageTime != 0)) {
 
+			if(pages[sceneIndex].stopMusic) {
+				stopMusic();
+			}
+			
 			if (upOrLeft) sceneIndex--;
 			else sceneIndex++;
 
@@ -259,6 +263,10 @@ int Scene::play () {
 
 			}
 
+			if(pages[sceneIndex].musicFile) {				
+				playMusic(pages[sceneIndex].musicFile);
+			}						
+			
 			newpage = 0;
 
 		}
