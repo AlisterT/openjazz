@@ -54,7 +54,7 @@ SL
 */
 enum ANIHeaders
 	{
-	E11AniHeader = 0x3131,
+	E11AniHeader = 0x3131, // Background/start image
 	E1LAniHeader = 0x4c31,
 	EPBAniHeader = 0x4250,
 	EFFAniHeader = 0x4646, // Floodfill? or full frame?
@@ -63,13 +63,100 @@ enum ANIHeaders
 	ERCAniHeader = 0x4352,
 	ERLAniHeader = 0x4c52,
 	ERRAniHeader = 0x5252,
-	E_EHeader = 0x455F,
+	E_EHeader = 0x455F, // ANI End
 	ESquareAniHeader = 0x5b5d,
 	EMXAniHeader = 0x584d,
 	ESTAniHeader = 0x5453, // Sound tag
 	ESoundListAniHeader = 0x4C53,
 	EPlayListAniHeader = 0x4C50
 	};
+
+/*							
+ * $0x $...	Next x + 1 bytes are 'literals'; each byte colors 1 column (Max val $3F)									
+ * $4x $yy        Next x + 1 columns drawn in color yy (Max value $7E)
+ * $7F $xxxx $yy	Next xxxx columns colored with color yy						
+ * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
+ * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
+ */														
+void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height) {
+	int pixels = 0;
+	unsigned char* endpixdata = pixdata+width*height;
+	unsigned char* fillstart = NULL;
+	while (size>0) {
+		unsigned char header = f->loadChar();		
+	
+		switch (header)  {
+			case 0x7F: {
+				unsigned short fillWidth = f->loadShort();
+				unsigned char fillColor = f->loadChar();
+								
+				fillstart = pixdata;
+				while(fillstart+fillWidth < endpixdata) {
+					memset(fillstart, fillColor, fillWidth);
+					fillstart+=width;
+					}
+				
+				pixdata+=fillWidth;				
+				pixels+=fillWidth;
+				size -= 3;
+				}	
+				break;
+	
+			case 0xff: {
+				unsigned short skip = f->loadShort();				
+				pixels+=skip;
+				pixdata+=skip;
+				size -= 2;
+				}
+	
+				break;
+	
+			default:
+				if(header&0x80) {
+					unsigned short skip =(header-0x80)+1;										
+					pixels+=skip;
+					pixdata+=skip;
+					}
+				else if(header&0x40) {					
+					unsigned char fillColor = f->loadChar();
+					unsigned char fillWidth = ((header-0x40)+1);										
+					memset(pixdata, fillColor, fillWidth);
+					fillstart = pixdata;
+					while(fillstart+fillWidth < endpixdata) {
+						memset(fillstart, fillColor, fillWidth);
+						fillstart+=width;
+						}
+					
+					pixdata+=fillWidth;
+					pixels+=fillWidth;
+					size--;
+					}
+				else {
+					int copyWidth = (header&0x3f)+1;
+					unsigned char color;
+					
+					for(int col = 0;col<copyWidth;col++) {						
+						color= f->loadChar();
+						fillstart = pixdata;
+						while(fillstart<endpixdata) {
+							*fillstart = color;
+							fillstart+=width;
+							}
+						
+						pixdata++;
+						pixels++;
+						size--;
+						}
+					}			
+				break;
+		}
+	
+		size--;
+	
+	}
+	
+	LOG("PL Compacts pixels", pixels);
+}
 
 void Scene::loadAni (File *f, int dataIndex) {
 
@@ -87,12 +174,13 @@ void Scene::loadAni (File *f, int dataIndex) {
 		if (type == ESoundListAniHeader) { // SL
 
 			/*unsigned short int offset =*/ f->loadShort();
-			unsigned char noSounds = f->loadChar();
+			animations->noSounds = f->loadChar();
 
-			for(loop = 0;loop<noSounds;loop++) {
+			for(loop = 0;loop<animations->noSounds;loop++) {
 
 				char* soundName = f->loadString();
 				LOG("Soundname ", soundName);
+				strcpy(animations->soundNames[loop], soundName);
 				delete[] soundName;
 
 			}
@@ -114,8 +202,6 @@ void Scene::loadAni (File *f, int dataIndex) {
 				palettes->palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
 				palettes->palette[count].g = (buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
 				palettes->palette[count].b = (buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
-
-
 			}
 
 			delete[] buffer;
@@ -132,7 +218,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 				value = f->loadShort();
 				LOG("PL Read block start tag", value);
-				unsigned short int size = f->loadShort();
+			    int size = f->loadShort();
 				LOG("PL Anim block size", size);
 				nextPos = f->tell();
 				// next pos is intial position + size and four bytes header
@@ -149,6 +235,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case E11AniHeader: //11
 
 						// Skip back size header, this is read by the surface reader
+						LOG("PL 11 Background Type", 1);
 						f->seek(-2, false);
 
 						animations->background = f->loadSurface(SW, SH);
@@ -161,109 +248,25 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case E1LAniHeader:
 
 						{
-
-							int longvalue = f->loadInt();
-							LOG("PL Anim block value", longvalue);
-
-							while (size) {
-
-								size--;
-								unsigned char header = f->loadChar();
-								LOG("PL 4c31 block header", header);
-
-								switch (header) {
-
-									case 0x7F:
-
-										{
-
-											unsigned short fillWidth = f->loadShort();
-											unsigned char fillColor = f->loadChar();
-											LOG("PL Fillblock width", fillWidth);
-											LOG("PL Fillblock with color", fillColor);
-											size -= 3;
-
-										}
-
-										break;
-
-									case 0xff:
-
-										{
-
-											unsigned char x = f->loadChar();
-											unsigned char y = f->loadChar();
-											LOG("PL block x", x);
-											LOG("PL block y", y);
-											size -= 2;
-
-										}
-
-										break;
-
-									default:
-
-										//LOG("PL Unknown type", header);
-
-										break;
-
-								}
-
-							}
+						LOG("PL 1L Background Type", 1);
+						SDL_Surface* surface;
+						unsigned char* pixels;
+						pixels = new unsigned char[SW* SH];							
+						memset(pixels, 0, SW*SH);
+						LoadCompacted(size, f, pixels, SW, SH);
+						animations->background = createSurface(pixels, SW, SH);
+						delete[] pixels;
+						// Use the most recently loaded palette
+						video.setPalette(palettes->palette);					
 
 						}
 
 						break;
 
 					case EFFAniHeader:
-
-						while (size) {
-
-							unsigned char header = f->loadChar();
-							LOG("PL 4646 block header", header);
-
-							switch (header) {
-
-								case 0x7F:
-
-									{
-
-										unsigned short fillWidth = f->loadShort();
-										unsigned char fillColor = f->loadChar();
-										LOG("PL Fillblock width", fillWidth);
-										LOG("PL Fillblock with color", fillColor);
-										size -= 3;
-
-									}
-
-									break;
-
-								case 0xff:
-
-									{
-
-										unsigned char x = f->loadChar();
-										unsigned char y = f->loadChar();
-										LOG("PL block x", x);
-										LOG("PL block y", y);
-										size -= 2;
-
-									}
-
-									break;
-
-								default:
-
-									//LOG("PL Unknown type", header);
-
-									break;
-
-							}
-
-							size--;
-
+						{
+						//LoadCompacted(size, f);
 						}
-
 						break;
 
 					case ERNAniHeader:
@@ -278,7 +281,6 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case ESquareAniHeader: // ][ Flip??
 
 						{
-
 							unsigned char header = f->loadChar();
 							LOG("PL 5b5d block header", header);
 							unsigned short int value = f->loadShort();

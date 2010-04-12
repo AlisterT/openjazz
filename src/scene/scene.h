@@ -87,7 +87,6 @@ class SceneText {
 
 };
 
-
 class ScenePage {
 
 	public:
@@ -151,7 +150,8 @@ public:
 		SDL_Surface*       background;
 		SceneAnimation*  next;		
 		int id;
-
+		int noSounds;
+		char soundNames[16][10];
 		SceneAnimation  (SceneAnimation* newNext);
 		~SceneAnimation ();			
 	};
@@ -175,7 +175,7 @@ class Scene {
 		void loadScripts (File* f);
 		void loadData    (File* f);
 		void loadAni     (File* f, int dataIndex);
-
+		void LoadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height);
 	public:
 		Scene    (const char* fileName);
 		~Scene   ();
