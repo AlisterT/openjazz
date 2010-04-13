@@ -81,7 +81,7 @@ enum ANIHeaders
  */														
 void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height) {
 	int pixels = 0;
-	unsigned char* endpixdata = pixdata+width*height;
+	unsigned char* endpixdata = pixdata + (width*height);
 	unsigned char* fillstart = NULL;
 	while (size > 0) {
 		unsigned char header = f->loadChar();		
@@ -120,8 +120,7 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 					}
 				else if(header&0x40) {					
 					unsigned char fillColor = f->loadChar();
-					unsigned char fillWidth = ((header-0x40)+1);										
-					memset(pixdata, fillColor, fillWidth);
+					unsigned char fillWidth = ((header-0x40)+1);
 					
 					fillstart = pixdata;
 				
@@ -140,14 +139,14 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 					
 					for(int col = 0;col < copyWidth;col++) {						
 						color= f->loadChar();
-					
-						fillstart = pixdata;
-						
-						while(fillstart < endpixdata) {
-							*fillstart = color;
-							fillstart+=width;
+						if(color != 0xff){
+							fillstart = pixdata;
+							
+							while(fillstart < endpixdata) {
+								*fillstart = color;
+								fillstart+=width;
+								}
 							}
-						
 						pixdata++;
 						pixels++;
 						size--;
