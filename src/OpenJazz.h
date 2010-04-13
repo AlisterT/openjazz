@@ -34,7 +34,6 @@
 #ifndef _OPENJAZZ_H
 #define _OPENJAZZ_H
 
-
 #ifndef EXTERN
 	#define EXTERN extern
 #endif
@@ -65,7 +64,15 @@
 #define F192 196608
 
 // Files
+#ifdef __SYMBIAN32__
+#ifdef UIQ3
+#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg""
+#else
+#define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
+#endif
+#else
 #define CONFIG_FILE "openjazz.cfg"
+#endif
 #define LOGO_FILE   "openjazz.000"
 #define LEVEL_FILE  "openjazz.tmp"
 

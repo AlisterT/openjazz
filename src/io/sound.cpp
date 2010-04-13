@@ -138,7 +138,8 @@ void openAudio () {
 
 	if (loadSounds(F_SOUNDS) != E_NONE) sounds = NULL;
 
-
+	// Start audio for sfx to work
+	SDL_PauseAudio(0);
 	return;
 
 }
@@ -225,7 +226,7 @@ void playMusic (const char * fileName) {
 
 	}
 
-	// Start the music playing
+	// Start the audio playing
 	SDL_PauseAudio(0);
 
 #endif
@@ -248,9 +249,9 @@ void stopMusic () {
 		musicFile = NULL;
 
 	}
-
+	SDL_PauseAudio(0);
 #endif
-
+	
 	return;
 
 }
