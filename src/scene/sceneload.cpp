@@ -33,45 +33,6 @@
 
 #include <string.h>
 
-/**
-11
-1L
-/0/0
-PB
-FF 
-RN
-RB
-RC
-RL
-RR
-][
-PL
-AN
-_E
-MX
-ST
-SL 
-*/
-
-enum ANIHeaders
-	{
-	E11AniHeader = 0x3131, // Background/start image
-	E1LAniHeader = 0x4c31,
-	EPBAniHeader = 0x4250,
-	EFFAniHeader = 0x4646, // Floodfill? or full frame?
-	ERNAniHeader = 0x4e52,
-	ERBAniHeader = 0x4252,
-	ERCAniHeader = 0x4352,
-	ERLAniHeader = 0x4c52,
-	ERRAniHeader = 0x5252,
-	E_EHeader = 0x455F, // ANI End
-	ESquareAniHeader = 0x5b5d,
-	EMXAniHeader = 0x584d,
-	ESTAniHeader = 0x5453, // Sound tag
-	ESoundListAniHeader = 0x4C53,
-	EPlayListAniHeader = 0x4C50
-	};
-
 /*							
  * $0x $...	Next x + 1 bytes are 'literals'; each byte colors 1 column (Max val $3F)									
  * $4x $yy        Next x + 1 columns drawn in color yy (Max value $7E)
@@ -79,7 +40,7 @@ enum ANIHeaders
  * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
  * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
  */														
-void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height) {
+void Scene::loadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height) {
 	int pixels = 0;
 	unsigned char* endpixdata = pixdata + (width*height);
 	unsigned char* fillstart = NULL;
@@ -161,6 +122,91 @@ void Scene::LoadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 	LOG("PL Compacts pixels", pixels);
 }
 
+void Scene::loadCompactedMem(int& size, unsigned char* frameData, unsigned char* pixdata, int width, int height) {
+	int pixels = 0;
+	unsigned char* endpixdata = pixdata + (width*height);
+	unsigned char* fillstart = NULL;
+	while (size > 0) {
+		unsigned char header = *frameData;frameData++;		
+	
+		switch (header)  {
+			case 0x7F: {
+				unsigned short fillWidth = *frameData;frameData++;	
+				fillWidth+=((unsigned short)(*frameData))<<8;frameData++;	
+				unsigned char fillColor = *frameData;frameData++;	
+								
+				fillstart = pixdata;
+				while(fillstart+fillWidth < endpixdata) {
+					memset(fillstart, fillColor, fillWidth);
+					fillstart+=width;
+					}
+				
+				pixdata+=fillWidth;				
+				pixels+=fillWidth;
+				size -= 3;
+				}	
+				break;
+	
+			case 0xff: {
+				unsigned short skip = *frameData;frameData++;	
+				skip+=((unsigned short)(*frameData))<<8;frameData++;			
+				pixels+=skip;
+				pixdata+=skip;
+				size -= 2;
+				}
+	
+				break;
+	
+			default:
+				if(header&0x80) {
+					unsigned short skip =(header-0x80)+1;										
+					pixels+=skip;
+					pixdata+=skip;
+					}
+				else if(header&0x40) {					
+					unsigned char fillColor = *frameData;frameData++;
+					unsigned char fillWidth = ((header-0x40)+1);
+					
+					fillstart = pixdata;
+				
+					while(fillstart+fillWidth < endpixdata) {
+						memset(fillstart, fillColor, fillWidth);
+						fillstart+=width;
+						}
+					
+					pixdata+=fillWidth;
+					pixels+=fillWidth;
+					size--;
+					}
+				else {
+					int copyWidth = (header & 0x3f)+1;
+					unsigned char color;
+					
+					for(int col = 0;col < copyWidth;col++) {						
+						color= *frameData;frameData++;
+						if(color != 0xff){
+							fillstart = pixdata;
+							
+							while(fillstart < endpixdata) {
+								*fillstart = color;
+								fillstart+=width;
+								}
+							}
+						pixdata++;
+						pixels++;
+						size--;
+						}
+					}			
+				break;
+		}
+	
+		size--;
+	}
+	
+	LOG("PL Compacts pixels", pixels);
+}
+
+
 void Scene::loadAni (File *f, int dataIndex) {
 
 	unsigned short int aniType = f->loadShort();// should be 0x02
@@ -188,8 +234,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 			}
 
-		} else if (type == EPlayListAniHeader) {// PL
-
+		} else if (type == EPlayListAniHeader) {// PL			
 			int pos = f->tell();
 			int nextPos = f->tell();
 			LOG("PL Read position", pos);
@@ -253,7 +298,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						unsigned char* pixels;
 						pixels = new unsigned char[SW* SH];							
 						memset(pixels, 0, SW*SH);
-						LoadCompacted(size, f, pixels, SW, SH);
+						loadCompacted(size, f, pixels, SW, SH);
 						animations->background = createSurface(pixels, SW, SH);
 						delete[] pixels;
 						// Use the most recently loaded palette
@@ -263,29 +308,30 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 					case EFFAniHeader:
 						{
-						
-						//LoadCompacted(size, f, (unsigned char*) animations->background->pixels, SW, SH);
+						unsigned char* blockData = f->loadBlock(size);
+						animations->addFrame(EFFAniHeader, blockData, size);											
 						}
 						break;
 
 					case ERNAniHeader:
-					case ERBAniHeader:
-					case ERCAniHeader:
+					case ERBAniHeader:					
 					case ERLAniHeader:					
 					case EMXAniHeader:
 						break;
-					case ERRAniHeader: // Rotate.. has zero length info
-
+					case ERRAniHeader: // Reverse animation when end found
+						animations->reverseAnimation = 1;
 						break;
 
-					case ESquareAniHeader: // ][ Flip??
-
+					case ERCAniHeader:
 						{
-							unsigned char header = f->loadChar();
-							LOG("PL 5b5d block header", header);
-							unsigned short int value = f->loadShort();
-							LOG("PL 5b5d block value", value);
+						unsigned char* blockData = f->loadBlock(size);
+						animations->addFrame(ERCAniHeader, blockData, size);
+						}break;
+					case ESquareAniHeader: // Full screen animation frame, that does n't clear the screen first.
 
+						{		
+							unsigned char* blockData = f->loadBlock(size);
+							animations->addFrame(ESquareAniHeader, blockData, size);														
 						}
 
 						break;
@@ -296,6 +342,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 							unsigned char soundIndex = f->loadChar();
 							unsigned char soundNote = f->loadChar();
 							unsigned char soundOffset = f->loadChar();
+							animations->lastFrame->soundId = soundIndex;
 							LOG("PL Audio tag with index", soundIndex);
 							LOG("PL Audio tag play at ", soundNote);
 							LOG("PL Audio tag play offset ", soundOffset);
@@ -474,16 +521,16 @@ void Scene::loadScripts (File *f) {
 							pages[loop].animSpeed = f->loadShort();							
 							pages[loop].animIndex = f->loadShort();
 							
-							LOG("ESceneAnimationSetting loops", pages[loop].animLoops);
-							LOG("ESceneAnimationSetting speed", pages[loop].animSpeed);
-							LOG("ESceneAnimationSetting anim num", pages[loop].animIndex);							
+							LOG("ESceneAnimation loops", pages[loop].animLoops);
+							LOG("ESceneAnimation speed", pages[loop].animSpeed);
+							LOG("ESceneAnimation anim num", pages[loop].animIndex);							
 						}
 						break;
 
 					case ESceneAnimationPlayAndContinue:
 						{
-							unsigned char playAndContinue = f->loadChar();
-							LOG("ESceneAnimationPlayAndContinue", playAndContinue);
+						pages[loop].nextPageAfterAnim = f->loadChar();
+						LOG("ESceneAnimationPlayAndContinue", pages[loop].nextPageAfterAnim);
 						}
 
 						break;

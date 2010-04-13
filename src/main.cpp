@@ -688,7 +688,7 @@ int main(int argc, char *argv[]) {
 
 	// Show the startup cutscene
 
-/*	try {
+	try {
 
 		scene = new Scene(F_STARTUP_0SC);
 
@@ -709,7 +709,7 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	delete scene;*/
+	delete scene;
 
 
 	// Load the menu

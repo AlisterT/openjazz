@@ -36,6 +36,34 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 
+SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
+	soundId = -1;
+	this->frameData = frameData;
+	this->frameType = frameType;
+	this->frameSize = frameSize;		
+	prev = NULL;
+	next = NULL;
+	}
+
+SceneFrame::~SceneFrame() {
+	delete [] frameData;
+	if (next) delete next;
+}
+
+void SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frameSize) {
+	SceneFrame* frame = new SceneFrame(frameType, frameData, frameSize);
+	if(sceneFrames == NULL) {
+		sceneFrames = frame;
+	}
+	else {
+		frame->prev = lastFrame;
+		lastFrame->next = frame;
+	}
+	
+	lastFrame = frame;
+	frames++;
+}
+
 /**
  *  This is the 0sc format
  *  Offset, Size (hex), type
@@ -53,12 +81,18 @@ SceneAnimation::SceneAnimation  (SceneAnimation* newNext)
 	{
 	next = newNext;
 	background = NULL;
+	lastFrame = NULL;
+	sceneFrames = NULL;
+	frames = 0;
+	reverseAnimation = 0;
 	}
 
 SceneAnimation::~SceneAnimation ()
 	{
 	if (next) delete next;
-
+	
+	if(sceneFrames) delete sceneFrames;
+	
 	if (background) SDL_FreeSurface(background);
 	}
 
@@ -201,13 +235,18 @@ Scene::~Scene () {
 
 }
 
-
 int Scene::play () {
 
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
 	SceneImage *image;
 	SceneAnimation* animation;
+	SceneFrame* currentFrame = NULL;
+	SceneFrame* lastFrame = NULL;
+	int	frameDelay = 0;
+	int prevFrame = 0;
+	int continueToNextPage = 0;
+	
 	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
@@ -226,6 +265,7 @@ int Scene::play () {
 		int upOrLeft = 0;
 		int downOrRight = 0;
 		
+		
 		if(pages[sceneIndex].askForYesNo) {
 			// Should check for Y also
 			downOrRight = controls.release(C_ENTER) || controls.release(C_YES);;
@@ -235,7 +275,7 @@ int Scene::play () {
 		}
 		
 		if ((sceneIndex > 0 && upOrLeft) ||
-			 downOrRight ||
+			 downOrRight || continueToNextPage ||
 			((globalTicks-lastTicks) >= pageTime * 1000 && pageTime != 256 && pageTime != 0)) {
 
 			if(pages[sceneIndex].stopMusic) {
@@ -252,7 +292,7 @@ int Scene::play () {
 			newpage = true;
 
 			pageTime = pages[sceneIndex].pageTime;
-
+			continueToNextPage = 0;
 		}
 
 		if (newpage) {
@@ -306,17 +346,76 @@ int Scene::play () {
 
 		} else if (pages[sceneIndex].animIndex != -1) {
 
-			animation = animations;
-	
-			while (animation && (animation->id != pages[sceneIndex].animIndex))
-				animation = animation->next;
-	
-			if (animation && animation->background) {
-	
-			dst.x = (canvasW - SW) >> 1;
-			dst.y = (canvasH - SH) >> 1;
-			SDL_BlitSurface(animation->background, NULL, canvas, &dst);	
-			}						
+			if(currentFrame == NULL) {
+					animation = animations;
+			
+					while (animation && (animation->id != pages[sceneIndex].animIndex))
+						animation = animation->next;
+			
+					if (animation && animation->background) {
+			
+					dst.x = (canvasW - SW) >> 1;
+					dst.y = (canvasH - SH) >> 1;
+					frameDelay = 1000/(pages[sceneIndex].animSpeed>>8);
+					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
+					currentFrame = animation->sceneFrames;
+					SDL_Delay(frameDelay);
+					}
+				}
+				else {
+					// Upload pixel data to the surface
+					if (SDL_MUSTLOCK(animation->background)) SDL_LockSurface(animation->background);
+												
+					switch(currentFrame->frameType)
+						{						
+						case ESquareAniHeader:
+							{
+							loadCompactedMem(currentFrame->frameSize, currentFrame->frameData,(unsigned char*) animation->background->pixels, SW, SH);
+							}
+							break;
+						default:
+							LOG("Scene::Play unknown type", currentFrame->frameType);
+							break;
+						}
+					
+					if (SDL_MUSTLOCK(animation->background)) SDL_UnlockSurface(animation->background);
+					
+					dst.x = (canvasW - SW) >> 1;
+					dst.y = (canvasH - SH) >> 1;
+					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
+					
+					if(currentFrame->soundId != -1 && animation->noSounds > 0) {
+							LOG("PLAY SOUND NAME",animation->soundNames[currentFrame->soundId-1]);
+							// Search for matching sound
+							for (int y = 0; y < nSounds ; y++) {
+								if (!strcmp(animation->soundNames[currentFrame->soundId-1], sounds[y].name)) {
+									playSound(y);
+									break;
+								}
+							}
+						}
+					
+					lastFrame = currentFrame;
+					if(prevFrame) {
+						currentFrame = currentFrame->prev;
+						}
+					else {
+						currentFrame = currentFrame->next;
+					}
+					SDL_Delay(frameDelay);
+					if(currentFrame == NULL && animation->reverseAnimation) {
+						prevFrame = 1-prevFrame;
+						if(prevFrame) {
+							currentFrame = lastFrame->prev;
+							}
+						else {
+							currentFrame = lastFrame->next;
+							}
+						}
+					else if(currentFrame == NULL && !pageTime && !pages[sceneIndex].askForYesNo && pages[sceneIndex].nextPageAfterAnim) {
+						continueToNextPage = 1;
+					}
+				}											
 
 		} else clearScreen(0);
 

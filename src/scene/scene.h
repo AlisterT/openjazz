@@ -30,6 +30,46 @@
 
 
 // Enums
+
+/**
+11
+1L
+/0/0
+PB
+FF 
+RN
+RB
+RC
+RL
+RR
+][
+PL
+AN
+_E
+MX
+ST
+SL 
+*/
+
+enum ANIHeaders
+	{
+	E11AniHeader = 0x3131, // Background/start image
+	E1LAniHeader = 0x4c31,
+	EPBAniHeader = 0x4250,
+	EFFAniHeader = 0x4646, // Floodfill? or full frame?
+	ERNAniHeader = 0x4e52,
+	ERBAniHeader = 0x4252,
+	ERCAniHeader = 0x4352,
+	ERLAniHeader = 0x4c52,
+	ERRAniHeader = 0x5252,
+	E_EHeader = 0x455F, // ANI End
+	ESquareAniHeader = 0x5b5d,
+	EMXAniHeader = 0x584d,
+	ESTAniHeader = 0x5453, // Sound tag
+	ESoundListAniHeader = 0x4C53,
+	EPlayListAniHeader = 0x4C50
+	};
+
 enum
 {
     ESignatureLength = 0x13,
@@ -97,7 +137,8 @@ class ScenePage {
 	
 		int animLoops;
 		int animSpeed;
-		int animIndex;	
+		int animIndex;		
+		int nextPageAfterAnim;
 		
 		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
 		int                pageTime;
@@ -144,16 +185,34 @@ class SceneFont {
 
 };
 
+class SceneFrame
+	{
+public:
+	SceneFrame(int frameType, unsigned char* frameData, int frameSize);
+	~SceneFrame();
+	int soundId;
+	unsigned int frameType;
+	unsigned char* frameData;
+	int frameSize;
+	SceneFrame*  next;
+	SceneFrame*  prev;
+	};
+
 class SceneAnimation
 	{
 public:
+		SceneAnimation  (SceneAnimation* newNext);
+		~SceneAnimation ();
+		void addFrame(int frameType, unsigned char* frameData, int frameSize);
 		SDL_Surface*       background;
 		SceneAnimation*  next;		
 		int id;
 		int noSounds;
 		char soundNames[16][10];
-		SceneAnimation  (SceneAnimation* newNext);
-		~SceneAnimation ();			
+		SceneFrame* sceneFrames;
+		SceneFrame* lastFrame;
+		int frames;
+		int reverseAnimation;
 	};
 
 class Scene {
@@ -175,7 +234,8 @@ class Scene {
 		void loadScripts (File* f);
 		void loadData    (File* f);
 		void loadAni     (File* f, int dataIndex);
-		void LoadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height);
+		void loadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height);
+		void loadCompactedMem(int& size, unsigned char* frameData, unsigned char* pixdata, int width, int height);	
 	public:
 		Scene    (const char* fileName);
 		~Scene   ();
