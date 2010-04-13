@@ -52,6 +52,7 @@ MX
 ST
 SL 
 */
+
 enum ANIHeaders
 	{
 	E11AniHeader = 0x3131, // Background/start image
@@ -238,7 +239,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case E11AniHeader: //11
 
 						// Skip back size header, this is read by the surface reader
-						LOG("PL 11 Background Type", 1);
+						LOG("PL 11 Background Type", 0);
 						f->seek(-2, false);
 
 						animations->background = f->loadSurface(SW, SH);
@@ -249,7 +250,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						break;
 
 					case E1LAniHeader: {
-						LOG("PL 1L Background Type", 1);						
+						LOG("PL 1L Background Type", 0);						
 						unsigned char* pixels;
 						pixels = new unsigned char[SW* SH];							
 						memset(pixels, 0, SW*SH);
@@ -263,7 +264,8 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 					case EFFAniHeader:
 						{
-						//LoadCompacted(size, f);
+						
+						//LoadCompacted(size, f, (unsigned char*) animations->background->pixels, SW, SH);
 						}
 						break;
 
@@ -272,7 +274,8 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case ERCAniHeader:
 					case ERLAniHeader:					
 					case EMXAniHeader:
-					case ERRAniHeader:
+						break;
+					case ERRAniHeader: // Rotate.. has zero length info
 
 						break;
 
@@ -466,7 +469,7 @@ void Scene::loadScripts (File *f) {
 						pages[loop].stopMusic = 1;
 						LOG("ESceneStopMusic", 1);
 						}break;
-					case ESceneAnimationSetting:
+					case ESceneAnimation:
 						{
 							pages[loop].animLoops = f->loadInt();
 							pages[loop].animSpeed = f->loadShort();							

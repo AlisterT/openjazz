@@ -59,7 +59,7 @@ enum {
 	ESceneTextLine = 0x5e,
 	ESceneTextVAdjust = 0x5f,
 	ESceneAnimationPlayAndContinue = 0xA7,
-	ESceneAnimationSetting = 0xA6,
+	ESceneAnimation = 0xA6,
 	ESceneTextSetting = 0xb1,
 	ESceneTextSomething = 0xd9,
 	ESceneTextShadow = 0xdb
