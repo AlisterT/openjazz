@@ -58,7 +58,9 @@ class File {
 		void               skipRLE     ();
 		char*              loadString  ();
 		SDL_Surface*       loadSurface (int width, int height);
-		void               loadPalette (SDL_Color *palette);
+		unsigned char*     loadPixels  (int length);
+		unsigned char*     loadPixels  (int length, int key);
+		void               loadPalette (SDL_Color* palette);
 
 };
 

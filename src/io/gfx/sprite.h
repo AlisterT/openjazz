@@ -28,11 +28,6 @@
 #include <SDL/SDL.h>
 
 
-// Constant
-
-#define SKEY 254 /* Sprite colour key */
-
-
 // Class
 
 class Sprite {
@@ -48,10 +43,11 @@ class Sprite {
 		~Sprite             ();
 
 		void clearPixels    ();
-		void setPixels      (unsigned char* data, int width, int height);
+		void setPixels      (unsigned char* data, int width, int height, unsigned char key);
 		int  getWidth       ();
 		int  getHeight      ();
 		void draw           (int x, int y);
+		void drawScaled     (int x, int y, fixed scale);
 		void setPalette     (SDL_Color* palette, int start, int amount);
 		void flashPalette   (int index);
 		void restorePalette ();

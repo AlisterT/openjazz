@@ -165,7 +165,7 @@ Font::Font (unsigned char* pixels, bool big) {
 
 		characters[count] = createSurface(chrPixels, 8, lineHeight);
 
-		if (big) SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 0);
+		if (big) SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 31);
 
 	}
 
@@ -212,7 +212,6 @@ Font::Font () {
 
 	File* file;
 	unsigned char* pixels;
-	unsigned char* sorted;
 	int fileSize;
 	int count, width, height;
 
@@ -251,13 +250,11 @@ Font::Font () {
 
 		file->seek(4, false);
 
-		pixels = file->loadBlock(width * height);
-		sorted = sortPixels(pixels, width * height);
+		pixels = file->loadPixels(width * height);
 
-		characters[count] = createSurface(sorted, width, height);
+		characters[count] = createSurface(pixels, width, height);
 		SDL_SetColorKey(characters[count], SDL_SRCCOLORKEY, 254);
 
-		delete[] sorted;
 		delete[] pixels;
 
 	}

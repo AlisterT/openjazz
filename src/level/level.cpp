@@ -87,18 +87,6 @@ Level::~Level () {
 
 	int count;
 
-	// Free all data
-
-	stopMusic();
-
-	// Free the palette effects
-	if (paletteEffects) {
-
-		delete paletteEffects;
-		paletteEffects = NULL;
-
-	}
-
 	// Free events
 	if (events) delete events;
 
@@ -111,10 +99,6 @@ Level::~Level () {
 		delete[] path[count].y;
 
 	}
-
-	SDL_FreeSurface(tileSet);
-
-	delete[] spriteSet;
 
 	delete[] sceneFile;
 

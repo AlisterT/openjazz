@@ -111,7 +111,6 @@ EXTERN Video video;
 
 // Functions
 
-EXTERN unsigned char* sortPixels     (unsigned char* pixels, int length);
 EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
 EXTERN void           clearScreen    (int index);
 EXTERN void           drawRect       (int x, int y, int width, int height, int index);

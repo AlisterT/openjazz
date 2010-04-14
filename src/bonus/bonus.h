@@ -57,10 +57,11 @@ class Bonus : public BaseLevel {
 		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks
 		fixed            direction;
 
-		int  loadTiles (char* fileName);
-		bool isEvent   (fixed x, fixed y);
-		int  step      ();
-		void draw      ();
+		int  loadSprites ();
+		int  loadTiles   (char* fileName);
+		bool isEvent     (fixed x, fixed y);
+		int  step        ();
+		void draw        ();
 
 	public:
 		Bonus  (char* fileName, unsigned char diff);

@@ -93,7 +93,6 @@ class Level : public BaseLevel {
 
 	private:
 		char*         sceneFile;
-		Sprite*       spriteSet; // 208 of which are usually in mainchar.000
 		Anim          animSet[ANIMS];
 		char          miscAnims[4];
 		signed char   bulletSet[BULLETS][BLENGTH];
@@ -104,7 +103,6 @@ class Level : public BaseLevel {
 		SDL_Color     skyPalette[256];
 		bool          sky;
 		unsigned char skyOrb;
-		int           sprites;
 		int           levelNum, worldNum, nextLevelNum, nextWorldNum;
 		unsigned char difficulty;
 		int           enemies;
@@ -113,8 +111,9 @@ class Level : public BaseLevel {
 		fixed         waterLevelSpeed;
 		fixed         energyBar;
 
-		int loadSprites (char* fileName);
-		int loadTiles   (char* fileName);
+		void loadSprite  (File* file, Sprite* sprite);
+		int  loadSprites (char* fileName);
+		int  loadTiles   (char* fileName);
 
 	protected:
 		int  load (char* fileName, unsigned char diff, bool checkpoint);

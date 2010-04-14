@@ -36,6 +36,9 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 
+#include <string.h>
+
+
 SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
 	soundId = -1;
 	this->frameData = frameData;

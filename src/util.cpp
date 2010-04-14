@@ -187,3 +187,23 @@ void logError (const char *message, const char *detail) {
 }
 
 
+fixed fSin (fixed angle) {
+
+	return sinLut[angle & 1023];
+
+}
+
+
+fixed fCos (fixed angle) {
+
+	return sinLut[(angle + 256) & 1023];
+
+}
+
+
+fixed fTan (fixed angle) {
+
+	return tanLut[angle & 1023];
+
+}
+

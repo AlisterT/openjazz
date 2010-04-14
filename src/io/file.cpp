@@ -321,6 +321,91 @@ SDL_Surface* File::loadSurface (int width, int height) {
 }
 
 
+unsigned char* File::loadPixels  (int length) {
+
+	unsigned char* pixels;
+	unsigned char* sorted;
+	int count;
+
+	sorted = new unsigned char[length];
+
+	pixels = loadBlock(length);
+
+	// Rearrange pixels in correct order
+	for (count = 0; count < length; count++) {
+
+		sorted[count] = pixels[(count >> 2) + ((count & 3) * (length >> 2))];
+
+	}
+
+	delete[] pixels;
+
+	return sorted;
+
+}
+
+
+unsigned char* File::loadPixels  (int length, int key) {
+
+	unsigned char* pixels;
+	unsigned char* sorted;
+	unsigned char mask;
+	int count;
+
+
+	sorted = new unsigned char[length];
+	pixels = new unsigned char[length];
+
+
+	// Read the mask
+	// Each mask pixel is either 0 or 1
+	// Four pixels are packed into the lower end of each byte
+	for (count = 0; count < length; count++) {
+
+		if (!(count & 3)) mask = fgetc(file);
+		pixels[count] = (mask >> (count & 3)) & 1;
+
+	}
+
+	// Pixels are loaded if the corresponding mask pixel is 1, otherwise
+	// the transparent index is used. Pixels are scrambled, so the mask
+	// has to be scrambled the same way.
+	for (count = 0; count < length; count++) {
+
+		sorted[(count >> 2) + ((count & 3) * (length >> 2))] = pixels[count];
+
+	}
+
+	// Read pixels according to the scrambled mask
+	for (count = 0; count < length; count++) {
+
+		// Use the transparent pixel
+		pixels[count] = key;
+
+		if (sorted[count] == 1) {
+
+			// The unmasked portions are transparent, so no masked
+			// portion should be transparent.
+			while (pixels[count] == key) pixels[count] = fgetc(file);
+
+		}
+
+	}
+
+	// Rearrange pixels in correct order
+	for (count = 0; count < length; count++) {
+
+		sorted[count] = pixels[(count >> 2) + ((count & 3) * (length >> 2))];
+
+	}
+
+	delete[] pixels;
+
+	return sorted;
+
+}
+
+
 void File::loadPalette (SDL_Color* palette) {
 
 	unsigned char* buffer;

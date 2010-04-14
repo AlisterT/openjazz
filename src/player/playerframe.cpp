@@ -38,8 +38,6 @@
 #include "level/event/event.h"
 #include "level/level.h"
 
-#include <math.h>
-
 
 void Player::control (unsigned int ticks, int msps) {
 
@@ -673,8 +671,8 @@ void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
 
 
 	// Apply trajectory
-	cdx = fixed(sin(direction * 6.283185f / 1024.0f) * dx * msps) >> 10;
-	cdy = fixed(-cos(direction * 6.283185f / 1024.0f) * dx * msps) >> 10;
+	cdx = (fSin(direction) * dx * msps) >> 20;
+	cdy = (-fCos(direction) * dx * msps) >> 20;
 
 	if (!bonus->checkMask(x + cdx, y)) x += cdx;
 	if (!bonus->checkMask(x, y + cdy)) y += cdy;
@@ -800,8 +798,8 @@ void Player::draw (unsigned int ticks, int change) {
 
 		// Show invincibility stars
 
-		xOffset = (int)(sin(ticks / 100.0f) * F12);
-		yOffset = (int)(cos(ticks / 100.0f) * F12);
+		xOffset = fSin(ticks * 2) * 12;
+		yOffset = fCos(ticks * 2) * 12;
 
 		an = level->getMiscAnim(0);
 
@@ -821,8 +819,8 @@ void Player::draw (unsigned int ticks, int change) {
 
 		// Show the 4-hit shield
 
-		xOffset = (int)(cos(ticks / 200.0f) * F20);
-		yOffset = (int)(sin(ticks / 200.0f) * F20);
+		xOffset = fCos(ticks) * 20;
+		yOffset = fSin(ticks) * 20;
 
 		an = level->getAnim(59);
 
@@ -838,8 +836,8 @@ void Player::draw (unsigned int ticks, int change) {
 
 		// Show the 2-hit shield
 
-		xOffset = (int)(cos(ticks / 200.0f) * F20);
-		yOffset = (int)(sin(ticks / 200.0f) * F20);
+		xOffset = fCos(ticks) * 20;
+		yOffset = fSin(ticks) * 20;
 
 		an = level->getAnim(50);
 

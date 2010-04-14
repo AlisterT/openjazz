@@ -49,27 +49,21 @@ void Sprite::clearPixels () {
 
 	if (pixels) SDL_FreeSurface(pixels);
 
-	data = SKEY;
+	data = 0;
 	pixels = createSurface(&data, 1, 1);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, SKEY);
+	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, 0);
 
 	return;
 
 }
 
 
-void Sprite::setPixels (unsigned char *data, int width, int height) {
-
-	unsigned char *sorted;
+void Sprite::setPixels (unsigned char *data, int width, int height, unsigned char key) {
 
 	if (pixels) SDL_FreeSurface(pixels);
 
-	sorted = sortPixels(data, width * height);
-
-	pixels = createSurface(sorted, width, height);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, SKEY);
-
-	delete[] sorted;
+	pixels = createSurface(data, width, height);
+	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, key);
 
 	return;
 
@@ -138,4 +132,75 @@ void Sprite::draw (int x, int y) {
 
 }
 
+
+void Sprite::drawScaled (int x, int y, fixed scale) {
+
+	unsigned char* srcRow;
+	unsigned char* dstRow;
+	unsigned char pixel, key;
+	int width, height;
+	int dstX, dstY;
+	int srcX, srcY;
+
+	key = pixels->format->colorkey;
+
+	width = FTOI(pixels->w * scale);
+	if (x + width > canvasW) width = canvasW - x;
+	if (x < -width) return; // Off-screen
+
+	height = FTOI(pixels->h * scale);
+	if (y + height > canvasH) height = canvasH - y;
+	if (y < -height) return; // Off-screen
+
+	if (SDL_MUSTLOCK(canvas)) SDL_LockSurface(canvas);
+
+	if (y < 0) {
+
+		srcY = -y;
+		dstY = 0;
+
+	} else {
+
+		srcY = 0;
+		dstY = y;
+
+	}
+
+	while (srcY < height) {
+
+		srcRow = ((unsigned char *)(pixels->pixels)) + (pixels->pitch * DIV(srcY, scale));
+		dstRow = ((unsigned char *)(canvas->pixels)) + (canvas->pitch * dstY);
+
+		if (x < 0) {
+
+			srcX = -x;
+			dstX = 0;
+
+		} else {
+
+			srcX = 0;
+			dstX = x;
+
+		}
+
+		while (srcX < width) {
+
+			pixel = srcRow[DIV(srcX, scale)];
+			if (pixel != key) dstRow[dstX] = pixel;
+
+			srcX++;
+			dstX++;
+
+		}
+
+		srcY++;
+		dstY++;
+
+	}
+
+	if (SDL_MUSTLOCK(canvas)) SDL_UnlockSurface(canvas);
+
+	return;
+
+}
 

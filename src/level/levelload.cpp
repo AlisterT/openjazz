@@ -47,12 +47,70 @@
 #include <string.h>
 
 
+#define SKEY 254 /* Sprite colour key */
+
+
+void Level::loadSprite (File* file, Sprite* sprite) {
+
+	unsigned char* pixels;
+	int pos, maskOffset;
+	int width, height;
+
+	// Load dimensions
+	width = file->loadShort() << 2;
+	height = file->loadShort();
+
+	file->seek(2, false);
+
+	maskOffset = file->loadShort();
+
+	pos = file->loadShort() << 2;
+
+	// Sprites can be either masked or not masked.
+	if (maskOffset) {
+
+		// Masked
+
+		height++;
+
+		// Skip to mask
+		file->seek(maskOffset, false);
+
+		// Find the end of the data
+		pos += file->tell() + ((width >> 2) * height);
+
+		// Read scrambled, masked pixel data
+		pixels = file->loadPixels(width * height, SKEY);
+		sprite->setPixels(pixels, width, height, SKEY);
+
+		delete[] pixels;
+
+		file->seek(pos, true);
+
+	} else if (width) {
+
+		// Not masked
+
+		// Read scrambled pixel data
+		pixels = file->loadPixels(width * height);
+		sprite->setPixels(pixels, width, height, SKEY);
+
+		delete[] pixels;
+
+	}
+
+
+	return;
+
+}
+
+
 int Level::loadSprites (char * fileName) {
 
-	File *file, *mainFile, *specFile;
-	unsigned char *pixels, *mask;
-	int mainPos, specPos;
-	int count, x, y, width, height, m;
+	File* mainFile = NULL;
+	File* specFile = NULL;
+	int count;
+
 
 	// Open fileName
 	try {
@@ -93,197 +151,63 @@ int Level::loadSprites (char * fileName) {
 	for (count = 0; count < sprites; count++)
 		spriteSet[count].yOffset = specFile->loadChar();
 
-	// Find where the sprites start in fileName
-	specPos = specFile->tell();
 
-	// Find where the sprites start in mainchar.000
-	mainPos = 2;
+	// Skip to where the sprites start in mainchar.000
+	mainFile->seek(2, true);
+
 
 	// Loop through all the sprites to be loaded
 	for (count = 0; count < sprites; count++) {
 
-		// Go to the start of the current sprite or file indicator
-		specFile->seek(specPos, true);
-		mainFile->seek(mainPos, true);
-
-		/* If both fileName and mainchar.000 have file indicators, create a
-		blank sprite */
-		while ((specFile->loadChar() == 0xFF) &&
-			(mainFile->loadChar() == 0xFF)) {
+		if (specFile->loadChar() == 0xFF) {
 
 			// Go to the next sprite/file indicator
 			specFile->seek(1, false);
-			mainFile->seek(1, false);
 
-			// set the position of the next sprite/file indicators
-			specPos += 2;
-			mainPos += 2;
+			if (mainFile->loadChar() == 0xFF) {
 
-			// Create a blank sprite
-			spriteSet[count].clearPixels();
-			count++;
+				// Go to the next sprite/file indicator
+				mainFile->seek(1, false);
 
-		}
+				/* Both fileName and mainchar.000 have file indicators, so
+				create a blank sprite */
+				spriteSet[count].clearPixels();
 
-		// Return to the start of the sprite/file indicators
-		specFile->seek(specPos, true);
-		mainFile->seek(mainPos, true);
-
-		// Unless otherwise stated, load from fileName
-		file = specFile;
-
-		// Check if otherwise stated
-		if (file->loadChar() == 0xFF) {
-
-			file = mainFile;
-
-		} else file->seek(-1, false);
-
-		width = file->loadShort() << 2;
-		height = file->loadShort();
-
-		// Position of the next sprite or file indicator in each file
-		if (file == specFile) {
-
-			mainPos += 2;
-
-			specPos += 10 + (file->loadShort() << 2);
-
-		} else {
-
-			specPos += 2;
-
-			mainPos += 10 + (file->loadShort() << 2);
-
-		}
-
-		m = file->loadShort();
-
-		// Allocate space for mask
-		mask = new unsigned char[width * height];
-
-		// Actually, m is for mask offset.
-		// Sprites can be either masked or not masked.
-		if (!m) {
-
-			// Not masked
-			// Load the pixel data directly for descrambling
-
-			file->seek(2, false);
-
-			// Read pixel data
-			pixels = file->loadBlock(width * height);
-
-
-		} else {
-
-			// Allocate space for pixel data
-			pixels = new unsigned char[width * height];
-
-			// Masked
-			// Load the pixel data according to the mask
-
-			// Masked sprites have their own next sprite offsets
-			if (file == specFile) {
-
-				specPos = file->loadShort() << 2;
+				continue;
 
 			} else {
 
-				mainPos = file->loadShort() << 2;
+				// Return to the start of the sprite
+				mainFile->seek(-1, false);
+
+				// Load the individual sprite data
+				loadSprite(mainFile, spriteSet + count);
 
 			}
 
-			// Skip to mask
-			file->seek(m, false);
+		} else {
 
-			// Read the mask
-			// Each mask pixel is either 0 or 1
-			// Four pixels are packed into the lower end of each byte
-			for (y = 0; y < height; y++) {
+			// Return to the start of the sprite
+			specFile->seek(-1, false);
 
-				for (x = 0; x < width; x++) {
+			// Go to the main file's next sprite/file indicator
+			mainFile->seek(2, false);
 
-					if (!(x & 3)) m = file->loadChar();
-					pixels[(y * width) + x] = (m >> (x & 3)) & 1;
-
-				}
-
-			}
-
-			// Pixels are loaded if the corresponding mask pixel is 1, otherwise
-			// the transparent index is used. Pixels are scrambled, so the mask
-			// has to be scrambled the same way.
-			for (y = 0; y < height; y++) {
-
-				for (x = 0; x < width; x++) {
-
-					mask[((y + ((x & 3) * height)) * (width >> 2)) + (x >> 2)] =
-						pixels[(y * width) + x];
-
-				}
-
-			}
-
-			// Skip to pixels
-			file->seek(width >> 2, false);
-
-			// Next sprite offsets are relative to here
-			if (file == specFile) specPos += file->tell();
-			else mainPos += file->tell();
-
-			// Read pixels according to the scrambled mask
-			for (y = 0; y < height; y++) {
-
-				for (x = 0; x < width; x++) {
-
-					if (mask[(y * width) + x] == 1) {
-
-						// The unmasked portions are transparent, so no masked
-						// portion should be transparent.
-						m = SKEY;
-
-						while (m == SKEY) m = file->loadChar();
-
-						// Use the acceptable pixel
-						pixels[(y * width) + x] = m;
-
-					} else {
-
-						// Use the transparent pixel
-						pixels[(y * width) + x] = SKEY;
-
-					}
-
-				}
-
-			}
-
+			// Load the individual sprite data
+			loadSprite(specFile, spriteSet + count);
 
 		}
-
-
-		// Convert the scrambled sprite to an SDL surface
-		spriteSet[count].setPixels(pixels, width, height);
-
-		// Free redundant data
-		delete[] pixels;
-		delete[] mask;
 
 
 		// Check if the next sprite exists
 		// If not, create blank sprites for the remainder
-		if (specPos >= file->getSize()) {
+		if (specFile->tell() >= specFile->getSize()) {
 
 			for (count++; count < sprites; count++) {
 
 				spriteSet[count].clearPixels();
 
 			}
-
-		} else {
-
-			specFile->seek(specPos, true);
 
 		}
 

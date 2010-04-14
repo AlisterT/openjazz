@@ -33,21 +33,92 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/paletteeffects.h"
+#include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "menu/menu.h"
 #include "player/player.h"
 
-#include <math.h>
 #include <string.h>
 
-#ifdef __SYMBIAN32__
-extern float cosf (float);
-extern float sinf (float);
-extern float tanf (float);
-#endif
 
-#define PI 3.141592f
+int Bonus::loadSprites () {
+
+	File *file;
+	unsigned char* pixels;
+	int pos, maskLength, pixelsLength;
+	int width, height;
+	int count;
+
+	try {
+
+		file = new File(F_BONUS, false);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	file->seek(2, true);
+
+	sprites = file->loadShort();
+	spriteSet = new Sprite[sprites];
+
+	for (count = 0; count < sprites; count++) {
+
+		spriteSet[count].xOffset = 0;
+		spriteSet[count].yOffset = 0;
+
+		// Load dimensions
+		width = file->loadShort();
+		height = file->loadShort();
+
+		pixelsLength = file->loadShort();
+		maskLength = file->loadShort();
+
+		// Sprites can be either masked or not masked.
+		if (pixelsLength != 0xFFFF) {
+
+			// Masked
+			width <<= 2;
+
+			pos = file->tell() + (pixelsLength << 2) + maskLength;
+
+			// Read scrambled, masked pixel data
+			pixels = file->loadPixels(width * height, 0);
+			spriteSet[count].setPixels(pixels, width, height, 0);
+
+			delete[] pixels;
+
+			file->seek(pos, true);
+
+		} else if (width) {
+
+			// Not masked
+
+			// Read pixel data
+			pixels = file->loadBlock(width * height);
+			spriteSet[count].setPixels(pixels, width, height, 0);
+
+			delete[] pixels;
+
+		} else {
+
+			// Zero-length sprite
+
+			// Create blank sprite
+			spriteSet[count].clearPixels();
+
+		}
+
+	}
+
+	delete file;
+
+	return E_NONE;
+
+}
 
 
 int Bonus::loadTiles (char *fileName) {
@@ -128,6 +199,9 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 		throw e;
 
 	}
+
+	// Load sprites
+	loadSprites();
 
 
 	// Load tileset
@@ -238,8 +312,9 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	paletteEffects = new RotatePaletteEffect(240, 16, F32, paletteEffects);
 
 
-	// Adjust fontsFont to use bonus level palette
+	// Adjust fonts to use bonus level palette
 	fontsFont->mapPalette(0, 32, 15, -16);
+	panelBigFont->mapPalette(0, 32, 15, -16);
 
 
 	return;
@@ -249,17 +324,9 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 Bonus::~Bonus () {
 
-	// Free the palette effects
-	if (paletteEffects) {
-
-		delete paletteEffects;
-		paletteEffects = NULL;
-
-	}
-
-	SDL_FreeSurface(tileSet);
-
+	// Restore font palettes
 	fontsFont->restorePalette();
+	panelBigFont->restorePalette();
 
 	return;
 
@@ -371,17 +438,18 @@ int Bonus::step () {
 
 void Bonus::draw () {
 
+	unsigned char* row;
+	Sprite *sprite;
 	SDL_Rect dst;
 	fixed playerX, playerY, playerSin, playerCos;
-	fixed distance, opposite, adjacent;
+	fixed distance, opposite, adjacent, nX;
 	int levelX, levelY;
-	int spriteW, spriteH;
 	int x, y;
 
 
 	// Draw the background
 
-	for (x = -(localPlayer->getDirection() & 1023); x < canvasW; x += background->w) {
+	for (x = -(direction & 1023); x < canvasW; x += background->w) {
 
 		dst.x = x;
 		dst.y = (canvasH >> 1) - 4;
@@ -400,28 +468,29 @@ void Bonus::draw () {
 
 	playerX = localPlayer->getX();
 	playerY = localPlayer->getY();
-	playerSin = fixed(1024.0f * sinf(PI * float(direction) / 512.0f));
-	playerCos = fixed(1024.0f * cosf(PI * float(direction) / 512.0f));
+	playerSin = fSin(direction);
+	playerCos = fCos(direction);
 
 	if (SDL_MUSTLOCK(canvas)) SDL_LockSurface(canvas);
 
 	for (y = 1; y <= (canvasH >> 1) - 15; y++) {
 
-		distance = fixed(1024.0f * tanf((float(y) / float(canvasH >> 1)) + ((PI / 2.0f) - 1.0f)) * 20.0f);
+		distance = fTan((y * 512 / ((canvasH * 3) >> 1)) + 93) * 20;
 		opposite = MUL(distance, playerSin);
 		adjacent = MUL(distance, playerCos);
 
+		row = ((unsigned char *)(canvas->pixels)) + (canvas->pitch * (canvasH - y));
+
 		for (x = 0; x < canvasW; x++) {
 
-			fixed nX = ITOF(x - (canvasW >> 1)) / canvasW;
+			nX = (ITOF(x) / canvasW) - FH;
 
 			levelX = FTOI(playerX + opposite + MUL(nX, adjacent));
 			levelY = FTOI(playerY - adjacent + MUL(nX, opposite));
 
-			((unsigned char *)(canvas->pixels))[(canvas->pitch * (canvasH - y)) + x] =
-				((unsigned char *)(tileSet->pixels))
-					[(grid[ITOT(levelY) & 255][ITOT(levelX) & 255].tile * 1024) +
-						((levelY & 31) * tileSet->pitch) + (levelX & 31)];
+			row[x] = ((unsigned char *)(tileSet->pixels))
+				[(grid[ITOT(levelY) & 255][ITOT(levelX) & 255].tile << 10) +
+					((levelY & 31) * tileSet->pitch) + (levelX & 31)];
 
 		}
 
@@ -430,63 +499,66 @@ void Bonus::draw () {
 	if (SDL_MUSTLOCK(canvas)) SDL_UnlockSurface(canvas);
 
 
-	// Draw the events
+	// Draw nearby events
 
-	for (y = -7; y < 8; y++) {
+	for (y = -6; y < 6; y++) {
 
-		fixed sY = TTOF(y) + F16 - (playerY & 32767);
+		fixed sY = TTOF(((direction - FQ) & 512)? y: -y) + F16 - (playerY & 32767);
 
-		for (x = -7; x < 8; x++) {
+		for (x = -6; x < 6; x++) {
 
-			fixed sX = TTOF(x) + F16 - (playerX & 32767);
+			fixed sX = TTOF((direction & 512)? x: -x) + F16 - (playerX & 32767);
 
 			fixed divisor = MUL(sX, playerSin) - MUL(sY, playerCos);
 
 			if (FTOI(divisor) > 0) {
 
-				spriteW = 1000 / FTOI(divisor);
-				spriteH = 1000 / FTOI(divisor);
-
-				fixed nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
-
-				dst.x = FTOI(nX * canvasW) + ((canvasW - spriteW) >> 1);
-				dst.y = (canvasH - spriteH) >> 1;
-
-				switch (grid[(y + FTOT(playerY)) & 255][(x + FTOT(playerX)) & 255].event) {
+				switch (grid[((((direction - FQ) & 512)? y: -y) + FTOT(playerY)) & 255][(((direction & 512)? x: -x) + FTOT(playerX)) & 255].event) {
 
 					case 0: // No event
+
+						sprite = NULL;
 
 						break;
 
 					case 1: // Extra time
 
-						drawRect(dst.x, dst.y, spriteW, spriteH, 60);
+						sprite = spriteSet + 46;
 
 						break;
 
 					case 2: // Gem
 
-						drawRect(dst.x, dst.y, spriteW, spriteH, 67);
+						sprite = spriteSet + 47;
 
 						break;
 
 					case 3: // Hand
 
-						drawRect(dst.x, dst.y, spriteW, spriteH, 15);
+						sprite = spriteSet + 48;
 
 						break;
 
 					case 4: // Exit
 
-						drawRect(dst.x, dst.y, spriteW, spriteH, 45);
+						sprite = spriteSet + 49;
 
 						break;
 
 					default:
 
-						drawRect(dst.x, dst.y, spriteW, spriteH, 0);
+						sprite = spriteSet + 14;
 
 						break;
+
+				}
+
+				if (sprite) {
+
+					nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
+					dst.x = FTOI(nX * canvasW) + ((canvasW - (ITOF(sprite->getWidth() << 5) / divisor)) >> 1);
+					dst.y = (canvasH - (ITOF(sprite->getHeight() << 5) / divisor)) >> 1;
+					sprite->drawScaled(dst.x, dst.y, DIV(F32, divisor));
 
 				}
 
@@ -498,6 +570,7 @@ void Bonus::draw () {
 
 
 	// Show gem count
+	spriteSet[47].draw(0, 0);
 	fontsFont->showString("x", 15, 0);
 	fontsFont->showNumber(localPlayer->getItems(), 64, 0);
 	fontsFont->showNumber(items, 117, 0);

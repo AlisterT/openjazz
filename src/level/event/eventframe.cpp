@@ -35,7 +35,7 @@
 #include "io/sound.h"
 #include "player/player.h"
 
-#include <math.h>
+#include <stdlib.h>
 
 
 signed char* Event::prepareStep (unsigned int ticks, int msps) {
@@ -86,8 +86,8 @@ Event* Event::step (unsigned int ticks, int msps) {
 	fixed width, height;
 	signed char* set;
 	int count;
-	fixed offset;
-	float angle;
+	int offset;
+	fixed angle;
 
 
 	set = prepareStep(ticks, msps);
@@ -305,11 +305,11 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Rotate
 
-			offset = ITOF(set[E_BRIDGELENGTH] * set[E_CHAINLENGTH]);
-			angle = set[E_MAGNITUDE] * ticks / 2048.0f;
+			offset = set[E_BRIDGELENGTH] * set[E_CHAINLENGTH];
+			angle = set[E_MAGNITUDE] * ticks / 13;
 
-			dx = TTOF(gridX) + (int)(sin(angle) * offset) - x;
-			dy = TTOF(gridY) + (int)((cos(angle) + 1.0f) * offset) - y;
+			dx = TTOF(gridX) + (fSin(angle) * offset) - x;
+			dy = TTOF(gridY) + ((fCos(angle) + F1) * offset) - y;
 			dx = ((dx << 10) / msps) * set[E_MOVEMENTSP];
 			dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
 
@@ -319,12 +319,11 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Swing
 
-			offset = ITOF(set[E_BRIDGELENGTH] * set[E_CHAINLENGTH]);
-			angle = (set[E_CHAINANGLE] * 3.141592f / 128.0f) +
-				(set[E_MAGNITUDE] * ticks / 2048.0f);
+			offset = set[E_BRIDGELENGTH] * set[E_CHAINLENGTH];
+			angle = (set[E_CHAINANGLE] << 2) + (set[E_MAGNITUDE] * ticks / 13);
 
-			dx = TTOF(gridX) + (int)(sin(angle) * offset) - x;
-			dy = TTOF(gridY) + (int)((fabs(cos(angle)) + 1.0f) * offset) - y;
+			dx = TTOF(gridX) + (fSin(angle) * offset) - x;
+			dy = TTOF(gridY) + ((abs(fCos(angle)) + F1) * offset) - y;
 			dx = ((dx << 10) / msps) * set[E_MOVEMENTSP];
 			dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
 

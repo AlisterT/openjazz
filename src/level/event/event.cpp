@@ -40,8 +40,6 @@
 #include "io/sound.h"
 #include "player/player.h"
 
-#include <math.h>
-
 
 Event::Event () {
 

@@ -55,11 +55,16 @@ enum LevelStage {
 
 // Classes
 
+class File;
+class Sprite;
+
 class BaseLevel {
 
 	protected:
 		SDL_Surface* tileSet;
+		Sprite*      spriteSet;
 		SDL_Color    palette[256];
+		int          sprites;
 		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
 		unsigned int endTime;
 		float        smoothfps;
@@ -71,7 +76,8 @@ class BaseLevel {
 		void drawStats (int stats, unsigned char bg);
 
 	public:
-		BaseLevel     ();
+		BaseLevel  ();
+		~BaseLevel ();
 
 		void addTimer ();
 
