@@ -50,7 +50,6 @@ SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
 
 SceneFrame::~SceneFrame() {
 	delete [] frameData;
-	if (next) delete next;
 }
 
 void SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frameSize) {
@@ -94,7 +93,17 @@ SceneAnimation::~SceneAnimation ()
 	{
 	if (next) delete next;
 	
-	if(sceneFrames) delete sceneFrames;
+	if(sceneFrames) {
+		SceneFrame* frame = sceneFrames;
+		SceneFrame* nextFrame = NULL;
+		while(frame)
+			{
+			nextFrame = frame->next;
+			delete frame;
+			frame = NULL;
+			frame = nextFrame;
+			}
+		}
 	
 	if (background) SDL_FreeSurface(background);
 	}
@@ -235,6 +244,7 @@ Scene::~Scene () {
 
 	if (images) delete images;
 	if (palettes) delete palettes;
+	if (animations) delete animations;
 
 }
 
