@@ -312,8 +312,7 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	paletteEffects = new RotatePaletteEffect(240, 16, F32, paletteEffects);
 
 
-	// Adjust fonts to use bonus level palette
-	fontsFont->mapPalette(0, 32, 15, -16);
+	// Adjust panelBigFont to use bonus level palette
 	panelBigFont->mapPalette(0, 32, 15, -16);
 
 
@@ -325,7 +324,6 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 Bonus::~Bonus () {
 
 	// Restore font palettes
-	fontsFont->restorePalette();
 	panelBigFont->restorePalette();
 
 	return;
@@ -570,17 +568,20 @@ void Bonus::draw () {
 
 
 	// Show gem count
-	spriteSet[47].draw(0, 0);
-	fontsFont->showString("x", 15, 0);
-	fontsFont->showNumber(localPlayer->getItems(), 64, 0);
-	fontsFont->showNumber(items, 117, 0);
+	bonusFont->showString("*", 0, 0);
+	bonusFont->showNumber(localPlayer->getItems() / 10, 50, 0);
+	bonusFont->showNumber(localPlayer->getItems() % 10, 68, 0);
+	bonusFont->showString("/", 65, 0);
+	bonusFont->showNumber(items, 124, 0);
 
 
 	// Show time remaining
 	if (endTime > ticks) x = (endTime - ticks) / 1000;
 	else x = 0;
-	fontsFont->showNumber(x / 60, 242, 0);
-	fontsFont->showNumber(x % 60, 286, 0);
+	bonusFont->showNumber(x / 60, 250, 0);
+	bonusFont->showString(":", 247, 0);
+	bonusFont->showNumber((x / 10) % 6, 274, 0);
+	bonusFont->showNumber(x % 10, 291, 0);
 
 
 	return;
@@ -720,7 +721,7 @@ int Bonus::play () {
 
 		// If paused, draw "PAUSE"
 		if (pmessage && !pmenu)
-			fontsFont->showString("pause", (canvasW >> 1) - 44, 32);
+			bonusFont->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
 		drawStats(stats, 0);

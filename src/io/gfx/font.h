@@ -44,7 +44,7 @@ class Font {
 	public:
 		Font                     (const char *fileName);
 		Font                     (unsigned char *pixels, bool big);
-		Font                     ();
+		Font                     (bool bonus);
 		~Font                    ();
 
 		int  showString          (const char *s, int x, int y);
@@ -69,6 +69,7 @@ EXTERN Font *fontmn2;        /* Taken from .0FN file name */
 EXTERN Font *panelBigFont;   /* Found in PANEL.000 */
 EXTERN Font *panelSmallFont; /* Found in PANEL.000 */
 EXTERN Font *fontsFont;      /* Found in FONTS.000 */
+EXTERN Font *bonusFont;      /* Found in BONUS.000 */
 
 #endif
 

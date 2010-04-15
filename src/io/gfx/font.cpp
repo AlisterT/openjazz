@@ -184,12 +184,12 @@ Font::Font (unsigned char* pixels, bool big) {
 		map[count++] = 37;
 		map[count++] = 39;
 		for (; count < 48; count++) map[count] = 0;
-		for (; count < 58; count++) map[count] = count - 47;
+		for (; count < 58; count++) map[count] = count - 47; // Numbers
 		map[count++] = 38;
 		for (; count < 65; count++) map[count] = 0;
-		for (; count < 91; count++) map[count] = count - 54;
+		for (; count < 91; count++) map[count] = count - 54; // Upper-case letters
 		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 86;
+		for (; count < 123; count++) map[count] = count - 86; // Lower-case letters
 		for (; count < 128; count++) map[count] = 0;
 
 	} else {
@@ -198,7 +198,7 @@ Font::Font (unsigned char* pixels, bool big) {
 		// Use :; to represent the infinity symbol
 
 		for (count = 0; count < 48; count++) map[count] = 0;
-		for (; count < 60; count++) map[count] = count - 47;
+		for (; count < 60; count++) map[count] = count - 47; // Numbers and :;
 		for (; count < 128; count++) map[count] = 0;
 
 	}
@@ -208,18 +208,18 @@ Font::Font (unsigned char* pixels, bool big) {
 }
 
 
-Font::Font () {
+Font::Font (bool bonus) {
 
 	File* file;
 	unsigned char* pixels;
 	int fileSize;
 	int count, width, height;
 
-	// Load font from FONTS.000
+	// Load font from FONTS.000 or BONUS.000
 
 	try {
 
-		file = new File(F_FONTS, false);
+		file = new File(bonus? F_BONUS: F_FONTS, false);
 
 	} catch (int e) {
 
@@ -232,6 +232,25 @@ Font::Font () {
 
 	nCharacters = file->loadShort();
 
+	if (bonus) {
+
+		count = file->loadShort();
+		nCharacters -= count;
+
+		// Skip sprites
+
+		for (; count > 0; count--) {
+
+			file->seek(4, false);
+
+			width = file->loadShort();
+			if (width == 0xFFFF) width = 0;
+
+			file->seek((width << 2) + file->loadShort(), false);
+
+		}
+
+	}
 
 	// Load characters
 
@@ -245,8 +264,11 @@ Font::Font () {
 
 		}
 
-		width = file->loadShort() << 2;
+		width = file->loadShort();
 		height = file->loadShort();
+
+		if (bonus) width = (width + 3) & ~3;
+		else width <<= 2;
 
 		file->seek(4, false);
 
@@ -275,14 +297,30 @@ Font::Font () {
 
 	// Create ASCII->font map
 
-	for (count = 0; count < 37; count++) map[count] = nCharacters;
-	map[count++] = 36;
-	for (; count < 48; count++) map[count] = nCharacters;
-	for (; count < 58; count++) map[count] = count - 22;
+	count = 0;
+
+	if (bonus) {
+
+		for (; count < 42; count++) map[count] = nCharacters;
+		map[count++] = 37; // *
+		for (; count < 46; count++) map[count] = nCharacters;
+		map[count++] = 39; // .
+		map[count++] = 38; // /
+		for (; count < 59; count++) map[count] = count - 22; // Numbers and :
+
+	} else {
+
+		for (; count < 37; count++) map[count] = nCharacters;
+		map[count++] = 36; // %
+		for (; count < 48; count++) map[count] = nCharacters;
+		for (; count < 58; count++) map[count] = count - 22; // Numbers
+
+	}
+
 	for (; count < 65; count++) map[count] = nCharacters;
-	for (; count < 91; count++) map[count] = count - 65;
+	for (; count < 91; count++) map[count] = count - 65; // Upper-case letters
 	for (; count < 97; count++) map[count] = nCharacters;
-	for (; count < 123; count++) map[count] = count - 97;
+	for (; count < 123; count++) map[count] = count - 97; // Lower-case letters
 	for (; count < 128; count++) map[count] = nCharacters;
 
 	nCharacters++;
