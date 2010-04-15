@@ -29,20 +29,20 @@ pixel_t pixel_get(int x, int y, const unsigned char* pix, unsigned slice, unsign
 	if (opt_tes) {
 		if (x < 0)
 			x += dx;
-		if (x >= dx)
+		if ((unsigned int)x >= dx)
 			x -= dx;
 		if (y < 0)
 			y += dy;
-		if (y >= dy)
+		if ((unsigned int)y >= dy)
 			y -= dy;
 	} else {
 		if (x < 0)
 			x = 0;
-		if (x >= dx)
+		if ((unsigned int)x >= dx)
 			x = dx - 1;
 		if (y < 0)
 			y = 0;
-		if (y >= dy)
+		if ((unsigned int)y >= dy)
 			y = dy - 1;
 	}
 

@@ -66,7 +66,7 @@
 // Files
 #ifdef __SYMBIAN32__
 #ifdef UIQ3
-#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg""
+#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
 #else
 #define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
 #endif
@@ -221,7 +221,7 @@ EXTERN fixed  fTan                 (fixed angle);
 #ifdef VERBOSE
 #define LOG(x, y) log(x, y)
 #else
-#define LOG(x, y) x; y
+#define LOG(x, y)
 #endif
 
 #endif

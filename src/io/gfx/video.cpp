@@ -183,7 +183,7 @@ SDL_Color* Video::getPalette () {
 }
 
 
-void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned char amount) {
+void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int amount) {
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
 

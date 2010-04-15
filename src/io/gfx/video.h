@@ -76,7 +76,7 @@ class Video {
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();
-		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned char amount);
+		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
 		void       restoreSurfacePalette (SDL_Surface *surface);
 
 		int        getWidth              ();

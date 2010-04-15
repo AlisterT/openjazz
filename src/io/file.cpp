@@ -349,7 +349,7 @@ unsigned char* File::loadPixels  (int length, int key) {
 
 	unsigned char* pixels;
 	unsigned char* sorted;
-	unsigned char mask;
+	unsigned char mask = 0;
 	int count;
 
 

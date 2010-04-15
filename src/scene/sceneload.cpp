@@ -483,7 +483,7 @@ void Scene::loadScripts (File *f) {
 	    int textPosY = -1;
 
 	    int extraheight = -1;
-	    SDL_Rect textRect;
+	    SDL_Rect textRect = { 0,0,0,0 };
 	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
 

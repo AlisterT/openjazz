@@ -253,7 +253,7 @@ int Scene::play () {
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
 	SceneImage *image;
-	SceneAnimation* animation;
+	SceneAnimation* animation = NULL;
 	SceneFrame* currentFrame = NULL;
 	SceneFrame* lastFrame = NULL;
 	int	frameDelay = 0;

@@ -322,7 +322,8 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	File *file;
 	unsigned char *buffer;
-	char *string, *ext;
+	const char *ext;
+	char *string;
 	int tiles;
 	int count, x, y, type;
 
