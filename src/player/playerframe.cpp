@@ -671,8 +671,8 @@ void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
 
 
 	// Apply trajectory
-	cdx = (fSin(direction) * dx * msps) >> 20;
-	cdy = (-fCos(direction) * dx * msps) >> 20;
+	cdx = (MUL(fSin(direction), dx) * msps) >> 10;
+	cdy = (MUL(-fCos(direction), dx) * msps) >> 10;
 
 	if (!bonus->checkMask(x + cdx, y)) x += cdx;
 	if (!bonus->checkMask(x, y + cdy)) y += cdy;
