@@ -114,13 +114,6 @@ TUid COpenJazzApp::AppDllUid() const {
 	return TUid::Uid(0xA000A005);
 }
 
-float cosf(float value)
-{
-	TReal ret;
-	Math::Cos(ret, value);
-	return ret;
-}
-
 float sinf(float value)
 {
 	TReal ret;
