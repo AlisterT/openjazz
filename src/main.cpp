@@ -53,8 +53,6 @@
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
-
-extern float cosf (float);
 extern float sinf (float);
 extern float tanf (float);
 #else
