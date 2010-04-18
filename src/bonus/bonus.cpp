@@ -188,7 +188,7 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	File *file;
 	unsigned char *buffer;
 	char *string, *fileString;
-	int x, y;
+	int count, x, y;
 
 	try {
 
@@ -222,6 +222,36 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	fileString = file->loadString();
 	playMusic(fileString);
 	delete[] fileString;
+
+
+	// Load animations
+
+	file->seek(134, true);
+	buffer = file->loadBlock(BANIMS << 6);
+
+	// Create animation set based on that data
+	for (count = 0; count < BANIMS; count++) {
+
+		animSet[count].setData(buffer[(count << 6) + 6],
+			buffer[count << 6], buffer[(count << 6) + 1],
+			buffer[(count << 6) + 4], buffer[(count << 6) + 5]);
+
+		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
+
+			// Get frame
+			x = buffer[(count << 6) + 7 + y];
+			if (x > sprites) x = sprites;
+
+			// Assign sprite and vertical offset
+			animSet[count].setFrame(y, true);
+			animSet[count].setFrameData(spriteSet + x,
+				buffer[(count << 6) + 26 + y], buffer[(count << 6) + 45 + y]);
+
+		}
+
+	}
+
+	delete[] buffer;
 
 
 	// Load tiles
@@ -437,10 +467,11 @@ int Bonus::step () {
 void Bonus::draw () {
 
 	unsigned char* row;
-	Sprite *sprite;
+	Anim* anim;
+	Sprite* sprite;
 	SDL_Rect dst;
 	fixed playerX, playerY, playerSin, playerCos;
-	fixed distance, opposite, adjacent, nX;
+	fixed distance, fwdX, fwdY, nX, sideX, sideY;
 	int levelX, levelY;
 	int x, y;
 
@@ -473,18 +504,20 @@ void Bonus::draw () {
 
 	for (y = 1; y <= (canvasH >> 1) - 15; y++) {
 
-		distance = fTan((y * 512 / ((canvasH * 3) >> 1)) + 93) * 20;
-		opposite = MUL(distance, playerSin);
-		adjacent = MUL(distance, playerCos);
+		distance = DIV(ITOF(800), ITOF(92) - (ITOF(y * 84) / ((canvasH >> 1) - 16)));
+		sideX = MUL(distance, playerCos);
+		sideY = MUL(distance, playerSin);
+		fwdX = playerX + MUL(distance - F16, playerSin) - (sideX >> 1);
+		fwdY = playerY - MUL(distance - F16, playerCos) - (sideY >> 1);
 
 		row = ((unsigned char *)(canvas->pixels)) + (canvas->pitch * (canvasH - y));
 
 		for (x = 0; x < canvasW; x++) {
 
-			nX = (ITOF(x) / canvasW) - FH;
+			nX = ITOF(x) / canvasW;
 
-			levelX = FTOI(playerX + opposite + MUL(nX, adjacent));
-			levelY = FTOI(playerY - adjacent + MUL(nX, opposite));
+			levelX = FTOI(fwdX + MUL(nX, sideX));
+			levelY = FTOI(fwdY + MUL(nX, sideY));
 
 			row[x] = ((unsigned char *)(tileSet->pixels))
 				[(grid[ITOT(levelY) & 255][ITOT(levelX) & 255].tile << 10) +
@@ -507,9 +540,9 @@ void Bonus::draw () {
 
 			fixed sX = TTOF((direction & 512)? x: -x) + F16 - (playerX & 32767);
 
-			fixed divisor = MUL(sX, playerSin) - MUL(sY, playerCos);
+			fixed divisor = F16 + MUL(sX, playerSin) - MUL(sY, playerCos);
 
-			if (FTOI(divisor) > 0) {
+			if (FTOI(divisor) > 8) {
 
 				switch (grid[((((direction - FQ) & 512)? y: -y) + FTOT(playerY)) & 255][(((direction & 512)? x: -x) + FTOT(playerX)) & 255].event) {
 
@@ -565,6 +598,12 @@ void Bonus::draw () {
 		}
 
 	}
+
+
+	// Show the player
+	anim = animSet + localPlayer->getAnim();
+	anim->setFrame(ticks / 75, true);
+	anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));
 
 
 	// Show gem count
@@ -714,7 +753,7 @@ int Bonus::play () {
 
 		// Draw the graphics
 
-		if (ticks < returnTime) direction += (ticks - prevTicks) * T_BONUS_END / (returnTime - ticks);
+		if ((ticks < returnTime) && !paused) direction += (ticks - prevTicks) * T_BONUS_END / (returnTime - ticks);
 
 		draw();
 

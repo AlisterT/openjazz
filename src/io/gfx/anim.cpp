@@ -106,8 +106,8 @@ fixed Anim::getShootY () {
 
 void Anim::draw (fixed x, fixed y) {
 
-	sprites[frame]->draw(FTOI(x) + xOffsets[frame] - xOffset - FTOI(viewX),
-		FTOI(y) + yOffsets[frame] - yOffset - FTOI(viewY));
+	sprites[frame]->draw(FTOI(x) + xOffsets[frame] - xOffset,
+		FTOI(y) + yOffsets[frame] - yOffset);
 
 	return;
 

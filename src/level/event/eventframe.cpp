@@ -986,7 +986,7 @@ void Event::draw (unsigned int ticks, int change) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		anim->draw(viewX + ITOF(viewW - 44), viewY + ITOF(count + 48));
+		anim->draw(ITOF(viewW - 44), ITOF(count + 48));
 
 		if (ticks < flashTime) anim->restorePalette();
 

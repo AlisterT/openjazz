@@ -17,13 +17,13 @@ class COpenJazzApp: public CSDLApp {
 public:
 	COpenJazzApp();
    	~COpenJazzApp();
-#ifdef UIQ3	
+#ifdef UIQ3
 	/**
 	 * Returns the resource id to be used to declare the views supported by this UIQ3 app
  	 * @return TInt, resource id
    	*/
 	TInt ViewResourceId();
-#endif	
+#endif
 	/**
 	 * This has a default empty implementation.
 	 * Is called just before SDL_Main is called to allow init of system vars
@@ -97,7 +97,7 @@ void COpenJazzApp::PreInitializeAppL()
 			return;
 		}
 	}
-	
+
 #ifdef UIQ3
 	ptr.Copy(_L8("c:\\shared\\openjazz\\"));
 #else
@@ -118,13 +118,6 @@ float sinf(float value)
 {
 	TReal ret;
 	Math::Sin(ret, value);
-	return ret;
-}
-
-float tanf(float value)
-{
-	TReal ret;
-	Math::Tan(ret, value);
 	return ret;
 }
 

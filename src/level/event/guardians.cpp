@@ -154,9 +154,9 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		if (stage == 0) anim->draw(x - F64, y + F32);
-		else if (stage == 1) anim->draw(x + F32 - F8 - F4, y + F32);
-		else anim->draw(x + F8 - F64, y + F32);
+		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F32);
+		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F32);
+		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
 
 		if (ticks < flashTime) anim->restorePalette();
 
@@ -177,7 +177,7 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		anim->draw(viewX + ITOF(viewW - 44), viewY + ITOF(count + 48));
+		anim->draw(ITOF(viewW - 44), ITOF(count + 48));
 
 		if (ticks < flashTime) anim->restorePalette();
 

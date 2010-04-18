@@ -193,7 +193,6 @@ EXTERN unsigned int globalTicks;
 
 // Trigonometric function look-up tables
 EXTERN fixed sinLut[1024];
-EXTERN fixed tanLut[1024];
 
 
 // Functions in main.cpp
@@ -216,7 +215,6 @@ EXTERN void   log                  (const char *message, int number);
 EXTERN void   logError             (const char *message, const char *detail);
 EXTERN fixed  fSin                 (fixed angle);
 EXTERN fixed  fCos                 (fixed angle);
-EXTERN fixed  fTan                 (fixed angle);
 
 #ifdef VERBOSE
 #define LOG(x, y) log(x, y)

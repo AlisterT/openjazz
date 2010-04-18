@@ -37,7 +37,7 @@
 
 // Constants
 
-// Player animations
+// Level animations
 #define PA_LWALK    0
 #define PA_RWALK    1
 #define PA_LJUMP    2
@@ -76,6 +76,15 @@
 #define PA_RHALT    35
 #define PA_RSPRING  36
 #define PA_LSPRING  37 /* Surely these are the wrong way round? */
+
+// Bonus level animations
+#define PA_WALK  0
+#define PA_LEFT  1
+#define PA_RIGHT 2
+#define PA_USER  3
+#define PA_JUMP  4
+#define PA_CRASH 5
+#define PA_OTHER 6
 
 // Player reaction times
 #define PRT_HURT       1000
@@ -234,7 +243,7 @@ class Player : public Movable {
 		void            setSpeed     (fixed newDx, fixed newDy);
 		bool            getFacing    ();
 		fixed           getDirection ();
-		Anim*           getAnim      ();
+		unsigned char   getAnim      ();
 		unsigned char   getTeam      ();
 		void            send         (unsigned char* data);
 		void            receive      (unsigned char* buffer);

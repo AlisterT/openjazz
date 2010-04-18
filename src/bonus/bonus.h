@@ -25,14 +25,17 @@
 
 #include "baselevel.h"
 
+#include "io/gfx/anim.h"
+
 #include <SDL/SDL.h>
 
 
 // Constants
 
 // General
-#define BLW 256 /* Bonus level width */
-#define BLH 256 /* Bonus level height */
+#define BLW    256 /* Bonus level width */
+#define BLH    256 /* Bonus level height */
+#define BANIMS  32
 
 #define T_BONUS_END 2000
 
@@ -53,6 +56,7 @@ class Bonus : public BaseLevel {
 
 	private:
 		SDL_Surface*     background;
+		Anim             animSet[BANIMS];
 		BonusGridElement grid[BLH][BLW];
 		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks
 		fixed            direction;

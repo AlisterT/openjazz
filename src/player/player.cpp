@@ -78,8 +78,10 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 	// Assign name
 	name = createString(playerName);
 
+	// Create default animation mappings
+	for (count = 0; count < PANIMS; count++) anims[count] = count & 31;
+
 	// Assign initial values
-	memset(anims, 0, PANIMS);
 	score = 0;
 	lives = 3;
 	ammoType = -1;
@@ -721,9 +723,9 @@ fixed Player::getDirection () {
 }
 
 
-Anim * Player::getAnim () {
+unsigned char Player::getAnim () {
 
-	return level->getAnim(anims[animType]);
+	return anims[animType];
 
 }
 

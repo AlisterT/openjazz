@@ -200,10 +200,3 @@ fixed fCos (fixed angle) {
 
 }
 
-
-fixed fTan (fixed angle) {
-
-	return tanLut[angle & 1023];
-
-}
-

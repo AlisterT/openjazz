@@ -634,7 +634,7 @@ void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
 		if (dx < 0) dx += PRA_REVERSE * msps;
 		else if (dx < PRS_RUN) dx += PRA_RUN * msps;
 
-		facing = true;
+		animType = PA_WALK;
 
 	} else if (pcontrols[C_DOWN]) {
 
@@ -643,7 +643,7 @@ void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
 		if (dx > 0) dx -= PRA_REVERSE * msps;
 		else if (dx > PRS_REVERSE) dx -= PRA_RUN * msps;
 
-		facing = false;
+		animType = PA_WALK;
 
 	} else {
 
@@ -663,11 +663,23 @@ void Player::bonusStep (unsigned int ticks, int msps, Bonus* bonus) {
 
 		}
 
+		animType = PA_OTHER;
+
 	}
 
-	if (pcontrols[C_LEFT]) direction -= msps >> 2;
+	if (pcontrols[C_LEFT]) {
 
-	if (pcontrols[C_RIGHT]) direction += msps >> 2;
+		direction -= msps >> 2;
+		animType = PA_LEFT;
+
+	}
+
+	if (pcontrols[C_RIGHT]) {
+
+		direction += msps >> 2;
+		animType = PA_RIGHT;
+
+	}
 
 
 	// Apply trajectory
@@ -751,7 +763,7 @@ void Player::draw (unsigned int ticks, int change) {
 
 	// Choose sprite
 
-	an = getAnim();
+	an = level->getAnim(getAnim());
 	an->setFrame(frame, reaction != PR_KILLED);
 
 

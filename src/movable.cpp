@@ -27,17 +27,19 @@
 
 #include "movable.h"
 
+#include "level/level.h"
+
 
 fixed Movable::getDrawX (int change) {
 
-	return x + ((dx * change) >> 10);
+	return x + ((dx * change) >> 10) - viewX;
 
 }
 
 
 fixed Movable::getDrawY (int change) {
 
-	return y + ((dy * change) >> 10);
+	return y + ((dy * change) >> 10) - viewY;
 
 }
 

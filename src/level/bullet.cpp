@@ -79,7 +79,7 @@ Bullet::Bullet (Player* sourcePlayer, bool lower, unsigned int ticks) {
 
 	}
 
-	anim = source->getAnim();
+	anim = level->getAnim(source->getAnim());
 	x = source->getX() + anim->getShootX() + PXO_MID - F4;
 	y = source->getY() + anim->getShootY() - F4;
 
@@ -306,9 +306,7 @@ void Bullet::draw (int change) {
 	if (next) next->draw(change);
 
 	// Show the bullet
-	sprite->draw(
-		FTOI(getDrawX(change)) - FTOI(viewX),
-		FTOI(getDrawY(change)) - FTOI(viewY));
+	sprite->draw(FTOI(getDrawX(change)), FTOI(getDrawY(change)));
 
 	return;
 

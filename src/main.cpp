@@ -54,7 +54,6 @@
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
 extern float sinf (float);
-extern float tanf (float);
 #else
 	#include <math.h>
 #endif
@@ -457,12 +456,8 @@ int loadMain (int argc, char *argv[]) {
 
 
 	// Fill trigonomatric function look-up tables
-	for (count = 0; count < 1024; count++) {
-
+	for (count = 0; count < 1024; count++)
 		sinLut[count] = fixed(sinf(2 * PI * float(count) / 1024.0f) * 1024.0f);
-		tanLut[count] = fixed(tanf(2 * PI * float(count) / 1024.0f) * 1024.0f);
-
-	}
 
 
 	// Initiate networking

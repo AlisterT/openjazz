@@ -151,11 +151,11 @@ void Bridge::draw (unsigned int ticks, int change) {
 		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
 
 			if (count < leftDipX)
-				anim->draw(x + count, y + (count * leftDipY / leftDipX));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + (count * leftDipY / leftDipX));
 			else if (count < dy)
-				anim->draw(x + count, y + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
 			else
-				anim->draw(x + count, y + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
 
 		}
 
@@ -172,9 +172,9 @@ void Bridge::draw (unsigned int ticks, int change) {
 		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
 
 			if (count < leftDipY)
-				anim->draw(x + count, y + (count * rightDipY / leftDipY));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + (count * rightDipY / leftDipY));
 			else
-				anim->draw(x + count, y + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
 
 		}
 
