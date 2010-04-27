@@ -325,11 +325,13 @@ void Level::draw () {
 	drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 24);
 	drawRect(0, FTOI(waterLevel - viewY) + 10, canvasW, 1, 24);
 
-
-	SDL_SetClipRect(canvas, NULL);
+	// Show active guardian's energy bar
+	if (events) events->drawEnergy(ticks);
 
 
 	// Show panel
+
+	SDL_SetClipRect(canvas, NULL);
 
 	// Change the ammo type display on the panel
 	dst.x = 250;

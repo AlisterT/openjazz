@@ -114,6 +114,7 @@ class Level : public BaseLevel {
 		void loadSprite  (File* file, Sprite* sprite);
 		int  loadSprites (char* fileName);
 		int  loadTiles   (char* fileName);
+		int  playBonus   ();
 
 	protected:
 		int  load (char* fileName, unsigned char diff, bool checkpoint);
@@ -149,7 +150,6 @@ class Level : public BaseLevel {
 		void          playSound     (int sound);
 		void          setStage      (LevelStage stage);
 		LevelStage    getStage      ();
-		Scene*        createScene   ();
 		void          receive       (unsigned char* buffer);
 		virtual int   play          ();
 

@@ -72,6 +72,7 @@ class BaseLevel {
 		bool         paused;
 		LevelStage   stage;
 
+		int  playScene (char* file);
 		void timeCalcs ();
 		void drawStats (int stats, unsigned char bg);
 

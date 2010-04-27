@@ -33,7 +33,6 @@
 #include "io/sound.h"
 #include "level/level.h"
 #include "player/player.h"
-#include "scene/scene.h"
 
 #include <string.h>
 
@@ -41,7 +40,6 @@
 Game::Game () {
 
 	levelFile = NULL;
-	bonusFile = NULL;
 
 	players = NULL;
 
@@ -52,17 +50,7 @@ Game::Game () {
 
 Game::Game (char *firstLevel, int gameDifficulty) {
 
-	if (!strncmp(firstLevel, F_BONUSMAP, 8)) {
-
-		levelFile = NULL;
-		bonusFile = createString(firstLevel);
-
-	} else {
-
-		levelFile = createString(firstLevel);
-		bonusFile = NULL;
-
-	}
+	levelFile = createString(firstLevel);
 
 	difficulty = gameDifficulty;
 
@@ -81,7 +69,6 @@ Game::Game (char *firstLevel, int gameDifficulty) {
 Game::~Game () {
 
 	if (levelFile) delete[] levelFile;
-	if (bonusFile) delete[] levelFile;
 
 	if (players) delete[] players;
 	localPlayer = NULL;
@@ -103,38 +90,59 @@ int Game::setLevel (char *fileName) {
 }
 
 
-int Game::setBonus (int ext) {
-
-	if (bonusFile) delete[] bonusFile;
-
-	if (ext >= 0) bonusFile = createFileName(F_BONUSMAP, ext);
-	else bonusFile = NULL;
-
-	return E_NONE;
-
-}
-
-
 int Game::play () {
 
-	Bonus *bonus;
-	Scene *scene;
+	Bonus* bonus;
+	char* bonusFile;
 	bool checkpoint;
-	int levelRet, bonusRet;
+	int ret;
 
 	checkpoint = false;
 
 	// Play the level(s)
 	while (true) {
 
+		if (!levelFile) return E_NONE;
+
 		sendTime = checkTime = 0;
 
 
-		level = NULL;
+		// Load and play the level
 
-		if (levelFile) {
+		if (!strncmp(levelFile, F_BONUSMAP, 8)) {
 
-			// Load and play the level
+			try {
+
+				bonus = new Bonus(levelFile, difficulty);
+
+			} catch (int e) {
+
+				return e;
+
+			}
+
+			ret = bonus->play();
+
+			if (ret <= 0) {
+
+				delete bonus;
+
+				if (ret == E_NONE) playMusic("menusng.psm");
+
+				return ret;
+
+			} else if (ret == WON) {
+
+				// Go to next level
+				bonusFile = createFileName(F_BONUSMAP, (levelFile[10] * 10) + levelFile[11] - 527);
+				setLevel(bonusFile);
+				delete[] bonusFile;
+
+			}
+
+			delete bonus;
+
+		} else {
 
 			try {
 
@@ -146,149 +154,38 @@ int Game::play () {
 
 			}
 
-			levelRet = level->play();
+			ret = level->play();
 
-			if (levelRet < 0) {
-
-				delete level;
-
-				return levelRet;
-
-			} else if (levelRet == E_NONE) {
+			if (ret <= 0) {
 
 				delete level;
 
-				playMusic("menusng.psm");
+				if (ret == E_NONE) playMusic("menusng.psm");
 
-				return E_NONE;
+				return ret;
 
-			}
+			} else if (ret == WON) {
 
-		} else levelRet = WON;
+				// Won the level
 
+				// Do not use old level's checkpoint coordinates
+				checkpoint = false;
 
-		if (bonusFile && (levelRet == WON)) {
+			} else {
 
-			// Load and play the bonus level
+				// Lost the level
 
-			try {
+				if (!localPlayer->getLives()) return E_NONE;
 
-				bonus = new Bonus(bonusFile, difficulty);
+				// Use checkpoint coordinates
+				checkpoint = true;
 
-			} catch (int e) {
-
-				return e;
-
-			}
-
-			if (levelFile) {
-
-				delete[] bonusFile;
-				bonusFile = NULL;
 
 			}
 
-			bonusRet = bonus->play();
-
-			delete bonus;
-
-			if (bonusRet == E_QUIT) {
-
-				if (level) delete level;
-
-				return E_QUIT;
-
-			} else if (bonusRet == E_NONE) {
-
-				if (level) delete level;
-
-				playMusic("menusng.psm");
-
-				return E_NONE;
-
-			} else if (bonusRet == WON) {
-
-				try {
-
-					scene = new Scene(F_BONUS_0SC);
-
-				} catch (int e) {
-
-					scene = NULL;
-
-				}
-
-				if (scene) {
-
-					if (scene->play() == E_QUIT) {
-
-						delete scene;
-
-						if (level) delete level;
-
-						return E_QUIT;
-
-					}
-
-					delete scene;
-
-				}
-
-				// If part of a bonus-only game, go to next level
-				if (!level) setBonus((bonusFile[10] * 10) + bonusFile[11] - 527);
-
-			}
+			delete level;
 
 		}
-
-
-		if (!level) continue;
-
-
-		if (levelRet == WON) {
-
-			// Won the level
-
-			// If there is no next level, load and play the cutscene
-			if (!levelFile) {
-
-				scene = level->createScene();
-
-				delete level;
-
-				if (scene) {
-
-					if (scene->play() == E_QUIT) {
-
-						delete scene;
-
-						return E_QUIT;
-
-					}
-
-					delete scene;
-
-				}
-
-				return E_NONE;
-
-			}
-
-			// Do not use old level's checkpoint coordinates
-			checkpoint = false;
-
-		} else {
-
-			// Lost the level
-
-			if (!localPlayer->getLives()) return E_NONE;
-
-			// Use checkpoint coordinates
-			checkpoint = true;
-
-		}
-
-		delete level;
 
 	}
 

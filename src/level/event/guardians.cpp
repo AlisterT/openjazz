@@ -131,7 +131,6 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
 	signed char* set;
-	int count;
 
 
 	if (next) next->draw(ticks, change);
@@ -159,32 +158,6 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
 
 		if (ticks < flashTime) anim->restorePalette();
-
-	}
-
-
-	if (set[E_HITSTOKILL]) {
-
-		// Draw boss energy bar
-
-		count = level->getEventHits(gridX, gridY) * 100 / set[E_HITSTOKILL];
-
-
-		// Devan head
-
-		anim = level->getMiscAnim(1);
-		anim->setFrame(0, true);
-
-		if (ticks < flashTime) anim->flashPalette(0);
-
-		anim->draw(ITOF(viewW - 44), ITOF(count + 48));
-
-		if (ticks < flashTime) anim->restorePalette();
-
-
-		// Bar
-		drawRect(viewW - 40, count + 40, 12, 100 - count,
-			(ticks < flashTime)? 0: 32);
 
 	}
 

@@ -248,9 +248,13 @@ int Menu::newGameEpisode (GameModeType mode) {
 
 	}
 
-	check = createFileName(F_BONUSMAP, 0);
-	exists[10] = fileExists(check);
-	delete[] check;
+	if (mode == M_SINGLE) {
+
+		check = createFileName(F_BONUSMAP, 0);
+		exists[10] = fileExists(check);
+		delete[] check;
+
+	} else exists[10] = false;
 
 	exists[11] = true;
 

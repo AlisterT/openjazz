@@ -86,7 +86,6 @@ class Game {
 
 	protected:
 		char          *levelFile;
-		char          *bonusFile;
 		int            difficulty;
 		unsigned int   sendTime, checkTime;
 		unsigned char  checkX, checkY;
@@ -98,7 +97,6 @@ class Game {
 		virtual ~Game              ();
 
 		virtual int  setLevel      (char *fileName);
-		int          setBonus      (int ext);
 		int          play          ();
 		void         view          (int change);
 		virtual void send          (unsigned char *buffer);

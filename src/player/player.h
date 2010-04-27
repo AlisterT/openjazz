@@ -207,6 +207,7 @@ class Player : public Movable {
 		unsigned int    warpTime;
 		int             enemies, items;
 		unsigned char   team;
+		bool            gem;
 
 		void addAmmo (int type, int amount);
 
@@ -245,6 +246,7 @@ class Player : public Movable {
 		fixed           getDirection ();
 		unsigned char   getAnim      ();
 		unsigned char   getTeam      ();
+		bool            hasGem       ();
 		void            send         (unsigned char* data);
 		void            receive      (unsigned char* buffer);
 		void            control      (unsigned int ticks, int msps);

@@ -106,6 +106,7 @@ class Event : public Movable {
 		signed char    getProperty (unsigned char property);
 		virtual Event* step        (unsigned int ticks, int msps);
 		virtual void   draw        (unsigned int ticks, int change);
+		void           drawEnergy  (unsigned int ticks);
 
 };
 

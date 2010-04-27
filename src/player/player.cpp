@@ -78,9 +78,6 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 	// Assign name
 	name = createString(playerName);
 
-	// Create default animation mappings
-	for (count = 0; count < PANIMS; count++) anims[count] = count & 31;
-
 	// Assign initial values
 	score = 0;
 	lives = 3;
@@ -224,6 +221,7 @@ void Player::reset () {
 	dx = 0;
 	dy = 0;
 	enemies = items = 0;
+	gem = false;
 
 	return;
 
@@ -406,7 +404,7 @@ bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int t
 
 		case 37: // Diamond
 
-			if (game) game->setBonus(0);
+			gem = true;
 
 			// Yellow flash
 			paletteEffects = new FlashPaletteEffect(255, 255, 0, 320, paletteEffects);
@@ -733,6 +731,13 @@ unsigned char Player::getAnim () {
 unsigned char Player::getTeam () {
 
 	return team;
+
+}
+
+
+bool Player::hasGem () {
+
+	return gem;
 
 }
 

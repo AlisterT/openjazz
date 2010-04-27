@@ -40,6 +40,7 @@
 #include "event/event.h"
 #include "level.h"
 
+#include "bonus/bonus.h"
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
@@ -415,17 +416,38 @@ LevelStage Level::getStage () {
 }
 
 
-Scene* Level::createScene () {
+int Level::playBonus () {
+
+	Bonus *bonus;
+	char *bonusFile;
+	int ret;
+
+	if (!localPlayer->hasGem()) return E_NONE;
+
+	delete paletteEffects;
+	paletteEffects = NULL;
+
+	bonusFile = createFileName(F_BONUSMAP, 0);
 
 	try {
 
-		return new Scene(sceneFile);
+		bonus = new Bonus(bonusFile, difficulty);
 
 	} catch (int e) {
 
-		return NULL;
+		return e;
 
 	}
+
+	delete[] bonusFile;
+
+	ret = bonus->play();
+
+	delete bonus;
+
+	if (ret == E_NONE) playMusic("menusng.psm");
+
+	return ret;
 
 }
 
@@ -591,8 +613,20 @@ int Level::play () {
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
-			if (nextLevelNum == 99) count = game->setLevel(NULL);
-			else {
+			if (!gameMode) {
+
+				// If the gem has been collected, play the bonus level
+				if (playBonus() == E_QUIT) return E_QUIT;
+
+			}
+
+			if (nextLevelNum == 99) {
+
+				if (playScene(sceneFile) == E_QUIT) return E_QUIT;
+
+				count = game->setLevel(NULL);
+
+			} else {
 
 				string = createFileName(F_LEVEL, nextLevelNum, nextWorldNum);
 				count = game->setLevel(string);

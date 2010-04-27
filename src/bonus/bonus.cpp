@@ -254,6 +254,17 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	delete[] buffer;
 
 
+	// Generate player's animation set references
+
+	string = new char[PANIMS];
+
+	for (count = 0; count < PANIMS; count++) string[count] = count & 31;
+
+	for (count = 0; count < nPlayers; count++) players[count].setAnims(string);
+
+	delete[] string;
+
+
 	// Load tiles
 
 	file->seek(2694, true);
@@ -726,7 +737,13 @@ int Bonus::play () {
 		// Check if level has been won
 		if (returnTime && (ticks > returnTime)) {
 
-			if (localPlayer->getItems() >= items) return WON;
+			if (localPlayer->getItems() >= items) {
+
+				if (playScene(F_BONUS_0SC) == E_QUIT) return E_QUIT;
+
+				return WON;
+
+			}
 
 			return LOST;
 

@@ -919,7 +919,6 @@ void Event::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
 	signed char* set;
-	int count;
 
 
 	if (next) next->draw(ticks, change);
@@ -972,11 +971,30 @@ void Event::draw (unsigned int ticks, int change) {
 
 	}
 
-	if ((set[E_MODIFIER] == 8) && set[E_HITSTOKILL]) {
+
+	return;
+
+}
+
+
+void Event::drawEnergy (unsigned int ticks) {
+
+	Anim* anim;
+	signed char* set;
+	int hits;
+
+	// Get the event properties
+	set = level->getEvent(gridX, gridY);
+
+	if (set[E_MODIFIER] != 8) {
+
+		if (next) next->drawEnergy(ticks);
+
+	} else if (set[E_HITSTOKILL]) {
 
 		// Draw boss energy bar
 
-		count = level->getEventHits(gridX, gridY) * 100 / set[E_HITSTOKILL];
+		hits = level->getEventHits(gridX, gridY) * 100 / set[E_HITSTOKILL];
 
 
 		// Devan head
@@ -986,17 +1004,15 @@ void Event::draw (unsigned int ticks, int change) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		anim->draw(ITOF(viewW - 44), ITOF(count + 48));
+		anim->draw(ITOF(viewW - 44), ITOF(hits + 48));
 
 		if (ticks < flashTime) anim->restorePalette();
 
 
 		// Bar
-		drawRect(viewW - 40, count + 40, 12, 100 - count,
-			(ticks < flashTime)? 0: 32);
+		drawRect(viewW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
 
 	}
-
 
 	return;
 

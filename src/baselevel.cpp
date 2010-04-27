@@ -33,6 +33,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "player/player.h"
+#include "scene/scene.h"
 #include "baselevel.h"
 
 
@@ -68,6 +69,33 @@ BaseLevel::~BaseLevel () {
 	delete[] spriteSet;
 
 	return;
+
+}
+
+
+int BaseLevel::playScene (char* file) {
+
+	Scene* scene;
+	int ret;
+
+	delete paletteEffects;
+	paletteEffects = NULL;
+
+	try {
+
+		scene = new Scene(file);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	ret = scene->play();
+
+	delete scene;
+
+	return ret;
 
 }
 
