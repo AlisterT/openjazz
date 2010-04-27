@@ -76,63 +76,34 @@
 #define LOGO_FILE   "openjazz.000"
 #define LEVEL_FILE  "openjazz.tmp"
 
-#ifdef UPPERCASE_FILENAMES
-	#define F_FONTS        "FONTS.000"
-	#define F_MAINCHAR     "MAINCHAR.000"
-	#define F_MENU         "MENU.000"
-	#define F_PANEL        "PANEL.000"
-	#define F_SOUNDS       "SOUNDS.000"
-	#define F_BONUS        "BONUS.000"
+#define F_FONTS        "FONTS.000"
+#define F_MAINCHAR     "MAINCHAR.000"
+#define F_MENU         "MENU.000"
+#define F_PANEL        "PANEL.000"
+#define F_SOUNDS       "SOUNDS.000"
+#define F_BONUS        "BONUS.000"
 
-	#define F_BONUS_0SC    "BONUS.0SC"
-	#define F_END_0SC      "END.0SC"
-	#define F_INSTRUCT_0SC "INSTRUCT.0SC"
-	#define F_ORDER_0SC    "ORDER.0SC"
-	#define F_STARTUP_0SC  "STARTUP.0SC"
+#define F_BONUS_0SC    "BONUS.0SC"
+#define F_END_0SC      "END.0SC"
+#define F_INSTRUCT_0SC "INSTRUCT.0SC"
+#define F_ORDER_0SC    "ORDER.0SC"
+#define F_STARTUP_0SC  "STARTUP.0SC"
 
-	#define F_MACRO        "MACRO.2"
+#define F_MACRO        "MACRO.2"
 
-	#define F_FONT2_0FN    "FONT2.0FN"
-	#define F_FONTBIG_0FN  "FONTBIG.0FN"
-	#define F_FONTINY_0FN  "FONTINY.0FN"
-	#define F_FONTMN1_0FN  "FONTMN1.0FN"
-	#define F_FONTMN2_0FN  "FONTMN2.0FN"
+#define F_FONT2_0FN    "FONT2.0FN"
+#define F_FONTBIG_0FN  "FONTBIG.0FN"
+#define F_FONTINY_0FN  "FONTINY.0FN"
+#define F_FONTMN1_0FN  "FONTMN1.0FN"
+#define F_FONTMN2_0FN  "FONTMN2.0FN"
 
-	// File path prefixes
-	#define F_BLOCKS       "BLOCKS"
-	#define F_BONUSMAP     "BONUSMAP"
-	#define F_LEVEL        "LEVEL"
-	#define F_PLANET       "PLANET"
-	#define F_SPRITES      "SPRITES"
-#else
-	#define F_FONTS        "fonts.000"
-	#define F_MAINCHAR     "mainchar.000"
-	#define F_MENU         "menu.000"
-	#define F_PANEL        "panel.000"
-	#define F_SOUNDS       "sounds.000"
-	#define F_BONUS        "bonus.000"
+// File path prefixes
+#define F_BLOCKS       "BLOCKS"
+#define F_BONUSMAP     "BONUSMAP"
+#define F_LEVEL        "LEVEL"
+#define F_PLANET       "PLANET"
+#define F_SPRITES      "SPRITES"
 
-	#define F_BONUS_0SC    "bonus.0sc"
-	#define F_END_0SC      "end.0sc"
-	#define F_INSTRUCT_0SC "instruct.0SC"
-	#define F_ORDER_0SC    "order.0SC"
-	#define F_STARTUP_0SC  "startup.0sc"
-
-	#define F_MACRO        "macro.2"
-
-	#define F_FONT2_0FN    "font2.0fn"
-	#define F_FONTBIG_0FN  "fontbig.0fn"
-	#define F_FONTINY_0FN  "fontiny.0fn"
-	#define F_FONTMN1_0FN  "fontmn1.0fn"
-	#define F_FONTMN2_0FN  "fontmn2.0fn"
-
-	// File path prefixes
-	#define F_BLOCKS       "blocks"
-	#define F_BONUSMAP     "bonusmap"
-	#define F_LEVEL        "level"
-	#define F_PLANET       "planet"
-	#define F_SPRITES      "sprites"
-#endif
 
 // Standard string length
 #define STRING_LENGTH 32

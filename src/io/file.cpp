@@ -24,6 +24,8 @@
 
 #include "io/gfx/video.h"
 
+#include <string.h>
+
 
 File::File (const char* name, bool write) {
 
@@ -64,8 +66,28 @@ File::~File () {
 
 bool File::open (const char* path, const char* name, bool write) {
 
+#if defined(UPPERCASE_FILENAMES) || defined(LOWERCASE_FILENAMES)
+	int count;
+#endif
+
 	// Create the file path for the given directory
 	filePath = createString(path, name);
+
+#ifdef UPPERCASE_FILENAMES
+	for (count = strlen(path); count < strlen(filePath); count++) {
+
+		if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
+
+	}
+#endif
+
+#ifdef LOWERCASE_FILENAMES
+	for (count = strlen(path); count < strlen(filePath); count++) {
+
+		if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
+
+	}
+#endif
 
 	// Open the file from the path
 	file = fopen(filePath, write ? "wb": "rb");
