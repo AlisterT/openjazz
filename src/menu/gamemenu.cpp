@@ -34,6 +34,8 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "loop.h"
+#include "util.h"
 
 
 int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {

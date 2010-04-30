@@ -41,6 +41,7 @@
 #include "io/sound.h"
 #include "level/event/event.h"
 #include "level/level.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -407,7 +408,7 @@ bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int t
 			gem = true;
 
 			// Yellow flash
-			paletteEffects = new FlashPaletteEffect(255, 255, 0, 320, paletteEffects);
+			level->flash(255, 255, 0, 320);
 
 			break;
 
@@ -459,7 +460,7 @@ bool Player::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int 
 				warpTime = ticks + T_WARP;
 
 				// White flash
-				paletteEffects = new FlashPaletteEffect(255, 255, 255, T_WARP, paletteEffects);
+				level->flash(255, 255, 255, T_WARP);
 
 			}
 
@@ -594,7 +595,7 @@ void Player::kill (Player *source, unsigned int ticks) {
 
 	}
 
-	if (!gameMode) paletteEffects = new FadeOutPaletteEffect(T_END, paletteEffects);
+	if (!gameMode) level->flash(0, 0, 0, T_END << 1);
 
 	return;
 

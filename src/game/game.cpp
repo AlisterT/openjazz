@@ -32,7 +32,9 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "level/level.h"
+#include "planet/planet.h"
 #include "player/player.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -92,12 +94,15 @@ int Game::setLevel (char *fileName) {
 
 int Game::play () {
 
+	Planet* planet;
 	Bonus* bonus;
-	char* bonusFile;
+	char* fileName;
 	bool checkpoint;
 	int ret;
+	int planetId;
 
 	checkpoint = false;
+	planetId = -1;
 
 	// Play the level(s)
 	while (true) {
@@ -134,9 +139,9 @@ int Game::play () {
 			} else if (ret == WON) {
 
 				// Go to next level
-				bonusFile = createFileName(F_BONUSMAP, (levelFile[10] * 10) + levelFile[11] - 527);
-				setLevel(bonusFile);
-				delete[] bonusFile;
+				fileName = createFileName(F_BONUSMAP, (levelFile[10] * 10) + levelFile[11] - 527);
+				setLevel(fileName);
+				delete[] fileName;
 
 			}
 
@@ -151,6 +156,38 @@ int Game::play () {
 			} catch (int e) {
 
 				return e;
+
+			}
+
+			planet = NULL;
+			fileName = createFileName(F_PLANET, levelFile + strlen(levelFile) - 3);
+
+			try {
+
+				planet = new Planet(fileName, planetId);
+
+			} catch (int e) {
+
+				// Do nothing
+
+			}
+
+			delete[] fileName;
+
+			if (planet) {
+
+				if (planet->play() == E_QUIT) {
+
+					delete planet;
+					delete level;
+
+					return E_QUIT;
+
+				}
+
+				planetId = planet->getId();
+
+				delete planet;
 
 			}
 

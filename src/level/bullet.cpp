@@ -66,7 +66,7 @@ Bullet::Bullet (Player* sourcePlayer, bool lower, unsigned int ticks) {
 		time = ticks + T_TNT;
 
 		// Red flash
-		paletteEffects = new FlashPaletteEffect(255, 0, 0, T_TNT, paletteEffects);
+		level->flash(255, 0, 0, T_TNT);
 
 	} else {
 

@@ -35,6 +35,7 @@
 #include "io/gfx/paletteeffects.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "loop.h"
 
 #include <string.h>
 
@@ -256,6 +257,7 @@ int Scene::play () {
 	SceneAnimation* animation = NULL;
 	SceneFrame* currentFrame = NULL;
 	SceneFrame* lastFrame = NULL;
+	PaletteEffect* paletteEffect = NULL;
 	int	frameDelay = 0;
 	int prevFrame = 0;
 	int continueToNextPage = 0;
@@ -269,9 +271,21 @@ int Scene::play () {
 
 	while (true) {
 
-		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP, paletteEffect) == E_QUIT) {
 
-		if (controls.release(C_ESCAPE) || (controls.release(C_NO) && pages[sceneIndex].askForYesNo)) return E_NONE;
+			if (paletteEffect) delete paletteEffect;
+
+			return E_QUIT;
+
+		}
+
+		if (controls.release(C_ESCAPE) || (controls.release(C_NO) && pages[sceneIndex].askForYesNo)) {
+
+			if (paletteEffect) delete paletteEffect;
+
+			return E_NONE;
+
+		}
 
 		SDL_Delay(T_FRAME);
 
@@ -298,7 +312,13 @@ int Scene::play () {
 			if (upOrLeft) sceneIndex--;
 			else sceneIndex++;
 
-			if (sceneIndex == scriptItems) return E_NONE;
+			if (sceneIndex == scriptItems) {
+
+				if (paletteEffect) delete paletteEffect;
+
+				return E_NONE;
+
+			}
 
 			lastTicks = globalTicks;
 			// Get bg for this page
@@ -310,7 +330,8 @@ int Scene::play () {
 
 		if (newpage) {
 
-			//paletteEffects = new FadeOutPaletteEffect(250, paletteEffects);
+			//if (paletteEffect) delete paletteEffect;
+			//paletteEffect = new FadeOutPaletteEffect(250, NULL);
 
 			textRect.x = 0;
 			textRect.y = 0;
@@ -325,7 +346,8 @@ int Scene::play () {
 				video.setPalette(palette->palette);
 
 				// Fade in from black
-				paletteEffects = new FadeInPaletteEffect(250, paletteEffects);
+				if (paletteEffect) delete paletteEffect;
+				paletteEffect = new FadeInPaletteEffect(250, NULL);
 
 			}
 

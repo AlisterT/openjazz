@@ -32,6 +32,9 @@
 #include "gfx/video.h"
 #include "network.h"
 
+#include "loop.h"
+#include "util.h"
+
 #ifdef USE_SOCKETS
 	#ifdef WIN32
 		#include <winsock.h>

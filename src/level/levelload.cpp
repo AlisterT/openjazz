@@ -43,6 +43,8 @@
 #include "io/sound.h"
 #include "menu/menu.h"
 #include "player/player.h"
+#include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -712,12 +714,10 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	file->seek(x + 288, true);
 
 	// Music file
-	string = file->loadString();
-	playMusic(string);
+	musicFile = file->loadString();
 
 	// 26 bytes of undiscovered usefulness, less the music file name
 	file->seek(x + 314, true);
-	delete[] string;
 
 	// End of episode cutscene
 	sceneFile = file->loadString();

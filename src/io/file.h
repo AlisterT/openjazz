@@ -60,7 +60,7 @@ class File {
 		SDL_Surface*       loadSurface (int width, int height);
 		unsigned char*     loadPixels  (int length);
 		unsigned char*     loadPixels  (int length, int key);
-		void               loadPalette (SDL_Color* palette);
+		void               loadPalette (SDL_Color* palette, bool rle = true);
 
 };
 

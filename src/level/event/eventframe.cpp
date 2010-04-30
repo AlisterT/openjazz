@@ -34,6 +34,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "player/player.h"
+#include "util.h"
 
 #include <stdlib.h>
 

@@ -26,10 +26,12 @@
 
 
 #include "controls.h"
+#include "loop.h"
 
 #if defined(WIZ) || defined(GP2X)
 #include "platforms/wiz.h"
 #endif
+
 
 Controls::Controls () {
 
@@ -79,7 +81,7 @@ Controls::Controls () {
 	buttons[C_STATS].button = -1;
 	buttons[C_PAUSE].button = -1;
 	buttons[C_YES].button = -1;
-	buttons[C_NO].button = -1; 
+	buttons[C_NO].button = -1;
 #endif
 	buttons[C_SWIM].button = buttons[C_JUMP].button;
 

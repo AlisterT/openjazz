@@ -25,6 +25,8 @@
 #define _SPRITE_H
 
 
+#include "OpenJazz.h"
+
 #include <SDL/SDL.h>
 
 

@@ -92,6 +92,7 @@ class Scene;
 class Level : public BaseLevel {
 
 	private:
+		char*         musicFile;
 		char*         sceneFile;
 		Anim          animSet[ANIMS];
 		char          miscAnims[4];
@@ -148,6 +149,7 @@ class Level : public BaseLevel {
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);
+		void          flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
 		void          setStage      (LevelStage stage);
 		LevelStage    getStage      ();
 		void          receive       (unsigned char* buffer);

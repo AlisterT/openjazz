@@ -37,6 +37,7 @@
 #include "level/bullet.h"
 #include "level/event/event.h"
 #include "level/level.h"
+#include "util.h"
 
 
 void Player::control (unsigned int ticks, int msps) {
@@ -731,7 +732,7 @@ void Player::view (unsigned int ticks, int mspf) {
 	// Apply lag proportional to player "speed"
 	speed = ((dx >= 0? dx: -dx) + (dy >= 0? dy: -dy)) >> 14;
 
-	if (mspf < speed) {
+	if (speed && (mspf < speed)) {
 
 		viewX = ((oldViewX * (speed - mspf)) + (viewX * mspf)) / speed;
 		viewY = ((oldViewY * (speed - mspf)) + (viewY * mspf)) / speed;

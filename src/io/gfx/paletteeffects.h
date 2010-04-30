@@ -124,8 +124,7 @@ class FlashPaletteEffect : public PaletteEffect {
 		unsigned char red, green, blue; // Flash colour
 
 	public:
-		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen,
-			unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
+		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen, unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
 
 		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
@@ -141,8 +140,7 @@ class RotatePaletteEffect : public PaletteEffect {
 		fixed         position;
 
 	public:
-		RotatePaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect* nextPE);
+		RotatePaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
 		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
@@ -152,14 +150,13 @@ class RotatePaletteEffect : public PaletteEffect {
 class SkyPaletteEffect : public PaletteEffect {
 
 	private:
-		SDL_Color     *skyPalette;
-		unsigned char  first;      /* The first palette index affected */
-		int            amount;     /* The number of (consecutive) palette indices affected */
-		fixed          speed;      // Relative Y speed - as in Jazz 2
+		SDL_Color*    skyPalette;
+		unsigned char first;      /* The first palette index affected */
+		int           amount;     /* The number of (consecutive) palette indices affected */
+		fixed         speed;      // Relative Y speed - as in Jazz 2
 
 	public:
-		SkyPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
+		SkyPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
 
 		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
@@ -174,8 +171,7 @@ class P2DPaletteEffect : public PaletteEffect {
 		fixed         speed;  // Relative X & Y speed - as in Jazz 2
 
 	public:
-		P2DPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect* nextPE);
+		P2DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
 		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
@@ -190,8 +186,7 @@ class P1DPaletteEffect : public PaletteEffect {
 		fixed         speed;    // Relative X & Y speed - as in Jazz 2
 
 	public:
-		P1DPaletteEffect (unsigned char newFirst, int newAmount,
-			fixed newSpeed, PaletteEffect* nextPE);
+		P1DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
 		void apply (SDL_Color* shownPalette, bool direct, int mspf);
 
@@ -210,10 +205,6 @@ class WaterPaletteEffect : public PaletteEffect {
 
 };
 
-
-// Variable
-
-EXTERN PaletteEffect* paletteEffects;
 
 #endif
 

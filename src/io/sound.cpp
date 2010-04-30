@@ -30,32 +30,37 @@
 
 #include "file.h"
 #include "sound.h"
+
+#include "util.h"
+
 #include <SDL/SDL_audio.h>
 
+#ifdef USE_MODPLUG
+	#include <modplug.h>
+#endif
+
+
 #ifdef __SYMBIAN32__
-#define SOUND_FREQ 22050
+	#define SOUND_FREQ 22050
 #else
-#define SOUND_FREQ 44100
+	#define SOUND_FREQ 44100
 #endif
 
 #ifdef USE_MODPLUG
-#include <modplug.h>
 
+	#ifdef __SYMBIAN32__
+		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+		#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
+	#elif defined(WIZ) || defined(GP2X)
+		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+		#define MUSIC_FLAGS 0
+	#else
+		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
+		#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
+	#endif
 
 ModPlugFile   *musicFile;
 
-#ifdef __SYMBIAN32__
-#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
-#else
-#if defined(WIZ) || defined(GP2X)
-#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-#define MUSIC_FLAGS 0
-#else
-#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
-#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
-#endif
-#endif
 #endif
 
 SDL_AudioSpec  audioSpec;
@@ -251,7 +256,7 @@ void stopMusic () {
 	}
 	SDL_PauseAudio(0);
 #endif
-	
+
 	return;
 
 }

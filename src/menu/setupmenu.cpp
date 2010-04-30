@@ -33,6 +33,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "player/player.h"
+#include "loop.h"
 
 
 int Menu::setupKeyboard () {

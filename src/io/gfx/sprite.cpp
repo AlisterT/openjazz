@@ -138,31 +138,33 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 	unsigned char* srcRow;
 	unsigned char* dstRow;
 	unsigned char pixel, key;
-	int width, height;
+	int width, height, fullWidth, fullHeight;
 	int dstX, dstY;
 	int srcX, srcY;
 
 	key = pixels->format->colorkey;
 
-	width = FTOI(pixels->w * scale);
-	if (x + width > canvasW) width = canvasW - x;
-	if (x < -width) return; // Off-screen
+	fullWidth = FTOI(pixels->w * scale);
+	if (x < -(fullWidth >> 1)) return; // Off-screen
+	if (x + (fullWidth >> 1) > canvasW) width = canvasW + (fullWidth >> 1) - x;
+	else width = fullWidth;
 
-	height = FTOI(pixels->h * scale);
-	if (y + height > canvasH) height = canvasH - y;
-	if (y < -height) return; // Off-screen
+	fullHeight = FTOI(pixels->h * scale);
+	if (y < -(fullHeight >> 1)) return; // Off-screen
+	if (y + (fullHeight >> 1) > canvasH) height = canvasH + (fullHeight >> 1) - y;
+	else height = fullHeight;
 
 	if (SDL_MUSTLOCK(canvas)) SDL_LockSurface(canvas);
 
-	if (y < 0) {
+	if (y < (fullHeight >> 1)) {
 
-		srcY = -y;
+		srcY = (fullHeight >> 1) - y;
 		dstY = 0;
 
 	} else {
 
 		srcY = 0;
-		dstY = y;
+		dstY = y - (fullHeight >> 1);
 
 	}
 
@@ -171,15 +173,15 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 		srcRow = ((unsigned char *)(pixels->pixels)) + (pixels->pitch * DIV(srcY, scale));
 		dstRow = ((unsigned char *)(canvas->pixels)) + (canvas->pitch * dstY);
 
-		if (x < 0) {
+		if (x < (fullWidth >> 1)) {
 
-			srcX = -x;
+			srcX = (fullWidth >> 1) - x;
 			dstX = 0;
 
 		} else {
 
 			srcX = 0;
-			dstX = x;
+			dstX = x - (fullWidth >> 1);
 
 		}
 

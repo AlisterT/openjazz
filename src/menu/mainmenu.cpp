@@ -36,6 +36,7 @@
 #include "level/level.h"
 #include "player/player.h"
 #include "scene/scene.h"
+#include "loop.h"
 
 
 int Menu::main () {

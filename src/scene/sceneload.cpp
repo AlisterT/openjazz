@@ -239,20 +239,11 @@ void Scene::loadAni (File *f, int dataIndex) {
 			int nextPos = f->tell();
 			LOG("PL Read position", pos);
 			unsigned short int len = f->loadShort();
-			unsigned char* buffer = f->loadBlock(len);
 
 			palettes = new ScenePalette(palettes);
 
-			for (int count = 0; count < 256; count++) {
+			f->loadPalette(palettes->palette, false);
 
-				// Palette entries are 6-bit
-				// Shift them upwards to 8-bit, and fill in the lower 2 bits
-				palettes->palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
-				palettes->palette[count].g = (buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
-				palettes->palette[count].b = (buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
-			}
-
-			delete[] buffer;
 			palettes->id = dataIndex;
 
 			unsigned short int value = 0;

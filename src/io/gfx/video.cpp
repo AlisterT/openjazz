@@ -267,7 +267,7 @@ void Video::expose () {
 }
 
 
-void Video::flip (int mspf) {
+void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 
 	SDL_Color shownPalette[256];
 

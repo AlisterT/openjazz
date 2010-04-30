@@ -32,6 +32,8 @@
 #include "level/level.h"
 #include "menu/menu.h"
 #include "player/player.h"
+#include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -245,14 +247,6 @@ ClientGame::~ClientGame () {
 int ClientGame::setLevel (char* fileName) {
 
 	int ret;
-
-	// Free the palette effects
-	if (paletteEffects) {
-
-		delete paletteEffects;
-		paletteEffects = NULL;
-
-	}
 
 	video.setPalette(menu->palettes[1]);
 

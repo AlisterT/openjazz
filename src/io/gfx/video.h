@@ -24,7 +24,7 @@
 #define _VIDEO_H
 
 
-#include "OpenJazz.h"
+#include "paletteeffects.h"
 
 #include <SDL/SDL.h>
 
@@ -91,7 +91,7 @@ class Video {
 #endif
 
 		void       expose                ();
-		void       flip                  (int mspf);
+		void       flip                  (int mspf, PaletteEffect* paletteEffects);
 
 };
 

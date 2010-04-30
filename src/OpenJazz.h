@@ -15,6 +15,8 @@
  * 3rd June 2009: Created network.h from parts of OpenJazz.h
  * 13th July 2009: Created controls.h from parts of OpenJazz.h
  * 13th July 2009: Created graphics.h from parts of OpenJazz.h
+ * 30th April 2010: Created util.h from parts of OpenJazz.h
+ * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * Part of the OpenJazz project
  *
@@ -142,14 +144,11 @@
 #define MUL(x, y) (((x) * (y)) >> 10)
 #define DIV(x, y) (((x) << 10) / (y))
 
-
-// Enum
-
-enum LoopType {
-
-	NORMAL_LOOP, TYPING_LOOP, SET_KEY_LOOP, SET_JOYSTICK_LOOP
-
-};
+#ifdef VERBOSE
+	#define LOG(x, y) log(x, y)
+#else
+	#define LOG(x, y)
+#endif
 
 
 // Datatype
@@ -159,39 +158,8 @@ typedef int fixed;
 
 // Variable
 
-// Time
 EXTERN unsigned int globalTicks;
 
-// Trigonometric function look-up tables
-EXTERN fixed sinLut[1024];
-
-
-// Functions in main.cpp
-
-EXTERN int loop (LoopType type);
-
-
-// Functions in util.cpp
-
-EXTERN bool   fileExists           (const char *fileName);
-EXTERN char * createString         (const char *string);
-EXTERN char * createString         (const char *first, const char *second);
-EXTERN char * createFileName       (const char *type, int extension);
-EXTERN char * createFileName       (const char *type, const char *extension);
-EXTERN char * createFileName       (const char *type, int level, int extension);
-EXTERN char * createEditableString (const char *string);
-EXTERN void   log                  (const char *message);
-EXTERN void   log                  (const char *message, const char *detail);
-EXTERN void   log                  (const char *message, int number);
-EXTERN void   logError             (const char *message, const char *detail);
-EXTERN fixed  fSin                 (fixed angle);
-EXTERN fixed  fCos                 (fixed angle);
-
-#ifdef VERBOSE
-#define LOG(x, y) log(x, y)
-#else
-#define LOG(x, y)
-#endif
 
 #endif
 

@@ -29,6 +29,8 @@
  */
 
 
+#include "util.h"
+
 #include "io/file.h"
 
 #include <string.h>

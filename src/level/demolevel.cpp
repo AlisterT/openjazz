@@ -35,6 +35,8 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "player/player.h"
+#include "loop.h"
+#include "util.h"
 
 
 DemoLevel::DemoLevel (const char* fileName) {
@@ -108,7 +110,7 @@ int DemoLevel::play () {
 	while (true) {
 
 		// Do general processing
-		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
 

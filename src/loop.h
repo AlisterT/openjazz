@@ -1,14 +1,14 @@
 
 /*
  *
- * planet.h
+ * loop.h
  *
- * 3rd of February 2009: Created planet.h
+ * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * Part of the OpenJazz project
  *
  *
- * Copyright (c) 2009 Alister Thomson
+ * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -20,21 +20,25 @@
  */
 
 
-#ifndef _PLANET_H
-#define _PLANET_H
+#ifndef _LOOP_H
+#define _LOOP_H
 
 
-// Class
+#include "io/gfx/paletteeffects.h"
 
-class Planet {
 
-	public:
-		Planet   (char * fileName);
-		~Planet  ();
+// Enum
 
-		int play ();
+enum LoopType {
+
+	NORMAL_LOOP, TYPING_LOOP, SET_KEY_LOOP, SET_JOYSTICK_LOOP
 
 };
+
+
+// Function in main.cpp
+
+EXTERN int loop (LoopType type, PaletteEffect* paletteEffects = NULL);
 
 #endif
 

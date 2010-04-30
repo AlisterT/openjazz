@@ -42,6 +42,8 @@ BaseLevel::BaseLevel () {
 	// Arbitrary initial value
 	smoothfps = 50.0f;
 
+	paletteEffects = NULL;
+
 	paused = false;
 
 	// Set the level stage
@@ -56,13 +58,7 @@ BaseLevel::~BaseLevel () {
 
 	stopMusic();
 
-	// Free the palette effects
-	if (paletteEffects) {
-
-		delete paletteEffects;
-		paletteEffects = NULL;
-
-	}
+	if (paletteEffects) delete paletteEffects;
 
 	SDL_FreeSurface(tileSet);
 

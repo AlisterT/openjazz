@@ -31,6 +31,7 @@
 #include "io/network.h"
 #include "level/level.h"
 #include "player/player.h"
+#include "util.h"
 
 #include <string.h>
 

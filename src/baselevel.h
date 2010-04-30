@@ -24,7 +24,7 @@
 #define _BASELEVEL_H
 
 
-#include "OpenJazz.h"
+#include "io/gfx/paletteeffects.h"
 
 #include <SDL/SDL.h>
 
@@ -61,16 +61,17 @@ class Sprite;
 class BaseLevel {
 
 	protected:
-		SDL_Surface* tileSet;
-		Sprite*      spriteSet;
-		SDL_Color    palette[256];
-		int          sprites;
-		unsigned int tickOffset, prevStepTicks, prevTicks, ticks;
-		unsigned int endTime;
-		float        smoothfps;
-		int          items;
-		bool         paused;
-		LevelStage   stage;
+		SDL_Surface*   tileSet;
+		Sprite*        spriteSet;
+		PaletteEffect* paletteEffects;
+		SDL_Color      palette[256];
+		int            sprites;
+		unsigned int   tickOffset, prevStepTicks, prevTicks, ticks;
+		unsigned int   endTime;
+		float          smoothfps;
+		int            items;
+		bool           paused;
+		LevelStage     stage;
 
 		int  playScene (char* file);
 		void timeCalcs ();

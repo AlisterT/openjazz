@@ -38,6 +38,8 @@
 #include "io/sound.h"
 #include "menu/menu.h"
 #include "player/player.h"
+#include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -598,8 +600,8 @@ void Bonus::draw () {
 				if (sprite) {
 
 					nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
-					dst.x = FTOI(nX * canvasW) + ((canvasW - (ITOF(sprite->getWidth() << 5) / divisor)) >> 1);
-					dst.y = (canvasH - (ITOF(sprite->getHeight() << 5) / divisor)) >> 1;
+					dst.x = FTOI(nX * canvasW) + (canvasW >> 1);
+					dst.y = canvasH >> 1;
 					sprite->drawScaled(dst.x, dst.y, DIV(F32, divisor));
 
 				}
@@ -642,7 +644,6 @@ void Bonus::draw () {
 int Bonus::play () {
 
 	const char *options[3] = {"continue game", "setup options", "quit game"};
-	PaletteEffect *levelPE;
 	bool pmenu, pmessage;
 	int stats, option;
 	unsigned int returnTime;
@@ -663,7 +664,7 @@ int Bonus::play () {
 
 	while (true) {
 
-		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
 
@@ -703,17 +704,10 @@ int Bonus::play () {
 
 						if (!gameMode) {
 
-							// Don't want palette effects in setup menu
-							levelPE = paletteEffects;
-							paletteEffects = NULL;
-
 							if (menu->setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
 							video.setPalette(palette);
-
-							// Restore palette effects
-							paletteEffects = levelPE;
 
 						}
 

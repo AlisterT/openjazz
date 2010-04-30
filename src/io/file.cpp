@@ -23,6 +23,7 @@
 #include "file.h"
 
 #include "io/gfx/video.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -74,7 +75,7 @@ bool File::open (const char* path, const char* name, bool write) {
 	filePath = createString(path, name);
 
 #ifdef UPPERCASE_FILENAMES
-	for (count = strlen(path); count < strlen(filePath); count++) {
+	for (count = strlen(path); filePath[count]; count++) {
 
 		if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
 
@@ -82,7 +83,7 @@ bool File::open (const char* path, const char* name, bool write) {
 #endif
 
 #ifdef LOWERCASE_FILENAMES
-	for (count = strlen(path); count < strlen(filePath); count++) {
+	for (count = strlen(path); filePath[count]; count++) {
 
 		if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
 
@@ -428,12 +429,13 @@ unsigned char* File::loadPixels  (int length, int key) {
 }
 
 
-void File::loadPalette (SDL_Color* palette) {
+void File::loadPalette (SDL_Color* palette, bool rle) {
 
 	unsigned char* buffer;
 	int count;
 
-	buffer = loadRLE(768);
+	if (rle) buffer = loadRLE(768);
+	else buffer = loadBlock(768);
 
 	for (count = 0; count < 256; count++) {
 

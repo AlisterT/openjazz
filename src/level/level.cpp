@@ -53,6 +53,8 @@
 #include "menu/menu.h"
 #include "player/player.h"
 #include "scene/scene.h"
+#include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -102,6 +104,7 @@ Level::~Level () {
 	}
 
 	delete[] sceneFile;
+	delete[] musicFile;
 
 	return;
 
@@ -387,6 +390,15 @@ void Level::playSound (int sound) {
 }
 
 
+void Level::flash (unsigned char red, unsigned char green, unsigned char blue, int duration) {
+
+	paletteEffects = new FlashPaletteEffect(red, green, blue, duration, paletteEffects);
+
+	return;
+
+}
+
+
 void Level::setStage (LevelStage newStage) {
 
 	unsigned char buffer[MTL_L_STAGE];
@@ -505,7 +517,6 @@ int Level::play () {
 
 	const char* options[5] =
 		{"continue game", "save game", "load game", "setup options", "quit game"};
-	PaletteEffect *levelPE;
 	char *string;
 	bool pmessage, pmenu;
 	int stats, option;
@@ -529,9 +540,11 @@ int Level::play () {
 
 	video.setPalette(palette);
 
+	playMusic(musicFile);
+
 	while (true) {
 
-		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) {
 
@@ -579,17 +592,10 @@ int Level::play () {
 
 						if (!gameMode) {
 
-							// Don't want palette effects in setup menu
-							levelPE = paletteEffects;
-							paletteEffects = NULL;
-
 							if (menu->setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
 							video.setPalette(palette);
-
-							// Restore palette effects
-							paletteEffects = levelPE;
 
 						}
 

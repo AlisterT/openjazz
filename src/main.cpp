@@ -44,6 +44,8 @@
 #include "menu/menu.h"
 #include "player/player.h"
 #include "scene/scene.h"
+#include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -302,9 +304,6 @@ int loadMain (int argc, char *argv[]) {
 
 
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
-
-
-	paletteEffects = NULL;
 
 
 	// Set up audio
@@ -581,7 +580,7 @@ void freeMain () {
 }
 
 
-int loop (LoopType type) {
+int loop (LoopType type, PaletteEffect* paletteEffects) {
 
 	SDL_Event event;
 	int prevTicks, ret;
@@ -592,7 +591,7 @@ int loop (LoopType type) {
 	globalTicks = SDL_GetTicks();
 
 	// Show what has been drawn
-	video.flip(globalTicks - prevTicks);
+	video.flip(globalTicks - prevTicks, paletteEffects);
 
 
 	// Process system events
