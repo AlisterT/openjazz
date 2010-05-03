@@ -408,6 +408,12 @@ int Scene::play () {
 							loadCompactedMem(currentFrame->frameSize, currentFrame->frameData,(unsigned char*) animation->background->pixels, SW, SH);
 							}
 							break;
+						case EFFAniHeader:
+							{							
+							unsigned char* data = currentFrame->frameData;
+							int size = currentFrame->frameSize;
+							loadFFMem(size, currentFrame->frameData, (unsigned char*) animation->background->pixels);
+							}break;							
 						default:
 							LOG("Scene::Play unknown type", currentFrame->frameType);
 							break;
@@ -439,13 +445,15 @@ int Scene::play () {
 					}
 					SDL_Delay(frameDelay);
 					if(currentFrame == NULL && animation->reverseAnimation) {
-						prevFrame = 1-prevFrame;
-						if(prevFrame) {
+						/*prevFrame = 1-prevFrame;
+						
+						/*if(prevFrame) {
 							currentFrame = lastFrame->prev;
 							}
 						else {
 							currentFrame = lastFrame->next;
-							}
+							}*/
+						currentFrame = NULL;//animation->sceneFrames;
 						}
 					else if(currentFrame == NULL && !pageTime && !pages[sceneIndex].askForYesNo && pages[sceneIndex].nextPageAfterAnim) {
 						continueToNextPage = 1;

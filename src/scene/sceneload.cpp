@@ -33,6 +33,165 @@
 
 #include <string.h>
 
+void Scene::loadFFMem(int size, unsigned char* frameData, unsigned char* pixdata) {
+	int pixels = 0;
+	int fillWidth = 0;
+	unsigned char fillColor = 0;
+	int trans = 1;
+	int opCodeNo = 0;
+	unsigned char* repeatPos = NULL;
+	unsigned char* startPix = pixdata;
+	unsigned char* framestart = frameData;
+	
+	/*FILE* out = fopen("c:\\output.dat", "wb");
+	fwrite(frameData, size, 1, out);
+	fclose(out);*/
+
+	while (size > 0) {		
+			LOG("PL FF frame offset",(frameData-framestart));
+			opCodeNo++;
+			fflush(stderr);
+			unsigned char header = *frameData;frameData++;
+			
+			if(header == 0xFF) {
+				unsigned short skip = *frameData;frameData++;	
+				skip+=((unsigned short)(*frameData))<<8;frameData++;
+				if(trans) {
+					skip+=255;
+					}
+				LOG("PL FF 0xff skip", skip);
+				pixels+=skip;
+				pixdata+=skip;
+				size -= 2;
+				trans = 0;
+				}
+			else if (header == 0x7f) {
+				fillWidth = *frameData;frameData++;	
+				fillWidth+=((unsigned short)(*frameData))<<8;frameData++;
+				
+				if(trans) {
+					fillWidth+=255;
+				}
+				//fillColor = *frameData;frameData++;
+				//memset(pixdata, fillColor, fillWidth);
+				LOG("PL FF 0x7f fillWidth", fillWidth);
+				pixels+=fillWidth;
+				pixdata+=fillWidth;
+				size-=2;
+				trans = 1;
+			}
+			else if ((header & 0xe0) == 0xe0) {				
+						LOG("PL FF 0xe0 skip", header);				
+						pixels+=header;
+						pixdata+=header;
+						trans = 0;
+					}
+			else if ((header & 0xA0) == 0xA0) {
+				fillWidth = (header-0xA0);				
+				LOG("PL FF 0xa0 fill next op",fillWidth);				
+				// fill ?
+				unsigned char* readfill = pixdata-320;
+								
+				for(int col = 0;col < fillWidth;col++) {
+					*pixdata = *readfill;
+					pixels++;
+					pixdata++;
+					readfill++;
+				}
+	
+				trans = 0;
+			}		
+			else if ((header & 0xC0) == 0xc0) {				
+				fillWidth = (header - 0xC0);
+				LOG("PL FF 0xc0 fillWidth", fillWidth);
+				fillColor = *frameData;frameData++;
+				memset(pixdata, fillColor, fillWidth);
+				pixdata+=fillWidth;
+				pixels+=fillWidth;
+				size--;
+				trans = 0;
+			}
+			else if (header & 0x80) {								
+				fillWidth = (header-0x80);
+				if(trans) {
+				  LOG("PL FF 0x8? SKIP bytes",fillWidth);
+					pixels+=(fillWidth);
+					pixdata+=(fillWidth);					
+					}
+				else {
+				LOG("PL FF 0x8? Copy bytes", fillWidth);
+					for(int col = 0;col < fillWidth;col++) {						
+						fillColor= *frameData;frameData++;						
+						*pixdata = fillColor;											
+						pixels++;
+						pixdata++;
+						size--;
+						}
+			
+				}				
+				trans = 1-trans;	
+				}
+			else if (header & 0x40) {
+				fillWidth = (header-0x40);
+				fillColor = *frameData;frameData++;
+				memset(pixdata, fillColor, fillWidth);
+				LOG("PL FF 0x40 fillWidth", fillWidth);
+				pixels+=fillWidth;
+				pixdata+=fillWidth;
+				size--;
+				trans = 1; 
+				}
+			else if (header & 0x20)
+				{							
+				// fill ?
+				unsigned char* readfill = pixdata-320;
+				fillWidth = header-0x20;				
+				
+				for(int col = 0;col < fillWidth;col++) {
+					*pixdata = *readfill;
+					pixels++;
+					pixdata++;
+					readfill++;
+				}
+				
+				LOG("PL FF Fill 0x20 ", (header-0x20));
+			
+				trans = 1;				
+				}
+			else  if(header) {										
+				if(trans) {
+					LOG("PL FF 0x0? SKIP bytes", header);
+					pixels+=(header);
+					pixdata+=(header);					
+				}
+				else {
+					LOG("PL FF 0x0? Copy bytes", header);
+					for(int col = 0;col < (header);col++) {						
+						fillColor= *frameData;frameData++;						
+						*pixdata = fillColor;					
+						
+						pixels++;
+						pixdata++;
+						size--;
+					}
+					
+				}
+				
+				trans = 1-trans;
+			}
+			else
+				{
+				size = 1; // end
+				LOG("PL FF END OF STREAM", size);
+				}
+			size--;
+			SDL_Rect dst;
+			dst.x = (canvasW - SW) >> 1;
+			dst.y = (canvasH - SH) >> 1;											
+		}
+		LOG("PL FF pixels", pixels);
+	}
+
 /*							
  * $0x $...	Next x + 1 bytes are 'literals'; each byte colors 1 column (Max val $3F)									
  * $4x $yy        Next x + 1 columns drawn in color yy (Max value $7E)
@@ -40,7 +199,7 @@
  * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
  * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
  */														
-void Scene::loadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height) {
+void Scene::loadCompacted(int size, File* f, unsigned char* pixdata, int width, int height) {
 	int pixels = 0;
 	unsigned char* endpixdata = pixdata + (width*height);
 	unsigned char* fillstart = NULL;
@@ -122,7 +281,7 @@ void Scene::loadCompacted(int& size, File* f, unsigned char* pixdata, int width,
 	LOG("PL Compacts pixels", pixels);
 }
 
-void Scene::loadCompactedMem(int& size, unsigned char* frameData, unsigned char* pixdata, int width, int height) {
+void Scene::loadCompactedMem(int size, unsigned char* frameData, unsigned char* pixdata, int width, int height) {
 	int pixels = 0;
 	unsigned char* endpixdata = pixdata + (width*height);
 	unsigned char* fillstart = NULL;

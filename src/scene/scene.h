@@ -234,8 +234,9 @@ class Scene {
 		void loadScripts (File* f);
 		void loadData    (File* f);
 		void loadAni     (File* f, int dataIndex);
-		void loadCompacted(int& size, File* f, unsigned char* pixdata, int width, int height);
-		void loadCompactedMem(int& size, unsigned char* frameData, unsigned char* pixdata, int width, int height);	
+		void loadCompacted(int size, File* f, unsigned char* pixdata, int width, int height);
+		void loadCompactedMem(int size, unsigned char* frameData, unsigned char* pixdata, int width, int height);
+		void loadFFMem(int size, unsigned char* frameData, unsigned char* pixdata);
 	public:
 		Scene    (const char* fileName);
 		~Scene   ();
