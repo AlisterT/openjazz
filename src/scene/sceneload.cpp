@@ -47,7 +47,7 @@ void Scene::loadFFMem(int size, unsigned char* frameData, unsigned char* pixdata
 	fwrite(frameData, size, 1, out);
 	fclose(out);*/
 
-	while (size > 0) {		
+	while (size > 0 && pixels < 64000) {		
 			LOG("PL FF frame offset",(frameData-framestart));
 			opCodeNo++;
 			fflush(stderr);
