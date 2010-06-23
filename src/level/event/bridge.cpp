@@ -48,6 +48,10 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) {
 	animType = E_LEFTANIM;
 	flashTime = 0;
 
+	// Bridges should ignore the default yOffsets
+	getAnim(E_LEFTANIM)->disableYOffset();
+	getAnim(E_RIGHTANIM)->disableYOffset();
+
 	// leftDipX and rightDipX used to store leftmost and rightmost player on bridge
 	// Start with minimum values
 	leftDipX = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;

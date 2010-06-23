@@ -29,6 +29,7 @@
 Anim::Anim () {
 
 	frame = 0;
+	ignoreDefaultYOffset = false;
 
 	return;
 
@@ -42,12 +43,14 @@ Anim::~Anim () {
 }
 
 
-void Anim::setData (int amount, signed char sX, signed char sY, signed char x, signed char y) {
+void Anim::setData (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y) {
 
 	frames = amount;
 	shootX = sX;
 	shootY = sY;
-	xOffset = x;
+	accessoryX = aX;
+	accessoryY = aY;
+	accessory = a;
 	yOffset = y;
 
 	return;
@@ -92,7 +95,7 @@ int Anim::getHeight () {
 
 fixed Anim::getShootX () {
 
-	return ITOF(shootX + xOffsets[frame] - xOffset);
+	return ITOF(shootX + xOffsets[frame]);
 
 }
 
@@ -106,10 +109,41 @@ fixed Anim::getShootY () {
 
 void Anim::draw (fixed x, fixed y) {
 
-	sprites[frame]->draw(FTOI(x) + xOffsets[frame] - xOffset,
-		FTOI(y) + yOffsets[frame] - yOffset);
+	// In case yOffset is zero, and the ignore default offset flag is set,
+	// draw the animation without any offset.
+
+	if (ignoreDefaultYOffset && yOffset == 0)
+		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
+				FTOI(y) + yOffsets[frame] + 1);
+
+	// In case yOffset is zero, most animations need a default offset
+	// of 1 tile (32 pixels).
+
+	else if (yOffset == 0)
+		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
+				FTOI(y) + yOffsets[frame] - TTOI(1) + 2);
+
+	// In all other cases drawing with the Y offset will do.
+
+	else
+		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
+				FTOI(y) + yOffsets[frame] - yOffset + 1);
 
 	return;
+
+}
+
+
+void Anim::disableYOffset() {
+
+	ignoreDefaultYOffset = true;
+
+}
+
+
+void Anim::copyYOffset(Anim *anim) {
+
+	yOffset = anim->yOffset;
 
 }
 

@@ -30,6 +30,7 @@
 
 #include "movable.h"
 #include "OpenJazz.h"
+#include "../../io/gfx/anim.h"
 
 
 // Constants
@@ -104,6 +105,7 @@ class Event : public Movable {
 		bool           isFrom      (unsigned char gX, unsigned char gY);
 		virtual bool   overlap     (fixed left, fixed top, fixed width, fixed height);
 		signed char    getProperty (unsigned char property);
+		Anim*		   getAnim	   (unsigned char property);
 		virtual Event* step        (unsigned int ticks, int msps);
 		virtual void   draw        (unsigned int ticks, int change);
 		void           drawEnergy  (unsigned int ticks);

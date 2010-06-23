@@ -236,7 +236,8 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 		animSet[count].setData(buffer[(count << 6) + 6],
 			buffer[count << 6], buffer[(count << 6) + 1],
-			buffer[(count << 6) + 4], buffer[(count << 6) + 5]);
+			buffer[(count << 6) + 3], buffer[(count << 6) + 4],
+			buffer[(count << 6) + 2], buffer[(count << 6) + 5]);
 
 		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
 
@@ -615,6 +616,7 @@ void Bonus::draw () {
 
 	// Show the player
 	anim = animSet + localPlayer->getAnim();
+	anim->disableYOffset();
 	anim->setFrame(ticks / 75, true);
 	anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));
 

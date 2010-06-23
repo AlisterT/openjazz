@@ -656,7 +656,8 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		animSet[count].setData(buffer[(count << 6) + 6],
 			buffer[count << 6], buffer[(count << 6) + 1],
-			buffer[(count << 6) + 4], buffer[(count << 6) + 5]);
+			buffer[(count << 6) + 3], buffer[(count << 6) + 4],
+			buffer[(count << 6) + 2], buffer[(count << 6) + 5]);
 
 		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
 

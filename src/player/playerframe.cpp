@@ -815,6 +815,7 @@ void Player::draw (unsigned int ticks, int change) {
 		yOffset = fCos(ticks * 2) * 12;
 
 		an = level->getMiscAnim(0);
+		an->disableYOffset();
 
 		an->setFrame(frame, true);
 		an->draw(drawX + PXO_MID + xOffset, drawY + PYO_MID + yOffset);

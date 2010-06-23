@@ -60,7 +60,18 @@ Event::Event (unsigned char gX, unsigned char gY) {
 	gridY = gY;
 	flashTime = 0;
 
+	Anim *leftAnim = getAnim(E_LEFTANIM);
+	Anim *rightAnim = getAnim(E_RIGHTANIM);
+
 	switch (getProperty(E_BEHAVIOUR)) {
+
+		case 2: // Walk from side to side
+		case 4: // Walk from side to side and down hills
+
+			animType = E_LEFTANIM;
+			leftAnim->copyYOffset(rightAnim);
+
+			break;
 
 		case 21: // Destructible block
 		case 25: // Float up / Belt
@@ -76,6 +87,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 26: // Flip animation
 
 			animType = E_RIGHTANIM;
+			rightAnim->copyYOffset(leftAnim);
 
 			break;
 
@@ -229,4 +241,25 @@ signed char Event::getProperty (unsigned char property) {
 
 }
 
+
+Anim* Event::getAnim(unsigned char property) {
+
+	switch (property) {
+
+		case E_LEFTANIM:
+		case E_RIGHTANIM:
+		case E_LFINISHANIM:
+		case E_RFINISHANIM:
+		case E_LSHOOTANIM:
+		case E_RSHOOTANIM:
+
+			return level->getAnim(getProperty(property));
+
+		default:
+
+			return 0;
+
+	}
+
+}
 

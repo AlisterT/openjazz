@@ -37,20 +37,24 @@ class Anim {
 
 	private:
 		Sprite        *sprites[19];
+		bool		   ignoreDefaultYOffset;
 		signed char    shootX;
 		signed char    shootY;
-		signed char    xOffset;
+		signed char	   accessoryX;
+		signed char	   accessoryY;
 		signed char    yOffset;
 		signed char    xOffsets[19];
 		signed char    yOffsets[19];
 		unsigned char  frames;       // Number of frames
 		unsigned char  frame;        // Current frame
+		unsigned char  accessory;	 // Number of an animation that is an accessory to this animation
+									 // Most of the time accessories are used with guardians.
 
 	public:
 		Anim                ();
 		~Anim               ();
 
-		void  setData        (int amount, signed char sX, signed char sY, signed char x, signed char y);
+		void  setData        (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y);
 		void  setFrame       (int nextFrame, bool looping);
 		void  setFrameData   (Sprite *frameSprite, signed char x, signed char y);
 		int   getWidth       ();
@@ -58,6 +62,8 @@ class Anim {
 		fixed getShootX      ();
 		fixed getShootY      ();
 		void  draw           (fixed x, fixed y);
+		void  copyYOffset	 (Anim *anim);
+		void  disableYOffset ();
 		void  setPalette     (SDL_Color *palette, int start, int amount);
 		void  flashPalette   (int index);
 		void  restorePalette ();
