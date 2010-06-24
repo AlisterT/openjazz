@@ -399,7 +399,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	}
 
-	video.setPalette(menu->palettes[1]);
+	video.setPalette(menuPalette);
 
 	clearScreen(0);
 

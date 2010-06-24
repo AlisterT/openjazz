@@ -11,7 +11,7 @@ objects = src/bonus/bonus.o \
 	src/level/bullet.o src/level/demolevel.o src/level/level.o \
 	src/level/levelframe.o src/level/levelload.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
-	src/menu/menuutil.o src/menu/setupmenu.o \
+	src/menu/setupmenu.o \
 	src/planet/planet.o \
 	src/player/bird.o src/player/player.o src/player/playerframe.o \
 	src/scene/scene.o src/scene/sceneload.o \

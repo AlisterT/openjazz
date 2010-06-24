@@ -38,22 +38,120 @@
 #include "scene/scene.h"
 #include "loop.h"
 
+#include <time.h>
 
-int Menu::main () {
 
-#if (defined USE_SOCKETS) || (defined USE_SDL_NET)
-	const char *newGameOptions[6] = {"new single player game", "new co-op game",
-		"new battle", "new team battle", "new race", "join game"};
-	int ret;
-#endif
+MainMenu::MainMenu () {
+
+	File *file;
+	time_t currentTime;
+
+
+	// Load the OpenJazz logo
+
+	try {
+
+		file = new File(LOGO_FILE, false);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
+	logo = file->loadSurface(64, 40);
+
+	delete file;
+
+
+	// Load the menu graphics
+
+	try {
+
+		file = new File(F_MENU, false);
+
+	} catch (int e) {
+
+		SDL_FreeSurface(logo);
+
+		throw e;
+
+	}
+
+
+	if (file->getSize() > 200000) {
+
+		time(&currentTime);
+
+		// In December, load the Christmas menu graphics
+		if (localtime(&currentTime)->tm_mon == 11) {
+
+			file->skipRLE();
+			file->skipRLE();
+			file->skipRLE();
+
+			file->loadPalette(palette);
+			background = file->loadSurface(SW, SH);
+			highlight = file->loadSurface(SW, SH);
+
+		} else {
+
+			file->loadPalette(palette);
+			background = file->loadSurface(SW, SH);
+			highlight = file->loadSurface(SW, SH);
+
+			file->skipRLE();
+			file->skipRLE();
+			file->skipRLE();
+
+		}
+
+	} else {
+
+		file->loadPalette(palette);
+		background = file->loadSurface(SW, SH);
+		highlight = file->loadSurface(SW, SH);
+
+	}
+
+	SDL_SetColorKey(background, SDL_SRCCOLORKEY, 0);
+	SDL_SetColorKey(highlight, SDL_SRCCOLORKEY, 0);
+
+	gameMenu = new GameMenu(file);
+
+	delete file;
+
+	return;
+
+}
+
+
+MainMenu::~MainMenu () {
+
+	SDL_FreeSurface(background);
+	SDL_FreeSurface(highlight);
+	SDL_FreeSurface(logo);
+
+	delete gameMenu;
+
+	return;
+
+}
+
+
+int MainMenu::main () {
+
 	Scene *scene;
+	SetupMenu setupMenu;
 	SDL_Rect src, dst;
-	int option, suboption;
+	int option;
 	unsigned int idleTime;
 
-	option = suboption = 0;
+	option = 0;
 
-	video.setPalette(palettes[0]);
+	video.setPalette(palette);
+
+	playMusic("menusng.psm");
 
 	// Demo timeout
 	idleTime = globalTicks + T_DEMO;
@@ -72,38 +170,17 @@ int Menu::main () {
 
 			playSound(S_ORB);
 
-			switch(option) {
+			switch (option) {
 
 				case 0: // New game
 
-#if (defined USE_SOCKETS) || (defined USE_SDL_NET)
-					while (true) {
-
-						ret = generic(newGameOptions, 6, suboption);
-
-						if (ret == E_QUIT) return E_QUIT;
-						if (ret < 0) break;
-
-						if (suboption == 5) {
-
-							if (joinGame() == E_QUIT) return E_QUIT;
-
-						} else {
-
-							if (newGameEpisode(GameModeType(suboption)) == E_QUIT) return E_QUIT;
-
-						}
-
-					}
-#else
-					if (newGameEpisode(suboption) == E_QUIT) return E_QUIT;
-#endif
+					if (gameMenu->newGame() == E_QUIT) return E_QUIT;
 
 					break;
 
 				case 1: // Load game
 
-					if (loadGame() == E_QUIT) return E_QUIT;
+					if (gameMenu->loadGame() == E_QUIT) return E_QUIT;
 
 					break;
 
@@ -135,7 +212,7 @@ int Menu::main () {
 
 				case 3: // Setup options
 
-					if (setup() == E_QUIT) return E_QUIT;
+					if (setupMenu.setup() == E_QUIT) return E_QUIT;
 
 					break;
 
@@ -172,7 +249,7 @@ int Menu::main () {
 			}
 
 			// Restore the main menu palette
-			video.setPalette(palettes[0]);
+			video.setPalette(palette);
 
 			// New demo timeout
 			idleTime = globalTicks + T_DEMO;
@@ -223,7 +300,7 @@ int Menu::main () {
 			playMusic("menusng.psm");
 
 			// Restore the main menu palette
-			video.setPalette(palettes[0]);
+			video.setPalette(palette);
 
 			idleTime = globalTicks + T_DEMO;
 
@@ -235,11 +312,11 @@ int Menu::main () {
 
 		dst.x = (canvasW >> 2) - 72;
 		dst.y = canvasH - (canvasH >> 2);
-		SDL_BlitSurface(screens[14], NULL, canvas, &dst);
+		SDL_BlitSurface(logo, NULL, canvas, &dst);
 
 		dst.x = (canvasW - SW) >> 1;
 		dst.y = (canvasH - SH) >> 1;
-		SDL_BlitSurface(screens[0], NULL, canvas, &dst);
+		SDL_BlitSurface(background, NULL, canvas, &dst);
 
 		switch (option) {
 
@@ -301,7 +378,7 @@ int Menu::main () {
 
 		dst.x = ((canvasW - SW) >> 1) + src.x;
 		dst.y = ((canvasH - SH) >> 1) + src.y;
-		SDL_BlitSurface(screens[1], &src, canvas, &dst);
+		SDL_BlitSurface(highlight, &src, canvas, &dst);
 
 	}
 

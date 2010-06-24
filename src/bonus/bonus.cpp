@@ -645,6 +645,7 @@ void Bonus::draw () {
 
 int Bonus::play () {
 
+	SetupMenu setupMenu;
 	const char *options[3] = {"continue game", "setup options", "quit game"};
 	bool pmenu, pmessage;
 	int stats, option;
@@ -706,7 +707,7 @@ int Bonus::play () {
 
 						if (!gameMode) {
 
-							if (menu->setup() == E_QUIT) return E_QUIT;
+							if (setupMenu.setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
 							video.setPalette(palette);

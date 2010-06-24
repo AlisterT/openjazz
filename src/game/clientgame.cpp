@@ -248,7 +248,7 @@ int ClientGame::setLevel (char* fileName) {
 
 	int ret;
 
-	video.setPalette(menu->palettes[1]);
+	video.setPalette(menuPalette);
 
 	// Wait for level data to start arriving
 	while (!file && levelFile) {

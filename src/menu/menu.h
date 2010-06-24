@@ -25,6 +25,7 @@
 
 
 #include "game/gamemode.h"
+#include "io/file.h"
 
 #include "OpenJazz.h"
 
@@ -36,46 +37,82 @@
 // Demo timeout
 #define T_DEMO 20000
 
-// Class
+
+// Classes
 
 class Menu {
 
+	protected:
+		int message   (const char* text);
+		int generic   (const char** optionNames, int options, int& chosen);
+		int textInput (const char* request, char*& text);
+
+};
+
+
+class GameMenu : public Menu {
+
 	private:
-		SDL_Surface*  screens[15];
+		SDL_Surface*  episodeScreens[11];
+		SDL_Surface*  difficultyScreen;
+		SDL_Color     palette[256];
+		SDL_Color     greyPalette[256];
 		int           episodes;
 		unsigned char difficulty;
 
-		int message           (const char* text);
-		int generic           (const char** optionNames, int options, int& chosen);
-		int textInput         (const char* request, char*& text);
 		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
 		int newGameLevel      (GameModeType mode);
 		int newGameEpisode    (GameModeType mode);
 		int joinGame          ();
-		int loadGame          ();
-		int setupKeyboard     ();
-		int setupJoystick     ();
-		int setupResolution   ();
-#ifdef SCALE
-		int setupScaling      ();
-#endif
-		int setupSound        ();
 
 	public:
-		SDL_Color palettes[4][256];
+		GameMenu  (File* file);
+		~GameMenu ();
 
-		Menu      ();
-		~Menu     ();
+		int newGame  ();
+		int loadGame ();
 
+};
+
+
+class SetupMenu : public Menu {
+
+	private:
+		int setupKeyboard   ();
+		int setupJoystick   ();
+		int setupResolution ();
+#ifdef SCALE
+		int setupScaling    ();
+#endif
+		int setupSound      ();
+
+	public:
 		int setup ();
-		int main  ();
+
+};
+
+
+class MainMenu : public Menu {
+
+	private:
+		SDL_Surface* background;
+		SDL_Surface* highlight;
+		SDL_Surface* logo;
+		GameMenu*    gameMenu;
+		SDL_Color    palette[256];
+
+	public:
+		MainMenu  ();
+		~MainMenu ();
+
+		int main ();
 
 };
 
 
 // Variable
 
-EXTERN Menu* menu;
+EXTERN SDL_Color menuPalette[256];
 
 #endif
 

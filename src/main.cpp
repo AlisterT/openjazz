@@ -676,8 +676,8 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 
 int main(int argc, char *argv[]) {
 
+	MainMenu *mainMenu = NULL;
 	Scene *scene = NULL;
-
 
 	// Initialise SDL
 
@@ -730,7 +730,7 @@ int main(int argc, char *argv[]) {
 	// Load the menu
 	try {
 
-		menu = new Menu();
+		mainMenu = new MainMenu();
 
 	} catch (int e) {
 
@@ -741,7 +741,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Run the main menu
-	if (menu->main() == E_NONE) {
+	if (mainMenu->main() == E_NONE) {
 
 		// Show the ending cutscene
 
@@ -751,7 +751,7 @@ int main(int argc, char *argv[]) {
 
 		} catch (int e) {
 
-			delete menu;
+			delete mainMenu;
 			freeMain();
 
 			return e;
@@ -765,7 +765,7 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	delete menu;
+	delete mainMenu;
 	freeMain();
 
 

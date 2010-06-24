@@ -36,7 +36,7 @@
 #include "loop.h"
 
 
-int Menu::setupKeyboard () {
+int SetupMenu::setupKeyboard () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
 	int progress, count, character;
@@ -115,7 +115,7 @@ int Menu::setupKeyboard () {
 }
 
 
-int Menu::setupJoystick () {
+int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
 	int progress, count, control;
@@ -254,7 +254,7 @@ int Menu::setupJoystick () {
 }
 
 
-int Menu::setupResolution () {
+int SetupMenu::setupResolution () {
 
 	int widthOptions[] = {320, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
 		1280, 1440, 1600, 1920};
@@ -405,7 +405,7 @@ int Menu::setupResolution () {
 
 
 #ifdef SCALE
-int Menu::setupScaling () {
+int SetupMenu::setupScaling () {
 
 	int scaleFactor;
 
@@ -466,7 +466,7 @@ int Menu::setupScaling () {
 #endif
 
 
-int Menu::setupSound () {
+int SetupMenu::setupSound () {
 
 	while (true) {
 
@@ -501,7 +501,7 @@ int Menu::setupSound () {
 }
 
 
-int Menu::setup () {
+int SetupMenu::setup () {
 
 	const char *setupOptions[6] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound"};
 	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};

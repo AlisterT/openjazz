@@ -518,6 +518,7 @@ int Level::play () {
 	const char* options[5] =
 		{"continue game", "save game", "load game", "setup options", "quit game"};
 	char *string;
+	SetupMenu setupMenu;
 	bool pmessage, pmenu;
 	int stats, option;
 	unsigned int returnTime;
@@ -592,7 +593,7 @@ int Level::play () {
 
 						if (!gameMode) {
 
-							if (menu->setup() == E_QUIT) return E_QUIT;
+							if (setupMenu.setup() == E_QUIT) return E_QUIT;
 
 							// Restore level palette
 							video.setPalette(palette);

@@ -38,14 +38,84 @@
 #include "util.h"
 
 
-int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
+GameMenu::GameMenu (File *file) {
+
+	unsigned char pixel;
+	int count, col;
+
+
+	// Load the difficulty graphics
+	file->loadPalette(menuPalette);
+	difficultyScreen = file->loadSurface(SW, SH);
+	SDL_SetColorKey(difficultyScreen, SDL_SRCCOLORKEY, 0);
+
+	// Default difficulty setting
+	difficulty = 1;
+
+
+	// Load the episode pictures (max. 10 episodes + bonus level)
+
+	// Load their palette
+	file->loadPalette(palette);
+
+	// Generate a greyscale mapping
+	for (count = 0; count < 256; count++) {
+
+		col = ((palette[count].r >> 1) + (palette[count].g << 1) + (palette[count].b >> 1)) >> 3;
+
+		if (col > 79) col = 79;
+
+		greyPalette[count].r = greyPalette[count].g = greyPalette[count].b = col;
+
+	}
+
+	episodes = 11;
+
+	for (count = 0; count < 11; count++) {
+
+		episodeScreens[count] = file->loadSurface(134, 110);
+
+		if (file->tell() >= file->getSize()) {
+
+			episodes = ++count;
+
+			for (; count < 11; count++) {
+
+				pixel = 0;
+				episodeScreens[count] = createSurface(&pixel, 1, 1);
+
+			}
+
+		}
+
+	}
+
+	return;
+
+}
+
+
+GameMenu::~GameMenu () {
+
+	int count;
+
+	for (count = 0; count < 11; count++) SDL_FreeSurface(episodeScreens[count]);
+
+	SDL_FreeSurface(difficultyScreen);
+
+	return;
+
+}
+
+
+int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 
 	const char *options[4] = {"easy", "medium", "hard", "turbo"};
 	char *firstLevel;
 	SDL_Rect src, dst;
 	int count;
 
-	video.setPalette(palettes[1]);
+	video.setPalette(menuPalette);
 
 	while (true) {
 
@@ -74,7 +144,7 @@ int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 		src.h = 100;
 		dst.x = (canvasW >> 1) - 40;
 		dst.y = (canvasH >> 1) - 50;
-		SDL_BlitSurface(screens[2], &src, canvas, &dst);
+		SDL_BlitSurface(difficultyScreen, &src, canvas, &dst);
 
 		if (controls.release(C_UP)) difficulty = (difficulty + 3) % 4;
 
@@ -155,13 +225,13 @@ int Menu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 }
 
 
-int Menu::newGameLevel (GameModeType mode) {
+int GameMenu::newGameLevel (GameModeType mode) {
 
 	int option, worldNum, levelNum;
 
 	worldNum = levelNum = option = 0;
 
-	video.setPalette(palettes[1]);
+	video.setPalette(menuPalette);
 
 	while (true) {
 
@@ -211,7 +281,7 @@ int Menu::newGameLevel (GameModeType mode) {
 			if (newGameDifficulty(mode, levelNum, worldNum) == E_QUIT)
 				return E_QUIT;
 
-			video.setPalette(palettes[1]);
+			video.setPalette(menuPalette);
 
 		}
 
@@ -222,7 +292,7 @@ int Menu::newGameLevel (GameModeType mode) {
 }
 
 
-int Menu::newGameEpisode (GameModeType mode) {
+int GameMenu::newGameEpisode (GameModeType mode) {
 
 	const char *options[12] = {"episode 1", "episode 2", "episode 3",
 		"episode 4", "episode 5", "episode 6", "episode a", "episode b",
@@ -232,7 +302,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 	SDL_Rect dst;
 	int episode, count, worldNum;
 
-	video.setPalette(palettes[2]);
+	video.setPalette(palette);
 
 	for (count = 0; count < 10; count++) {
 
@@ -244,9 +314,8 @@ int Menu::newGameEpisode (GameModeType mode) {
 		exists[count] = fileExists(check);
 		delete[] check;
 
-		if (exists[count]) video.restoreSurfacePalette(screens[count + 3]);
-		else
-			SDL_SetPalette(screens[count + 3], SDL_LOGPAL, palettes[3], 0, 256);
+		if (exists[count]) video.restoreSurfacePalette(episodeScreens[count]);
+		else SDL_SetPalette(episodeScreens[count], SDL_LOGPAL, greyPalette, 0, 256);
 
 	}
 
@@ -272,17 +341,16 @@ int Menu::newGameEpisode (GameModeType mode) {
 
 		clearScreen(0);
 
+		dst.x = canvasW - 144;
+		dst.y = (canvasH - 110) >> 1;
+
 		if ((episode < episodes - 1) || (episode < 6)) {
 
-			dst.x = canvasW - 150;
-			dst.y = (canvasH - 110) >> 1;
-			SDL_BlitSurface(screens[episode + 3], NULL, canvas, &dst);
+			SDL_BlitSurface(episodeScreens[episode], NULL, canvas, &dst);
 
 		} else if ((episode == 10) && (episodes > 6)) {
 
-			dst.x = canvasW - 160;
-			dst.y = (canvasH - 110) >> 1;
-			SDL_BlitSurface(screens[episodes + 2], NULL, canvas, &dst);
+			SDL_BlitSurface(episodeScreens[episodes - 1], NULL, canvas, &dst);
 
 		}
 
@@ -333,7 +401,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 
 				}
 
-				video.setPalette(palettes[2]);
+				video.setPalette(palette);
 
 			}
 
@@ -346,7 +414,7 @@ int Menu::newGameEpisode (GameModeType mode) {
 }
 
 
-int Menu::joinGame () {
+int GameMenu::joinGame () {
 
 	int ret;
 
@@ -441,12 +509,48 @@ int Menu::joinGame () {
 }
 
 
-int Menu::loadGame () {
+int GameMenu::newGame () {
+
+#if (defined USE_SOCKETS) || (defined USE_SDL_NET)
+	const char *newGameOptions[6] = {"new single player game", "new co-op game",
+		"new battle", "new team battle", "new race", "join game"};
+	int ret;
+	int option;
+
+	option = 0;
+
+	while (true) {
+
+		ret = generic(newGameOptions, 6, option);
+
+		if (ret == E_QUIT) return E_QUIT;
+		if (ret < 0) return E_NONE;
+
+		if (option == 5) {
+
+			if (joinGame() == E_QUIT) return E_QUIT;
+
+		} else {
+
+			if (newGameEpisode(GameModeType(option)) == E_QUIT) return E_QUIT;
+
+		}
+
+	}
+
+	return E_NONE;
+#else
+	return newGameEpisode(M_SINGLE);
+#endif
+
+}
+
+
+int GameMenu::loadGame () {
 
 	// TODO: Actual loading of saved games
 
 	return newGameLevel(M_SINGLE);
 
 }
-
 

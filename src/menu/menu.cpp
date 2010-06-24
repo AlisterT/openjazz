@@ -10,6 +10,7 @@
  * 18th July 2009: Created menuutil.cpp from parts of menu.cpp
  * 18th July 2009: Created menusetup.cpp from parts of menu.cpp
  * 19th July 2009: Created menumain.cpp from parts of menu.cpp
+ * 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
  * Part of the OpenJazz project
  *
@@ -26,160 +27,218 @@
  */
 
 /*
- * Deals with the loading and freeing of the menu data.
+ * Provides various generic menus.
  *
  */
 
 
 #include "menu.h"
 
-#include "game/game.h"
-#include "io/file.h"
+#include "io/controls.h"
+#include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "loop.h"
+#include "util.h"
 
-#include <time.h>
-
-
-Menu::Menu () {
-
-	File *file;
-	unsigned char pixel;
-	time_t currentTime;
-	int count, col;
+#include <string.h>
 
 
-	// Load the OpenJazz logo
+int Menu::message (const char* text) {
 
-	try {
+	// Display a message to the user
 
-		file = new File(LOGO_FILE, false);
+	video.setPalette(menuPalette);
 
-	} catch (int e) {
+	while (true) {
 
-		throw e;
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-	}
+		if (controls.release(C_ENTER) || controls.release(C_ESCAPE))
+			return E_NONE;
 
-	screens[14] = file->loadSurface(64, 40);
+		SDL_Delay(T_FRAME);
 
-	delete file;
+		clearScreen(15);
 
-
-	// Load the menu graphics
-
-	try {
-
-		file = new File(F_MENU, false);
-
-	} catch (int e) {
-
-		SDL_FreeSurface(screens[14]);
-
-		throw e;
+		// Draw the message
+		fontmn2->showString(text, canvasW >> 2, (canvasH >> 1) - 16);
 
 	}
 
-	file->seek(0, true);
+	return E_NONE;
 
-	// Load the main menu graphics
-	file->loadPalette(palettes[0]);
-	screens[0] = file->loadSurface(SW, SH);
-	screens[1] = file->loadSurface(SW, SH);
+}
 
 
-	if (file->getSize() > 200000) {
+int Menu::generic (const char** optionNames, int options, int& chosen) {
 
-		time(&currentTime);
+	// Let the user select from a menu of the given options
 
-		// In December, load the Christmas menu graphics
-		if (localtime(&currentTime)->tm_mon == 11) {
+	int count;
 
-			SDL_FreeSurface(screens[0]);
-			SDL_FreeSurface(screens[1]);
-			file->loadPalette(palettes[0]);
-			screens[0] = file->loadSurface(SW, SH);
-			screens[1] = file->loadSurface(SW, SH);
+	video.setPalette(menuPalette);
 
-		} else {
+	if (chosen >= options) chosen = 0;
 
-			file->skipRLE();
-			file->skipRLE();
-			file->skipRLE();
+	while (true) {
+
+		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+
+		if (controls.release(C_ESCAPE)) return E_UNUSED;
+
+		SDL_Delay(T_FRAME);
+
+		clearScreen(0);
+
+		for (count = 0; count < options; count++) {
+
+			if (count == chosen) fontmn2->mapPalette(240, 8, 114, 16);
+
+			fontmn2->showString(optionNames[count], canvasW >> 2,
+				(canvasH >> 1) + (count << 4) - (options << 3));
+
+			if (count == chosen) fontmn2->restorePalette();
+
+		}
+
+		if (controls.release(C_UP)) chosen = (chosen + options - 1) % options;
+
+		if (controls.release(C_DOWN)) chosen = (chosen + 1) % options;
+
+		if (controls.release(C_ENTER)) {
+
+			playSound(S_ORB);
+
+			return E_NONE;
 
 		}
 
 	}
 
-	SDL_SetColorKey(screens[0], SDL_SRCCOLORKEY, 0);
-	SDL_SetColorKey(screens[1], SDL_SRCCOLORKEY, 0);
+	return E_NONE;
+
+}
 
 
-	// Load the difficulty graphics
-	file->loadPalette(palettes[1]);
-	screens[2] = file->loadSurface(SW, SH);
-	SDL_SetColorKey(screens[2], SDL_SRCCOLORKEY, 0);
+int Menu::textInput (const char* request, char*& text) {
 
-	// Default difficulty setting
-	difficulty = 1;
+	// Let the user to edit a text string
 
+	char *input;
+	int count, terminate, character, x;
+	unsigned int cursor;
 
-	// Load the episode pictures (max. 10 episodes + bonus level)
+	// Create input string
+	input = createEditableString(text);
 
-	// Load their palette
-	file->loadPalette(palettes[2]);
+	cursor = strlen(input);
 
-	// Generate a greyscale mapping
-	for (count = 0; count < 256; count++) {
+	while (true) {
 
-		col = ((palettes[2][count].r >> 1) + (palettes[2][count].g << 1) +
-			(palettes[2][count].b >> 1)) >> 3;
+		character = loop(TYPING_LOOP);
 
-		if (col > 79) col = 79;
+		if (character == E_QUIT) {
 
-		palettes[3][count].r = palettes[3][count].g = palettes[3][count].b =
-			col;
+			delete[] input;
 
-	}
+			return E_QUIT;
 
-	episodes = 11;
+		}
 
-	for (count = 0; count < 11; count++) {
+		// Ensure there is space for another character
+		if (cursor < STRING_LENGTH) {
 
-		screens[count + 3] = file->loadSurface(134, 110);
+			terminate = (input[cursor] == 0);
 
-		if (file->tell() >= file->getSize()) {
+			// If the character is valid, add it to the input string
 
-			episodes = ++count;
+			if ((character == ' ') || (character == '.') ||
+				((character >= '0') && (character <= '9')) ||
+				((character >= 'a') && (character <= 'z'))) {
 
-			for (; count < 11; count++) {
+				input[cursor] = character;
+				cursor++;
+				if (terminate) input[cursor] = 0;
 
-				pixel = 0;
-				screens[count + 3] = createSurface(&pixel, 1, 1);
+			} else if ((character >= 'A') && (character <= 'Z')) {
+
+				input[cursor] = character | 32;
+				cursor++;
+				if (terminate) input[cursor] = 0;
 
 			}
 
 		}
 
+		if ((character == SDLK_DELETE) && (cursor < strlen(input))) {
+
+			for (count = cursor; count < STRING_LENGTH; count++)
+				input[count] = input[count + 1];
+
+		}
+
+		if ((character == SDLK_BACKSPACE) && (cursor > 0)) {
+
+			for (count = cursor - 1; count < STRING_LENGTH; count++)
+				input[count] = input[count + 1];
+
+			cursor--;
+
+		}
+
+
+		if (controls.release(C_ESCAPE)) {
+
+			delete[] input;
+
+			return E_UNUSED;
+
+		}
+
+		SDL_Delay(T_FRAME);
+
+		clearScreen(15);
+
+		// Draw the prompt
+		fontmn2->showString(request, canvasW >> 2, (canvasH >> 1) - 16);
+
+		// Draw the section of the text before the cursor
+		fontmn2->mapPalette(240, 8, 114, 16);
+		terminate = input[cursor];
+		input[cursor] = 0;
+		x = fontmn2->showString(input, (canvasW >> 2) + 8, canvasH >> 1);
+
+		// Draw the cursor
+		drawRect(x, (canvasH >> 1) + 10, 8, 2, 79);
+
+		// Draw the section of text after the cursor
+		input[cursor] = terminate;
+		fontmn2->showString(input + cursor, x, canvasH >> 1);
+		fontmn2->restorePalette();
+
+
+		if (controls.release(C_LEFT) && (cursor > 0)) cursor--;
+
+		if (controls.release(C_RIGHT) && (cursor < strlen(input))) cursor++;
+
+		if (controls.release(C_ENTER)) {
+
+			playSound(S_ORB);
+
+			// Replace the original string with the input string
+			delete[] text;
+			text = input;
+
+			return E_NONE;
+
+		}
+
 	}
 
-	delete file;
+	delete[] input;
 
-	playMusic("menusng.psm");
-
-	return;
+	return E_UNUSED;
 
 }
-
-
-Menu::~Menu () {
-
-	int count;
-
-	for (count = 0; count < 15; count++) SDL_FreeSurface(screens[count]);
-
-	return;
-
-}
-
 
