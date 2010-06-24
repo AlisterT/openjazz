@@ -396,8 +396,6 @@ int loadMain (int argc, char *argv[]) {
 
 	// Load fonts
 
-	fontsFont = NULL;
-	bonusFont = NULL;
 	panelBigFont = NULL;
 	panelSmallFont = NULL;
 	font2 = NULL;
@@ -407,8 +405,6 @@ int loadMain (int argc, char *argv[]) {
 
 	try {
 
-		fontsFont = new Font(false);
-		bonusFont = new Font(true);
 		panelBigFont = new Font(pixels + (40 * 320), true);
 		panelSmallFont = new Font(pixels + (48 * 320), false);
 		font2 = new Font(F_FONT2_0FN);
@@ -419,8 +415,6 @@ int loadMain (int argc, char *argv[]) {
 
 	} catch (int e) {
 
-		if (fontsFont) delete fontsFont;
-		if (bonusFont) delete bonusFont;
 		if (panelBigFont) delete panelBigFont;
 		if (panelSmallFont) delete panelSmallFont;
 		if (font2) delete font2;
@@ -476,8 +470,6 @@ void freeMain () {
 
 	delete net;
 
-	delete fontsFont;
-	delete bonusFont;
 	delete panelBigFont;
 	delete panelSmallFont;
 	delete font2;

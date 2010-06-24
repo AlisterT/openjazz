@@ -175,7 +175,7 @@ int DemoLevel::play () {
 		drawStats(stats, BLACK);
 
 
-		fontsFont->showString("demo", (canvasW >> 1) - 36, 32);
+		font->showString("demo", (canvasW >> 1) - 36, 32);
 
 
 	}

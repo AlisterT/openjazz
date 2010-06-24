@@ -50,12 +50,15 @@ typedef struct {
 } BonusGridElement;
 
 
-// Class
+// Classes
+
+class Font;
 
 class Bonus : public BaseLevel {
 
 	private:
 		SDL_Surface*     background;
+		Font*            font;
 		Anim             animSet[BANIMS];
 		BonusGridElement grid[BLH][BLW];
 		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks

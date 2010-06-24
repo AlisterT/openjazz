@@ -43,6 +43,7 @@ enum GameModeType {
 
 // Classes
 
+class Font;
 class Player;
 
 class GameMode {
@@ -50,7 +51,7 @@ class GameMode {
 	public:
 		virtual GameModeType  getMode    () = 0;
 		virtual unsigned char chooseTeam () = 0;
-		virtual void          drawScore  () = 0;
+		virtual void          drawScore  (Font* font) = 0;
 		virtual bool          hit        (Player *source, Player *victim);
 		virtual bool          kill       (Player *source, Player *victim);
 		virtual bool          endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
@@ -62,7 +63,7 @@ class CooperativeGameMode : public GameMode {
 
 	public:
 		unsigned char chooseTeam ();
-		virtual void  drawScore  ();
+		virtual void  drawScore  (Font* font);
 
 };
 
@@ -70,7 +71,7 @@ class FreeForAllGameMode : public GameMode {
 
 	public:
 		unsigned char chooseTeam ();
-		virtual void  drawScore  ();
+		virtual void  drawScore  (Font* font);
 
 };
 
@@ -78,7 +79,7 @@ class TeamGameMode : public GameMode {
 
 	public:
 		unsigned char chooseTeam ();
-		virtual void  drawScore  ();
+		virtual void  drawScore  (Font* font);
 
 };
 

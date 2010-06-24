@@ -330,6 +330,17 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	int count, x, y, type;
 
 
+	try {
+
+		font = new Font(false);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
+
 	difficulty = diff;
 
 
@@ -356,6 +367,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 		} catch (int e) {
 
 			delete[] string;
+			delete font;
 
 			return e;
 
@@ -422,6 +434,8 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	} catch (int e) {
 
+		delete font;
+
 		return e;
 
 	}
@@ -483,6 +497,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	if (tiles < 0) {
 
 		delete file;
+		delete font;
 
 		return tiles;
 
@@ -501,6 +516,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		SDL_FreeSurface(tileSet);
 		delete file;
+		delete font;
 
 		return count;
 

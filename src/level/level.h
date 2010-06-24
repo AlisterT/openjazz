@@ -86,6 +86,7 @@ typedef struct {
 
 class Bullet;
 class Event;
+class Font;
 class Player;
 class Scene;
 
@@ -123,6 +124,7 @@ class Level : public BaseLevel {
 		void draw ();
 
 	public:
+		Font* font;
 		Event*    events;
 		Bullet*   bullets;
 		EventPath path[PATHS];

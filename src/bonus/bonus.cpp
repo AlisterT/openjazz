@@ -192,11 +192,24 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	char *string, *fileString;
 	int count, x, y;
 
+
+	try {
+
+		font = new Font(true);
+
+	} catch (int e) {
+
+		throw e;
+
+	}
+
 	try {
 
 		file = new File(fileName, false);
 
 	} catch (int e) {
+
+		delete font;
 
 		throw e;
 
@@ -367,8 +380,10 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 Bonus::~Bonus () {
 
-	// Restore font palettes
+	// Restore panelBigFont palette
 	panelBigFont->restorePalette();
+
+	delete font;
 
 	return;
 
@@ -622,20 +637,20 @@ void Bonus::draw () {
 
 
 	// Show gem count
-	bonusFont->showString("*", 0, 0);
-	bonusFont->showNumber(localPlayer->getItems() / 10, 50, 0);
-	bonusFont->showNumber(localPlayer->getItems() % 10, 68, 0);
-	bonusFont->showString("/", 65, 0);
-	bonusFont->showNumber(items, 124, 0);
+	font->showString("*", 0, 0);
+	font->showNumber(localPlayer->getItems() / 10, 50, 0);
+	font->showNumber(localPlayer->getItems() % 10, 68, 0);
+	font->showString("/", 65, 0);
+	font->showNumber(items, 124, 0);
 
 
 	// Show time remaining
 	if (endTime > ticks) x = (endTime - ticks) / 1000;
 	else x = 0;
-	bonusFont->showNumber(x / 60, 250, 0);
-	bonusFont->showString(":", 247, 0);
-	bonusFont->showNumber((x / 10) % 6, 274, 0);
-	bonusFont->showNumber(x % 10, 291, 0);
+	font->showNumber(x / 60, 250, 0);
+	font->showString(":", 247, 0);
+	font->showNumber((x / 10) % 6, 274, 0);
+	font->showNumber(x % 10, 291, 0);
 
 
 	return;
@@ -774,7 +789,7 @@ int Bonus::play () {
 
 		// If paused, draw "PAUSE"
 		if (pmessage && !pmenu)
-			bonusFont->showString("pause", (canvasW >> 1) - 44, 32);
+			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
 		drawStats(stats, 0);

@@ -106,6 +106,8 @@ Level::~Level () {
 	delete[] sceneFile;
 	delete[] musicFile;
 
+	delete font;
+
 	return;
 
 }
@@ -670,11 +672,11 @@ int Level::play () {
 
 		// If paused, draw "PAUSE"
 		if (pmessage && !pmenu)
-			fontsFont->showString("pause", (canvasW >> 1) - 44, 32);
+			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 
 		// If this is a competitive game, draw the score
-		if (gameMode) gameMode->drawScore();
+		if (gameMode) gameMode->drawScore(font);
 
 
 		// Draw statistics
@@ -726,30 +728,30 @@ int Level::play () {
 			// Display statistics & bonuses
 			// TODO: Display percentage symbol
 
-			fontsFont->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
-			fontsFont->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
+			font->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
+			font->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
 
-			fontsFont->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
+			font->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
 
 			if (enemies)
-				fontsFont->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+				font->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			else
-				fontsFont->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
-			fontsFont->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 
-			fontsFont->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
+			font->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
 
 			if (items)
-				fontsFont->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+				font->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			else
-				fontsFont->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
-			fontsFont->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 
-			fontsFont->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);
-			fontsFont->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
+			font->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);
+			font->showNumber(perfect, (canvasW >> 1) + 124, canvasH >> 1);
 
-			fontsFont->showString("score", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
-			fontsFont->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
+			font->showString("score", (canvasW >> 1) - 152, (canvasH >> 1) + 40);
+			font->showNumber(localPlayer->getScore(), (canvasW >> 1) + 124, (canvasH >> 1) + 40);
 
 		}
 

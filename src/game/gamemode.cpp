@@ -72,7 +72,7 @@ unsigned char CooperativeGameMode::chooseTeam () {
 }
 
 
-void CooperativeGameMode::drawScore () {
+void CooperativeGameMode::drawScore (Font* font) {
 
 	// Do nothing
 
@@ -103,9 +103,9 @@ unsigned char FreeForAllGameMode::chooseTeam () {
 }
 
 
-void FreeForAllGameMode::drawScore () {
+void FreeForAllGameMode::drawScore (Font* font) {
 
-	fontsFont->showNumber(localPlayer->teamScore, 64, 4);
+	font->showNumber(localPlayer->teamScore, 64, 4);
 
 	return;
 
@@ -138,9 +138,9 @@ unsigned char TeamGameMode::chooseTeam () {
 }
 
 
-void TeamGameMode::drawScore () {
+void TeamGameMode::drawScore (Font* font) {
 
-	fontsFont->showNumber(localPlayer->teamScore, 64, 4);
+	font->showNumber(localPlayer->teamScore, 64, 4);
 
 	return;
 
