@@ -33,7 +33,8 @@
 #include "io/sound.h"
 #include "level/level.h"
 #include "planet/planet.h"
-#include "player/player.h"
+#include "player/bonusplayer.h"
+#include "player/levelplayer.h"
 #include "util.h"
 
 #include <string.h>
@@ -286,7 +287,9 @@ void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 void Game::resetPlayer (Player *player, bool bonus) {
 
 	player->reset();
-	player->setPosition(TTOF(checkX) + (bonus? F16: 0), TTOF(checkY) + (bonus? F16: 0));
+
+	if (bonus) player->getBonusPlayer()->setPosition(TTOF(checkX), TTOF(checkY));
+	else player->getLevelPlayer()->setPosition(TTOF(checkX), TTOF(checkY));
 
 	return;
 

@@ -33,7 +33,7 @@
 
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 #include "util.h"
 
 #include <stdlib.h>
@@ -84,6 +84,7 @@ signed char* Event::prepareStep (unsigned int ticks, int msps) {
 
 Event* Event::step (unsigned int ticks, int msps) {
 
+	LevelPlayer* levelPlayer;
 	fixed width, height;
 	signed char* set;
 	int count;
@@ -95,6 +96,8 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 	if (!set) return remove();
 
+
+	levelPlayer = localPlayer->getLevelPlayer();
 
 	// Find dimensions
 	width = getWidth();
@@ -124,8 +127,8 @@ Event* Event::step (unsigned int ticks, int msps) {
 		case 3:
 
 			// Seek jazz
-			if (localPlayer->getX() + PXO_R < x) dx = -ES_FAST;
-			else if (localPlayer->getX() + PXO_L > x + width) dx = ES_FAST;
+			if (levelPlayer->getX() + PXO_R < x) dx = -ES_FAST;
+			else if (levelPlayer->getX() + PXO_L > x + width) dx = ES_FAST;
 			else dx = 0;
 
 			break;
@@ -350,20 +353,20 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Sparks-esque following
 
-			if (localPlayer->getFacing() && (x + width < localPlayer->getX())) {
+			if (levelPlayer->getFacing() && (x + width < levelPlayer->getX())) {
 
 				dx = ES_FAST;
 
-				if (y + height < localPlayer->getY() + PYO_TOP) dy = ES_SLOW;
-				else if (y > localPlayer->getY()) dy = -ES_SLOW;
+				if (y + height < levelPlayer->getY() + PYO_TOP) dy = ES_SLOW;
+				else if (y > levelPlayer->getY()) dy = -ES_SLOW;
 				else dy = 0;
 
-			} else if (!localPlayer->getFacing() && (x > localPlayer->getX() + F32)) {
+			} else if (!levelPlayer->getFacing() && (x > levelPlayer->getX() + F32)) {
 
 				dx = -ES_FAST;
 
-				if (y + height < localPlayer->getY() + PYO_TOP) dy = ES_SLOW;
-				else if (y > localPlayer->getY()) dy = -ES_SLOW;
+				if (y + height < levelPlayer->getY() + PYO_TOP) dy = ES_SLOW;
+				else if (y > levelPlayer->getY()) dy = -ES_SLOW;
 				else dy = 0;
 
 			} else {
@@ -399,7 +402,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Non-floating Sparks-esque following
 
-			if (localPlayer->getFacing() && (x + width < localPlayer->getX() + PXO_L - F4)) {
+			if (levelPlayer->getFacing() && (x + width < levelPlayer->getX() + PXO_L - F4)) {
 
 				if (level->checkMaskDown(x + width, y + F4) &&
 					!level->checkMaskDown(x + width + F4, y - (height >> 1)))
@@ -407,7 +410,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 				else
 					dx = 0;
 
-			} else if (!localPlayer->getFacing() && (x > localPlayer->getX() + PXO_R + F4)) {
+			} else if (!levelPlayer->getFacing() && (x > levelPlayer->getX() + PXO_R + F4)) {
 
 				if (level->checkMaskDown(x, y + F4) &&
 				    !level->checkMaskDown(x - F4, y - (height >> 1)))
@@ -449,10 +452,10 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			for (count = 0; count < nPlayers; count++) {
 
-				if (players[count].overlap(x + F8, y + F4 - height, width - F16,
+				if (players[count].getLevelPlayer()->overlap(x + F8, y + F4 - height, width - F16,
 					height - F8)) {
 
-					players[count].setSpeed(set[E_YAXIS]? set[E_MAGNITUDE] * F4: set[E_MAGNITUDE] * F40,
+					players[count].getLevelPlayer()->setSpeed(set[E_YAXIS]? set[E_MAGNITUDE] * F4: set[E_MAGNITUDE] * F40,
 						set[E_YAXIS]? set[E_MULTIPURPOSE] * -F20: 0);
 
 				}
@@ -569,9 +572,9 @@ Event* Event::step (unsigned int ticks, int msps) {
 			case 3:
 
 				// Seek jazz
-				if (localPlayer->getX() + PXO_R < x)
+				if (levelPlayer->getX() + PXO_R < x)
 					animType = E_LEFTANIM;
-				else if (localPlayer->getX() + PXO_L > x + width)
+				else if (levelPlayer->getX() + PXO_L > x + width)
 					animType = E_RIGHTANIM;
 
 				break;
@@ -670,7 +673,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 				// Flip animation
 
-				if (localPlayer->overlap(x, y - height, width, height))
+				if (levelPlayer->overlap(x, y - height, width, height))
 					animType = E_LEFTANIM;
 				else
 					animType = E_RIGHTANIM;
@@ -710,13 +713,13 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 				// Sparks-esque following
 
-				if (localPlayer->getFacing() &&
-					(x + width < localPlayer->getX())) {
+				if (levelPlayer->getFacing() &&
+					(x + width < levelPlayer->getX())) {
 
 					animType = E_RIGHTANIM;
 
-				} else if (!localPlayer->getFacing() &&
-					(x > localPlayer->getX() + F32)) {
+				} else if (!levelPlayer->getFacing() &&
+					(x > levelPlayer->getX() + F32)) {
 
 					animType = E_LEFTANIM;
 
@@ -792,7 +795,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			default:
 
-				if (localPlayer->getX() + PXO_MID < x + (width >> 1))
+				if (levelPlayer->getX() + PXO_MID < x + (width >> 1))
 					animType = E_LEFTANIM;
 				else
 					animType = E_RIGHTANIM;
@@ -877,31 +880,31 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 	for (count = 0; count < nPlayers; count++) {
 
+		levelPlayer = players[count].getLevelPlayer();
+
 		// Check if the player is touching the event
 		if (set[E_MODIFIER] == 6) {
 
 			if (width && height &&
-				players[count].overlap(x, y + extraOffset - height, width - F8, F8) &&
-				(players[count].getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
-				!level->checkMaskDown(players[count].getX() + PXO_MID, PYO_TOP + y - height)) {
+				levelPlayer->overlap(x, y + extraOffset - height, width - F8, F8) &&
+				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
+				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + y - height)) {
 
 				// Player is on a platform
 
-				players[count].setEvent(gridX, gridY);
-				players[count].setPosition(
-					players[count].getX() + ((dx * msps) >> 10),
-					F4 + y - height);
+				levelPlayer->setEvent(gridX, gridY);
+				levelPlayer->setPosition(levelPlayer->getX() + ((dx * msps) >> 10), F4 + y - height);
 
-			} else players[count].clearEvent(gridX, gridY);
+			} else levelPlayer->clearEvent(gridX, gridY);
 
 		} else {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				players[count].overlap(x, y + extraOffset - height, width, height)) {
+				levelPlayer->overlap(x, y + extraOffset - height, width, height)) {
 
 				// If the player picks up the event, destroy it
-				if (players[count].touchEvent(gridX, gridY, ticks, msps))
+				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps))
 					destroy(ticks);
 
 			}

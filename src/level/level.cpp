@@ -51,7 +51,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "menu/menu.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 #include "scene/scene.h"
 #include "loop.h"
 #include "util.h"
@@ -286,7 +286,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player* source) {
 
 		// Notify the player that shot the bullet
 		// If this returns false, ignore the hit
-		if (!source->takeEvent(gridX, gridY, ticks)) {
+		if (!source->getLevelPlayer()->takeEvent(gridX, gridY, ticks)) {
 
 			ge->hits--;
 
@@ -436,7 +436,7 @@ int Level::playBonus () {
 	char *bonusFile;
 	int ret;
 
-	if (!localPlayer->hasGem()) return E_NONE;
+	if (!localPlayer->getLevelPlayer()->hasGem()) return E_NONE;
 
 	delete paletteEffects;
 	paletteEffects = NULL;
@@ -517,6 +517,7 @@ void Level::receive (unsigned char* buffer) {
 
 int Level::play () {
 
+	LevelPlayer* levelPlayer;
 	const char* options[5] =
 		{"continue game", "save game", "load game", "setup options", "quit game"};
 	char *string;
@@ -528,6 +529,8 @@ int Level::play () {
  	int timeBonus;
  	int count;
 
+
+	levelPlayer = localPlayer->getLevelPlayer();
 
 	tickOffset = globalTicks;
 	ticks = 16;
@@ -700,8 +703,8 @@ int Level::play () {
 
 					if (timeBonus < 0) timeBonus = 0;
 
-					if ((localPlayer->getEnemies() == enemies) &&
-						(localPlayer->getItems() == items)) perfect = 100;
+					if ((levelPlayer->getEnemies() == enemies) &&
+						(levelPlayer->getItems() == items)) perfect = 100;
 
 				} else if (timeBonus - count >= 0) {
 
@@ -734,7 +737,7 @@ int Level::play () {
 			font->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
 
 			if (enemies)
-				font->showNumber((localPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+				font->showNumber((levelPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			else
 				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 40);
@@ -742,7 +745,7 @@ int Level::play () {
 			font->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
 
 			if (items)
-				font->showNumber((localPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+				font->showNumber((levelPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			else
 				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 20);

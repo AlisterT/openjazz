@@ -28,7 +28,8 @@
 #define _EVENT_H
 
 
-#include "movable.h"
+#include "../movable.h"
+
 #include "OpenJazz.h"
 #include "../../io/gfx/anim.h"
 

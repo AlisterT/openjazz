@@ -37,7 +37,7 @@
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 #include "util.h"
 
 
@@ -108,7 +108,7 @@ int Level::step () {
 
 
 	// Determine the players' trajectories
-	for (x = 0; x < nPlayers; x++) players[x].control(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->control(ticks, msps);
 
 
 	// Process active events
@@ -125,7 +125,7 @@ int Level::step () {
 
 	// Apply as much of those trajectories as possible, without going into the
 	// scenery
-	for (x = 0; x < nPlayers; x++) players[x].move(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->move(ticks, msps);
 
 
 
@@ -135,7 +135,7 @@ int Level::step () {
 		if (!gameMode) {
 
 			if ((difficulty >= 2) && (stage == LS_NORMAL))
-				localPlayer->kill(NULL, endTime);
+				localPlayer->getLevelPlayer()->kill(NULL, endTime);
 
 		} else gameMode->outOfTime();
 
@@ -153,7 +153,7 @@ int Level::step () {
 	// Handle player reactions
 	for (x = 0; x < nPlayers; x++) {
 
-		if (players[x].reacted(ticks) == PR_KILLED) {
+		if (players[x].getLevelPlayer()->reacted(ticks) == PR_KILLED) {
 
 			if (!gameMode) return LOST;
 
@@ -181,7 +181,7 @@ void Level::draw () {
 
 	// Calculate viewport
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
-	else localPlayer->view(ticks, paused? 0: (ticks - prevTicks));
+	else localPlayer->getLevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
 
 	// Ensure the new viewport is within the level
 	if (viewX < 0) viewX = 0;
@@ -276,8 +276,7 @@ void Level::draw () {
 
 
 	// Show the players
-	for (x = 0; x < nPlayers; x++)
-		players[x].draw(ticks, change);
+	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->draw(ticks, change);
 
 
 	// Show bullets
@@ -390,7 +389,7 @@ void Level::draw () {
 	// Draw the health bar
 
 	dst.x = 20;
-	x = localPlayer->getEnergy();
+	x = localPlayer->getLevelPlayer()->getEnergy();
 	y = (ticks - prevTicks) * 40;
 
 	if (FTOI(energyBar) < (x << 4)) {

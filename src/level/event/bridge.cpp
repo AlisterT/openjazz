@@ -28,7 +28,7 @@
 #include "../level.h"
 #include "event.h"
 
-#include "player/player.h"
+#include "player/levelplayer.h"
 
 
 Bridge::Bridge (unsigned char gX, unsigned char gY) {
@@ -63,6 +63,7 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) {
 
 Event* Bridge::step (unsigned int ticks, int msps) {
 
+	LevelPlayer* levelPlayer;
 	signed char* set;
 	int count;
 	fixed bridgeLength, playerDipX, playerDipY;
@@ -85,25 +86,27 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 
 	for (count = 0; count < nPlayers; count++) {
 
-		playerDipX = players[count].getX() + PXO_MID - x;
+		levelPlayer = players[count].getLevelPlayer();
+
+		playerDipX = levelPlayer->getX() + PXO_MID - x;
 
 		if (playerDipX < bridgeLength >> 1) playerDipY = playerDipX >> 3;
 		else playerDipY = (bridgeLength - playerDipX) >> 3;
 
-		if (players[count].overlap(x, y + playerDipY - F4, bridgeLength, F8) &&
+		if (levelPlayer->overlap(x, y + playerDipY - F4, bridgeLength, F8) &&
 			!level->checkMaskDown(x + playerDipX, y + playerDipY - F32)) {
 
 			// Player is on the bridge
 
-			players[count].setEvent(gridX, gridY);
+			levelPlayer->setEvent(gridX, gridY);
 
 			if (playerDipX < leftDipX) leftDipX = playerDipX;
 
 			if (playerDipX > rightDipX) rightDipX = playerDipX;
 
-			players[count].setPosition(players[count].getX(), y + playerDipY);
+			levelPlayer->setPosition(levelPlayer->getX(), y + playerDipY);
 
-		} else players[count].clearEvent(gridX, gridY);
+		} else levelPlayer->clearEvent(gridX, gridY);
 
 	}
 

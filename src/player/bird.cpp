@@ -21,7 +21,7 @@
 
 
 #include "bird.h"
-#include "player.h"
+#include "levelplayer.h"
 
 #include "io/gfx/video.h"
 #include "level/bullet.h"
@@ -53,8 +53,8 @@ Bird::~Bird () {
 
 void Bird::reset () {
 
-	x = player->getX();
-	y = player->getY() - F64;
+	x = player->getLevelPlayer()->getX();
+	y = player->getLevelPlayer()->getY() - F64;
 	fireTime = 0;
 
 	return;
@@ -80,7 +80,8 @@ void Bird::hit () {
 
 bool Bird::step (unsigned int ticks, int msps) {
 
-	Event *event;
+	LevelPlayer* levelPlayer;
+	Event* event;
 	bool target;
 
 	if (fleeing) {
@@ -96,14 +97,16 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 		// Trajectory for flying towards the player
 
-		if ((x < player->getX() - F160) || (x > player->getX() + F160)) {
+		levelPlayer = player->getLevelPlayer();
+
+		if ((x < levelPlayer->getX() - F160) || (x > levelPlayer->getX() + F160)) {
 
 			// Far away from the player
 			// Approach the player at a speed proportional to the distance
 
-			dx = player->getX() - x;
+			dx = levelPlayer->getX() - x;
 
-		} else if (x < player->getX()) {
+		} else if (x < levelPlayer->getX()) {
 
 			// To the left of the player, so move right
 
@@ -126,14 +129,14 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 		} else {
 
-			if ((y < player->getY() - F100) || (y > player->getY() + F100)) {
+			if ((y < levelPlayer->getY() - F100) || (y > levelPlayer->getY() + F100)) {
 
 				// Far away from the player
 				// Approach the player at a speed proportional to the distance
 
-				dy = (player->getY() - F64) - y;
+				dy = (levelPlayer->getY() - F64) - y;
 
-			} else if (y < player->getY() - F64) {
+			} else if (y < levelPlayer->getY() - F64) {
 
 				// Above the player, so move downwards
 
@@ -158,7 +161,7 @@ bool Bird::step (unsigned int ticks, int msps) {
 			target = false;
 			event = level->events;
 
-			if (player->getFacing()) {
+			if (levelPlayer->getFacing()) {
 
 				while (event && !target) {
 
@@ -206,8 +209,7 @@ void Bird::draw (unsigned int ticks, int change) {
 
 	Anim *anim;
 
-	anim = level->getAnim((player->getFacing() || fleeing)? BIRD_RIGHTANIM:
-		BIRD_LEFTANIM);
+	anim = level->getAnim((player->getLevelPlayer()->getFacing() || fleeing)? BIRD_RIGHTANIM: BIRD_LEFTANIM);
 	anim->setFrame(ticks / 80, true);
 
 	anim->draw(getDrawX(change), getDrawY(change));

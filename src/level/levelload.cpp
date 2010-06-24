@@ -42,7 +42,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "menu/menu.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 #include "loop.h"
 #include "util.h"
 
@@ -759,7 +759,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
     } else {
 
 		localPlayer->reset();
-		localPlayer->setPosition(TTOF(x), TTOF(y));
+		localPlayer->getLevelPlayer()->setPosition(TTOF(x), TTOF(y));
 
     }
 
@@ -791,7 +791,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
 
-	for (x = 0; x < nPlayers; x++) players[x].setAnims(string + 3);
+	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->setAnims(string + 3);
 
 	if (gameMode) {
 

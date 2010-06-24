@@ -25,7 +25,7 @@
 #include "video.h"
 
 #include "level/level.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 
 #include <string.h>
 
@@ -527,7 +527,7 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 
 
 	currentPalette = video.getPalette();
-	position = localPlayer->getY() - level->getWaterLevel();
+	position = localPlayer->getLevelPlayer()->getY() - level->getWaterLevel();
 
 	if (position <= 0) return;
 

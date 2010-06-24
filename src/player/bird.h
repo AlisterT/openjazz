@@ -24,7 +24,7 @@
 #define _BIRD_H
 
 
-#include "movable.h"
+#include "level/movable.h"
 #include "OpenJazz.h"
 
 

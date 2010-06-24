@@ -34,7 +34,7 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 #include "loop.h"
 #include "util.h"
 
@@ -166,7 +166,7 @@ int DemoLevel::play () {
 
 
 		// Handle player reactions
-		if (localPlayer->reacted(ticks) == PR_KILLED) return LOST;
+		if (localPlayer->getLevelPlayer()->reacted(ticks) == PR_KILLED) return LOST;
 
 
 		// Draw the graphics

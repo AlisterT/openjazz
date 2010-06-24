@@ -30,23 +30,24 @@
 
 
 #include "bird.h"
-#include "player.h"
+#include "bonusplayer.h"
+#include "levelplayer.h"
 
+#include "baselevel.h"
 #include "game/game.h"
-#include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/paletteeffects.h"
 #include "io/gfx/video.h"
-#include "io/sound.h"
-#include "level/event/event.h"
-#include "level/level.h"
 #include "util.h"
 
 #include <string.h>
 
 
 Player::Player () {
+
+	levelPlayer = new LevelPlayer(this);
+	bonusPlayer = new BonusPlayer(this);
 
 	bird = NULL;
 
@@ -60,6 +61,9 @@ Player::Player () {
 Player::~Player () {
 
 	deinit();
+
+	delete levelPlayer;
+	delete bonusPlayer;
 
 	return;
 
@@ -175,18 +179,25 @@ void Player::deinit () {
 }
 
 
-void Player::setAnims (char *newAnims) {
+void Player::reset () {
 
-	memcpy(anims, newAnims, PANIMS);
+	int count;
+
+	levelPlayer->reset();
+	bonusPlayer->reset();
+
+	if (bird) bird->reset();
+
+	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
 
 	return;
 
 }
 
 
-char * Player::getName () {
+BonusPlayer* Player::getBonusPlayer () {
 
-	return name;
+	return bonusPlayer;
 
 }
 
@@ -198,33 +209,16 @@ unsigned char * Player::getCols () {
 }
 
 
-void Player::reset () {
+char * Player::getName () {
 
-	int count;
+	return name;
 
-	if (bird) bird->reset();
+}
 
-	event = 0;
 
-	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
+LevelPlayer* Player::getLevelPlayer () {
 
-	energy = 4;
-	shield = 0;
-	floating = false;
-	facing = true;
-	direction = FQ;
-	reaction = PR_NONE;
-	reactionTime = 0;
-	jumpHeight = ITOF(92);
-	jumpY = TTOF(LH);
-	fastFeetTime = 0;
-	warpTime = 0;
-	dx = 0;
-	dy = 0;
-	enemies = items = 0;
-	gem = false;
-
-	return;
+	return levelPlayer;
 
 }
 
@@ -238,375 +232,9 @@ void Player::setControl (int control, bool state) {
 }
 
 
-bool Player::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
+bool Player::getControl (int control) {
 
-	signed char *set;
-
-	set = level->getEvent(gridX, gridY);
-
-	switch (set[E_MODIFIER]) {
-
-		case 41: // Bonus level
-
-			if (getEnergy()) level->setNext(set[E_MULTIPURPOSE], set[E_YAXIS]);
-
-			// The lack of a break statement is intentional
-
-		case 8: // Boss
-		case 27: // End of level
-
-			if (!getEnergy()) return false;
-
-			if (!gameMode) {
-
-				if (game) game->setCheckpoint(gridX, gridY);
-
-				level->setStage(LS_END);
-
-			} else if (!(gameMode->endOfLevel(this, gridX, gridY))) return false;
-
-			break;
-
-		case 0: // Enemy
-
-			break;
-
-		case 1: // Invincibility
-
-			if (!getEnergy()) return false;
-
-			reaction = PR_INVINCIBLE;
-			reactionTime = ticks + PRT_INVINCIBLE;
-
-			break;
-
-		case 2:
-		case 3: // Health
-
-			if (energy < 4) energy++;
-
-			break;
-
-		case 4: // Extra life
-
-			addLife();
-
-			break;
-
-		case 5: // High-jump feet
-
-			jumpHeight += F16;
-
-			break;
-
-		case 7: // Used with destructible blocks
-
-			break;
-
-		case 9: // Sand timer
-
-			level->addTimer();
-
-			break;
-
-		case 10: // Checkpoint
-
-			if (game) game->setCheckpoint(gridX, gridY);
-
-			break;
-
-		case 11: // Item
-
-			break;
-
-		case 12: // Rapid fire
-
-			fireSpeed++;
-
-			break;
-
-		case 15: // Ammo
-
-			addAmmo(0, 15);
-
-			break;
-
-		case 16: // Ammo
-
-			addAmmo(1, 15);
-
-			break;
-
-		case 17: // Ammo
-
-			addAmmo(2, 15);
-
-			break;
-
-		case 18: // Ammo
-
-			addAmmo(0, 2);
-
-			break;
-
-		case 19: // Ammo
-
-			addAmmo(1, 2);
-
-			break;
-
-		case 20: // Ammo
-
-			addAmmo(2, 2);
-
-			break;
-
-		case 26: // Fast feet box
-
-			fastFeetTime = ticks + T_FASTFEET;
-
-			break;
-
-		case 30: // TNT
-
-			addAmmo(3, 1);
-
-			break;
-
-		case 31: // Water level
-
-			level->setWaterLevel(gridY);
-
-			break;
-
-		case 33: // 2-hit shield
-
-			if (shield < 2) shield = 2;
-
-			break;
-
-		case 34: // Bird
-
-			if (!bird) bird = new Bird(this, gridX, gridY);
-
-			break;
-
-		case 35: // Airboard, etc.
-
-			floating = true;
-
-			break;
-
-		case 36: // 4-hit shield
-
-			shield = 6;
-
-			break;
-
-		case 37: // Diamond
-
-			gem = true;
-
-			// Yellow flash
-			level->flash(255, 255, 0, 320);
-
-			break;
-
-		default:
-
-			return false;
-
-	}
-
-	addScore(set[E_ADDEDSCORE]);
-
-	// Add to player's enemy/item tally
-	// If the event hurts and can be killed, it is an enemy
-	// Anything else that scores is an item
-	if ((set[E_MODIFIER] == 0) && set[E_HITSTOKILL]) enemies++;
-	else if (set[E_ADDEDSCORE]) items++;
-
-	return true;
-
-}
-
-
-bool Player::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
-
-	signed char *set;
-
-	set = level->getEvent(gridX, gridY);
-
-	switch (set[E_MODIFIER]) {
-
-		case 0: // Hurt
-		case 8: // Boss
-
-			if ((set[E_BEHAVIOUR] < 37) || (set[E_BEHAVIOUR] > 44))
-				hit(NULL, ticks);
-
-			break;
-
-		case 7: // Used with destructible blocks, but should not destroy on contact
-
-			break;
-
-		case 13: // Warp
-
-			if (!warpTime) {
-
-				warpX = set[E_MULTIPURPOSE];
-				warpY = set[E_YAXIS];
-				warpTime = ticks + T_WARP;
-
-				// White flash
-				level->flash(255, 255, 255, T_WARP);
-
-			}
-
-			break;
-
-		case 28: // Belt
-
-			x += set[E_MAGNITUDE] * 4 * msps;
-
-			break;
-
-		case 29: // Upwards spring
-
-			setEvent(gridX, gridY);
-
-			level->playSound(set[E_SOUND]);
-
-			break;
-
-		case 31: // Water level
-
-			level->setWaterLevel(gridY);
-
-			break;
-
-		case 32: // Float up / sideways
-
-			if (set[E_YAXIS]) {
-
-				eventX = gridX;
-				eventY = gridY;
-				event = 2;
-
-				if (dy > set[E_MULTIPURPOSE] * -F20)
-					dy -= set[E_MULTIPURPOSE] * 320 * msps;
-
-				jumpY = y - (8 * F16);
-
-			} else if (set[E_MAGNITUDE] < 0) {
-
-				if (!level->checkMaskDown(x + PXO_L + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
-					x += set[E_MAGNITUDE] * 20 * msps;
-
-			} else {
-
-				if (!level->checkMaskDown(x + PXO_R + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
-					x += set[E_MAGNITUDE] * 20 * msps;
-
-			}
-
-			break;
-
-		case 38: // Airboard, etc. off
-
-			floating = false;
-
-			break;
-
-		default:
-
-			if (!set[E_HITSTOKILL]) return takeEvent(gridX, gridY, ticks);
-
-			break;
-
-	}
-
-	return false;
-
-}
-
-
-bool Player::hit (Player *source, unsigned int ticks) {
-
-	// Invulnerable if reacting to e.g. having been hit
-	if (reaction != PR_NONE) return false;
-
-	// Hits from the same team have no effect
-	if (source && (source->getTeam() == team)) return false;
-
-
-	if (shield == 3) shield = 0;
-	else if (shield) shield--;
-	else if (!gameMode || gameMode->hit(source, this)) {
-
-		energy--;
-
-		if (bird) bird->hit();
-
-		playSound(S_OW);
-
-	}
-
-	if (energy) {
-
-		reaction = PR_HURT;
-		reactionTime = ticks + PRT_HURT;
-
-		if (dx < 0) {
-
-			dx = PXS_RUN;
-			dy = PYS_JUMP;
-
-		} else {
-
-			dx = -PXS_RUN;
-			dy = PYS_JUMP;
-
-		}
-
-	} else {
-
-		kill(source, ticks);
-
-	}
-
-	return true;
-
-}
-
-
-void Player::kill (Player *source, unsigned int ticks) {
-
-	if (reaction != PR_NONE) return;
-
-	if (!gameMode || gameMode->kill(source, this)) {
-
-		energy = 0;
-		lives--;
-
-		reaction = PR_KILLED;
-		reactionTime = ticks + PRT_KILLED;
-
-	}
-
-	if (!gameMode) level->flash(0, 0, 0, T_END << 1);
-
-	return;
-
-}
-
-
-void Player::addItem () {
-
-	items++;
-
-	return;
+	return pcontrols[control];
 
 }
 
@@ -622,13 +250,6 @@ void Player::addScore (int addedScore) {
 int Player::getScore () {
 
 	return score;
-
-}
-
-
-int Player::getEnergy () {
-
-	return energy;
 
 }
 
@@ -666,69 +287,6 @@ int Player::getAmmo (bool amount) {
 }
 
 
-int Player::getEnemies () {
-
-	return enemies;
-
-}
-
-
-int Player::getItems () {
-
-	return items;
-
-}
-
-
-bool Player::overlap (fixed left, fixed top, fixed width, fixed height) {
-
-	return (x + PXO_R >= left) && (x + PXO_L < left + width) &&
-		(y >= top) && (y + PYO_TOP < top + height);
-
-}
-
-
-void Player::setPosition (fixed newX, fixed newY) {
-
-	x = newX;
-	y = newY;
-
-	return;
-
-}
-
-
-void Player::setSpeed (fixed newDx, fixed newDy) {
-
-	dx = newDx;
-	if (newDy) dy = newDy;
-
-	return;
-
-}
-
-
-bool Player::getFacing () {
-
-	return facing;
-
-}
-
-
-fixed Player::getDirection () {
-
-	return direction;
-
-}
-
-
-unsigned char Player::getAnim () {
-
-	return anims[animType];
-
-}
-
-
 unsigned char Player::getTeam () {
 
 	return team;
@@ -736,95 +294,35 @@ unsigned char Player::getTeam () {
 }
 
 
-bool Player::hasGem () {
-
-	return gem;
-
-}
-
-
-void Player::setEvent (unsigned char gridX, unsigned char gridY) {
-
-	signed char *set;
-
-	set = level->getEvent(gridX, gridY);
-
-	if (set[E_MODIFIER] == 29) {
-
-		// Upwards spring
-		jumpY = y + (set[E_MAGNITUDE] * (F20 + F1));
-		event = 1;
-
-	} else if (set[E_MODIFIER] == 6) event = 3;
-	else if (set[E_BEHAVIOUR] == 28) event = 4;
-	else return;
-
-	eventX = gridX;
-	eventY = gridY;
-
-	return;
-
-}
-
-
-void Player::clearEvent (unsigned char gridX, unsigned char gridY) {
-
-	// If the location matches, clear the event
-
-	if ((gridX == eventX) && (gridY == eventY)) event = 0;
-
-	return;
-
-}
-
-
-void Player::send (unsigned char *data) {
+void Player::send (unsigned char *buffer) {
 
 	// Copy data to be sent to clients/server
 
-	data[3] = pcontrols[C_UP];
-	data[4] = pcontrols[C_DOWN];
-	data[5] = pcontrols[C_LEFT];
-	data[6] = pcontrols[C_RIGHT];
-	data[7] = pcontrols[C_JUMP];
-	data[8] = pcontrols[C_FIRE];
-	data[9] = bird? 1: 0;
-	data[10] = ammo[0] >> 8;
-	data[11] = ammo[0] & 255;
-	data[12] = ammo[1] >> 8;
-	data[13] = ammo[1] & 255;
-	data[14] = ammo[2] >> 8;
-	data[15] = ammo[2] & 255;
-	data[16] = ammo[3] >> 8;
-	data[17] = ammo[3] & 255;
-	data[18] = ammoType + 1;
-	data[19] = score >> 24;
-	data[20] = (score >> 16) & 255;
-	data[21] = (score >> 8) & 255;
-	data[22] = score & 255;
-	data[23] = energy;
-	data[24] = lives;
-	data[25] = shield;
-	data[26] = floating;
-	data[27] = facing;
-	data[28] = fireSpeed;
-	data[29] = jumpHeight >> 24;
-	data[30] = (jumpHeight >> 16) & 255;
-	data[31] = (jumpHeight >> 8) & 255;
-	data[32] = jumpHeight & 255;
-	data[33] = jumpY >> 24;
-	data[34] = (jumpY >> 16) & 255;
-	data[35] = (jumpY >> 8) & 255;
-	data[36] = jumpY & 255;
-	data[37] = x >> 24;
-	data[38] = (x >> 16) & 255;
-	data[39] = (x >> 8) & 255;
-	data[40] = x & 255;
-	data[41] = y >> 24;
-	data[42] = (y >> 16) & 255;
-	data[43] = (y >> 8) & 255;
-	data[44] = y & 255;
-	data[45] = pcontrols[C_SWIM];
+	buffer[3] = pcontrols[C_UP];
+	buffer[4] = pcontrols[C_DOWN];
+	buffer[5] = pcontrols[C_LEFT];
+	buffer[6] = pcontrols[C_RIGHT];
+	buffer[7] = pcontrols[C_JUMP];
+	buffer[8] = pcontrols[C_FIRE];
+	buffer[9] = bird? 1: 0;
+	buffer[10] = ammo[0] >> 8;
+	buffer[11] = ammo[0] & 255;
+	buffer[12] = ammo[1] >> 8;
+	buffer[13] = ammo[1] & 255;
+	buffer[14] = ammo[2] >> 8;
+	buffer[15] = ammo[2] & 255;
+	buffer[16] = ammo[3] >> 8;
+	buffer[17] = ammo[3] & 255;
+	buffer[18] = ammoType + 1;
+	buffer[19] = score >> 24;
+	buffer[20] = (score >> 16) & 255;
+	buffer[21] = (score >> 8) & 255;
+	buffer[22] = score & 255;
+	buffer[24] = lives;
+	buffer[28] = fireSpeed;
+	buffer[45] = pcontrols[C_SWIM];
+
+	levelPlayer->send(buffer);
 
 	return;
 
@@ -835,81 +333,41 @@ void Player::receive (unsigned char *buffer) {
 
 	// Interpret data received from client/server
 
-	switch (buffer[1]) {
+	if (buffer[1] == MT_P_TEMP) {
 
-		case MT_P_ANIMS:
+		pcontrols[C_UP] = buffer[3];
+		pcontrols[C_DOWN] = buffer[4];
+		pcontrols[C_LEFT] = buffer[5];
+		pcontrols[C_RIGHT] = buffer[6];
+		pcontrols[C_JUMP] = buffer[7];
+		pcontrols[C_SWIM] = buffer[45];
+		pcontrols[C_FIRE] = buffer[8];
+		pcontrols[C_CHANGE] = false;
 
-			setAnims((char *)buffer + 3);
+		if ((buffer[9] & 1) && !bird)
+			bird = new Bird(this, FTOT(levelPlayer->getX()), FTOT(levelPlayer->getY()));
 
-			break;
+		if (!(buffer[9] & 1) && bird) {
 
-		case MT_P_TEMP:
+			delete bird;
+			bird = NULL;
 
-			pcontrols[C_UP] = buffer[3];
-			pcontrols[C_DOWN] = buffer[4];
-			pcontrols[C_LEFT] = buffer[5];
-			pcontrols[C_RIGHT] = buffer[6];
-			pcontrols[C_JUMP] = buffer[7];
-			pcontrols[C_SWIM] = buffer[45];
-			pcontrols[C_FIRE] = buffer[8];
-			pcontrols[C_CHANGE] = false;
+		}
 
-			if ((buffer[9] & 1) && !bird)
-				bird = new Bird(this, FTOT(x), FTOT(y));
-
-			if (!(buffer[9] & 1) && bird) {
-
-				delete bird;
-				bird = NULL;
-
-			}
-
-			ammo[0] = (buffer[10] << 8) + buffer[11];
-			ammo[1] = (buffer[12] << 8) + buffer[13];
-			ammo[2] = (buffer[14] << 8) + buffer[15];
-			ammo[3] = (buffer[16] << 8) + buffer[17];
-			ammoType = buffer[18] - 1;
-			score = (buffer[19] << 24) + (buffer[20] << 16) +
-				(buffer[21] << 8) + buffer[22];
-			energy = buffer[23];
-			lives = buffer[24];
-			shield = buffer[25];
-			floating = buffer[26];
-			facing = buffer[27];
-			fireSpeed = buffer[28];
-			jumpHeight = (buffer[29] << 24) + (buffer[30] << 16) +
-				(buffer[31] << 8) + buffer[32];
-			jumpY = (buffer[33] << 24) + (buffer[34] << 16) +
-				(buffer[35] << 8) + buffer[36];
-			x = (buffer[37] << 24) + (buffer[38] << 16) + (buffer[39] << 8) +
-				buffer[40];
-			y = (buffer[41] << 24) + (buffer[42] << 16) + (buffer[43] << 8) +
-				buffer[44];
-
-			break;
+		ammo[0] = (buffer[10] << 8) + buffer[11];
+		ammo[1] = (buffer[12] << 8) + buffer[13];
+		ammo[2] = (buffer[14] << 8) + buffer[15];
+		ammo[3] = (buffer[16] << 8) + buffer[17];
+		ammoType = buffer[18] - 1;
+		score = (buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22];
+		lives = buffer[24];
+		fireSpeed = buffer[28];
 
 	}
+
+	levelPlayer->receive(buffer);
 
 	return;
 
 }
-
-
-PlayerReaction Player::reacted (unsigned int ticks) {
-
-	PlayerReaction oldReaction;
-
-	if ((reaction != PR_NONE) && (reactionTime < ticks)) {
-
-		oldReaction = reaction;
-		reaction = PR_NONE;
-
-		return oldReaction;
-
-	}
-
-	return PR_NONE;
-
-}
-
 

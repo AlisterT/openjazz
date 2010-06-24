@@ -38,6 +38,7 @@
 #include "io/sound.h"
 #include "menu/menu.h"
 #include "player/player.h"
+#include "player/bonusplayer.h"
 #include "loop.h"
 #include "util.h"
 
@@ -276,7 +277,7 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 	for (count = 0; count < PANIMS; count++) string[count] = count & 31;
 
-	for (count = 0; count < nPlayers; count++) players[count].setAnims(string);
+	for (count = 0; count < nPlayers; count++) players[count].getBonusPlayer()->setAnims(string);
 
 	delete[] string;
 
@@ -344,12 +345,12 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 		for (x = 0; x < nPlayers; x++)
 			game->resetPlayer(players + x, true);
 
-    } else {
+	} else {
 
 		localPlayer->reset();
-		localPlayer->setPosition(TTOF(x) + F16, TTOF(y) + F16);
+		localPlayer->getBonusPlayer()->setPosition(TTOF(x), TTOF(y));
 
-    }
+	}
 
 	delete file;
 
@@ -415,6 +416,7 @@ bool Bonus::checkMask (fixed x, fixed y) {
 
 int Bonus::step () {
 
+	BonusPlayer* bonusPlayer;
 	fixed playerX, playerY;
 	int gridX, gridY;
 	int msps;
@@ -436,10 +438,12 @@ int Bonus::step () {
 	// Process players
 	for (count = 0; count < nPlayers; count++) {
 
-		playerX = players[count].getX();
-		playerY = players[count].getY();
+		bonusPlayer = players[count].getBonusPlayer();
 
-		players[count].bonusStep(ticks, msps, this);
+		playerX = bonusPlayer->getX();
+		playerY = bonusPlayer->getY();
+
+		bonusPlayer->step(ticks, msps, this);
 
 		if (isEvent(playerX, playerY)) {
 
@@ -457,10 +461,10 @@ int Bonus::step () {
 
 				case 2: // Gem
 
-					players[count].addItem();
+					bonusPlayer->addGem();
 					grid[gridY][gridX].event = 0;
 
-					if (players[count].getItems() >= items) {
+					if (bonusPlayer->getGems() >= items) {
 
 						players[count].addLife();
 
@@ -486,7 +490,7 @@ int Bonus::step () {
 
 	}
 
-	direction = localPlayer->getDirection();
+	direction = localPlayer->getBonusPlayer()->getDirection();
 
 	return E_NONE;
 
@@ -495,8 +499,8 @@ int Bonus::step () {
 
 void Bonus::draw () {
 
+	BonusPlayer *bonusPlayer;
 	unsigned char* row;
-	Anim* anim;
 	Sprite* sprite;
 	SDL_Rect dst;
 	fixed playerX, playerY, playerSin, playerCos;
@@ -522,10 +526,13 @@ void Bonus::draw () {
 	if (y > 0) drawRect(0, 0, canvasW, y + 1, 128);
 
 
+	bonusPlayer = localPlayer->getBonusPlayer();
+
+
 	// Draw the ground
 
-	playerX = localPlayer->getX();
-	playerY = localPlayer->getY();
+	playerX = bonusPlayer->getX();
+	playerY = bonusPlayer->getY();
 	playerSin = fSin(direction);
 	playerCos = fCos(direction);
 
@@ -630,16 +637,13 @@ void Bonus::draw () {
 
 
 	// Show the player
-	anim = animSet + localPlayer->getAnim();
-	anim->disableDefaultOffset();
-	anim->setFrame(ticks / 75, true);
-	anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));
+	bonusPlayer->draw(ticks, animSet);
 
 
 	// Show gem count
 	font->showString("*", 0, 0);
-	font->showNumber(localPlayer->getItems() / 10, 50, 0);
-	font->showNumber(localPlayer->getItems() % 10, 68, 0);
+	font->showNumber(bonusPlayer->getGems() / 10, 50, 0);
+	font->showNumber(bonusPlayer->getGems() % 10, 68, 0);
 	font->showString("/", 65, 0);
 	font->showNumber(items, 124, 0);
 
@@ -749,9 +753,9 @@ int Bonus::play () {
 		// Check if level has been won
 		if (returnTime && (ticks > returnTime)) {
 
-			if (localPlayer->getItems() >= items) {
+			if (localPlayer->getBonusPlayer()->getGems() >= items) {
 
-				if (playScene(F_BONUS_0SC) == E_QUIT) return E_QUIT;
+				//if (playScene(F_BONUS_0SC) == E_QUIT) return E_QUIT;
 
 				return WON;
 
