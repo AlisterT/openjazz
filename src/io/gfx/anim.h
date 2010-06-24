@@ -51,22 +51,22 @@ class Anim {
 									 // Most of the time accessories are used with guardians.
 
 	public:
-		Anim                ();
-		~Anim               ();
+		Anim                        ();
+		~Anim                       ();
 
-		void  setData        (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y);
-		void  setFrame       (int nextFrame, bool looping);
-		void  setFrameData   (Sprite *frameSprite, signed char x, signed char y);
-		int   getWidth       ();
-		int   getHeight      ();
-		fixed getShootX      ();
-		fixed getShootY      ();
-		void  draw           (fixed x, fixed y);
-		void  copyYOffset	 (Anim *anim);
-		void  disableYOffset ();
-		void  setPalette     (SDL_Color *palette, int start, int amount);
-		void  flashPalette   (int index);
-		void  restorePalette ();
+		void  setData               (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y);
+		void  setFrame              (int nextFrame, bool looping);
+		void  setFrameData          (Sprite *frameSprite, signed char x, signed char y);
+		int   getWidth              ();
+		int   getHeight             ();
+		fixed getShootX             ();
+		fixed getShootY             ();
+		fixed getOffset             ();
+		void  draw                  (fixed x, fixed y);
+		void  disableDefaultOffset  ();
+		void  setPalette            (SDL_Color *palette, int start, int amount);
+		void  flashPalette          (int index);
+		void  restorePalette        ();
 
 };
 

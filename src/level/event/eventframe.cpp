@@ -881,7 +881,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 		if (set[E_MODIFIER] == 6) {
 
 			if (width && height &&
-				players[count].overlap(x, y - height, width - F8, F8) &&
+				players[count].overlap(x, y + extraOffset - height, width - F8, F8) &&
 				(players[count].getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
 				!level->checkMaskDown(players[count].getX() + PXO_MID, PYO_TOP + y - height)) {
 
@@ -898,7 +898,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				players[count].overlap(x, y - height, width, height)) {
+				players[count].overlap(x, y + extraOffset - height, width, height)) {
 
 				// If the player picks up the event, destroy it
 				if (players[count].touchEvent(gridX, gridY, ticks, msps))
@@ -953,11 +953,26 @@ void Event::draw (unsigned int ticks, int change) {
 	anim->setFrame(frame + gridX + gridY, true);
 
 
-	// Draw the event
-
 	if (ticks < flashTime) anim->flashPalette(0);
 
-	anim->draw(getDrawX(change), getDrawY(change));
+	// Draw the event
+	fixed changeX = getDrawX(change);
+	fixed changeY = getDrawY(change);
+
+	// Correct the position without altering the animation
+	if (noAnimOffset)
+		changeY += anim->getOffset();
+
+	if (onlyLAnimOffset && animType == E_RIGHTANIM) {
+		changeY += anim->getOffset();
+		changeY -= getAnim(E_LEFTANIM)->getOffset();
+	}
+	if (onlyRAnimOffset && animType == E_LEFTANIM) {
+		changeY += anim->getOffset();
+		changeY -= getAnim(E_RIGHTANIM)->getOffset();
+	}
+
+	anim->draw(changeX, changeY + extraOffset);
 
 	if (ticks < flashTime) anim->restorePalette();
 
@@ -1014,6 +1029,33 @@ void Event::drawEnergy (unsigned int ticks) {
 		drawRect(viewW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
 
 	}
+
+	return;
+
+}
+
+
+void Event::onlyLeftAnimOffset(bool enable) {
+
+	onlyLAnimOffset = enable;
+
+	return;
+
+}
+
+
+void Event::onlyRightAnimOffset(bool enable) {
+
+	onlyRAnimOffset = enable;
+
+	return;
+
+}
+
+
+void Event::noOffset(bool enable) {
+
+	noAnimOffset = enable;
 
 	return;
 

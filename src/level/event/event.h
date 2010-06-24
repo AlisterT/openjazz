@@ -86,29 +86,37 @@ class Event : public Movable {
 		unsigned char animType;     // E_LEFTANIM, etc, or 0
 		unsigned char frame;
 		unsigned int  flashTime;
+		bool 		  onlyLAnimOffset;
+		bool		  onlyRAnimOffset;
+		bool          noAnimOffset;
+		fixed         extraOffset;
 
 		Event ();
 
-		Event*       remove      ();
-		void         destroy     (unsigned int ticks);
-		fixed        getWidth    ();
-		fixed        getHeight   ();
-		signed char* prepareStep (unsigned int ticks, int msps);
+		Event*       remove              ();
+		void         destroy             (unsigned int ticks);
+		fixed        getWidth            ();
+		fixed        getHeight           ();
+		signed char* prepareStep         (unsigned int ticks, int msps);
+		void         onlyLeftAnimOffset  (bool enable);
+		void         onlyRightAnimOffset (bool enable);
+		void         noOffset            (bool enable);
+		void		 setExtraOffset      (fixed offset);
 
 	public:
 		Event  (unsigned char gX, unsigned char gY);
 		virtual ~Event ();
 
-		Event*         getNext     ();
-		bool           hit         (Player *source, unsigned int ticks);
-		bool           isEnemy     ();
-		bool           isFrom      (unsigned char gX, unsigned char gY);
-		virtual bool   overlap     (fixed left, fixed top, fixed width, fixed height);
-		signed char    getProperty (unsigned char property);
-		Anim*		   getAnim	   (unsigned char property);
-		virtual Event* step        (unsigned int ticks, int msps);
-		virtual void   draw        (unsigned int ticks, int change);
-		void           drawEnergy  (unsigned int ticks);
+		Event*         getNext        ();
+		bool           hit            (Player *source, unsigned int ticks);
+		bool           isEnemy        ();
+		bool           isFrom         (unsigned char gX, unsigned char gY);
+		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);
+		signed char    getProperty    (unsigned char property);
+		Anim*		   getAnim	      (unsigned char property);
+		virtual Event* step        	  (unsigned int ticks, int msps);
+		virtual void   draw           (unsigned int ticks, int change);
+		void           drawEnergy 	  (unsigned int ticks);
 
 };
 

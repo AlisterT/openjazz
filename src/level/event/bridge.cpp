@@ -49,8 +49,7 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) {
 	flashTime = 0;
 
 	// Bridges should ignore the default yOffsets
-	getAnim(E_LEFTANIM)->disableYOffset();
-	getAnim(E_RIGHTANIM)->disableYOffset();
+	noOffset(true);
 
 	// leftDipX and rightDipX used to store leftmost and rightmost player on bridge
 	// Start with minimum values
@@ -155,11 +154,11 @@ void Bridge::draw (unsigned int ticks, int change) {
 		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
 
 			if (count < leftDipX)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + (count * leftDipY / leftDipX));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + (count * leftDipY / leftDipX));
 			else if (count < dy)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
 			else
-				anim->draw(getDrawX(change) + count, getDrawY(change) + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
 
 		}
 
@@ -176,9 +175,9 @@ void Bridge::draw (unsigned int ticks, int change) {
 		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
 
 			if (count < leftDipY)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + (count * rightDipY / leftDipY));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + (count * rightDipY / leftDipY));
 			else
-				anim->draw(getDrawX(change) + count, getDrawY(change) + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
+				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
 
 		}
 

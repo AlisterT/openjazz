@@ -631,7 +631,7 @@ void Bonus::draw () {
 
 	// Show the player
 	anim = animSet + localPlayer->getAnim();
-	anim->disableYOffset();
+	anim->disableDefaultOffset();
 	anim->setFrame(ticks / 75, true);
 	anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));
 

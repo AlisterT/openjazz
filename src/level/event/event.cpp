@@ -60,8 +60,10 @@ Event::Event (unsigned char gX, unsigned char gY) {
 	gridY = gY;
 	flashTime = 0;
 
-	Anim *leftAnim = getAnim(E_LEFTANIM);
-	Anim *rightAnim = getAnim(E_RIGHTANIM);
+	onlyLAnimOffset = false;
+	onlyRAnimOffset = false;
+	noAnimOffset = false;
+	extraOffset = 0;
 
 	switch (getProperty(E_BEHAVIOUR)) {
 
@@ -69,7 +71,15 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 4: // Walk from side to side and down hills
 
 			animType = E_LEFTANIM;
-			leftAnim->copyYOffset(rightAnim);
+			onlyRightAnimOffset(true);
+
+			break;
+
+		case 6: // Use the path from the level file
+
+			animType = E_LEFTANIM;
+			setExtraOffset(ITOF(40));
+			onlyLeftAnimOffset(true);
 
 			break;
 
@@ -87,7 +97,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 26: // Flip animation
 
 			animType = E_RIGHTANIM;
-			rightAnim->copyYOffset(leftAnim);
+			onlyLeftAnimOffset(true);
 
 			break;
 
@@ -224,7 +234,8 @@ fixed Event::getHeight () {
 bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	return (x + getWidth() >= left) && (x < left + width) &&
-		(y >= top) && (y - getHeight() < top + height);
+		(y + extraOffset >= top) &&
+		(y + extraOffset - getHeight() < top + height);
 
 }
 
@@ -242,7 +253,7 @@ signed char Event::getProperty (unsigned char property) {
 }
 
 
-Anim* Event::getAnim(unsigned char property) {
+Anim* Event::getAnim (unsigned char property) {
 
 	switch (property) {
 
@@ -262,4 +273,13 @@ Anim* Event::getAnim(unsigned char property) {
 	}
 
 }
+
+
+void Event::setExtraOffset (fixed offset) {
+
+	extraOffset = offset;
+
+}
+
+
 

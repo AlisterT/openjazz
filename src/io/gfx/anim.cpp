@@ -107,6 +107,13 @@ fixed Anim::getShootY () {
 }
 
 
+fixed Anim::getOffset () {
+
+	return ITOF(yOffset);
+
+}
+
+
 void Anim::draw (fixed x, fixed y) {
 
 	// In case yOffset is zero, and the ignore default offset flag is set,
@@ -134,16 +141,9 @@ void Anim::draw (fixed x, fixed y) {
 }
 
 
-void Anim::disableYOffset() {
+void Anim::disableDefaultOffset() {
 
 	ignoreDefaultYOffset = true;
-
-}
-
-
-void Anim::copyYOffset(Anim *anim) {
-
-	yOffset = anim->yOffset;
 
 }
 
