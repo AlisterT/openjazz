@@ -37,7 +37,6 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "menu/menu.h"
-#include "player/player.h"
 #include "player/bonusplayer.h"
 #include "loop.h"
 #include "util.h"
@@ -271,17 +270,6 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	delete[] buffer;
 
 
-	// Generate player's animation set references
-
-	string = new char[PANIMS];
-
-	for (count = 0; count < PANIMS; count++) string[count] = count & 31;
-
-	for (count = 0; count < nPlayers; count++) players[count].getBonusPlayer()->setAnims(string);
-
-	delete[] string;
-
-
 	// Load tiles
 
 	file->seek(2694, true);
@@ -336,21 +324,28 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	x = file->loadShort();
 	y = file->loadShort();
 
-	if (game) game->setCheckpoint(x, y);
+	// Generate player's animation set references
 
+	string = new char[PANIMS];
+
+	for (count = 0; count < PANIMS; count++) string[count] = count & 31;
 
 	// Set the players' initial values
 	if (game) {
 
-		for (x = 0; x < nPlayers; x++)
-			game->resetPlayer(players + x, true);
+		game->setCheckpoint(x, y);
+
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, true, string);
 
 	} else {
 
-		localPlayer->reset();
-		localPlayer->getBonusPlayer()->setPosition(TTOF(x), TTOF(y));
+		localPlayer->reset(true, string, x, y);
 
 	}
+
+	delete[] string;
+
+
 
 	delete file;
 

@@ -157,7 +157,7 @@ int Level::step () {
 
 			if (!gameMode) return LOST;
 
-			game->resetPlayer(players + x, false);
+			game->resetPlayer(players[x].getLevelPlayer());
 
 		}
 

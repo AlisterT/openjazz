@@ -25,27 +25,26 @@
 
 #include "io/gfx/font.h"
 #include "level/level.h"
-#include "player/player.h"
+#include "player/levelplayer.h"
 
 
-bool GameMode::hit (Player *source, Player *victim) {
-
-	return true;
-
-}
-
-
-bool GameMode::kill (Player *source, Player *victim) {
-
-	if (source && (victim == localPlayer)) game->score(source->getTeam());
+bool GameMode::hit (LevelPlayer *source, LevelPlayer *victim) {
 
 	return true;
 
 }
 
 
-bool GameMode::endOfLevel (Player *player, unsigned char gridX,
-	unsigned char gridY) {
+bool GameMode::kill (LevelPlayer *source, LevelPlayer *victim) {
+
+	if (source && (victim->player == localPlayer)) game->score(source->player->getTeam());
+
+	return true;
+
+}
+
+
+bool GameMode::endOfLevel (LevelPlayer *player, unsigned char gridX, unsigned char gridY) {
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -154,8 +153,7 @@ GameModeType CoopGameMode::getMode () {
 }
 
 
-bool CoopGameMode::endOfLevel (Player *player, unsigned char gridX,
-	unsigned char gridY) {
+bool CoopGameMode::endOfLevel (LevelPlayer *player, unsigned char gridX, unsigned char gridY) {
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -187,19 +185,18 @@ GameModeType RaceGameMode::getMode () {
 }
 
 
-bool RaceGameMode::hit (Player *source, Player *victim) {
+bool RaceGameMode::hit (LevelPlayer *source, LevelPlayer *victim) {
 
 	return false;
 
 }
 
 
-bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX,
-	unsigned char gridY) {
+bool RaceGameMode::endOfLevel (LevelPlayer *player, unsigned char gridX, unsigned char gridY) {
 
-	if (player == localPlayer) game->score(player->getTeam());
+	if (player->player == localPlayer) game->score(localPlayer->getTeam());
 
-	game->resetPlayer(player, false);
+	game->resetPlayer(player);
 
 	return false;
 

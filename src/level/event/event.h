@@ -77,7 +77,7 @@
 
 // Classes
 
-class Player;
+class LevelPlayer;
 
 class Event : public Movable {
 
@@ -109,7 +109,7 @@ class Event : public Movable {
 		virtual ~Event ();
 
 		Event*         getNext        ();
-		bool           hit            (Player *source, unsigned int ticks);
+		bool           hit            (LevelPlayer *source, unsigned int ticks);
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
 		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);

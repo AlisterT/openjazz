@@ -25,6 +25,7 @@
 
 
 #include "movable.h"
+
 #include "OpenJazz.h"
 
 
@@ -50,14 +51,14 @@
 
 class Bird;
 class Event;
-class Player;
+class LevelPlayer;
 class Sprite;
 
 class Bullet : public Movable {
 
 	private:
 		Bullet*      next;
-		Player*      source;    // If NULL, was fired by an event
+		LevelPlayer* source;    // If NULL, was fired by an event
 		Sprite*      sprite;
 		int          type;      // -1 is TNT, otherwise indexes the bullet set
 		int          direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
@@ -66,14 +67,14 @@ class Bullet : public Movable {
 		Bullet* remove ();
 
 	public:
-		Bullet  (Player* sourcePlayer, bool lower, unsigned int ticks);
+		Bullet  (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
 		Bullet  (Event* sourceEvent, bool facing, unsigned int ticks);
 		Bullet  (Bird* sourceBird, bool lower, unsigned int ticks);
 		~Bullet ();
 
-		Player* getSource  ();
-		Bullet* step       (unsigned int ticks, int msps);
-		void    draw       (int change);
+		LevelPlayer* getSource  ();
+		Bullet*      step       (unsigned int ticks, int msps);
+		void         draw       (int change);
 
 };
 

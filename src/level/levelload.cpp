@@ -328,6 +328,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	char *string;
 	int tiles;
 	int count, x, y, type;
+	unsigned char startX, startY;
 
 
 	try {
@@ -743,25 +744,9 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	file->seek(x + 366, true);
 
 
-	// The players' coordinates
-	x = file->loadShort();
-	y = file->loadShort() + 1;
-
-	if (!checkpoint && game) game->setCheckpoint(x, y);
-
-
-	// Set the players' initial values
-	if (game) {
-
-		for (count = 0; count < nPlayers; count++)
-			game->resetPlayer(players + count, false);
-
-    } else {
-
-		localPlayer->reset();
-		localPlayer->getLevelPlayer()->setPosition(TTOF(x), TTOF(y));
-
-    }
+	// The players' initial coordinates
+	startX = file->loadShort();
+	startY = file->loadShort() + 1;
 
 
 	// Next level
@@ -791,7 +776,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
 
-	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->setAnims(string + 3);
+	delete[] buffer;
 
 	if (gameMode) {
 
@@ -802,8 +787,20 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	}
 
+	// Set the players' initial values
+	if (game) {
+
+		if (!checkpoint) game->setCheckpoint(startX, startY);
+
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, false, string + 3);
+
+	} else {
+
+		localPlayer->reset(false, string + 3, startX, startY);
+
+	}
+
 	delete[] string;
-	delete[] buffer;
 
 
 	// Load Skip to bullet set

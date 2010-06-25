@@ -38,9 +38,21 @@
 #include <string.h>
 
 
-LevelPlayer::LevelPlayer (Player* parent) {
+LevelPlayer::LevelPlayer (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
 	player = parent;
+
+	if (newAnims) memcpy(anims, newAnims, PANIMS);
+	else memset(anims, 0, PANIMS);
+
+	if (hasBird) bird = new Bird(this, startX, startY - 2);
+	else bird = NULL;
+
+	shield = 0;
+	enemies = items = 0;
+	gem = false;
+
+	reset(startX, startY);
 
 	return;
 
@@ -49,16 +61,17 @@ LevelPlayer::LevelPlayer (Player* parent) {
 
 LevelPlayer::~LevelPlayer () {
 
+	if (bird) delete bird;
+
 	return;
 
 }
 
 
-void LevelPlayer::reset () {
+void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
 	event = 0;
 	energy = 4;
-	shield = 0;
 	floating = false;
 	facing = true;
 	reaction = PR_NONE;
@@ -69,8 +82,8 @@ void LevelPlayer::reset () {
 	warpTime = 0;
 	dx = 0;
 	dy = 0;
-	enemies = items = 0;
-	gem = false;
+	x = TTOF(startX);
+	y = TTOF(startY);
 
 	return;
 
@@ -132,6 +145,13 @@ int LevelPlayer::getItems () {
 }
 
 
+bool LevelPlayer::hasBird () {
+
+	return bird;
+
+}
+
+
 bool LevelPlayer::hasGem () {
 
 	return gem;
@@ -139,22 +159,22 @@ bool LevelPlayer::hasGem () {
 }
 
 
-bool LevelPlayer::hit (Player *source, unsigned int ticks) {
+bool LevelPlayer::hit (LevelPlayer *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
 	if (reaction != PR_NONE) return false;
 
 	// Hits from the same team have no effect
-	if (source && (source->getTeam() == player->team)) return false;
+	if (source && (source->player->getTeam() == player->team)) return false;
 
 
 	if (shield == 3) shield = 0;
 	else if (shield) shield--;
-	else if (!gameMode || gameMode->hit(source, player)) {
+	else if (!gameMode || gameMode->hit(source, this)) {
 
 		energy--;
 
-		if (player->bird) player->bird->hit();
+		if (bird) bird->hit();
 
 		playSound(S_OW);
 
@@ -188,11 +208,11 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 }
 
 
-void LevelPlayer::kill (Player *source, unsigned int ticks) {
+void LevelPlayer::kill (LevelPlayer *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
-	if (!gameMode || gameMode->kill(source, player)) {
+	if (!gameMode || gameMode->kill(source, this)) {
 
 		energy = 0;
 		player->lives--;
@@ -231,15 +251,6 @@ PlayerReaction LevelPlayer::reacted (unsigned int ticks) {
 	}
 
 	return PR_NONE;
-
-}
-
-
-void LevelPlayer::setAnims (char *newAnims) {
-
-	memcpy(anims, newAnims, PANIMS);
-
-	return;
 
 }
 
@@ -313,7 +324,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 				level->setStage(LS_END);
 
-			} else if (!(gameMode->endOfLevel(player, gridX, gridY))) return false;
+			} else if (!(gameMode->endOfLevel(this, gridX, gridY))) return false;
 
 			break;
 
@@ -437,7 +448,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 34: // Bird
 
-			if (!player->bird) player->bird = new Bird(player, gridX, gridY);
+			if (!bird) bird = new Bird(this, gridX, gridY);
 
 			break;
 
@@ -585,6 +596,7 @@ void LevelPlayer::send (unsigned char *buffer) {
 
 	// Copy data to be sent to clients/server
 
+	buffer[9] = bird? 1: 0;
 	buffer[23] = energy;
 	buffer[25] = shield;
 	buffer[26] = floating;
@@ -619,11 +631,20 @@ void LevelPlayer::receive (unsigned char *buffer) {
 
 		case MT_P_ANIMS:
 
-			setAnims((char *)buffer + 3);
+			memcpy(anims, (char *)buffer + 3, PANIMS);
 
 			break;
 
 		case MT_P_TEMP:
+
+			if ((buffer[9] & 1) && !bird) bird = new Bird(this, FTOT(x), FTOT(y) - 2);
+
+			if (!(buffer[9] & 1) && bird) {
+
+				delete bird;
+				bird = NULL;
+
+			}
 
 			energy = buffer[23];
 			shield = buffer[25];

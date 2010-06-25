@@ -157,7 +157,7 @@ void Event::destroy (unsigned int ticks) {
 }
 
 
-bool Event::hit (Player *source, unsigned int ticks) {
+bool Event::hit (LevelPlayer *source, unsigned int ticks) {
 
 	int hitsRemaining;
 

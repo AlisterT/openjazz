@@ -128,10 +128,12 @@ enum PlayerReaction {
 // Classes
 
 class Anim;
+class Bird;
 
 class LevelPlayer : public Movable {
 
 	private:
+		Bird*          bird;
 		char           anims[PANIMS];
 		int            energy;
 		int            shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
@@ -156,10 +158,10 @@ class LevelPlayer : public Movable {
 	public:
 		Player* player;
 
-		LevelPlayer  (Player* parent);
+		LevelPlayer  (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird);
 		~LevelPlayer ();
 
-		void           reset       ();
+		void           reset       (unsigned char startX, unsigned char startY);
 
 		void           addItem     ();
 		void           clearEvent  (unsigned char gridX, unsigned char gridY);
@@ -168,12 +170,12 @@ class LevelPlayer : public Movable {
 		int            getEnergy   ();
 		bool           getFacing   ();
 		int            getItems    ();
+		bool           hasBird     ();
 		bool           hasGem      ();
-		bool           hit         (Player* source, unsigned int ticks);
-		void           kill        (Player* source, unsigned int ticks);
+		bool           hit         (LevelPlayer* source, unsigned int ticks);
+		void           kill        (LevelPlayer* source, unsigned int ticks);
 		bool           overlap     (fixed left, fixed top, fixed width, fixed height);
 		PlayerReaction reacted     (unsigned int ticks);
-		void           setAnims    (char* newAnims);
 		void           setEvent    (unsigned char gridX, unsigned char gridY);
 		void           setPosition (fixed newX, fixed newY);
 		void           setSpeed    (fixed newDx, fixed newDy);

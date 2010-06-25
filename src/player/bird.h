@@ -40,24 +40,24 @@
 
 // Classes
 
-class Player;
+class LevelPlayer;
 
 class Bird : public Movable {
 
 	private:
-		Player*      player;
+		LevelPlayer* player;
 		bool         fleeing;
 		unsigned int fireTime;
 
 	public:
-		Bird  (Player* player, unsigned char gX, unsigned char gY);
+		Bird  (LevelPlayer* player, unsigned char gX, unsigned char gY);
 		~Bird ();
 
-		void    reset     ();
-		Player* getPlayer ();
-		void    hit       ();
-		bool    step      (unsigned int ticks, int msps);
-		void    draw      (unsigned int ticks, int change);
+		LevelPlayer* getPlayer ();
+		void         hit       ();
+
+		bool         step      (unsigned int ticks, int msps);
+		void         draw      (unsigned int ticks, int change);
 
 };
 

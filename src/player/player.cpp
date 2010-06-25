@@ -46,10 +46,8 @@
 
 Player::Player () {
 
-	levelPlayer = new LevelPlayer(this);
-	bonusPlayer = new BonusPlayer(this);
-
-	bird = NULL;
+	levelPlayer = NULL;
+	bonusPlayer = NULL;
 
 	name = NULL;
 
@@ -61,9 +59,6 @@ Player::Player () {
 Player::~Player () {
 
 	deinit();
-
-	delete levelPlayer;
-	delete bonusPlayer;
 
 	return;
 
@@ -92,6 +87,7 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 	ammo[2] = 0;
 	ammo[3] = 0;
 	fireSpeed = 0;
+	bird = false;
 	team = newTeam;
 	teamScore = 0;
 
@@ -168,8 +164,10 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 
 void Player::deinit () {
 
-	if (bird) delete bird;
-	bird = NULL;
+	if (levelPlayer) delete levelPlayer;
+	if (bonusPlayer) delete bonusPlayer;
+	levelPlayer = NULL;
+	bonusPlayer = NULL;
 
 	if (name) delete[] name;
 	name = NULL;
@@ -179,14 +177,30 @@ void Player::deinit () {
 }
 
 
-void Player::reset () {
+void Player::reset (bool bonus, char* newAnims, unsigned char x, unsigned char y) {
 
 	int count;
 
-	levelPlayer->reset();
-	bonusPlayer->reset();
+	if (levelPlayer) {
 
-	if (bird) bird->reset();
+		bird = levelPlayer->hasBird();
+		delete levelPlayer;
+
+	}
+
+	if (bonusPlayer) delete bonusPlayer;
+
+	if (bonus) {
+
+		levelPlayer = NULL;
+		bonusPlayer = new BonusPlayer(this, newAnims, x, y);
+
+	} else {
+
+		levelPlayer = new LevelPlayer(this, newAnims, x, y, bird);
+		bonusPlayer = NULL;
+
+	}
 
 	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
 
@@ -304,7 +318,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[6] = pcontrols[C_RIGHT];
 	buffer[7] = pcontrols[C_JUMP];
 	buffer[8] = pcontrols[C_FIRE];
-	buffer[9] = bird? 1: 0;
+	if (!levelPlayer) buffer[9] = bird? 1: 0;
 	buffer[10] = ammo[0] >> 8;
 	buffer[11] = ammo[0] & 255;
 	buffer[12] = ammo[1] >> 8;
@@ -322,7 +336,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[28] = fireSpeed;
 	buffer[45] = pcontrols[C_SWIM];
 
-	levelPlayer->send(buffer);
+	if (levelPlayer) levelPlayer->send(buffer);
 
 	return;
 
@@ -343,17 +357,7 @@ void Player::receive (unsigned char *buffer) {
 		pcontrols[C_SWIM] = buffer[45];
 		pcontrols[C_FIRE] = buffer[8];
 		pcontrols[C_CHANGE] = false;
-
-		if ((buffer[9] & 1) && !bird)
-			bird = new Bird(this, FTOT(levelPlayer->getX()), FTOT(levelPlayer->getY()));
-
-		if (!(buffer[9] & 1) && bird) {
-
-			delete bird;
-			bird = NULL;
-
-		}
-
+		if (!levelPlayer) bird = buffer[9] & 1;
 		ammo[0] = (buffer[10] << 8) + buffer[11];
 		ammo[1] = (buffer[12] << 8) + buffer[13];
 		ammo[2] = (buffer[14] << 8) + buffer[15];
@@ -365,7 +369,7 @@ void Player::receive (unsigned char *buffer) {
 
 	}
 
-	levelPlayer->receive(buffer);
+	if (levelPlayer) levelPlayer->receive(buffer);
 
 	return;
 

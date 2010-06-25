@@ -66,7 +66,6 @@
 
 // Classes
 
-class Bird;
 class BonusPlayer;
 class LevelPlayer;
 
@@ -75,7 +74,6 @@ class Player {
 	private:
 		LevelPlayer*  levelPlayer;
 		BonusPlayer*  bonusPlayer;
-		Bird*         bird;
 		char*         name;
 		bool          pcontrols[PCONTROLS];
 		SDL_Color     palette[256];
@@ -85,6 +83,7 @@ class Player {
 		int           score;
 		int           lives;
 		int           fireSpeed;
+		bool          bird;
 		unsigned char team;
 
 		void addAmmo (int type, int amount);
@@ -97,7 +96,7 @@ class Player {
 
 		void           init           (char* playerName, unsigned char* cols, unsigned char newTeam);
 		void           deinit         ();
-		void           reset          ();
+		void           reset          (bool bonus, char* newAnims, unsigned char x, unsigned char y);
 
 		void           addLife        ();
 		void           addScore       (int addedScore);

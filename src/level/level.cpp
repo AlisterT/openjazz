@@ -265,7 +265,7 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player* source) {
+int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* source) {
 
 	GridElement* ge;
 	unsigned char buffer[MTL_L_GRID];
@@ -286,7 +286,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player* source) {
 
 		// Notify the player that shot the bullet
 		// If this returns false, ignore the hit
-		if (!source->getLevelPlayer()->takeEvent(gridX, gridY, ticks)) {
+		if (!source->takeEvent(gridX, gridY, ticks)) {
 
 			ge->hits--;
 
@@ -315,8 +315,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, Player* source) {
 }
 
 
-void Level::setEventTime (unsigned char gridX, unsigned char gridY,
-	unsigned int time) {
+void Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int time) {
 
 	grid[gridY][gridX].time = time;
 

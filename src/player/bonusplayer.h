@@ -68,18 +68,14 @@ class BonusPlayer {
 	public:
 		Player* player;
 
-		BonusPlayer  (Player* parent);
+		BonusPlayer  (Player* parent, char* newAnims, unsigned char startX, unsigned char startY);
 		~BonusPlayer ();
-
-		void          reset        ();
 
 		void          addGem       ();
 		fixed         getDirection ();
 		int           getGems      ();
 		fixed         getX         ();
 		fixed         getY         ();
-		void          setAnims     (char* newAnims);
-		void          setPosition  (fixed newX, fixed newY);
 
 		void          step         (unsigned int ticks, int msps, Bonus* bonus);
 		void          draw         (unsigned int ticks, Anim* animSet);

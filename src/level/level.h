@@ -87,7 +87,7 @@ typedef struct {
 class Bullet;
 class Event;
 class Font;
-class Player;
+class LevelPlayer;
 class Scene;
 
 class Level : public BaseLevel {
@@ -142,7 +142,7 @@ class Level : public BaseLevel {
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (unsigned char gridX, unsigned char gridY, Player* source);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY, LevelPlayer* source);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
 		signed char*  getBullet     (unsigned char bullet);
 		Sprite*       getSprite     (unsigned char sprite);

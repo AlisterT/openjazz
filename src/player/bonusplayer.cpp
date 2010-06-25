@@ -37,9 +37,18 @@
 #include <string.h>
 
 
-BonusPlayer::BonusPlayer (Player* parent) {
+BonusPlayer::BonusPlayer (Player* parent, char *newAnims, unsigned char startX, unsigned char startY) {
 
 	player = parent;
+
+	memcpy(anims, newAnims, PANIMS);
+
+	x = TTOF(startX) + F16;
+	y = TTOF(startY) + F16;
+
+	direction = FQ;
+	dr = 0;
+	gems = 0;
 
 	return;
 
@@ -47,17 +56,6 @@ BonusPlayer::BonusPlayer (Player* parent) {
 
 
 BonusPlayer::~BonusPlayer () {
-
-	return;
-
-}
-
-
-void BonusPlayer::reset () {
-
-	direction = FQ;
-	dr = 0;
-	gems = 0;
 
 	return;
 
@@ -97,25 +95,6 @@ fixed BonusPlayer::getX () {
 fixed BonusPlayer::getY () {
 
 	return y;
-
-}
-
-
-void BonusPlayer::setAnims (char *newAnims) {
-
-	memcpy(anims, newAnims, PANIMS);
-
-	return;
-
-}
-
-
-void BonusPlayer::setPosition (fixed newX, fixed newY) {
-
-	x = newX + F16;
-	y = newY + F16;
-
-	return;
 
 }
 

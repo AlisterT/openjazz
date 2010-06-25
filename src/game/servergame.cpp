@@ -255,10 +255,9 @@ int ServerGame::step (unsigned int ticks) {
 
 							recvBuffers[count][4] = gameMode->chooseTeam();
 
-							players[nPlayers].init((char *)(recvBuffers[count])
-								+ 9, recvBuffers[count] + 5,
-								recvBuffers[count][4]);
-							players[nPlayers].reset();
+							players[nPlayers].init((char *)(recvBuffers[count]) + 9,
+								recvBuffers[count] + 5, recvBuffers[count][4]);
+							resetPlayer(players + nPlayers, false, NULL);
 
 							printf("Player %d joined team %d.\n", nPlayers, recvBuffers[count][4]);
 
@@ -298,11 +297,14 @@ int ServerGame::step (unsigned int ticks) {
 
 					case MC_PLAYER:
 
-						// Assign player byte based on sender
-						recvBuffers[count][2] = clientPlayer[count];
+						if (clientPlayer[count] != -1) {
 
-						players[clientPlayer[count]].
-							receive(recvBuffers[count]);
+							// Assign player byte based on sender
+							recvBuffers[count][2] = clientPlayer[count];
+
+							players[clientPlayer[count]].receive(recvBuffers[count]);
+
+						}
 
 						break;
 

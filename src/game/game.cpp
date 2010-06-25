@@ -284,15 +284,20 @@ void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 }
 
 
-void Game::resetPlayer (Player *player, bool bonus) {
+void Game::resetPlayer (LevelPlayer *player) {
 
-	player->reset();
-
-	if (bonus) player->getBonusPlayer()->setPosition(TTOF(checkX), TTOF(checkY));
-	else player->getLevelPlayer()->setPosition(TTOF(checkX), TTOF(checkY));
+	player->reset(checkX, checkY);
 
 	return;
 
 }
 
+
+void Game::resetPlayer (Player *player, bool bonus, char* anims) {
+
+	player->reset(bonus, anims, checkX, checkY);
+
+	return;
+
+}
 

@@ -310,7 +310,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 			// Create new bullet
-			level->bullets = new Bullet(player, false, ticks);
+			level->bullets = new Bullet(this, false, ticks);
 
 			// Set when the next bullet can be fired
 			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
@@ -344,12 +344,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Deal with the bird
 
-	if (player->bird) {
+	if (bird) {
 
-		if (player->bird->step(ticks, msps)) {
+		if (bird->step(ticks, msps)) {
 
-			delete player->bird;
-			player->bird = NULL;
+			delete bird;
+			bird = NULL;
 
 		}
 
@@ -790,14 +790,14 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Show the bird
-	if (player->bird) player->bird->draw(ticks, change);
+	if (bird) bird->draw(ticks, change);
 
 
 	// Show the player's name
 	if (gameMode)
 		panelBigFont->showString(player->name,
-			FTOI(drawX + PXO_MID - viewX) - (panelBigFont->getStringWidth(player->name) >> 1),
-			FTOI(drawY - F32 - F16 - viewY));
+			FTOI(drawX + PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
+			FTOI(drawY - F32 - F16));
 
 	return;
 
