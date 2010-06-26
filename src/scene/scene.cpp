@@ -381,84 +381,97 @@ int Scene::play () {
 
 		} else if (pages[sceneIndex].animIndex != -1) {
 
-			if(currentFrame == NULL) {
-					animation = animations;
-			
-					while (animation && (animation->id != pages[sceneIndex].animIndex))
-						animation = animation->next;
-			
-					if (animation && animation->background) {
-			
+			if (currentFrame == NULL) {
+
+				animation = animations;
+
+				while (animation && (animation->id != pages[sceneIndex].animIndex))
+					animation = animation->next;
+
+				if (animation && animation->background) {
+
 					dst.x = (canvasW - SW) >> 1;
 					dst.y = (canvasH - SH) >> 1;
-					frameDelay = 1000/(pages[sceneIndex].animSpeed>>8);
+					frameDelay = 1000 / (pages[sceneIndex].animSpeed >> 8);
 					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
 					currentFrame = animation->sceneFrames;
 					SDL_Delay(frameDelay);
-					}
+
 				}
-				else {
-					// Upload pixel data to the surface
-					if (SDL_MUSTLOCK(animation->background)) SDL_LockSurface(animation->background);
-												
-					switch(currentFrame->frameType)
-						{						
-						case ESquareAniHeader:
-							{
-							loadCompactedMem(currentFrame->frameSize, currentFrame->frameData,(unsigned char*) animation->background->pixels, SW, SH);
-							}
+
+			} else {
+
+				// Upload pixel data to the surface
+				if (SDL_MUSTLOCK(animation->background)) SDL_LockSurface(animation->background);
+
+				switch (currentFrame->frameType) {
+
+					case ESquareAniHeader:
+
+						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, (unsigned char*)animation->background->pixels, SW, SH);
+
+						break;
+
+					case EFFAniHeader:
+
+						loadFFMem(currentFrame->frameSize, currentFrame->frameData, (unsigned char*)animation->background->pixels);
+
+						break;
+
+					default:
+
+						LOG("Scene::Play unknown type", currentFrame->frameType);
+
+						break;
+
+				}
+
+				if (SDL_MUSTLOCK(animation->background)) SDL_UnlockSurface(animation->background);
+
+				dst.x = (canvasW - SW) >> 1;
+				dst.y = (canvasH - SH) >> 1;
+				SDL_BlitSurface(animation->background, NULL, canvas, &dst);
+
+				if (currentFrame->soundId != -1 && animation->noSounds > 0) {
+
+					LOG("PLAY SOUND NAME",animation->soundNames[currentFrame->soundId-1]);
+
+					// Search for matching sound
+					for (int y = 0; y < nSounds ; y++) {
+
+						if (!strcmp(animation->soundNames[currentFrame->soundId-1], sounds[y].name)) {
+
+							playSound(y);
+
 							break;
-						case EFFAniHeader:
-							{							
-							unsigned char* data = currentFrame->frameData;
-							int size = currentFrame->frameSize;
-							loadFFMem(size, currentFrame->frameData, (unsigned char*) animation->background->pixels);
-							}break;							
-						default:
-							LOG("Scene::Play unknown type", currentFrame->frameType);
-							break;
+
 						}
-					
-					if (SDL_MUSTLOCK(animation->background)) SDL_UnlockSurface(animation->background);
-					
-					dst.x = (canvasW - SW) >> 1;
-					dst.y = (canvasH - SH) >> 1;
-					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
-					
-					if(currentFrame->soundId != -1 && animation->noSounds > 0) {
-							LOG("PLAY SOUND NAME",animation->soundNames[currentFrame->soundId-1]);
-							// Search for matching sound
-							for (int y = 0; y < nSounds ; y++) {
-								if (!strcmp(animation->soundNames[currentFrame->soundId-1], sounds[y].name)) {
-									playSound(y);
-									break;
-								}
-							}
-						}
-					
-					lastFrame = currentFrame;
-					if(prevFrame) {
-						currentFrame = currentFrame->prev;
-						}
-					else {
-						currentFrame = currentFrame->next;
+
 					}
-					SDL_Delay(frameDelay);
-					if(currentFrame == NULL && animation->reverseAnimation) {
-						/*prevFrame = 1-prevFrame;
-						
-						/*if(prevFrame) {
-							currentFrame = lastFrame->prev;
-							}
-						else {
-							currentFrame = lastFrame->next;
-							}*/
-						currentFrame = NULL;//animation->sceneFrames;
-						}
-					else if(currentFrame == NULL && !pageTime && !pages[sceneIndex].askForYesNo && pages[sceneIndex].nextPageAfterAnim) {
-						continueToNextPage = 1;
-					}
-				}											
+
+				}
+
+				lastFrame = currentFrame;
+				if (prevFrame) currentFrame = currentFrame->prev;
+				else currentFrame = currentFrame->next;
+
+				SDL_Delay(frameDelay);
+
+				if (currentFrame == NULL && animation->reverseAnimation) {
+
+					//prevFrame = 1 - prevFrame;
+
+					/*if(prevFrame) currentFrame = lastFrame->prev;
+					else currentFrame = lastFrame->next;*/
+					currentFrame = NULL;//animation->sceneFrames;
+
+				} else if (currentFrame == NULL && !pageTime && !pages[sceneIndex].askForYesNo && pages[sceneIndex].nextPageAfterAnim) {
+
+					continueToNextPage = 1;
+
+				}
+
+			}
 
 		} else clearScreen(0);
 

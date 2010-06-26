@@ -231,12 +231,13 @@ class Scene {
 		// Scripts all information needed to render script pages, text etc
 		ScenePage*         pages;
 
-		void loadScripts (File* f);
-		void loadData    (File* f);
-		void loadAni     (File* f, int dataIndex);
-		void loadCompacted(int size, File* f, unsigned char* pixdata, int width, int height);
-		void loadCompactedMem(int size, unsigned char* frameData, unsigned char* pixdata, int width, int height);
-		void loadFFMem(int size, unsigned char* frameData, unsigned char* pixdata);
+		void               loadScripts      (File* f);
+		void               loadData         (File* f);
+		void               loadAni          (File* f, int dataIndex);
+		void               loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixdata, int width, int height);
+		void               loadFFMem        (int size, unsigned char* frameData, unsigned char* pixdata);
+		unsigned short int loadShortMem     (unsigned char **data);
+
 	public:
 		Scene    (const char* fileName);
 		~Scene   ();
