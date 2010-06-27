@@ -30,6 +30,7 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
+#include "util.h"
 
 #include <string.h>
 
@@ -48,49 +49,31 @@ unsigned short int Scene::loadShortMem (unsigned char** data) {
 }
 
 
-void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdata) {
+void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
-	int pixels = 0;
+	unsigned char* nextPixel = pixels;
+	unsigned char* nextData = frameData;
 	int fillWidth = 0;
-	unsigned char fillColor = 0;
+	unsigned char header;
 	bool trans = true;
-	int opCodeNo = 0;
-	unsigned char* repeatPos = NULL;
-	unsigned char* startPix = pixdata;
-	unsigned char* framestart = frameData;
 
 	/*FILE* out = fopen("c:\\output.dat", "wb");
 	fwrite(frameData, size, 1, out);
 	fclose(out);*/
 
-	while (size > 0 && pixels < 64000) {
+	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
 
-		LOG("PL FF frame offset", frameData - framestart);
-		opCodeNo++;
-		fflush(stderr);
-		unsigned char header = *frameData;
-		frameData++;
+		LOG("PL FF frame offset", nextData - frameStart);
+		header = *nextData;
+		nextData++;
 
 		if ((header & 0x7F) == 0x7F) {
 
-			fillWidth = loadShortMem(&frameData);
+			fillWidth = loadShortMem(&nextData);
 
 			if (trans) fillWidth += 255;
 
-			if (header & 0x80) {
-
-				LOG("PL FF 0xff skip", fillWidth);
-
-			} else {
-
-				fillColor = *frameData;
-				frameData++;
-				//memset(pixdata, fillColor, fillWidth);
-				LOG("PL FF 0x7f fillWidth", fillWidth);
-
-			}
-
-			size -= 2;
+			LOG("PL FF 0x7f skip", fillWidth);
 
 		} else if (header) {
 
@@ -108,10 +91,9 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdat
 
 						LOG("PL FF 0x00 Copy bytes", header);
 
-						memcpy(pixdata, frameData, fillWidth);
+						memcpy(nextPixel, nextData, fillWidth);
 
-						frameData += fillWidth;
-						size -= fillWidth;
+						nextData += fillWidth;
 
 					}
 
@@ -121,7 +103,7 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdat
 
 					LOG("PL FF 0x20 fill next op", fillWidth);
 
-					if (pixdata - 320 >= startPix) memcpy(pixdata, pixdata - 320, fillWidth);
+					if (nextPixel - 320 >= pixels) memcpy(nextPixel, nextPixel - 320, fillWidth);
 
 					break;
 
@@ -129,18 +111,26 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdat
 
 					LOG("PL FF 0x40 fillWidth", fillWidth);
 
-					fillColor = *frameData;
-					frameData++;
+					memset(nextPixel, *nextData, fillWidth);
 
-					memset(pixdata, fillColor, fillWidth);
-
-					size--;
+					nextData++;
 
 					break;
 
 				case 0x60:
 
-					LOG("PL FF 0x60 skip", header);
+					LOG("PL FF 0x60 header", header);
+
+					if (nextPixel == pixels) {
+
+						fillWidth = header;
+
+					} else {
+
+						fillWidth = header & 0x7F;
+						nextPixel -= (nextPixel - pixels) % 320;
+
+					}
 
 					break;
 
@@ -148,26 +138,20 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdat
 
 		} else {
 
-			fillWidth = 0;
-			size = 1; // end
 			LOG("PL FF END OF STREAM", size);
+
+			return;
 
 		}
 
-		pixdata += fillWidth;
-		pixels += fillWidth;
+		nextPixel += fillWidth;
 
 		if (header & 0x80) trans = false;
 		else trans = !trans;
 
-		size--;
-		SDL_Rect dst;
-		dst.x = (canvasW - SW) >> 1;
-		dst.y = (canvasH - SH) >> 1;
-
 	}
 
-	LOG("PL FF pixels", pixels);
+	LOG("PL FF pixels", nextPixel - pixels);
 
 }
 
@@ -178,117 +162,99 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixdat
  * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
  * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
  */
-void Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixdata, int width, int height) {
+void Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
-	int pixels = 0;
-	int fillWidth = 0;
-	unsigned char* endpixdata = pixdata + (width * height);
+	unsigned char* nextPixel = pixels;
+	unsigned char* endpixdata = pixels + (SW * SH);
 	unsigned char* fillstart = NULL;
+	int fillWidth = 0;
+	unsigned char header;
 
 	while (size > 0) {
 
-		unsigned char header = *frameData;
+		header = *frameData;
 		frameData++;
 
-		switch (header)  {
+		if (header == 0x7F) {
 
-			case 0x7F:
+			fillWidth = loadShortMem(&frameData);
+			unsigned char fillColor = *frameData;
+			frameData++;
 
-				{
+			fillstart = nextPixel;
 
-					fillWidth = loadShortMem(&frameData);
-					unsigned char fillColor = *frameData;
-					frameData++;
+			while (fillstart + fillWidth < endpixdata) {
 
-					fillstart = pixdata;
-					while (fillstart + fillWidth < endpixdata) {
+				memset(fillstart, fillColor, fillWidth);
+				fillstart += SW;
 
-						memset(fillstart, fillColor, fillWidth);
-						fillstart+=width;
+			}
+
+			size -= 3;
+
+		} else if (header == 0xFF) {
+
+			fillWidth = loadShortMem(&frameData);
+			size -= 2;
+
+		} else if (header & 0x80) {
+
+			fillWidth = (header - 0x80) + 1;
+
+		} else if (header & 0x40) {
+
+			unsigned char fillColor = *frameData;
+			frameData++;
+			fillWidth = (header - 0x40) + 1;
+
+			fillstart = nextPixel;
+
+			while (fillstart + fillWidth < endpixdata) {
+
+				memset(fillstart, fillColor, fillWidth);
+				fillstart += SW;
+
+			}
+
+			size--;
+
+		} else {
+
+			fillWidth = (header & 0x3F) + 1;
+			unsigned char color;
+
+			for (int col = 0; col < fillWidth; col++) {
+
+				color = *frameData;
+				frameData++;
+
+				if (color != 0xFF) {
+
+					fillstart = nextPixel + col;
+
+					while (fillstart < endpixdata) {
+
+						*fillstart = color;
+						fillstart += SW;
 
 					}
-
-					size -= 3;
 
 				}
 
-				break;
+				size--;
 
-			case 0xFF:
-
-				fillWidth = loadShortMem(&frameData);
-				size -= 2;
-
-				break;
-
-			default:
-
-				if (header & 0x80) {
-
-					fillWidth = (header - 0x80) + 1;
-
-				} else if (header & 0x40) {
-
-					unsigned char fillColor = *frameData;
-					frameData++;
-					fillWidth = (header - 0x40) + 1;
-
-					fillstart = pixdata;
-
-					while (fillstart + fillWidth < endpixdata) {
-
-						memset(fillstart, fillColor, fillWidth);
-						fillstart += width;
-
-					}
-
-					size--;
-
-				} else {
-
-					fillWidth = (header & 0x3F) + 1;
-					unsigned char color;
-
-					for (int col = 0; col < fillWidth; col++) {
-
-						color = *frameData;
-						frameData++;
-
-						if (color != 0xFF) {
-
-							fillstart = pixdata;
-
-							while (fillstart < endpixdata) {
-
-								*fillstart = color;
-								fillstart += width;
-
-							}
-
-						}
-
-						pixdata++;
-						size--;
-
-					}
-
-					pixdata -= fillWidth;
-
-
-				}
-
-				break;
+			}
 
 		}
 
-		pixdata += fillWidth;
-		pixels += fillWidth;
+		nextPixel += fillWidth;
 
 		size--;
 
 	}
 
-	LOG("PL Compacts pixels", pixels);
+	LOG("PL Compacts pixels", nextPixel - pixels);
+
 }
 
 
@@ -376,7 +342,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 						memset(pixels, 0, SW*SH);
 						unsigned char* frameData;
 						frameData = f->loadBlock(size);
-						loadCompactedMem(size, frameData, pixels, SW, SH);
+						loadCompactedMem(size, frameData, pixels);
 						delete[] frameData;
 						animations->background = createSurface(pixels, SW, SH);
 						delete[] pixels;

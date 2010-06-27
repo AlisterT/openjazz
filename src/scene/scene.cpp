@@ -408,7 +408,7 @@ int Scene::play () {
 
 					case ESquareAniHeader:
 
-						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, (unsigned char*)animation->background->pixels, SW, SH);
+						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, (unsigned char*)animation->background->pixels);
 
 						break;
 
