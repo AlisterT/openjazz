@@ -40,6 +40,8 @@
 #include "io/sound.h"
 #include "player/player.h"
 
+#include "util.h"
+
 
 Event::Event () {
 
@@ -62,8 +64,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 
 	onlyLAnimOffset = false;
 	onlyRAnimOffset = false;
-	noAnimOffset = false;
-	extraOffset = 0;
+	disableAnimOffset = false;
 
 	switch (getProperty(E_BEHAVIOUR)) {
 
@@ -71,15 +72,15 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 4: // Walk from side to side and down hills
 
 			animType = E_LEFTANIM;
-			onlyRightAnimOffset(true);
+			useRightAnimOffset(true);
 
 			break;
 
 		case 6: // Use the path from the level file
+		case 7: // Flying snake behavior
 
 			animType = E_LEFTANIM;
-			setExtraOffset(ITOF(40));
-			onlyLeftAnimOffset(true);
+			dontUseAnimOffset(true);
 
 			break;
 
@@ -97,7 +98,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 26: // Flip animation
 
 			animType = E_RIGHTANIM;
-			onlyLeftAnimOffset(true);
+			useLeftAnimOffset(true);
 
 			break;
 
@@ -233,9 +234,10 @@ fixed Event::getHeight () {
 
 bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
-	return (x + getWidth() >= left) && (x < left + width) &&
-		(y + extraOffset >= top) &&
-		(y + extraOffset - getHeight() < top + height);
+	return (x + getWidth() >= left) &&
+		(x < left + width) &&
+		(y  >= top) &&
+		(y - getHeight() < top + height);
 
 }
 
@@ -271,13 +273,6 @@ Anim* Event::getAnim (unsigned char property) {
 			return 0;
 
 	}
-
-}
-
-
-void Event::setExtraOffset (fixed offset) {
-
-	extraOffset = offset;
 
 }
 

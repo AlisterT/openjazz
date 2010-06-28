@@ -49,7 +49,7 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) {
 	flashTime = 0;
 
 	// Bridges should ignore the default yOffsets
-	noOffset(true);
+	dontUseAnimOffset(true);
 
 	// leftDipX and rightDipX used to store leftmost and rightmost player on bridge
 	// Start with minimum values

@@ -164,8 +164,9 @@ Event* Event::step (unsigned int ticks, int msps) {
 		case 6:
 
 			// Use the path from the level file
-			dx = TTOF(gridX) + F16 + (level->path[set[E_MULTIPURPOSE]].x[level->path[set[E_MULTIPURPOSE]].node] << 9) - x;
-			dy = TTOF(gridY) + (level->path[set[E_MULTIPURPOSE]].y[level->path[set[E_MULTIPURPOSE]].node] << 9) - y;
+			dx = TTOF(gridX) + ITOF(level->path[set[E_MULTIPURPOSE]].x[level->path[set[E_MULTIPURPOSE]].node]) - x;
+			dy = TTOF(gridY) + ITOF(level->path[set[E_MULTIPURPOSE]].y[level->path[set[E_MULTIPURPOSE]].node]) - y + TTOF(1);
+
 			dx = ((dx << 10) / msps) * set[E_MOVEMENTSP];
 			dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
 
@@ -543,7 +544,6 @@ Event* Event::step (unsigned int ticks, int msps) {
 	x += (dx * msps) >> 10;
 	y += (dy * msps) >> 10;
 
-
 	// Choose animation and direction
 
 	if ((animType == E_LEFTANIM) || (animType == E_RIGHTANIM)) {
@@ -806,7 +806,6 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 	}
 
-
 	// If the event has been destroyed, play its finishing animation and set its
 	// reaction time
 	if (set[E_HITSTOKILL] &&
@@ -886,7 +885,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 		if (set[E_MODIFIER] == 6) {
 
 			if (width && height &&
-				levelPlayer->overlap(x, y + extraOffset - height, width - F8, F8) &&
+				levelPlayer->overlap(x, y - height, width - F8, F8) &&
 				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
 				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + y - height)) {
 
@@ -901,7 +900,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				levelPlayer->overlap(x, y + extraOffset - height, width, height)) {
+				levelPlayer->overlap(x, y - height, width, height)) {
 
 				// If the player picks up the event, destroy it
 				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps))
@@ -958,12 +957,11 @@ void Event::draw (unsigned int ticks, int change) {
 
 	if (ticks < flashTime) anim->flashPalette(0);
 
-	// Draw the event
+	// Correct the position without altering the animation
 	fixed changeX = getDrawX(change);
 	fixed changeY = getDrawY(change);
 
-	// Correct the position without altering the animation
-	if (noAnimOffset)
+	if (disableAnimOffset)
 		changeY += anim->getOffset();
 
 	if (onlyLAnimOffset && animType == E_RIGHTANIM) {
@@ -975,7 +973,9 @@ void Event::draw (unsigned int ticks, int change) {
 		changeY -= getAnim(E_RIGHTANIM)->getOffset();
 	}
 
-	anim->draw(changeX, changeY + extraOffset);
+	// Draw the event
+	anim->draw(changeX, changeY);
+
 
 	if (ticks < flashTime) anim->restorePalette();
 
@@ -986,7 +986,7 @@ void Event::draw (unsigned int ticks, int change) {
 
 		anim = level->getMiscAnim(2);
 		anim->setFrame(frame, false);
-		anim->draw(getDrawX(change), getDrawY(change));
+		anim->draw(changeX, changeY);
 
 	}
 
@@ -1038,7 +1038,7 @@ void Event::drawEnergy (unsigned int ticks) {
 }
 
 
-void Event::onlyLeftAnimOffset(bool enable) {
+void Event::useLeftAnimOffset(bool enable) {
 
 	onlyLAnimOffset = enable;
 
@@ -1047,7 +1047,7 @@ void Event::onlyLeftAnimOffset(bool enable) {
 }
 
 
-void Event::onlyRightAnimOffset(bool enable) {
+void Event::useRightAnimOffset(bool enable) {
 
 	onlyRAnimOffset = enable;
 
@@ -1056,12 +1056,10 @@ void Event::onlyRightAnimOffset(bool enable) {
 }
 
 
-void Event::noOffset(bool enable) {
+void Event::dontUseAnimOffset(bool enable) {
 
-	noAnimOffset = enable;
+	disableAnimOffset = enable;
 
 	return;
 
 }
-
-

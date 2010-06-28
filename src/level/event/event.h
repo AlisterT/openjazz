@@ -89,8 +89,7 @@ class Event : public Movable {
 		unsigned int  flashTime;
 		bool 		  onlyLAnimOffset;
 		bool		  onlyRAnimOffset;
-		bool          noAnimOffset;
-		fixed         extraOffset;
+		bool          disableAnimOffset;
 
 		Event ();
 
@@ -99,10 +98,9 @@ class Event : public Movable {
 		fixed        getWidth            ();
 		fixed        getHeight           ();
 		signed char* prepareStep         (unsigned int ticks, int msps);
-		void         onlyLeftAnimOffset  (bool enable);
-		void         onlyRightAnimOffset (bool enable);
-		void         noOffset            (bool enable);
-		void		 setExtraOffset      (fixed offset);
+		void         useLeftAnimOffset   (bool enable);
+		void         useRightAnimOffset  (bool enable);
+		void         dontUseAnimOffset   (bool enable);
 
 	public:
 		Event  (unsigned char gX, unsigned char gY);

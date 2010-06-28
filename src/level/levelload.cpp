@@ -608,7 +608,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		for (count = 0; count < path[type].length; count++) {
 
-			path[type].x[count] = ((signed char *)buffer)[(type << 9) + (count << 1) + 3] << 3;
+			path[type].x[count] = ((signed char *)buffer)[(type << 9) + (count << 1) + 3] << 2;
 			path[type].y[count] = ((signed char *)buffer)[(type << 9) + (count << 1) + 2];
 
 		}
