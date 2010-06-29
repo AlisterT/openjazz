@@ -922,6 +922,7 @@ void Event::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
 	signed char* set;
+	bool drawExplosion;
 
 
 	if (next) next->draw(ticks, change);
@@ -939,11 +940,10 @@ void Event::draw (unsigned int ticks, int change) {
 	// If the event has been removed from the grid, do not show it
 	if (!set) return;
 
-
 	// Check if the event has anything to draw
-	if (!animType || (set[animType] < 0)) return;
+	if (!animType) return;
 
-
+	// Decide on the exact frame to draw
 	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM))
 		frame = (ticks + T_FINISH - level->getEventTime(gridX, gridY)) / 40;
 	else if (set[E_ANIMSP])
@@ -951,30 +951,80 @@ void Event::draw (unsigned int ticks, int change) {
 	else
 		frame = ticks / 20;
 
-	anim = level->getAnim(set[animType]);
-	anim->setFrame(frame + gridX + gridY, true);
 
-
-	if (ticks < flashTime) anim->flashPalette(0);
-
-	// Correct the position without altering the animation
+	// Calculate new positions
 	fixed changeX = getDrawX(change);
 	fixed changeY = getDrawY(change);
 
-	if (disableAnimOffset)
+
+	// Check if an explosive effect should be drawn
+	drawExplosion = false;
+	if (set[animType] < 0) {
+
+		anim = level->getAnim(set[animType] + 128);
+
+		// Explosions may only occur with finish animations
+		if (animType == E_RFINISHANIM || animType == E_LFINISHANIM) drawExplosion = true;
+
+	}
+	else {
+
+		anim = level->getAnim(set[animType]);
+
+	}
+
+
+	// Decide on the frame to draw
+	anim->setFrame(frame + gridX + gridY, true);
+
+	if (ticks < flashTime) anim->flashPalette(0);
+
+
+	// Correct the position without altering the animation
+	if (disableAnimOffset) {
+
 		changeY += anim->getOffset();
 
-	if (onlyLAnimOffset && animType == E_RIGHTANIM) {
+	}
+	else if (onlyLAnimOffset && animType == E_RIGHTANIM) {
+
 		changeY += anim->getOffset();
 		changeY -= getAnim(E_LEFTANIM)->getOffset();
+
 	}
-	if (onlyRAnimOffset && animType == E_LEFTANIM) {
+	else if (onlyRAnimOffset && animType == E_LEFTANIM) {
+
 		changeY += anim->getOffset();
 		changeY -= getAnim(E_RIGHTANIM)->getOffset();
+
 	}
 
+
 	// Draw the event
-	anim->draw(changeX, changeY);
+	if (drawExplosion) {
+
+		// In case of an explosion
+
+		// Determine position in a half circle path
+		fixed xOffset = fSin(level->getEventTime(gridX, gridY) - ticks) * 48;
+		fixed yOffset = fCos(level->getEventTime(gridX, gridY) - ticks) * 48;
+
+		// Draw the animation in six different positions
+		anim->draw(changeX - yOffset, changeY - xOffset);
+		anim->draw(changeX + yOffset, changeY - xOffset);
+		anim->draw(changeX + ITOF(16) - yOffset, changeY - ITOF(8) - xOffset);
+		anim->draw(changeX - ITOF(8) + yOffset, changeY - ITOF(16) - xOffset);
+		anim->draw(changeX + ITOF(12) - yOffset, changeY + ITOF(12) - xOffset);
+		anim->draw(changeX - ITOF(24) + yOffset, changeY + ITOF(24) - xOffset);
+
+	}
+	else {
+
+		// In case an event can be drawn normally
+
+		anim->draw(changeX, changeY);
+
+	}
 
 
 	if (ticks < flashTime) anim->restorePalette();
