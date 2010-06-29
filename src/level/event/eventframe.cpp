@@ -983,7 +983,7 @@ void Event::draw (unsigned int ticks, int change) {
 	// Correct the position without altering the animation
 	if (disableAnimOffset) {
 
-		changeY += anim->getOffset();
+		changeY -= anim->getOffset();
 
 	}
 	else if (onlyLAnimOffset && animType == E_RIGHTANIM) {
@@ -1006,16 +1006,18 @@ void Event::draw (unsigned int ticks, int change) {
 		// In case of an explosion
 
 		// Determine position in a half circle path
-		fixed xOffset = fSin(level->getEventTime(gridX, gridY) - ticks) * 48;
+		fixed xOffset = fSin(level->getEventTime(gridX, gridY) - ticks) * 48 - ITOF(16);
 		fixed yOffset = fCos(level->getEventTime(gridX, gridY) - ticks) * 48;
+
+		int val = gridX + gridY;
 
 		// Draw the animation in six different positions
 		anim->draw(changeX - yOffset, changeY - xOffset);
 		anim->draw(changeX + yOffset, changeY - xOffset);
-		anim->draw(changeX + ITOF(16) - yOffset, changeY - ITOF(8) - xOffset);
-		anim->draw(changeX - ITOF(8) + yOffset, changeY - ITOF(16) - xOffset);
-		anim->draw(changeX + ITOF(12) - yOffset, changeY + ITOF(12) - xOffset);
-		anim->draw(changeX - ITOF(24) + yOffset, changeY + ITOF(24) - xOffset);
+		anim->draw(changeX + ITOF(val % 32) - yOffset, changeY - ITOF(val % 8) - xOffset);
+		anim->draw(changeX - ITOF(val % 16) + yOffset, changeY - ITOF(val % 16) - xOffset);
+		anim->draw(changeX + ITOF(val % 24) - yOffset, changeY + ITOF(val % 12) - xOffset);
+		anim->draw(changeX - ITOF(val % 48) + yOffset, changeY + ITOF(val % 24) - xOffset);
 
 	}
 	else {
