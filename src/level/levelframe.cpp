@@ -6,6 +6,7 @@
  * 19th July 2009: Created levelframe.cpp from parts of level.cpp
  * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
+ * 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
  *
  * Part of the OpenJazz project
  *
@@ -56,8 +57,7 @@ int Level::step () {
 	// Search for active events
 	for (y = FTOT(viewY) - 5; y < ITOT(FTOI(viewY) + viewH) + 5; y++) {
 
-		for (x = FTOT(viewX) - 5; x < ITOT(FTOI(viewX) + viewW) + 5; x++)
-			{
+		for (x = FTOT(viewX) - 5; x < ITOT(FTOI(viewX) + viewW) + 5; x++) {
 
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
 				grid[y][x].event && (grid[y][x].event < 121)) {
@@ -157,7 +157,7 @@ int Level::step () {
 
 			if (!gameMode) return LOST;
 
-			game->resetPlayer(players[x].getLevelPlayer());
+			game->resetPlayer(players + x);
 
 		}
 
@@ -247,8 +247,7 @@ void Level::draw () {
 
 			// If this tile uses a black background, draw it
 			if (ge->bg)
-				drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32,
-					BLACK);
+				drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
 
 
 			// If this is not a foreground tile, draw it
@@ -329,6 +328,10 @@ void Level::draw () {
 	if (events) events->drawEnergy(ticks);
 
 
+	// If this is a competitive game, draw the score
+	if (gameMode) gameMode->drawScore(font);
+
+
 	// Show panel
 
 	SDL_SetClipRect(canvas, NULL);
@@ -336,13 +339,12 @@ void Level::draw () {
 	// Change the ammo type display on the panel
 	dst.x = 250;
 	dst.y = 2;
-	SDL_BlitSurface(panelAmmo[localPlayer->getAmmo(false) + 1], NULL, panel,
-		&dst);
+	SDL_BlitSurface(panelAmmo[localPlayer->getAmmo(false) + 1], NULL, panel, &dst);
 
 	dst.x = 0;
 	dst.y = canvasH - 33;
 	SDL_BlitSurface(panel, NULL, canvas, &dst);
-	drawRect(0, canvasH - 1, SW, 1, BLACK);
+	drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
 
 
 	// Show panel data
@@ -424,7 +426,7 @@ void Level::draw () {
 
 
 	// Fill in remaining energy bar space with black
-	drawRect(dst.x, canvasH - 13, dst.w, 7, BLACK);
+	drawRect(dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
 
 
 	return;

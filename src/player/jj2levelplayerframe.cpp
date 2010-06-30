@@ -1,10 +1,8 @@
 
 /*
  *
- * levelplayerframe.cpp
+ * jj2levelplayerframe.cpp
  *
- * 18th July 2009: Created playerframe.cpp from parts of player.cpp
- * 24th June 2010: Renamed playerframe.cpp to levelplayerframe.cpp
  * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
  *                 levelplayerframe.cpp
  *
@@ -28,24 +26,19 @@
  */
 
 
-#include "bird.h"
-#include "levelplayer.h"
+#include "jj2levelplayer.h"
 
-#include "bonus/bonus.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "level/bullet.h"
-#include "level/event/event.h"
-#include "level/level.h"
+#include "jj2level/jj2level.h"
 #include "util.h"
 
 
-void LevelPlayer::control (unsigned int ticks, int msps) {
+void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
-	int speed;
 	bool platform;
 
 	// Respond to controls, unless the player has been killed
@@ -114,12 +107,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 
 	// Check for platform event, bridge or level mask below player
-	platform = (event >= 3) ||
-		level->checkMaskDown(x + PXO_ML, y + 1) ||
-		level->checkMaskDown(x + PXO_MID, y + 1) ||
-		level->checkMaskDown(x + PXO_MR, y + 1) ||
-		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
-		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
+	platform = /*(event >= 3) ||*/
+		jj2Level->checkMaskDown(x + PXO_ML, y + 1) ||
+		jj2Level->checkMaskDown(x + PXO_MID, y + 1) ||
+		jj2Level->checkMaskDown(x + PXO_MR, y + 1) ||
+		((dx > 0) && jj2Level->checkMaskDown(x + PXO_ML, y + F8)) ||
+		((dx < 0) && jj2Level->checkMaskDown(x + PXO_MR, y + F8));
 
 
 	if (floating) {
@@ -160,17 +153,17 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (event) {
+		/*if (event) {
 
-			if (event == 1) dy = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+			if (event == 1) dy = jj2Level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
 			else if (event == 2) dy = PYS_JUMP;
 
-		}
+		}*/
 
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		if (dy > PXS_RUN) dy = PXS_RUN;
 
-	} else if (y + PYO_MID > level->getWaterLevel()) {
+	} else if (y + PYO_MID > jj2Level->getWaterLevel()) {
 
 		if (player->pcontrols[C_SWIM]) {
 
@@ -182,14 +175,14 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Prepare to jump upon leaving the water
 
-			if (!level->checkMaskUp(x + PXO_MID, y - F36)) {
+			if (!jj2Level->checkMaskUp(x + PXO_MID, y - F36)) {
 
 				jumpY = y - jumpHeight;
 
 				if (dx < 0) jumpY += dx >> 4;
 				else if (dx > 0) jumpY -= dx >> 4;
 
-				event = 0;
+				//event = 0;
 
 			}
 
@@ -216,7 +209,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 	} else {
 
 		if (platform && player->pcontrols[C_JUMP] &&
-			!level->checkMaskUp(x + PXO_MID, y - F36)) {
+			!jj2Level->checkMaskUp(x + PXO_MID, y - F36)) {
 
 			// Jump
 
@@ -226,15 +219,15 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			if (dx < 0) jumpY += dx >> 3;
 			else if (dx > 0) jumpY -= dx >> 3;
 
-			event = 0;
+			//event = 0;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && (event != 1) && (event != 2))
-			jumpY = TTOF(LH);
+		if (!player->pcontrols[C_JUMP] /*&& (event != 1) && (event != 2)*/)
+			jumpY = TTOF(256);
 
 		if (y >= jumpY) {
 
@@ -243,18 +236,18 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			dy = (jumpY - y - F64) * 4;
 
 			// Spring/float up speed limit
-			if ((event == 1) || (event == 2)) {
+			/*if ((event == 1) || (event == 2)) {
 
-				speed = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+				speed = jj2Level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
 
 				if (speed >= 0) speed = PYS_JUMP;
 
 				if (dy < speed) dy = speed;
 
-			}
+			}*/
 
 			// Avoid jumping too fast, unless caused by an event
-			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if (/* !event &&*/ (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -265,7 +258,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		if ((dy > 0) && (event >= 3)) dy = 0;
+		//if ((dy > 0) && (event >= 3)) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -284,21 +277,21 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != 2)) {
+	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) /*&& (event != 2)*/) {
 
-		jumpY = TTOF(LH);
+		jumpY = TTOF(256);
 		if (dy < 0) dy = 0;
 
-		if ((event != 3) && (event != 4)) event = 0;
+		//if ((event != 3) && (event != 4)) event = 0;
 
 	}
 
 	// If jump completed, stop rising
 	if (y <= jumpY) {
 
-		jumpY = TTOF(LH);
+		jumpY = TTOF(256);
 
-		if ((event != 3) && (event != 4)) event = 0;
+		//if ((event != 3) && (event != 4)) event = 0;
 
 	}
 
@@ -306,13 +299,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 	// Handle firing
 	if (player->pcontrols[C_FIRE]) {
 
-		if ((ticks > fireTime) && (level->getBullet(player->ammoType + 1)[B_SPRITE] != 0)) {
+		if (ticks > fireTime) {
 
 			// Make sure bullet position is taken from correct animation
 			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
 
-			// Create new bullet
-			level->bullets = new Bullet(this, false, ticks);
+			// TODO: Create new bullet
 
 			// Set when the next bullet can be fired
 			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
@@ -321,9 +313,9 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			// Remove the bullet from the arsenal
 			if (player->ammoType != -1) player->ammo[player->ammoType]--;
 
-			/* If the current ammo type has been exhausted or TNT has been used,
-			use the previous non-exhausted ammo type */
-			while (((player->ammoType > -1) && !player->ammo[player->ammoType]) || (player->ammoType == 3)) player->ammoType--;
+			/* If the current ammo type has been exhausted, use the previous
+			non-exhausted ammo type */
+			while ((player->ammoType > -1) && !player->ammo[player->ammoType]) player->ammoType--;
 
 		}
 
@@ -346,7 +338,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Deal with the bird
 
-	if (bird) {
+	/*if (bird) {
 
 		if (bird->step(ticks, msps)) {
 
@@ -355,23 +347,23 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-	}
+	}*/
 
 
 	// Choose animation
 
-	if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
+	if ((reaction == JJ2PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
 		animType = facing? PA_RHURT: PA_LHURT;
 
-	else if (y + PYO_MID > level->getWaterLevel())
+	else if (y + PYO_MID > jj2Level->getWaterLevel())
 		animType = facing? PA_RSWIM: PA_LSWIM;
 
 	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
 
 	else if (dy < 0) {
 
-		if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
-		else animType = facing? PA_RJUMP: PA_LJUMP;
+		/*if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
+		else*/ animType = facing? PA_RJUMP: PA_LJUMP;
 
 	} else if (platform) {
 
@@ -383,14 +375,14 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			else if ((dx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
-			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != 3) && (event != 4))
+		} else if (!jj2Level->checkMaskDown(x + PXO_ML, y + F12) &&
+			!jj2Level->checkMaskDown(x + PXO_L, y + F2) /*&&
+			(event != 3) && (event != 4)*/)
 			animType = PA_LEDGE;
 
-		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
-			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != 3) && (event != 4))
+		else if (!jj2Level->checkMaskDown(x + PXO_MR, y + F12) &&
+			!jj2Level->checkMaskDown(x + PXO_R, y + F2) /*&&
+			(event != 3) && (event != 4)*/)
 			animType = PA_REDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
@@ -417,7 +409,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 }
 
 
-void LevelPlayer::move (unsigned int ticks, int msps) {
+void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
 	int count;
@@ -455,7 +447,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+			if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
 
 				y &= ~4095;
 				dy = 0;
@@ -471,7 +463,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 4095;
 
-		if (!level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
+		if (!jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
 			y -= pdy;
 		else {
 
@@ -488,9 +480,9 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMaskDown(x + PXO_ML, y + F4) ||
-				level->checkMaskDown(x + PXO_MID, y + F4) ||
-				level->checkMaskDown(x + PXO_MR, y + F4)) {
+			if (jj2Level->checkMaskDown(x + PXO_ML, y + F4) ||
+				jj2Level->checkMaskDown(x + PXO_MID, y + F4) ||
+				jj2Level->checkMaskDown(x + PXO_MR, y + F4)) {
 
 				y |= 4095;
 				dy = 0;
@@ -506,9 +498,9 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy &= 4095;
 
-		if (!(level->checkMaskDown(x + PXO_ML, y + pdy) ||
-			level->checkMaskDown(x + PXO_MID, y + pdy) ||
-			level->checkMaskDown(x + PXO_MR, y + pdy)))
+		if (!(jj2Level->checkMaskDown(x + PXO_ML, y + pdy) ||
+			jj2Level->checkMaskDown(x + PXO_MID, y + pdy) ||
+			jj2Level->checkMaskDown(x + PXO_MR, y + pdy)))
 			y += pdy;
 		else {
 
@@ -532,7 +524,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMaskUp(x + PXO_L - F4, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + PXO_L - F4, y + PYO_MID)) {
 
 				x &= ~4095;
 
@@ -544,19 +536,19 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (level->checkMaskUp(x + PXO_ML, y) &&
-				!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
+			if (jj2Level->checkMaskUp(x + PXO_ML, y) &&
+				!jj2Level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
 
 		}
 
 		pdx = (-pdx) & 4095;
 
-		if (!level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
+		if (!jj2Level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
 		else x &= ~4095;
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMaskUp(x + PXO_ML, y) &&
-			!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F1;
+		while (jj2Level->checkMaskUp(x + PXO_ML, y) &&
+			!jj2Level->checkMaskUp(x + PXO_ML, y - F4)) y -= F1;
 
 	} else if (pdx > 0) {
 
@@ -567,7 +559,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (level->checkMaskUp(x + PXO_R + F4, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + PXO_R + F4, y + PYO_MID)) {
 
 				x |= 4095;
 
@@ -579,44 +571,40 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (level->checkMaskUp(x + PXO_MR, y) &&
-				!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
+			if (jj2Level->checkMaskUp(x + PXO_MR, y) &&
+				!jj2Level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
 
 		}
 
 		pdx &= 4095;
 
-		if (!level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
+		if (!jj2Level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
 		else x |= 4095;
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMaskUp(x + PXO_MR, y) &&
-			!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F1;
+		while (jj2Level->checkMaskUp(x + PXO_MR, y) &&
+			!jj2Level->checkMaskUp(x + PXO_MR, y - F4)) y -= F1;
 
 	}
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == 2) && level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+	/*if ((event == 2) && jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
 
-		jumpY = TTOF(LH);
+		jumpY = TTOF(256);
 		event = 0;
 
-	}
+	}*/
 
 
-	if (level->getStage() == LS_END) return;
-
-
-	// If the player has hit the bottom of the level, kill
-	if (y + F4 > TTOF(LH)) kill(NULL, ticks);
+	if (jj2Level->getStage() == LS_END) return;
 
 
 	// Handle spikes
-	if (level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
-		level->checkSpikes(x + PXO_MID, y + F4) ||
-		level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
-		level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(NULL, ticks);
+	if (jj2Level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
+		jj2Level->checkSpikes(x + PXO_MID, y + F4) ||
+		jj2Level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
+		jj2Level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(NULL, ticks);
 
 
 	return;
@@ -624,7 +612,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 }
 
 
-void LevelPlayer::view (unsigned int ticks, int mspf) {
+void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;
 
@@ -634,9 +622,8 @@ void LevelPlayer::view (unsigned int ticks, int mspf) {
 	oldViewX = viewX;
 	oldViewY = viewY;
 
-	// Can we see below the panel?
-	if (canvasW > SW) viewH = canvasH;
-	else viewH = canvasH - 33;
+	// There is no panel, so use the whole height
+	viewH = canvasH;
 
 	// Find new position
 
@@ -673,15 +660,14 @@ void LevelPlayer::view (unsigned int ticks, int mspf) {
 
 }
 
-void LevelPlayer::draw (unsigned int ticks, int change) {
+void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	Anim *an;
 	int frame;
 	fixed drawX, drawY;
-	fixed xOffset, yOffset;
 
 	// The current frame for animations
-	if (reaction == PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
+	if (reaction == JJ2PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
 	else frame = ticks / 75;
 
 
@@ -693,14 +679,14 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 
 	// Choose sprite
 
-	an = level->getAnim(getAnim());
-	an->setFrame(frame, reaction != PR_KILLED);
+	an = jj2Level->getAnim(getAnim());
+	an->setFrame(frame, reaction != JJ2PR_KILLED);
 
 
 	// Show the player
 
 	// Flash red if hurt, otherwise use player colour
-	if ((reaction == PR_HURT) && (!((ticks / 30) & 3)))
+	if ((reaction == JJ2PR_HURT) && (!((ticks / 30) & 3)))
 		an->flashPalette(36);
 
 	else {
@@ -732,67 +718,50 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 		FTOI(PXO_MR - PXO_ML),
 		FTOI(-PYO_TOP), 88);*/
 
-	// Uncomment the following to show the player's event tile
-	// if (event) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
 
+	if (reaction == JJ2PR_INVINCIBLE) {
 
-	if (reaction == PR_INVINCIBLE) {
+		// TODO: Show invincibility effect
 
-		// Show invincibility stars
+	}
 
-		xOffset = fSin(ticks * 2) * 12;
-		yOffset = fCos(ticks * 2) * 12;
+	switch (shield) {
 
-		an = level->getMiscAnim(0);
-		an->disableDefaultOffset();
+		case JJ2S_NONE:
 
-		an->setFrame(frame, true);
-		an->draw(drawX + PXO_MID + xOffset, drawY + PYO_MID + yOffset);
+			// Do nothing
 
-		an->setFrame(frame + 1, true);
-		an->draw(drawX + PXO_MID - xOffset, drawY + PYO_MID - yOffset);
+			break;
 
-		an->setFrame(frame + 2, true);
-		an->draw(drawX + PXO_MID + yOffset, drawY + PYO_MID + xOffset);
+		case JJ2S_FLAME:
 
-		an->setFrame(frame + 3, true);
-		an->draw(drawX + PXO_MID - yOffset, drawY + PYO_MID - xOffset);
+			// TODO: Show shield effect
 
-	} else if (shield > 2) {
+			break;
 
-		// Show the 4-hit shield
+		case JJ2S_BUBBLE:
 
-		xOffset = fCos(ticks) * 20;
-		yOffset = fSin(ticks) * 20;
+			// TODO: Show shield effect
 
-		an = level->getAnim(59);
+			break;
 
-		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+		case JJ2S_PLASMA:
 
-		if (shield > 3) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+			// TODO: Show shield effect
 
-		if (shield > 4) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+			break;
 
-		if (shield > 5) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+		case JJ2S_LASER:
 
-	} else if (shield) {
+			// TODO: Show shield effect
 
-		// Show the 2-hit shield
-
-		xOffset = fCos(ticks) * 20;
-		yOffset = fSin(ticks) * 20;
-
-		an = level->getAnim(50);
-
-		an->draw(drawX + xOffset, drawY + yOffset + PYO_TOP);
-
-		if (shield == 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+			break;
 
 	}
 
 
 	// Show the bird
-	if (bird) bird->draw(ticks, change);
+	//if (bird) bird->draw(ticks, change);
 
 
 	// Show the player's name

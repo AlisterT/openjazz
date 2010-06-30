@@ -25,8 +25,7 @@
 
 
 #include "io/gfx/paletteeffects.h"
-
-#include <SDL/SDL.h>
+#include "menu/menu.h"
 
 
 // Macros
@@ -39,6 +38,12 @@
 
 
 // Enums
+
+enum LevelType {
+
+	LT_LEVEL, LT_BONUS, LT_JJ2LEVEL
+
+};
 
 enum LevelStats {
 
@@ -60,6 +65,9 @@ class Sprite;
 
 class BaseLevel {
 
+	private:
+		SetupMenu setupMenu;
+
 	protected:
 		SDL_Surface*   tileSet;
 		Sprite*        spriteSet;
@@ -72,18 +80,29 @@ class BaseLevel {
 		int            items;
 		bool           paused;
 		LevelStage     stage;
+		int stats;
 
 		int  playScene (char* file);
 		void timeCalcs ();
-		void drawStats (int stats, unsigned char bg);
+		void drawStats (unsigned char bg);
+		int  loop      (bool& menu, int& option, bool& message);
 
 	public:
-		BaseLevel  ();
-		~BaseLevel ();
+		BaseLevel          ();
+		virtual ~BaseLevel ();
 
-		void addTimer ();
+		void         addTimer ();
+		LevelStage   getStage ();
+		void         setStage (LevelStage stage);
+		virtual void receive  (unsigned char* buffer) = 0;
 
 };
+
+
+// Variables
+
+EXTERN BaseLevel* baseLevel;
+EXTERN fixed  viewX, viewY;
 
 #endif
 

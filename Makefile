@@ -9,6 +9,8 @@ objects = src/bonus/bonus.o \
 	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
 	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o \
 	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/jj2level/jj2layer.o src/jj2level/jj2level.o \
+	src/jj2level/jj2levelframe.o src/jj2level/jj2levelload.o \
 	src/level/event/bridge.o src/level/event/guardians.o \
 	src/level/event/event.o src/level/event/eventframe.o \
 	src/level/bullet.o src/level/demolevel.o src/level/level.o \
@@ -16,14 +18,15 @@ objects = src/bonus/bonus.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/setupmenu.o \
 	src/planet/planet.o \
-	src/player/bird.o src/player/bonusplayer.o src/player/levelplayer.o \
+	src/player/bird.o src/player/bonusplayer.o src/player/jj2levelplayer.o \
+	src/player/jj2levelplayerframe.o src/player/levelplayer.o \
 	src/player/levelplayerframe.o src/player/player.o \
 	src/scene/scene.o src/scene/sceneload.o \
 	src/baselevel.o src/main.o src/util.o
 
 
 OpenJazz: $(objects)
-	cc -Wall -o OpenJazz -lSDL -lstdc++ $(objects)
+	cc -Wall -o OpenJazz -lSDL -lstdc++ -lz $(objects)
 
 %.o: %.cpp
 	cc -Wall -DUSE_SOCKETS -DSCALE -Isrc -O2 -c $< -o $@

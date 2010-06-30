@@ -8,6 +8,7 @@
  * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
  *                 levelload.cpp
  * 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
  *
  * Part of the OpenJazz project
  *
@@ -34,10 +35,8 @@
 #include "level.h"
 
 #include "game/game.h"
-#include "game/gamemode.h"
 #include "io/file.h"
 #include "io/gfx/font.h"
-#include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
@@ -229,10 +228,10 @@ int Level::loadSprites (char * fileName) {
 }
 
 
-int Level::loadTiles (char * fileName) {
+int Level::loadTiles (char* fileName) {
 
-	File *file;
-	unsigned char *buffer;
+	File* file;
+	unsigned char* buffer;
 	int rle, pos, index, count, fileSize;
 	int tiles;
 
@@ -264,7 +263,7 @@ int Level::loadTiles (char * fileName) {
 
 	tiles = 240; // Never more than 240 tiles
 
-	buffer = new unsigned char[tiles * 1024];
+	buffer = new unsigned char[tiles << 10];
 
 	file->seek(4, false);
 
@@ -273,7 +272,7 @@ int Level::loadTiles (char * fileName) {
 
 	// Read the RLE pixels
 	// file::loadRLE() cannot be used, for reasons that will become clear
-	while ((pos < 1024 * tiles) && (file->tell() < fileSize)) {
+	while ((pos < (tiles << 10)) && (file->tell() < fileSize)) {
 
 		rle = file->loadChar();
 
@@ -296,9 +295,9 @@ int Level::loadTiles (char * fileName) {
 			file->seek(2, false); /* I assume this is the length of the next
 				tile block */
 
-			if (pos == 1024 * 60) file->seek(2, false);
-			if (pos == 1024 * 120) file->seek(2, false);
-			if (pos == 1024 * 180) file->seek(2, false);
+			if (pos == (60 << 10)) file->seek(2, false);
+			if (pos == (120 << 10)) file->seek(2, false);
+			if (pos == (180 << 10)) file->seek(2, false);
 
 		}
 
@@ -308,7 +307,7 @@ int Level::loadTiles (char * fileName) {
 
 	// Work out how many tiles were actually loaded
 	// Should be a multiple of 60
-	tiles = pos / 1024;
+	tiles = pos >> 10;
 
 	tileSet = createSurface(buffer, TTOI(1), TTOI(tiles));
 	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
@@ -423,7 +422,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	delete[] string;
 
-	if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
+	if (::loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 
 
@@ -441,8 +440,6 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	}
 
-
-	// Load level data from a Level#.### file
 
 	// Load the blocks.### extension
 
@@ -792,18 +789,18 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		if (!checkpoint) game->setCheckpoint(startX, startY);
 
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, false, string + 3);
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_LEVEL, string + 3);
 
 	} else {
 
-		localPlayer->reset(false, string + 3, startX, startY);
+		localPlayer->reset(LT_LEVEL, string + 3, startX, startY);
 
 	}
 
 	delete[] string;
 
 
-	// Load Skip to bullet set
+	// Load miscellaneous animations
 	miscAnims[0] = file->loadChar();
 	miscAnims[1] = file->loadChar();
 	miscAnims[2] = file->loadChar();
@@ -846,9 +843,6 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	type = file->loadChar();
 
 	sky = false;
-
-	// Free any existing palette effects
-	if (paletteEffects) delete paletteEffects;
 
 	switch (type) {
 

@@ -4,6 +4,8 @@
  * player.h
  *
  * 31st January 2006: Created player.h from parts of OpenJazz.h
+ * 24th June 2010: Created levelplayer.h from parts of player.h
+ * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * Part of the OpenJazz project
  *
@@ -29,62 +31,68 @@
 #define _PLAYER_H
 
 
-#include "OpenJazz.h"
-
-#include <SDL/SDL.h>
+#include "baselevel.h"
 
 
 // Constants
 
-// Player colours
-#define PC_WHITE     0
-#define PC_SGREEN    16
-#define PC_BLUE      23
-#define PC_RED       32
-#define PC_LGREEN    48
-#define PC_LEVEL1    64
-#define PC_YELLOW    75
-#define PC_LEVEL2    80
-#define PC_ORANGE    88
-#define PC_LEVEL3    96
-#define PC_LEVEL4    104
-#define PC_SANIM     112
-#define PC_LANIM     116
-#define PC_LEVEL5    124
-
 // Player defaults
-#define CHAR_NAME   "jazz"
-#define CHAR_FUR    PC_LGREEN
-#define CHAR_BAND   PC_RED
-#define CHAR_GUN    PC_BLUE
-#define CHAR_WBAND  PC_ORANGE
+#define CHAR_NAME  "jazz"
+#define CHAR_FUR   4
+#define CHAR_BAND  3
+#define CHAR_GUN   2
+#define CHAR_WBAND 8
 
 // General
 #define PANIMS     38 /* Number of player animations. Is probably higher. */
 #define PCONTROLS   8 /* Number of player controls. */
+#define PCOLOURS    4 /* Number of configurable colour ranges */
+
+
+// Enum
+
+enum PlayerColour {
+
+	PC_GREY   = 0,
+	PC_SGREEN = 1,
+	PC_BLUE   = 2,
+	PC_RED    = 3,
+	PC_LGREEN = 4,
+	PC_LEVEL1 = 5,
+	PC_YELLOW = 6,
+	PC_LEVEL2 = 7,
+	PC_ORANGE = 8,
+	PC_LEVEL3 = 9,
+	PC_LEVEL4 = 10,
+	PC_SANIM  = 11,
+	PC_LANIM  = 12,
+	PC_LEVEL5 = 13
+
+};
 
 
 // Classes
 
-class BonusPlayer;
 class LevelPlayer;
+class BonusPlayer;
+class JJ2LevelPlayer;
 
 class Player {
 
 	private:
-		LevelPlayer*  levelPlayer;
-		BonusPlayer*  bonusPlayer;
-		char*         name;
-		bool          pcontrols[PCONTROLS];
-		SDL_Color     palette[256];
-		unsigned char cols[4];
-		int           ammo[4];
-		int           ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
-		int           score;
-		int           lives;
-		int           fireSpeed;
-		bool          bird;
-		unsigned char team;
+		LevelPlayer*    levelPlayer;
+		BonusPlayer*    bonusPlayer;
+		JJ2LevelPlayer* jj2LevelPlayer;
+		char*           name;
+		bool            pcontrols[PCONTROLS];
+		unsigned char   cols[PCOLOURS];
+		int             ammo[4];
+		int             ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
+		int             score;
+		int             lives;
+		int             fireSpeed;
+		bool            bird;
+		unsigned char   team;
 
 		void addAmmo (int type, int amount);
 
@@ -94,27 +102,30 @@ class Player {
 		Player  ();
 		~Player ();
 
-		void           init           (char* playerName, unsigned char* cols, unsigned char newTeam);
-		void           deinit         ();
-		void           reset          (bool bonus, char* newAnims, unsigned char x, unsigned char y);
+		void            init              (char* playerName, unsigned char* cols, unsigned char newTeam);
+		void            deinit            ();
+		void            reset             (unsigned char x, unsigned char y);
+		void            reset             (LevelType levelType, char* newAnims, unsigned char x, unsigned char y);
 
-		void           addLife        ();
-		void           addScore       (int addedScore);
-		int            getAmmo        (bool amount);
-		BonusPlayer*   getBonusPlayer ();
-		unsigned char* getCols        ();
-		bool           getControl     (int control);
-		LevelPlayer*   getLevelPlayer ();
-		int            getLives       ();
-		char*          getName        ();
-		int            getScore       ();
-		unsigned char  getTeam        ();
-		void           setControl     (int control, bool state);
+		void            addLife           ();
+		void            addScore          (int addedScore);
+		int             getAmmo           (bool amount);
+		BonusPlayer*    getBonusPlayer    ();
+		unsigned char*  getCols           ();
+		bool            getControl        (int control);
+		JJ2LevelPlayer* getJJ2LevelPlayer ();
+		LevelPlayer*    getLevelPlayer    ();
+		int             getLives          ();
+		char*           getName           ();
+		int             getScore          ();
+		unsigned char   getTeam           ();
+		void            setControl        (int control, bool state);
 
-		void           send           (unsigned char* buffer);
-		void           receive        (unsigned char* buffer);
+		void            send              (unsigned char* buffer);
+		void            receive           (unsigned char* buffer);
 
 		friend class LevelPlayer;
+		friend class JJ2LevelPlayer;
 
 };
 
@@ -127,7 +138,7 @@ EXTERN int     nPlayers;
 
 // Configuration data
 EXTERN char*         characterName;
-EXTERN unsigned char characterCols[4];
+EXTERN unsigned char characterCols[PCOLOURS];
 
 #endif
 

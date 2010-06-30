@@ -129,6 +129,8 @@ int Menu::textInput (const char* request, char*& text) {
 	int count, terminate, character, x;
 	unsigned int cursor;
 
+	video.setPalette(menuPalette);
+
 	// Create input string
 	input = createEditableString(text);
 

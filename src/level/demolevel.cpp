@@ -94,7 +94,6 @@ DemoLevel::~DemoLevel () {
 
 int DemoLevel::play () {
 
-	int stats;
 	unsigned char macroPoint;
 	int ret;
 
@@ -103,14 +102,12 @@ int DemoLevel::play () {
 	ticks = 16;
 	prevStepTicks = 0;
 
-	stats = 0;
-
 	video.setPalette(palette);
 
 	while (true) {
 
 		// Do general processing
-		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
+		if (::loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
@@ -172,7 +169,7 @@ int DemoLevel::play () {
 		// Draw the graphics
 
 		draw();
-		drawStats(stats, BLACK);
+		drawStats(LEVEL_BLACK);
 
 
 		font->showString("demo", (canvasW >> 1) - 36, 32);

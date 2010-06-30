@@ -60,6 +60,7 @@ class Bonus;
 class BonusPlayer {
 
 	private:
+		SDL_Color     palette[256];
 		char          anims[PANIMS];
 		fixed         x, y, direction, dr;
 		unsigned char animType;

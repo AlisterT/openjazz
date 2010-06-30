@@ -15,6 +15,7 @@
  * 19th July 2009: Added parts of levelload.cpp to level.cpp
  * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
+ * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  *
  * Part of the OpenJazz project
  *
@@ -50,10 +51,8 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "menu/menu.h"
 #include "player/levelplayer.h"
 #include "scene/scene.h"
-#include "loop.h"
 #include "util.h"
 
 #include <string.h>
@@ -77,9 +76,6 @@ Level::Level (char* fileName, unsigned char diff, bool checkpoint) {
 	ret = load(fileName, diff, checkpoint);
 
 	if (ret < 0) throw ret;
-
-	// Arbitrary initial value
-	smoothfps = 50.0f;
 
 	return;
 
@@ -187,8 +183,7 @@ void Level::setNext (int nextLevel, int nextWorld) {
 }
 
 
-void Level::setTile (unsigned char gridX, unsigned char gridY,
-	unsigned char tile) {
+void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char tile) {
 
 	unsigned char buffer[MTL_L_GRID];
 
@@ -400,35 +395,6 @@ void Level::flash (unsigned char red, unsigned char green, unsigned char blue, i
 }
 
 
-void Level::setStage (LevelStage newStage) {
-
-	unsigned char buffer[MTL_L_STAGE];
-
-	if (stage == newStage) return;
-
-	stage = newStage;
-
-	if (gameMode) {
-
-		buffer[0] = MTL_L_STAGE;
-		buffer[1] = MT_L_STAGE;
-		buffer[2] = stage;
-		game->send(buffer);
-
-	}
-
-	return;
-
-}
-
-
-LevelStage Level::getStage () {
-
-	return stage;
-
-}
-
-
 int Level::playBonus () {
 
 	Bonus *bonus;
@@ -444,7 +410,7 @@ int Level::playBonus () {
 
 	try {
 
-		bonus = new Bonus(bonusFile, difficulty);
+		baseLevel = bonus = new Bonus(bonusFile, difficulty);
 
 	} catch (int e) {
 
@@ -457,6 +423,7 @@ int Level::playBonus () {
 	ret = bonus->play();
 
 	delete bonus;
+	baseLevel = NULL;
 
 	if (ret == E_NONE) playMusic("menusng.psm");
 
@@ -520,9 +487,8 @@ int Level::play () {
 	const char* options[5] =
 		{"continue game", "save game", "load game", "setup options", "quit game"};
 	char *string;
-	SetupMenu setupMenu;
 	bool pmessage, pmenu;
-	int stats, option;
+	int option;
 	unsigned int returnTime;
  	int perfect;
  	int timeBonus;
@@ -537,7 +503,6 @@ int Level::play () {
 
 	pmessage = pmenu = false;
 	option = 0;
-	stats = 0;
 
 	returnTime = 0;
 	timeBonus = -1;
@@ -549,76 +514,9 @@ int Level::play () {
 
 	while (true) {
 
-		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
+		count = loop(pmenu, option, pmessage);
 
-		if (controls.release(C_ESCAPE)) {
-
-			pmenu = !pmenu;
-			option = 0;
-
-		}
-
-		if (controls.release(C_PAUSE)) pmessage = !pmessage;
-
-		if (controls.release(C_STATS)) {
-
-			if (!gameMode) stats ^= S_SCREEN;
-			else stats = (stats + 1) & 3;
-
-		}
-
-		if (pmenu) {
-
-			// Deal with menu controls
-
-			if (controls.release(C_UP)) option = (option + 4) % 5;
-
-			if (controls.release(C_DOWN)) option = (option + 1) % 5;
-
-			if (controls.release(C_ENTER)) {
-
-				switch (option) {
-
-					case 0: // Continue
-
-						pmenu = false;
-
-						break;
-
-					case 1: // Save
-
-						break;
-
-					case 2: // Load
-
-						break;
-
-					case 3: // Setup
-
-						if (!gameMode) {
-
-							if (setupMenu.setup() == E_QUIT) return E_QUIT;
-
-							// Restore level palette
-							video.setPalette(palette);
-
-						}
-
-						break;
-
-					case 4: // Quit game
-
-						return E_NONE;
-
-				}
-
-			}
-
-		}
-
-		if (!gameMode) paused = pmessage || pmenu;
-
-		timeCalcs();
+		if (count <= 0) return count;
 
 
 		// Check if level has been won
@@ -677,12 +575,8 @@ int Level::play () {
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 
-		// If this is a competitive game, draw the score
-		if (gameMode) gameMode->drawScore(font);
-
-
 		// Draw statistics
-		drawStats(stats, BLACK);
+		drawStats(LEVEL_BLACK);
 
 
 		if (stage == LS_END) {
@@ -728,7 +622,6 @@ int Level::play () {
 			}
 
 			// Display statistics & bonuses
-			// TODO: Display percentage symbol
 
 			font->showString("time", (canvasW >> 1) - 152, (canvasH >> 1) - 60);
 			font->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
@@ -762,7 +655,7 @@ int Level::play () {
 
 			// Draw the menu
 
-			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, BLACK);
+			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, LEVEL_BLACK);
 
 			for (count = 0; count < 5; count++) {
 
@@ -774,31 +667,6 @@ int Level::play () {
 			}
 
 			fontmn2->restorePalette();
-
-		}
-
-
-		// Networking
-
-		if (gameMode) {
-
-			count = game->step(ticks);
-
-			switch (count) {
-
-				case E_UNUSED:
-
-					return E_NONE;
-
-				case E_NONE:
-
-					break;
-
-				default:
-
-					return count;
-
-			}
 
 		}
 

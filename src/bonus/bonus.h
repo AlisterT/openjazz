@@ -75,6 +75,7 @@ class Bonus : public BaseLevel {
 		~Bonus ();
 
 		bool checkMask (fixed x, fixed y);
+		void receive   (unsigned char* buffer);
 		int  play      ();
 
 };

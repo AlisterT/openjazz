@@ -27,14 +27,17 @@
 
 
 #include "game/game.h"
+#include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "menu/menu.h"
 #include "player/player.h"
 #include "scene/scene.h"
 #include "baselevel.h"
+#include "loop.h"
 
 
 BaseLevel::BaseLevel () {
@@ -48,6 +51,8 @@ BaseLevel::BaseLevel () {
 
 	// Set the level stage
 	stage = LS_NORMAL;
+
+	stats = 0;
 
 	return;
 
@@ -141,7 +146,7 @@ void BaseLevel::timeCalcs () {
 }
 
 
-void BaseLevel::drawStats (int stats, unsigned char bg) {
+void BaseLevel::drawStats (unsigned char bg) {
 
 	int count, width;
 
@@ -204,6 +209,112 @@ void BaseLevel::drawStats (int stats, unsigned char bg) {
 }
 
 
+int BaseLevel::loop (bool& menu, int& option, bool& message) {
+
+	int ret;
+
+	// Networking
+	if (gameMode) {
+
+		ret = game->step(ticks);
+
+		switch (ret) {
+
+			case E_UNUSED:
+
+				return E_NONE;
+
+			case E_NONE:
+
+				break;
+
+			default:
+
+				return ret;
+
+		}
+
+	}
+
+
+	// Main loop
+	if (::loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
+
+
+	if (controls.release(C_ESCAPE)) {
+
+		menu = !menu;
+		option = 0;
+
+	}
+
+	if (controls.release(C_PAUSE)) message = !message;
+
+	if (controls.release(C_STATS)) {
+
+		if (!gameMode) stats ^= S_SCREEN;
+		else stats = (stats + 1) & 3;
+
+	}
+
+	if (menu) {
+
+		// Deal with menu controls
+
+		if (controls.release(C_UP)) option = (option + 4) % 5;
+
+		if (controls.release(C_DOWN)) option = (option + 1) % 5;
+
+		if (controls.release(C_ENTER)) {
+
+			switch (option) {
+
+				case 0: // Continue
+
+					menu = false;
+
+					break;
+
+				case 1: // Save
+
+					break;
+
+				case 2: // Load
+
+					break;
+
+				case 3: // Setup
+
+					if (!gameMode) {
+
+						if (setupMenu.setup() == E_QUIT) return E_QUIT;
+
+						// Restore level palette
+						video.setPalette(palette);
+
+					}
+
+					break;
+
+				case 4: // Quit game
+
+					return E_NONE;
+
+			}
+
+		}
+
+	}
+
+	if (!gameMode) paused = message || menu;
+
+	timeCalcs();
+
+	return 1;
+
+}
+
+
 void BaseLevel::addTimer () {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -225,6 +336,35 @@ void BaseLevel::addTimer () {
 	}
 
 	return;
+
+}
+
+
+void BaseLevel::setStage (LevelStage newStage) {
+
+	unsigned char buffer[MTL_L_STAGE];
+
+	if (stage == newStage) return;
+
+	stage = newStage;
+
+	if (gameMode) {
+
+		buffer[0] = MTL_L_STAGE;
+		buffer[1] = MT_L_STAGE;
+		buffer[2] = stage;
+		game->send(buffer);
+
+	}
+
+	return;
+
+}
+
+
+LevelStage BaseLevel::getStage () {
+
+	return stage;
 
 }
 

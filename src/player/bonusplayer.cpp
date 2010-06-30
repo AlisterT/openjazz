@@ -39,6 +39,9 @@
 
 BonusPlayer::BonusPlayer (Player* parent, char *newAnims, unsigned char startX, unsigned char startY) {
 
+	int count;
+
+
 	player = parent;
 
 	memcpy(anims, newAnims, PANIMS);
@@ -49,6 +52,15 @@ BonusPlayer::BonusPlayer (Player* parent, char *newAnims, unsigned char startX, 
 	direction = FQ;
 	dr = 0;
 	gems = 0;
+
+
+	// Create the player's palette
+
+	for (count = 0; count < 256; count++)
+		palette[count].r = palette[count].g = palette[count].b = count;
+
+	// TODO: Custom colours
+
 
 	return;
 

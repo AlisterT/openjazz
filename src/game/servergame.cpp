@@ -257,12 +257,11 @@ int ServerGame::step (unsigned int ticks) {
 
 							players[nPlayers].init((char *)(recvBuffers[count]) + 9,
 								recvBuffers[count] + 5, recvBuffers[count][4]);
-							resetPlayer(players + nPlayers, false, NULL);
+							resetPlayer(players + nPlayers, LT_LEVEL, NULL);
 
 							printf("Player %d joined team %d.\n", nPlayers, recvBuffers[count][4]);
 
-							recvBuffers[count][3] = clientPlayer[count] =
-								nPlayers;
+							recvBuffers[count][3] = clientPlayer[count] = nPlayers;
 
 							nPlayers++;
 
@@ -279,8 +278,7 @@ int ServerGame::step (unsigned int ticks) {
 
 							for (pcount = 0; pcount < nPlayers; pcount++) {
 
-								if (players[pcount].getTeam() ==
-									recvBuffers[count][2])
+								if (players[pcount].getTeam() == recvBuffers[count][2])
 									players[pcount].teamScore++;
 
 							}
@@ -291,7 +289,7 @@ int ServerGame::step (unsigned int ticks) {
 
 					case MC_LEVEL:
 
-						level->receive(recvBuffers[count]);
+						baseLevel->receive(recvBuffers[count]);
 
 						break;
 
@@ -364,14 +362,13 @@ int ServerGame::step (unsigned int ticks) {
 
 					for (pcount = 0; pcount < nPlayers; pcount++) {
 
-						sendBuffer[0] = MTL_G_PJOIN +
-							strlen(players[pcount].getName());
+						sendBuffer[0] = MTL_G_PJOIN + strlen(players[pcount].getName());
 						sendBuffer[2] = count;
 						sendBuffer[3] = pcount;
 						sendBuffer[4] = players[pcount].getTeam();
-						memcpy(sendBuffer + 5, players[pcount].getCols(), 4);
-						memcpy(sendBuffer + 9, players[pcount].getName(),
-							strlen(players[pcount].getName()) + 1);
+						memcpy(sendBuffer + 5, players[pcount].getCols(), PCOLOURS);
+						memcpy(sendBuffer + 9, players[pcount].getName(), strlen(players[pcount].getName()) + 1);
+
 						net->send(clientSock[count], sendBuffer);
 
 					}
@@ -402,10 +399,8 @@ int ServerGame::step (unsigned int ticks) {
 						players[clientPlayer[count]].deinit();
 
 						// If necessary, move more recent players
-						for (pcount = clientPlayer[count]; pcount < nPlayers;
-							pcount++)
-							memcpy(players + pcount, players + pcount + 1,
-								sizeof(Player));
+						for (pcount = clientPlayer[count]; pcount < nPlayers; pcount++)
+							memcpy(players + pcount, players + pcount + 1, sizeof(Player));
 
 						// Clear duplicate pointers
 						memset(players + nPlayers, 0, sizeof(Player));

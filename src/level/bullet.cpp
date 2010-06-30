@@ -231,7 +231,7 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 				ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 				// If the hit was successful, destroy the bullet
-				if (players[count].getLevelPlayer()->hit(source, ticks)) return remove();
+				if (players[count].getLevelPlayer()->hit(source? source->player: NULL, ticks)) return remove();
 
 			}
 

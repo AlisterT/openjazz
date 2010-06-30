@@ -36,9 +36,7 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "menu/menu.h"
 #include "player/bonusplayer.h"
-#include "loop.h"
 #include "util.h"
 
 #include <string.h>
@@ -335,11 +333,11 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 		game->setCheckpoint(x, y);
 
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, true, string);
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_BONUS, string);
 
 	} else {
 
-		localPlayer->reset(true, string, x, y);
+		localPlayer->reset(LT_BONUS, string, x, y);
 
 	}
 
@@ -351,9 +349,6 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 
 	// Palette animations
-
-	// Free any existing palette effects
-	if (paletteEffects) delete paletteEffects;
 
 	// Spinny whirly thing
 	paletteEffects = new RotatePaletteEffect(112, 16, F32, NULL);
@@ -405,6 +400,44 @@ bool Bonus::checkMask (fixed x, fixed y) {
 
 	// Check the mask in the tile in question
 	return mask[ge->tile][((y >> 9) & 56) + ((x >> 12) & 7)];
+
+}
+
+
+void Bonus::receive (unsigned char* buffer) {
+
+	// Interpret data received from client/server
+
+	switch (buffer[1]) {
+
+		case MT_L_PROP:
+
+			if (buffer[2] == 2) {
+
+				if (stage == LS_NORMAL)
+					endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+
+			}
+
+			break;
+
+		case MT_L_GRID:
+
+			if (buffer[4] == 0) grid[buffer[3]][buffer[2]].tile = buffer[5];
+			else if (buffer[4] == 2)
+				grid[buffer[3]][buffer[2]].event = buffer[5];
+
+			break;
+
+		case MT_L_STAGE:
+
+			stage = LevelStage(buffer[2]);
+
+			break;
+
+	}
+
+	return;
 
 }
 
@@ -659,10 +692,10 @@ void Bonus::draw () {
 
 int Bonus::play () {
 
-	SetupMenu setupMenu;
-	const char *options[3] = {"continue game", "setup options", "quit game"};
+	const char* options[5] =
+		{"continue game", "save game", "load game", "setup options", "quit game"};
 	bool pmenu, pmessage;
-	int stats, option;
+	int option;
 	unsigned int returnTime;
 	int count;
 
@@ -673,7 +706,6 @@ int Bonus::play () {
 
 	pmessage = pmenu = false;
 	option = 0;
-	stats = 0;
 
 	returnTime = 0;
 
@@ -681,68 +713,9 @@ int Bonus::play () {
 
 	while (true) {
 
-		if (loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
+		count = loop(pmenu, option, pmessage);
 
-		if (controls.release(C_ESCAPE)) {
-
-			pmenu = !pmenu;
-			option = 0;
-
-		}
-
-		if (controls.release(C_PAUSE)) pmessage = !pmessage;
-
-		if (controls.release(C_STATS)) {
-
-			if (!gameMode) stats ^= S_SCREEN;
-			else stats = (stats + 1) & 3;
-
-		}
-
-		if (pmenu) {
-
-			// Deal with menu controls
-
-			if (controls.release(C_UP)) option = (option + 2) % 3;
-
-			if (controls.release(C_DOWN)) option = (option + 1) % 3;
-
-			if (controls.release(C_ENTER)) {
-
-				switch (option) {
-
-					case 0: // Continue
-
-						pmenu = false;
-
-						break;
-
-					case 1: // Setup
-
-						if (!gameMode) {
-
-							if (setupMenu.setup() == E_QUIT) return E_QUIT;
-
-							// Restore level palette
-							video.setPalette(palette);
-
-						}
-
-						break;
-
-					case 2: // Quit game
-
-						return E_NONE;
-
-				}
-
-			}
-
-		}
-
-		if (!gameMode) paused = pmessage || pmenu;
-
-		timeCalcs();
+		if (count <= 0) return count;
 
 
 		// Check if level has been won
@@ -791,7 +764,7 @@ int Bonus::play () {
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 		// Draw statistics
-		drawStats(stats, 0);
+		drawStats(0);
 
 		// Draw the menu
 		if (pmenu) {

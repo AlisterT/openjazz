@@ -31,6 +31,7 @@
 
 #include "bird.h"
 #include "bonusplayer.h"
+#include "jj2levelplayer.h"
 #include "levelplayer.h"
 
 #include "baselevel.h"
@@ -48,6 +49,7 @@ Player::Player () {
 
 	levelPlayer = NULL;
 	bonusPlayer = NULL;
+	jj2LevelPlayer = NULL;
 
 	name = NULL;
 
@@ -66,11 +68,6 @@ Player::~Player () {
 
 
 void Player::init (char *playerName, unsigned char *playerCols, unsigned char newTeam) {
-
-	int offsets[15] = {PC_WHITE, PC_SGREEN, PC_BLUE, PC_RED, PC_LGREEN,
-		PC_LEVEL1, PC_YELLOW, PC_LEVEL2, PC_ORANGE, PC_LEVEL3, PC_LEVEL4,
-		PC_SANIM, PC_LANIM, PC_LEVEL5, 256};
-	int count, start, length;
 
 	// Clear existing player
 	deinit();
@@ -91,71 +88,18 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 	team = newTeam;
 	teamScore = 0;
 
+	if (playerCols) {
 
-	// Create the player's palette
+		memcpy(cols, playerCols, PCOLOURS);
 
-	for (count = 0; count < 256; count++)
-		palette[count].r = palette[count].g = palette[count].b = count;
+	} else {
 
-	if (playerCols == NULL) return;
+		cols[0] = CHAR_FUR;
+		cols[1] = CHAR_BAND;
+		cols[2] = CHAR_GUN;
+		cols[3] = CHAR_WBAND;
 
-	memcpy(cols, playerCols, 4);
-
-	// Fur colours
-
-	count = 0;
-
-	while (cols[0] >= offsets[count + 1]) count++;
-
-	start = offsets[count];
-	length = offsets[count + 1] - start;
-
-	for (count = 0; count < 16; count++)
-		palette[count + 48].r = palette[count + 48].g = palette[count + 48].b =
-			(count * length / 16) + start;
-
-
-	// Bandana colours
-
-	count = 0;
-
-	while (cols[1] >= offsets[count + 1]) count++;
-
-	start = offsets[count];
-	length = offsets[count + 1] - start;
-
-	for (count = 0; count < 16; count++)
-		palette[count + 32].r = palette[count + 32].g = palette[count + 32].b =
- 			(count * length / 16) + start;
-
-
-	// Gun colours
-
-	count = 0;
-
-	while (cols[2] >= offsets[count + 1]) count++;
-
-	start = offsets[count];
-	length = offsets[count + 1] - start;
-
-	for (count = 0; count < 9; count++)
-		palette[count + 23].r = palette[count + 23].g = palette[count + 23].b =
-			(count * length / 9) + start;
-
-
-	// Wristband colours
-
-	count = 0;
-
-	while (cols[3] >= offsets[count + 1]) count++;
-
-	start = offsets[count];
-	length = offsets[count + 1] - start;
-
-	for (count = 0; count < 8; count++)
-		palette[count + 88].r = palette[count + 88].g = palette[count + 88].b =
-			(count * length / 8) + start;
-
+	}
 
 	return;
 
@@ -166,8 +110,10 @@ void Player::deinit () {
 
 	if (levelPlayer) delete levelPlayer;
 	if (bonusPlayer) delete bonusPlayer;
+	if (jj2LevelPlayer) delete levelPlayer;
 	levelPlayer = NULL;
 	bonusPlayer = NULL;
+	jj2LevelPlayer = NULL;
 
 	if (name) delete[] name;
 	name = NULL;
@@ -177,7 +123,16 @@ void Player::deinit () {
 }
 
 
-void Player::reset (bool bonus, char* newAnims, unsigned char x, unsigned char y) {
+void Player::reset (unsigned char x, unsigned char y) {
+
+	if (levelPlayer) levelPlayer->reset(x, y);
+
+	return;
+
+}
+
+
+void Player::reset (LevelType levelType, char* newAnims, unsigned char x, unsigned char y) {
 
 	int count;
 
@@ -185,20 +140,44 @@ void Player::reset (bool bonus, char* newAnims, unsigned char x, unsigned char y
 
 		bird = levelPlayer->hasBird();
 		delete levelPlayer;
+		levelPlayer = NULL;
 
 	}
 
-	if (bonusPlayer) delete bonusPlayer;
+	if (bonusPlayer) {
 
-	if (bonus) {
-
-		levelPlayer = NULL;
-		bonusPlayer = new BonusPlayer(this, newAnims, x, y);
-
-	} else {
-
-		levelPlayer = new LevelPlayer(this, newAnims, x, y, bird);
+		delete bonusPlayer;
 		bonusPlayer = NULL;
+
+	}
+
+	if (jj2LevelPlayer) {
+
+		bird = jj2LevelPlayer->hasBird();
+		delete jj2LevelPlayer;
+		jj2LevelPlayer = NULL;
+
+	}
+
+	switch (levelType) {
+
+		case LT_LEVEL:
+
+			levelPlayer = new LevelPlayer(this, newAnims, x, y, bird);
+
+			break;
+
+		case LT_BONUS:
+
+			bonusPlayer = new BonusPlayer(this, newAnims, x, y);
+
+			break;
+
+		case LT_JJ2LEVEL:
+
+			jj2LevelPlayer = new JJ2LevelPlayer(this, newAnims, x, y, bird);
+
+			break;
 
 	}
 
@@ -226,6 +205,13 @@ unsigned char * Player::getCols () {
 char * Player::getName () {
 
 	return name;
+
+}
+
+
+JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
+
+	return jj2LevelPlayer;
 
 }
 
@@ -337,6 +323,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[45] = pcontrols[C_SWIM];
 
 	if (levelPlayer) levelPlayer->send(buffer);
+	if (jj2LevelPlayer) jj2LevelPlayer->send(buffer);
 
 	return;
 
@@ -370,6 +357,7 @@ void Player::receive (unsigned char *buffer) {
 	}
 
 	if (levelPlayer) levelPlayer->receive(buffer);
+	if (jj2LevelPlayer) jj2LevelPlayer->receive(buffer);
 
 	return;
 

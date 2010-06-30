@@ -7,6 +7,7 @@
  * 4th February 2009: Created events.h from parts of level.h
  * 19th March 2009: Created sprite.h from parts of level.h
  * 30th March 2010: Created baselevel.h from parts of level.h
+ * 29th June 2010: Created jj2level.h from parts of level.h
  *
  * Part of the OpenJazz project
  *
@@ -53,7 +54,7 @@
 #define TKEY      127 /* Tileset colour key */
 
 // Black palette index
-#define BLACK 31
+#define LEVEL_BLACK 31
 
 // Fade delays
 #define T_START 500
@@ -113,10 +114,10 @@ class Level : public BaseLevel {
 		fixed         waterLevelSpeed;
 		fixed         energyBar;
 
-		void loadSprite  (File* file, Sprite* sprite);
-		int  loadSprites (char* fileName);
-		int  loadTiles   (char* fileName);
-		int  playBonus   ();
+		void loadSprite   (File* file, Sprite* sprite);
+		int  loadSprites  (char* fileName);
+		int  loadTiles    (char* fileName);
+		int  playBonus    ();
 
 	protected:
 		int  load (char* fileName, unsigned char diff, bool checkpoint);
@@ -124,14 +125,14 @@ class Level : public BaseLevel {
 		void draw ();
 
 	public:
-		Font* font;
+		Font*     font;
 		Event*    events;
 		Bullet*   bullets;
 		EventPath path[PATHS];
 
-		Level                       ();
-		Level                       (char* fileName, unsigned char diff, bool checkpoint);
-		virtual ~Level              ();
+		Level          ();
+		Level          (char* fileName, unsigned char diff, bool checkpoint);
+		virtual ~Level ();
 
 		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
@@ -152,8 +153,6 @@ class Level : public BaseLevel {
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);
 		void          flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
-		void          setStage      (LevelStage stage);
-		LevelStage    getStage      ();
 		void          receive       (unsigned char* buffer);
 		virtual int   play          ();
 
@@ -174,10 +173,9 @@ class DemoLevel : public Level {
 };
 
 
-// Variables
+// Variable
 
 EXTERN Level* level;
-EXTERN fixed  viewX, viewY;
 
 #endif
 

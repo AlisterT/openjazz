@@ -26,6 +26,7 @@
 #include "util.h"
 
 #include <string.h>
+#include <zlib.h>
 
 
 File::File (const char* name, bool write) {
@@ -280,6 +281,24 @@ void File::skipRLE () {
 	fseek(file, next, SEEK_CUR);
 
 	return;
+
+}
+
+
+unsigned char* File::loadLZ (int compressedLength, int length) {
+
+	unsigned char* compressedBuffer;
+	unsigned char* buffer;
+
+	compressedBuffer = loadBlock(compressedLength);
+
+	buffer = new unsigned char[length];
+
+	uncompress(buffer, (unsigned long int *)&length, compressedBuffer, compressedLength);
+
+	delete[] compressedBuffer;
+
+	return buffer;
 
 }
 

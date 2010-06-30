@@ -28,6 +28,7 @@
 
 #include "gamemode.h"
 
+#include "baselevel.h"
 #include "io/network.h"
 
 
@@ -80,7 +81,6 @@
 // Classes
 
 class File;
-class Player;
 
 class Game {
 
@@ -103,8 +103,8 @@ class Game {
 		virtual int  step          (unsigned int ticks);
 		virtual void score         (unsigned char team);
 		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY);
-		void         resetPlayer   (LevelPlayer *player);
-		void         resetPlayer   (Player *player, bool bonus, char* anims);
+		void         resetPlayer   (Player *player);
+		void         resetPlayer   (Player *player, LevelType levelType, char* anims);
 
 };
 

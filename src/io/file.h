@@ -56,6 +56,7 @@ class File {
 		unsigned char*     loadBlock   (int length);
 		unsigned char*     loadRLE     (int length);
 		void               skipRLE     ();
+		unsigned char*     loadLZ      (int compressedLength, int length);
 		char*              loadString  ();
 		SDL_Surface*       loadSurface (int width, int height);
 		unsigned char*     loadPixels  (int length);

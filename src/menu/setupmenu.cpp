@@ -506,8 +506,7 @@ int SetupMenu::setup () {
 	const char *setupOptions[6] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound"};
 	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
 	const char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
-	const unsigned char setupCharacterCols[8] = {PC_WHITE, PC_RED, PC_ORANGE,
-		PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
+	const unsigned char setupCharacterCols[8] = {PC_GREY, PC_RED, PC_ORANGE, PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
 	int ret;
 	int option, suboption, subsuboption;
 
@@ -549,8 +548,7 @@ int SetupMenu::setup () {
 							if (ret == E_QUIT) return E_QUIT;
 
 							if (ret == E_NONE)
-								characterCols[suboption - 1] =
-									setupCharacterCols[subsuboption];
+								characterCols[suboption - 1] = setupCharacterCols[subsuboption];
 
 							break;
 

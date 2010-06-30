@@ -40,6 +40,7 @@
 #include "io/gfx/video.h"
 #include "io/network.h"
 #include "io/sound.h"
+#include "jj2level/jj2level.h"
 #include "level/level.h"
 #include "menu/menu.h"
 #include "player/player.h"
@@ -456,6 +457,10 @@ int loadMain (int argc, char *argv[]) {
 	// Initiate networking
 	net = new Network();
 
+
+	baseLevel = NULL;
+	level = NULL;
+	jj2Level = NULL;
 
 	return E_NONE;
 

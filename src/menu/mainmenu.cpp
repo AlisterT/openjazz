@@ -272,7 +272,7 @@ int MainMenu::main () {
 
 			try {
 
-				level = new DemoLevel(F_MACRO);
+				baseLevel = level = new DemoLevel(F_MACRO);
 
 			} catch (int e) {
 
@@ -294,6 +294,8 @@ int MainMenu::main () {
 			}
 
 			delete level;
+			baseLevel = level = NULL;
+
 			delete[] players;
 			localPlayer = NULL;
 

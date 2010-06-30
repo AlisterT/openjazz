@@ -4,6 +4,7 @@
  * levelplayer.cpp
  *
  * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
+ * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * Part of the OpenJazz project
  *
@@ -40,6 +41,12 @@
 
 LevelPlayer::LevelPlayer (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
+	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
+		PCO_LEVEL1, PCO_YELLOW, PCO_LEVEL2, PCO_ORANGE, PCO_LEVEL3, PCO_LEVEL4,
+		PCO_SANIM, PCO_LANIM, PCO_LEVEL5, 256};
+	int count, start, length;
+
+
 	player = parent;
 
 	if (newAnims) memcpy(anims, newAnims, PANIMS);
@@ -53,6 +60,53 @@ LevelPlayer::LevelPlayer (Player* parent, char* newAnims, unsigned char startX, 
 	gem = false;
 
 	reset(startX, startY);
+
+
+	// Create the player's palette
+
+	for (count = 0; count < 256; count++)
+		palette[count].r = palette[count].g = palette[count].b = count;
+
+
+	// Fur colours
+
+	start = offsets[player->cols[0]];
+	length = offsets[player->cols[0] + 1] - start;
+
+	for (count = 0; count < 16; count++)
+		palette[count + 48].r = palette[count + 48].g = palette[count + 48].b =
+			(count * length / 16) + start;
+
+
+	// Bandana colours
+
+	start = offsets[player->cols[1]];
+	length = offsets[player->cols[1] + 1] - start;
+
+	for (count = 0; count < 16; count++)
+		palette[count + 32].r = palette[count + 32].g = palette[count + 32].b =
+ 			(count * length / 16) + start;
+
+
+	// Gun colours
+
+	start = offsets[player->cols[2]];
+	length = offsets[player->cols[2] + 1] - start;
+
+	for (count = 0; count < 9; count++)
+		palette[count + 23].r = palette[count + 23].g = palette[count + 23].b =
+			(count * length / 9) + start;
+
+
+	// Wristband colours
+
+	start = offsets[player->cols[3]];
+	length = offsets[player->cols[3] + 1] - start;
+
+	for (count = 0; count < 8; count++)
+		palette[count + 88].r = palette[count + 88].g = palette[count + 88].b =
+			(count * length / 8) + start;
+
 
 	return;
 
@@ -159,18 +213,18 @@ bool LevelPlayer::hasGem () {
 }
 
 
-bool LevelPlayer::hit (LevelPlayer *source, unsigned int ticks) {
+bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
 	if (reaction != PR_NONE) return false;
 
 	// Hits from the same team have no effect
-	if (source && (source->player->getTeam() == player->team)) return false;
+	if (source && (source->getTeam() == player->team)) return false;
 
 
 	if (shield == 3) shield = 0;
 	else if (shield) shield--;
-	else if (!gameMode || gameMode->hit(source, this)) {
+	else if (!gameMode || gameMode->hit(source, player)) {
 
 		energy--;
 
@@ -208,11 +262,11 @@ bool LevelPlayer::hit (LevelPlayer *source, unsigned int ticks) {
 }
 
 
-void LevelPlayer::kill (LevelPlayer *source, unsigned int ticks) {
+void LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
-	if (!gameMode || gameMode->kill(source, this)) {
+	if (!gameMode || gameMode->kill(source, player)) {
 
 		energy = 0;
 		player->lives--;
@@ -324,7 +378,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 				level->setStage(LS_END);
 
-			} else if (!(gameMode->endOfLevel(this, gridX, gridY))) return false;
+			} else if (!(gameMode->endOfLevel(player, gridX, gridY))) return false;
 
 			break;
 

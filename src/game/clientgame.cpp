@@ -146,8 +146,6 @@ ClientGame::ClientGame (char* address) {
 
 	// Download the level from the server
 
-	level = NULL;
-
 	levelFile = createString(LEVEL_FILE);
 	file = NULL;
 
@@ -398,7 +396,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							players[count].init((char *)recvBuffer + 9,
 								recvBuffer + 5, recvBuffer[4]);
-							resetPlayer(players + count, false, NULL);
+							resetPlayer(players + count, LT_LEVEL, NULL);
 
 							printf("Player %d joined team %d.\n", count, recvBuffer[4]);
 
@@ -452,7 +450,7 @@ int ClientGame::step (unsigned int ticks) {
 
 				case MC_LEVEL:
 
-					if (level) level->receive(recvBuffer);
+					if (baseLevel) baseLevel->receive(recvBuffer);
 
 					break;
 

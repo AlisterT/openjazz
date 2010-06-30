@@ -108,10 +108,9 @@ GameMenu::~GameMenu () {
 }
 
 
-int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
+int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 	const char *options[4] = {"easy", "medium", "hard", "turbo"};
-	char *firstLevel;
 	SDL_Rect src, dst;
 	int count;
 
@@ -154,9 +153,6 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 
 			playSound(S_ORB);
 
-			if (levelNum == -1) firstLevel = createFileName(F_BONUSMAP, worldNum);
-			else firstLevel = createFileName(F_LEVEL, levelNum, worldNum);
-
 			if (mode == M_SINGLE) {
 
 				try {
@@ -164,8 +160,6 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 					game = new Game(firstLevel, difficulty);
 
 				} catch (int e) {
-
-					delete[] firstLevel;
 
 					message("COULD NOT START GAME");
 
@@ -181,8 +175,6 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 
 				} catch (int e) {
 
-					delete[] firstLevel;
-
 					message("COULD NOT CREATE SERVER");
 
 					return e;
@@ -190,8 +182,6 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 				}
 
 			}
-
-			delete[] firstLevel;
 
 
 			// Play the level(s)
@@ -225,8 +215,26 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 }
 
 
+int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
+
+	char* firstLevel;
+	int ret;
+
+	if (levelNum == -1) firstLevel = createFileName(F_BONUSMAP, worldNum);
+	else firstLevel = createFileName(F_LEVEL, levelNum, worldNum);
+
+	ret = newGameDifficulty(mode, firstLevel);
+
+	delete[] firstLevel;
+
+	return ret;
+
+}
+
+
 int GameMenu::newGameLevel (GameModeType mode) {
 
+/*
 	int option, worldNum, levelNum;
 
 	worldNum = levelNum = option = 0;
@@ -288,6 +296,30 @@ int GameMenu::newGameLevel (GameModeType mode) {
 	}
 
 	return E_NONE;
+*/
+
+	char* fileName;
+	int ret;
+
+	fileName = createString("castle1.j2l");
+
+	ret = E_NONE;
+
+	while (true) {
+
+		ret = textInput("level file name:", fileName);
+
+		if (ret < 0) break;
+
+		ret = newGameDifficulty(mode, fileName);
+
+		if (ret < 0) break;
+
+	}
+
+	delete[] fileName;
+
+	return ret;
 
 }
 

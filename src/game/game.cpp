@@ -31,6 +31,7 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "jj2level/jj2level.h"
 #include "level/level.h"
 #include "planet/planet.h"
 #include "player/bonusplayer.h"
@@ -115,11 +116,11 @@ int Game::play () {
 
 		// Load and play the level
 
-		if (!strncmp(levelFile, F_BONUSMAP, 8)) {
+		if (!strncasecmp(levelFile, F_BONUSMAP, 8)) {
 
 			try {
 
-				bonus = new Bonus(levelFile, difficulty);
+				baseLevel = bonus = new Bonus(levelFile, difficulty);
 
 			} catch (int e) {
 
@@ -132,6 +133,7 @@ int Game::play () {
 			if (ret <= 0) {
 
 				delete bonus;
+				baseLevel = NULL;
 
 				if (ret == E_NONE) playMusic("menusng.psm");
 
@@ -147,12 +149,58 @@ int Game::play () {
 			}
 
 			delete bonus;
+			baseLevel = NULL;
+
+		} else if (!strcasecmp(levelFile + strlen(levelFile) - 4, ".j2l")) {
+
+			try {
+
+				baseLevel = jj2Level = new JJ2Level(levelFile, difficulty, checkpoint);
+
+			} catch (int e) {
+
+				return e;
+
+			}
+
+			ret = jj2Level->play();
+
+			if (ret <= 0) {
+
+				delete jj2Level;
+				baseLevel = jj2Level = NULL;
+
+				if (ret == E_NONE) playMusic("menusng.psm");
+
+				return ret;
+
+			} else if (ret == WON) {
+
+				// Won the level
+
+				// Do not use old level's checkpoint coordinates
+				checkpoint = false;
+
+			} else {
+
+				// Lost the level
+
+				if (!localPlayer->getLives()) return E_NONE;
+
+				// Use checkpoint coordinates
+				checkpoint = true;
+
+
+			}
+
+			delete jj2Level;
+			baseLevel = jj2Level = NULL;
 
 		} else {
 
 			try {
 
-				level = new Level(levelFile, difficulty, checkpoint);
+				baseLevel = level = new Level(levelFile, difficulty, checkpoint);
 
 			} catch (int e) {
 
@@ -197,6 +245,7 @@ int Game::play () {
 			if (ret <= 0) {
 
 				delete level;
+				baseLevel = level = NULL;
 
 				if (ret == E_NONE) playMusic("menusng.psm");
 
@@ -222,6 +271,7 @@ int Game::play () {
 			}
 
 			delete level;
+			baseLevel = level = NULL;
 
 		}
 
@@ -284,7 +334,7 @@ void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 }
 
 
-void Game::resetPlayer (LevelPlayer *player) {
+void Game::resetPlayer (Player *player) {
 
 	player->reset(checkX, checkY);
 
@@ -293,9 +343,9 @@ void Game::resetPlayer (LevelPlayer *player) {
 }
 
 
-void Game::resetPlayer (Player *player, bool bonus, char* anims) {
+void Game::resetPlayer (Player *player, LevelType levelType, char* anims) {
 
-	player->reset(bonus, anims, checkX, checkY);
+	player->reset(levelType, anims, checkX, checkY);
 
 	return;
 

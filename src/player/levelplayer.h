@@ -4,6 +4,7 @@
  * levelplayer.h
  *
  * 24th June 2010: Created levelplayer.h from parts of player.h
+ * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * Part of the OpenJazz project
  *
@@ -38,6 +39,22 @@
 
 
 // Constants
+
+// Colour offsets
+#define PCO_GREY   0
+#define PCO_SGREEN 16
+#define PCO_BLUE   23
+#define PCO_RED    32
+#define PCO_LGREEN 48
+#define PCO_LEVEL1 64
+#define PCO_YELLOW 75
+#define PCO_LEVEL2 80
+#define PCO_ORANGE 88
+#define PCO_LEVEL3 96
+#define PCO_LEVEL4 104
+#define PCO_SANIM  112
+#define PCO_LANIM  116
+#define PCO_LEVEL5 124
 
 // Animations
 #define PA_LWALK    0
@@ -134,6 +151,7 @@ class LevelPlayer : public Movable {
 
 	private:
 		Bird*          bird;
+		SDL_Color      palette[256];
 		char           anims[PANIMS];
 		int            energy;
 		int            shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
@@ -172,8 +190,8 @@ class LevelPlayer : public Movable {
 		int            getItems    ();
 		bool           hasBird     ();
 		bool           hasGem      ();
-		bool           hit         (LevelPlayer* source, unsigned int ticks);
-		void           kill        (LevelPlayer* source, unsigned int ticks);
+		bool           hit         (Player* source, unsigned int ticks);
+		void           kill        (Player* source, unsigned int ticks);
 		bool           overlap     (fixed left, fixed top, fixed width, fixed height);
 		PlayerReaction reacted     (unsigned int ticks);
 		void           setEvent    (unsigned char gridX, unsigned char gridY);

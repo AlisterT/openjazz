@@ -60,6 +60,7 @@ class GameMenu : public Menu {
 		int           episodes;
 		unsigned char difficulty;
 
+		int newGameDifficulty (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
 		int newGameLevel      (GameModeType mode);
 		int newGameEpisode    (GameModeType mode);
