@@ -29,6 +29,7 @@
 Anim::Anim () {
 
 	frame = 0;
+	yOffset = 0;
 	ignoreDefaultYOffset = false;
 
 	return;
@@ -108,6 +109,9 @@ fixed Anim::getShootY () {
 
 
 fixed Anim::getOffset () {
+
+	if (!ignoreDefaultYOffset && yOffset == 0)
+		return ITOF(yOffset) + TTOF(1);
 
 	return ITOF(yOffset);
 

@@ -87,9 +87,9 @@ class Event : public Movable {
 		unsigned char animType;     // E_LEFTANIM, etc, or 0
 		unsigned char frame;
 		unsigned int  flashTime;
-		bool 		  onlyLAnimOffset;
-		bool		  onlyRAnimOffset;
-		bool          disableAnimOffset;
+		bool          noAnimOffset;
+		bool          onlyLAnimOffset;
+		bool          onlyRAnimOffset;
 
 		Event ();
 
@@ -98,9 +98,9 @@ class Event : public Movable {
 		fixed        getWidth            ();
 		fixed        getHeight           ();
 		signed char* prepareStep         (unsigned int ticks, int msps);
-		void         useLeftAnimOffset   (bool enable);
-		void         useRightAnimOffset  (bool enable);
-		void         dontUseAnimOffset   (bool enable);
+		void         useLeftAnimOffset   ();
+		void         useRightAnimOffset  ();
+		void         dontUseAnimOffset   ();
 
 	public:
 		Event  (unsigned char gX, unsigned char gY);

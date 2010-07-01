@@ -53,7 +53,6 @@ signed char* Event::prepareStep (unsigned int ticks, int msps) {
 	// If the event has been removed from the grid, destroy it
 	if (!set) return NULL;
 
-
 	// If the event and its origin are off-screen, the event is not in the
 	// process of self-destruction, remove it
 	if ((animType != E_LFINISHANIM) && (animType != E_RFINISHANIM) &&
@@ -102,7 +101,6 @@ Event* Event::step (unsigned int ticks, int msps) {
 	// Find dimensions
 	width = getWidth();
 	height = getHeight();
-
 
 	// Handle behaviour
 
@@ -163,9 +161,11 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 6:
 
+			int count = level->path[set[E_MULTIPURPOSE]].node;
+
 			// Use the path from the level file
-			dx = TTOF(gridX) + ITOF(level->path[set[E_MULTIPURPOSE]].x[level->path[set[E_MULTIPURPOSE]].node]) - x;
-			dy = TTOF(gridY) + ITOF(level->path[set[E_MULTIPURPOSE]].y[level->path[set[E_MULTIPURPOSE]].node]) - y + TTOF(1);
+			dx = TTOF(gridX) + ITOF(level->path[set[E_MULTIPURPOSE]].x[count]) - x;
+			dy = TTOF(gridY) + ITOF(level->path[set[E_MULTIPURPOSE]].y[count]) - y;
 
 			dx = ((dx << 10) / msps) * set[E_MOVEMENTSP];
 			dy = ((dy << 10) / msps) * set[E_MOVEMENTSP];
@@ -539,6 +539,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 	}
 
+
 	dx /= set[E_MOVEMENTSP];
 	dy /= set[E_MOVEMENTSP];
 	x += (dx * msps) >> 10;
@@ -882,10 +883,16 @@ Event* Event::step (unsigned int ticks, int msps) {
 		levelPlayer = players[count].getLevelPlayer();
 
 		// Check if the player is touching the event
+
+		fixed offset = 0;
+
+		if (getAnim(animType) && noAnimOffset)
+			offset = getAnim(animType)->getOffset();
+
 		if (set[E_MODIFIER] == 6) {
 
 			if (width && height &&
-				levelPlayer->overlap(x, y - height, width - F8, F8) &&
+				levelPlayer->overlap(x, y + offset - height, width - F8, F8) &&
 				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
 				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + y - height)) {
 
@@ -900,7 +907,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				levelPlayer->overlap(x, y - height, width, height)) {
+				levelPlayer->overlap(x, y + offset - height, width, height)) {
 
 				// If the player picks up the event, destroy it
 				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps))
@@ -964,7 +971,7 @@ void Event::draw (unsigned int ticks, int change) {
 		anim = level->getAnim(set[animType] + 128);
 
 		// Explosions may only occur with finish animations
-		if (animType == E_RFINISHANIM || animType == E_LFINISHANIM) drawExplosion = true;
+		drawExplosion = (animType == E_RFINISHANIM || animType == E_LFINISHANIM);
 
 	}
 	else {
@@ -981,9 +988,9 @@ void Event::draw (unsigned int ticks, int change) {
 
 
 	// Correct the position without altering the animation
-	if (disableAnimOffset) {
+	if (noAnimOffset) {
 
-		changeY -= anim->getOffset();
+		changeY += anim->getOffset();
 
 	}
 	else if (onlyLAnimOffset && animType == E_RIGHTANIM) {
@@ -1090,27 +1097,27 @@ void Event::drawEnergy (unsigned int ticks) {
 }
 
 
-void Event::useLeftAnimOffset(bool enable) {
+void Event::useLeftAnimOffset() {
 
-	onlyLAnimOffset = enable;
-
-	return;
-
-}
-
-
-void Event::useRightAnimOffset(bool enable) {
-
-	onlyRAnimOffset = enable;
+	onlyLAnimOffset = true;
 
 	return;
 
 }
 
 
-void Event::dontUseAnimOffset(bool enable) {
+void Event::useRightAnimOffset() {
 
-	disableAnimOffset = enable;
+	onlyRAnimOffset = true;
+
+	return;
+
+}
+
+
+void Event::dontUseAnimOffset() {
+
+	noAnimOffset = true;
 
 	return;
 

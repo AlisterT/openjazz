@@ -64,7 +64,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 
 	onlyLAnimOffset = false;
 	onlyRAnimOffset = false;
-	disableAnimOffset = false;
+	noAnimOffset = false;
 
 	switch (getProperty(E_BEHAVIOUR)) {
 
@@ -72,7 +72,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 4: // Walk from side to side and down hills
 
 			animType = E_LEFTANIM;
-			useRightAnimOffset(true);
+			useRightAnimOffset();
 
 			break;
 
@@ -80,7 +80,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 7: // Flying snake behavior
 
 			animType = E_LEFTANIM;
-			dontUseAnimOffset(true);
+			dontUseAnimOffset();
 
 			break;
 
@@ -98,7 +98,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 		case 26: // Flip animation
 
 			animType = E_RIGHTANIM;
-			useLeftAnimOffset(true);
+			useLeftAnimOffset();
 
 			break;
 
@@ -234,10 +234,14 @@ fixed Event::getHeight () {
 
 bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
+	fixed offset = 0;
+	if (getAnim(animType) && noAnimOffset)
+		offset = getAnim(animType)->getOffset();
+
 	return (x + getWidth() >= left) &&
 		(x < left + width) &&
-		(y  >= top) &&
-		(y - getHeight() < top + height);
+		(y + offset >= top) &&
+		(y + offset - getHeight() < top + height);
 
 }
 
