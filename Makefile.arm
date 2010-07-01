@@ -40,7 +40,7 @@ OBJS =	src/bonus/bonus.o \
 	src/level/bullet.o src/level/demolevel.o src/level/level.o \
 	src/level/levelframe.o src/level/levelload.o src/level/movable.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
-	src/menu/setupmenu.o \
+	src/menu/plasma.o src/menu/setupmenu.o \
 	src/planet/planet.o \
 	src/player/bird.o src/player/bonusplayer.o src/player/jj2levelplayer.o \
 	src/player/jj2levelplayerframe.o src/player/levelplayer.o \

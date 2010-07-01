@@ -27,6 +27,7 @@
 
 
 #include "menu.h"
+#include "plasma.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
@@ -116,6 +117,7 @@ MainMenu::MainMenu () {
 
 	SDL_SetColorKey(background, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(highlight, SDL_SRCCOLORKEY, 0);
+	SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
 
 	gameMenu = new GameMenu(file);
 
@@ -142,6 +144,7 @@ MainMenu::~MainMenu () {
 int MainMenu::main () {
 
 	Scene *scene;
+	Plasma plasma;
 	SetupMenu setupMenu;
 	SDL_Rect src, dst;
 	int option;
@@ -310,7 +313,12 @@ int MainMenu::main () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(28);
+
+		//as long as we're drawing plasma, we don't need to clear the screen.
+		//clearScreen(28);
+
+		plasma.draw();
+
 
 		dst.x = (canvasW >> 2) - 72;
 		dst.y = canvasH - (canvasH >> 2);
