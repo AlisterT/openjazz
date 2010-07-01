@@ -512,7 +512,6 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	if (count < 0) {
 
-		SDL_FreeSurface(tileSet);
 		delete file;
 		delete font;
 

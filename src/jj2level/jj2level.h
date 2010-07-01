@@ -54,6 +54,13 @@ typedef struct {
 
 } JJ2GridElement;
 
+typedef struct {
+
+	unsigned char type;
+	unsigned char data[3];
+
+} JJ2Event;
+
 
 // Classes
 
@@ -88,6 +95,8 @@ class JJ2Level : public BaseLevel {
 		char*         mask;
 		int           soundMap[32];
 		JJ2Layer*     layers[LAYERS];
+		JJ2Event**    events;
+		int           width, height;
 		unsigned char difficulty;
 		fixed         waterLevel;
 		fixed         waterLevelTarget;

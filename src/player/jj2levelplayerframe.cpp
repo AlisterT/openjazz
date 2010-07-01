@@ -685,27 +685,20 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	// Show the player
 
-	// Flash red if hurt, otherwise use player colour
-	if ((reaction == JJ2PR_HURT) && (!((ticks / 30) & 3)))
-		an->flashPalette(36);
+	// Use player colour
+	an->setPalette(palette, 23, 41);
+	an->setPalette(palette, 88, 8);
 
-	else {
+	// Flash on and off if hurt
+	if ((reaction != JJ2PR_HURT) || ((ticks / 30) & 2)) {
 
-		an->setPalette(palette, 23, 41);
-		an->setPalette(palette, 88, 8);
+		// Draw "motion blur"
+		if (fastFeetTime > ticks) an->draw(drawX - (dx >> 6), drawY);
+
+		// Draw player
+		an->draw(drawX, drawY);
 
 	}
-
-
-	// Draw "motion blur"
-	if (fastFeetTime > ticks) an->draw(drawX - (dx >> 6), drawY);
-
-	// Draw player
-	an->draw(drawX, drawY);
-
-
-	// Remove red flash or player colour from sprite
-	an->restorePalette();
 
 
 	// Uncomment the following to see the area of the player

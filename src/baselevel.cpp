@@ -46,6 +46,8 @@ BaseLevel::BaseLevel () {
 	smoothfps = 50.0f;
 
 	paletteEffects = NULL;
+	tileSet = NULL;
+	spriteSet = NULL;
 
 	paused = false;
 
@@ -65,9 +67,9 @@ BaseLevel::~BaseLevel () {
 
 	if (paletteEffects) delete paletteEffects;
 
-	SDL_FreeSurface(tileSet);
+	if (tileSet) SDL_FreeSurface(tileSet);
 
-	delete[] spriteSet;
+	if (spriteSet) delete[] spriteSet;
 
 	return;
 

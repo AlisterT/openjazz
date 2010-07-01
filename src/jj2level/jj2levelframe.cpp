@@ -88,7 +88,7 @@ int JJ2Level::step () {
 
 void JJ2Level::draw () {
 
-	int count, energy;
+	int x, y;
 	unsigned int change;
 
 
@@ -98,25 +98,45 @@ void JJ2Level::draw () {
 
 	// Ensure the new viewport is within the level
 	if (viewX < 0) viewX = 0;
-	if (FTOI(viewX) + viewW >= TTOI(layers[3]->getWidth())) viewX = ITOF(TTOI(layers[3]->getWidth()) - viewW);
+	if (FTOI(viewX) + viewW >= TTOI(width)) viewX = ITOF(TTOI(width) - viewW);
 	if (viewY < 0) viewY = 0;
-	if (FTOI(viewY) + viewH >= TTOI(layers[3]->getHeight())) viewY = ITOF(TTOI(layers[3]->getHeight()) - viewH);
+	if (FTOI(viewY) + viewH >= TTOI(height)) viewY = ITOF(TTOI(height) - viewH);
 
 
 	// Show background layers
-	for (count = 7; count >= 3; count--) layers[count]->draw(tileSet);
+	for (x = 7; x >= 3; x--) layers[x]->draw(tileSet);
 
 
 	// Calculate change since last step
 	change = paused? 0: ticks - prevStepTicks;
 
 
+	// Show the events
+	/*for (y = 0; y < ITOT(viewH); y++) {
+
+		for (x = 0; x < ITOT(viewW ); x++) {
+
+			if (events[y + FTOT(viewY)][x + FTOT(viewX)].type > 2)
+				drawRect(8 + TTOI(x) - (FTOI(viewX) & 31), 8 + TTOI(y) - (FTOI(viewY) & 31), 16, 16, events[y + FTOT(viewY)][x + FTOT(viewX)].type);
+
+		}
+
+	}*/
+
+
 	// Show the players
-	for (count = 0; count < nPlayers; count++) players[count].getJJ2LevelPlayer()->draw(ticks, change);
+	for (x = 0; x < nPlayers; x++) {
+
+		players[x].getJJ2LevelPlayer()->draw(ticks, change);
+
+		// Show type of overlapping event
+		//panelBigFont->showNumber(events[FTOT(players[x].getJJ2LevelPlayer()->getY() + PYO_MID)][FTOT(players[x].getJJ2LevelPlayer()->getX() + PXO_MID)].type, viewW >> 1, viewH >> 1);
+
+	}
 
 
 	// Show foreground layers
-	for (count = 2; count >= 0; count--) layers[count]->draw(tileSet);
+	for (x = 2; x >= 0; x--) layers[x]->draw(tileSet);
 
 
 	// Temporary lines showing the water level
@@ -135,11 +155,11 @@ void JJ2Level::draw () {
 
 	// Draw hearts
 
-	energy = localPlayer->getJJ2LevelPlayer()->getEnergy();
+	x = localPlayer->getJJ2LevelPlayer()->getEnergy();
 
-	for (count = 1; count <= energy; count++) {
+	for (y = 1; y <= x; y++) {
 
-		drawRect(viewW - (count * 12), 4, 8, 8, 48);
+		drawRect(viewW - (y * 12), 4, 8, 8, 48);
 
 	}
 

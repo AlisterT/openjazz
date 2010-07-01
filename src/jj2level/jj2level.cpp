@@ -62,6 +62,9 @@ JJ2Level::~JJ2Level () {
 
 	int count;
 
+	delete[] *events;
+	delete[] events;
+
 	for (count = 0; count < LAYERS; count++) delete layers[count];
 
 	delete[] mask;
@@ -82,19 +85,15 @@ JJ2Level::~JJ2Level () {
 
 bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 
-	JJ2GridElement *ge;
-
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (x >= TTOF(layers[3]->getWidth())) || (y >= TTOF(layers[3]->getHeight())))
 		return true;
 
-	ge = layers[3]->grid[FTOT(y)] + FTOT(x);
-
-	// Event 122 is one-way
-	//if (ge->event == 122) return false;
+	// Event 1 is one-way
+	if (events[FTOT(y)][FTOT(x)].type == 1) return false;
 
 	// Check the mask in the tile in question
-	return mask[(ge->tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
+	return mask[(layers[3]->grid[FTOT(y)][FTOT(x)].tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
 
 }
 
@@ -113,19 +112,15 @@ bool JJ2Level::checkMaskDown (fixed x, fixed y) {
 
 bool JJ2Level::checkSpikes (fixed x, fixed y) {
 
-	JJ2GridElement *ge;
-
 	// Anything off the edge of the map is not spikes
 	if ((x < 0) || (y < 0) || (x > TTOF(layers[3]->getWidth())) || (y > TTOF(layers[3]->getHeight())))
 		return false;
 
-	ge = layers[3]->grid[FTOT(y)] + FTOT(x);
-
-	// Event 126 is spikes
-	//if (ge->event != 126) return false;
+	// Event 2 is spikes
+	if (events[FTOT(y)][FTOT(x)].type != 2) return false;
 
 	// Check the mask in the tile in question
-	//return mask[(ge->tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
+	return mask[(layers[3]->grid[FTOT(y)][FTOT(x)].tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
 
 	return false;
 

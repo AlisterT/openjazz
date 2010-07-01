@@ -363,6 +363,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	unsigned char *buffer;
 	char *string;
 	unsigned char* aBuffer;
+	unsigned char* bBuffer;
 	unsigned char* cBuffer;
 	unsigned char* dBuffer;
 	int aCLength, bCLength, cCLength, dCLength;
@@ -371,7 +372,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	int count, x, y;
 	unsigned char tileQuad[8];
 	short int* quadRefs;
-	int width, pitch, height;
+	int layerWidth, pitch, layerHeight;
 	int worldNum;
 	unsigned char startX, startY;
 
@@ -439,7 +440,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	dLength = file->loadInt();
 
 	aBuffer = file->loadLZ(aCLength, aLength);
-	file->seek(bCLength, false); // Don't use this block yet
+	bBuffer = file->loadLZ(bCLength, bLength);
 	cBuffer = file->loadLZ(cCLength, cLength);
 	dBuffer = file->loadLZ(dCLength, dLength);
 
@@ -453,6 +454,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		delete[] dBuffer;
 		delete[] cBuffer;
+		delete[] bBuffer;
 		delete[] aBuffer;
 
 		delete font;
@@ -479,17 +481,24 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	for (count = 0; count < LAYERS; count++) {
 
-		width = ((int *)(aBuffer + 8443 + 8))[count];
+		layerWidth = ((int *)(aBuffer + 8443 + 8))[count];
 		pitch = ((int *)(aBuffer + 8443 + 40))[count];
-		height = ((int *)(aBuffer + 8443 + 72))[count];
+		layerHeight = ((int *)(aBuffer + 8443 + 72))[count];
+
+		if (count == 3) {
+
+			width = layerWidth;
+			height = layerHeight;
+
+		}
 
 		if (aBuffer[8443 + count]) {
 
-			layers[count] = new JJ2Layer(width, height);
+			layers[count] = new JJ2Layer(layerWidth, layerHeight);
 
-			for (y = 0; y < height; y++) {
+			for (y = 0; y < layerHeight; y++) {
 
-				for (x = 0; x < layers[count]->getWidth(); x++) {
+				for (x = 0; x < layerWidth; x++) {
 
 					if ((x & 3) == 0) memcpy(tileQuad, cBuffer + (quadRefs[x >> 2] << 3), 8);
 
@@ -513,6 +522,41 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 		}
 
 	}
+
+
+	// Load events
+	startX = 0;
+	startY = 0;
+
+	events = new JJ2Event *[height];
+	*events = new JJ2Event[width * height];
+
+	for (y = 0; y < height; y++) {
+
+		events[y] = events[0] + (y * width);
+
+		for (x = 0; x < width; x++) {
+
+			events[y][x].type = bBuffer[((y * width) + x) << 2];
+			events[y][x].data[0] = bBuffer[(((y * width) + x) << 2) + 1];
+			events[y][x].data[1] = bBuffer[(((y * width) + x) << 2) + 2];
+			events[y][x].data[2] = bBuffer[(((y * width) + x) << 2) + 3];
+
+			if (events[y][x].type == 29) {
+
+				startX = x;
+				startY = y;
+
+			}
+
+		}
+
+	}
+
+	delete[] dBuffer;
+	delete[] cBuffer;
+	delete[] bBuffer;
+	delete[] aBuffer;
 
 
 
@@ -542,14 +586,15 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 			delete[] string;
 
+			delete[] *events;
+			delete[] events;
+
+			for (count = 0; count < LAYERS; count++) delete layers[count];
+
+			delete[] mask;
+
 			delete[] musicFile;
 			delete[] nextLevel;
-
-			SDL_FreeSurface(tileSet);
-
-			delete[] dBuffer;
-			delete[] cBuffer;
-			delete[] aBuffer;
 
 			delete font;
 
@@ -574,14 +619,15 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		delete file;
 
+		delete[] *events;
+		delete[] events;
+
+		for (x = 0; x < LAYERS; x++) delete layers[x];
+
+		delete[] mask;
+
 		delete[] musicFile;
 		delete[] nextLevel;
-
-		SDL_FreeSurface(tileSet);
-
-		delete[] dBuffer;
-		delete[] cBuffer;
-		delete[] aBuffer;
 
 		delete font;
 
@@ -720,9 +766,6 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	}
 
 	// Set the players' initial values
-	startX = 10;
-	startY = 5;
-
 	if (game) {
 
 		if (!checkpoint) game->setCheckpoint(startX, startY);
