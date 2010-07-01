@@ -984,8 +984,6 @@ void Event::draw (unsigned int ticks, int change) {
 	// Decide on the frame to draw
 	anim->setFrame(frame + gridX + gridY, true);
 
-	if (ticks < flashTime) anim->flashPalette(0);
-
 
 	// Correct the position without altering the animation
 	if (noAnimOffset) {
@@ -1030,6 +1028,8 @@ void Event::draw (unsigned int ticks, int change) {
 	else {
 
 		// In case an event can be drawn normally
+
+		if (ticks < flashTime) anim->flashPalette(0);
 
 		anim->draw(changeX, changeY);
 

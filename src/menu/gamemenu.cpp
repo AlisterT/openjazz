@@ -232,9 +232,10 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 }
 
 
-int GameMenu::newGameLevel (GameModeType mode) {
+int GameMenu::loadGame () {
 
-/*
+	// TODO: Actual loading of saved games
+
 	int option, worldNum, levelNum;
 
 	worldNum = levelNum = option = 0;
@@ -286,8 +287,7 @@ int GameMenu::newGameLevel (GameModeType mode) {
 
 			playSound(S_ORB);
 
-			if (newGameDifficulty(mode, levelNum, worldNum) == E_QUIT)
-				return E_QUIT;
+			if (newGameDifficulty(M_SINGLE, levelNum, worldNum) == E_QUIT) return E_QUIT;
 
 			video.setPalette(menuPalette);
 
@@ -296,7 +296,11 @@ int GameMenu::newGameLevel (GameModeType mode) {
 	}
 
 	return E_NONE;
-*/
+
+}
+
+
+int GameMenu::newGameLevel (GameModeType mode) {
 
 	char* fileName;
 	int ret;
@@ -574,15 +578,6 @@ int GameMenu::newGame () {
 #else
 	return newGameEpisode(M_SINGLE);
 #endif
-
-}
-
-
-int GameMenu::loadGame () {
-
-	// TODO: Actual loading of saved games
-
-	return newGameLevel(M_SINGLE);
 
 }
 
