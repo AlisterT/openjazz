@@ -67,10 +67,14 @@ JJ2Level::~JJ2Level () {
 
 	for (count = 0; count < LAYERS; count++) delete layers[count];
 
+	delete[] flippedMask;
 	delete[] mask;
 
 	delete[] musicFile;
 	delete[] nextLevel;
+
+	SDL_FreeSurface(flippedTileSet);
+	SDL_FreeSurface(tileSet);
 
 	delete font;
 
@@ -85,44 +89,56 @@ JJ2Level::~JJ2Level () {
 
 bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 
+	int tX, tY;
+
+	tX = FTOT(x);
+	tY = FTOT(y);
+
 	// Anything off the edge of the map is solid
-	if ((x < 0) || (y < 0) || (x >= TTOF(layers[3]->getWidth())) || (y >= TTOF(layers[3]->getHeight())))
+	if ((x < 0) || (y < 0) || (tX >= layer->getWidth()) || (tY >= layer->getHeight()))
 		return true;
 
 	// Event 1 is one-way
-	if (events[FTOT(y)][FTOT(x)].type == 1) return false;
+	if (events[tY][tX].type == 1) return false;
 
 	// Check the mask in the tile in question
-	return mask[(layers[3]->grid[FTOT(y)][FTOT(x)].tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
+	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
 
 }
 
 
 bool JJ2Level::checkMaskDown (fixed x, fixed y) {
 
+	int tX, tY;
+
+	tX = FTOT(x);
+	tY = FTOT(y);
+
 	// Anything off the edge of the map is solid
-	if ((x < 0) || (y < 0) || (x >= TTOF(layers[3]->getWidth())) || (y >= TTOF(layers[3]->getHeight())))
+	if ((x < 0) || (y < 0) || (tX >= layer->getWidth()) || (tY >= layer->getHeight()))
 		return true;
 
 	// Check the mask in the tile in question
-	return mask[(layers[3]->grid[FTOT(y)][FTOT(x)].tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
+	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
 
 }
 
 
 bool JJ2Level::checkSpikes (fixed x, fixed y) {
 
+	int tX, tY;
+
+	tX = FTOT(x);
+	tY = FTOT(y);
+
 	// Anything off the edge of the map is not spikes
-	if ((x < 0) || (y < 0) || (x > TTOF(layers[3]->getWidth())) || (y > TTOF(layers[3]->getHeight())))
-		return false;
+	// JJ2Layer::getTile while return the blank tile for these cases, so do not need to do anything
 
 	// Event 2 is spikes
-	if (events[FTOT(y)][FTOT(x)].type != 2) return false;
+	if (events[tY][tX].type != 2) return false;
 
 	// Check the mask in the tile in question
-	return mask[(layers[3]->grid[FTOT(y)][FTOT(x)].tile << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
-
-	return false;
+	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
 
 }
 
@@ -155,7 +171,7 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
 
 	unsigned char buffer[MTL_L_GRID];
 
-	layers[3]->grid[gridY][gridX].frame = frame;
+	layer->setFrame(gridX, gridY, frame);
 
 	if (gameMode) {
 
@@ -242,7 +258,7 @@ void JJ2Level::receive (unsigned char* buffer) {
 
 		case MT_L_GRID:
 
-			if (buffer[4] == 0) layers[3]->grid[buffer[3]][buffer[2]].frame = buffer[5];
+			if (buffer[4] == 0) layer->setFrame(buffer[2], buffer[3], buffer[5]);
 
 			break;
 

@@ -51,6 +51,7 @@ typedef struct {
 
 	unsigned short int tile;  // Indexes the tile set
 	unsigned char      frame; // Current frame being used (for animated tiles)
+	bool               flipped;
 
 } JJ2GridElement;
 
@@ -69,34 +70,41 @@ class Font;
 class JJ2Layer {
 
 	private:
-		int width, height;
+		JJ2GridElement** grid;
+		int              width, height;
 
 	public:
-		JJ2GridElement** grid;
-
 		JJ2Layer  ();
 		JJ2Layer  (int newWidth, int newHeight);
 		~JJ2Layer ();
 
-		int  getHeight ();
-		int  getTile   (int x, int y);
-		int  getWidth  ();
+		bool getFlipped (int x, int y);
+		int  getHeight  ();
+		int  getTile    (int x, int y);
+		int  getWidth   ();
+		void setFrame   (unsigned char x, unsigned char y, unsigned char frame);
+		void setTile    (unsigned char x, unsigned char y, unsigned short int tile, int tiles);
 
-		void draw      (SDL_Surface* tileSet);
+		void draw       (SDL_Surface* tileSet, SDL_Surface* flippedTileSet);
 
 };
 
 class JJ2Level : public BaseLevel {
 
 	private:
+		SDL_Surface*  tileSet;
+		SDL_Surface*  flippedTileSet;
+		char*         mask;
+		char*         flippedMask;
 		char*         musicFile;
 		char*         nextLevel;
 		Anim          animSet[128];
-		char*         mask;
 		int           soundMap[32];
 		JJ2Layer*     layers[LAYERS];
+		JJ2Layer*     layer;
 		JJ2Event**    events;
 		int           width, height;
+		bool          TSF;
 		unsigned char difficulty;
 		fixed         waterLevel;
 		fixed         waterLevelTarget;

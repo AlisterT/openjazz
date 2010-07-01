@@ -304,6 +304,22 @@ int JJ2Level::loadTiles (char* fileName) {
 	tileSet = createSurface(tileBuffer, TTOI(1), TTOI(tiles));
 	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, 0);
 
+	// Flip tiles
+	for (count = 0; count < tiles * 32; count++) {
+
+		for (x = 0; x < 16; x++) {
+
+			y = tileBuffer[(count * 32) + x];
+			tileBuffer[(count * 32) + x] = tileBuffer[(count * 32) + 31 - x];
+			tileBuffer[(count * 32) + 31 - x] = y;
+
+		}
+
+	}
+
+	flippedTileSet = createSurface(tileBuffer, TTOI(1), TTOI(tiles));
+	SDL_SetColorKey(flippedTileSet, SDL_SRCCOLORKEY, 0);
+
 	delete[] tileBuffer;
 
 
@@ -323,6 +339,19 @@ int JJ2Level::loadTiles (char* fileName) {
 
 	}
 
+	flippedMask = new char[tiles << 10];
+
+	// Unpack bits
+	for (count = 0; count < tiles; count++) {
+
+		for (y = 0; y < 32; y++) {
+
+			for (x = 0; x < 32; x++)
+				flippedMask[(count << 10) + (y << 5) + x] = (dBuffer[((int *)aBuffer)[257 + ((maxTiles * 11) >> 1) + count] + (y << 2) + (x >> 3)] >> (x & 7)) & 1;
+
+		}
+
+	}
 
 	delete[] dBuffer;
 	delete[] bBuffer;
@@ -333,6 +362,7 @@ int JJ2Level::loadTiles (char* fileName) {
 	graphics during gameplay */
 
 	/*if (SDL_MUSTLOCK(tileSet)) SDL_LockSurface(tileSet);
+	if (SDL_MUSTLOCK(flippedTileSet)) SDL_LockSurface(flippedTileSet);
 
 	for (count = 0; count < tiles; count++) {
 
@@ -341,7 +371,10 @@ int JJ2Level::loadTiles (char* fileName) {
 			for (x = 0; x < 32; x++) {
 
 				if (mask[(count << 10) + (y << 5) + x] == 1)
-					((char *)(tileSet->pixels))[(count << 10) + (y << 5) + x] = 88;
+					((char *)(tileSet->pixels))[(count << 10) + (y << 5) + x] = 43;
+
+				if (flippedMask[(count << 10) + (y << 5) + x] == 1)
+					((char *)(flippedTileSet->pixels))[(count << 10) + (y << 5) + x] = 88;
 
 			}
 
@@ -349,10 +382,11 @@ int JJ2Level::loadTiles (char* fileName) {
 
 	}
 
-	if (SDL_MUSTLOCK(tileSet)) SDL_UnlockSurface(tileSet);*/
+	if (SDL_MUSTLOCK(tileSet)) SDL_UnlockSurface(tileSet);
+	if (SDL_MUSTLOCK(flippedTileSet)) SDL_UnlockSurface(flippedTileSet);*/
 
 
-	return tiles;
+	return tiles | (maxTiles << 16);
 
 }
 
@@ -463,6 +497,9 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	}
 
+	TSF = tiles >> 28;
+	tiles = tiles & 0xFFFF;
+
 
 	// Next level
 	nextLevel = createString((char *)aBuffer + 115);
@@ -502,10 +539,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 					if ((x & 3) == 0) memcpy(tileQuad, cBuffer + (quadRefs[x >> 2] << 3), 8);
 
-					layers[count]->grid[y][x].tile = tileQuad[(x & 3) << 1] + (tileQuad[((x & 3) << 1) + 1] << 8);
-					layers[count]->grid[y][x].frame = 0;
-
-					if (layers[count]->grid[y][x].tile > tiles) layers[count]->grid[y][x].tile = 0;
+					layers[count]->setTile(x, y, tileQuad[(x & 3) << 1] + (tileQuad[((x & 3) << 1) + 1] << 8), TSF? -tiles: tiles);
 
 				}
 
@@ -522,6 +556,8 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 		}
 
 	}
+
+	layer = layers[3];
 
 
 	// Load events
@@ -591,10 +627,14 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 			for (count = 0; count < LAYERS; count++) delete layers[count];
 
+			delete[] flippedMask;
 			delete[] mask;
 
 			delete[] musicFile;
 			delete[] nextLevel;
+
+			SDL_FreeSurface(flippedTileSet);
+			SDL_FreeSurface(tileSet);
 
 			delete font;
 
@@ -624,10 +664,14 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		for (x = 0; x < LAYERS; x++) delete layers[x];
 
+		delete[] flippedMask;
 		delete[] mask;
 
 		delete[] musicFile;
 		delete[] nextLevel;
+
+		SDL_FreeSurface(flippedTileSet);
+		SDL_FreeSurface(tileSet);
 
 		delete font;
 

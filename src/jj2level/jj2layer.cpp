@@ -73,6 +73,17 @@ JJ2Layer::~JJ2Layer () {
 }
 
 
+bool JJ2Layer::getFlipped (int x, int y) {
+
+	// Get flipped. We aim to offend!
+
+	if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) return false;
+
+	return grid[y][x].flipped;
+
+}
+
+
 int JJ2Layer::getHeight () {
 
 	return height;
@@ -96,7 +107,47 @@ int JJ2Layer::getWidth () {
 }
 
 
-void JJ2Layer::draw (SDL_Surface* tileSet) {
+void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) {
+
+	grid[y][x].frame = frame;
+
+	return;
+
+}
+
+
+void JJ2Layer::setTile (unsigned char x, unsigned char y, unsigned short int tile, int tiles) {
+
+	JJ2GridElement* ge;
+
+	ge = grid[y] + x;
+
+	if (tiles > 0) {
+
+		ge->flipped = tile & 0x400;
+		ge->tile = tile & 0x3FF;
+
+		if (ge->tile > tiles) ge->tile = 0;
+
+	} else {
+
+		// TSF
+
+		ge->flipped = tile & 0x1000;
+		ge->tile = tile & 0xFFF;
+
+		if (ge->tile > -tiles) ge->tile = 0;
+
+	}
+
+	ge->frame = 0;
+
+	return;
+
+}
+
+
+void JJ2Layer::draw (SDL_Surface* tileSet, SDL_Surface* flippedTileSet) {
 
 	SDL_Rect src, dst;
 	int vX, vY;
@@ -128,7 +179,7 @@ void JJ2Layer::draw (SDL_Surface* tileSet) {
 			dst.x = TTOI(x) - (vX & 31);
 			dst.y = TTOI(y) - (vY & 31);
 			src.y = TTOI(getTile(x + ITOT(vX), y + ITOT(vY)));
-			if (src.y) SDL_BlitSurface(tileSet, &src, canvas, &dst);
+			if (src.y) SDL_BlitSurface(getFlipped(x + ITOT(vX), y + ITOT(vY))? flippedTileSet: tileSet, &src, canvas, &dst);
 
 		}
 

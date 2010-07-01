@@ -57,6 +57,7 @@ class Font;
 class Bonus : public BaseLevel {
 
 	private:
+		SDL_Surface*     tileSet;
 		SDL_Surface*     background;
 		Font*            font;
 		Anim             animSet[BANIMS];

@@ -94,6 +94,7 @@ class Scene;
 class Level : public BaseLevel {
 
 	private:
+		SDL_Surface*  tileSet;
 		SDL_Surface*  panel;
 		SDL_Surface*  panelAmmo[5];
 		char*         musicFile;

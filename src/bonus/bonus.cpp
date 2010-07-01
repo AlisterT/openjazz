@@ -374,6 +374,8 @@ Bonus::~Bonus () {
 	// Restore panelBigFont palette
 	panelBigFont->restorePalette();
 
+	SDL_FreeSurface(tileSet);
+
 	delete font;
 
 	return;

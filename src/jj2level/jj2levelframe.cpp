@@ -104,7 +104,7 @@ void JJ2Level::draw () {
 
 
 	// Show background layers
-	for (x = 7; x >= 3; x--) layers[x]->draw(tileSet);
+	for (x = 7; x >= 3; x--) layers[x]->draw(tileSet, flippedTileSet);
 
 
 	// Calculate change since last step
@@ -136,7 +136,7 @@ void JJ2Level::draw () {
 
 
 	// Show foreground layers
-	for (x = 2; x >= 0; x--) layers[x]->draw(tileSet);
+	for (x = 2; x >= 0; x--) layers[x]->draw(tileSet, flippedTileSet);
 
 
 	// Temporary lines showing the water level

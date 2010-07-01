@@ -69,7 +69,6 @@ class BaseLevel {
 		SetupMenu setupMenu;
 
 	protected:
-		SDL_Surface*   tileSet;
 		Sprite*        spriteSet;
 		PaletteEffect* paletteEffects;
 		SDL_Color      palette[256];

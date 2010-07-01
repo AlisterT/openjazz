@@ -46,7 +46,6 @@ BaseLevel::BaseLevel () {
 	smoothfps = 50.0f;
 
 	paletteEffects = NULL;
-	tileSet = NULL;
 	spriteSet = NULL;
 
 	paused = false;
@@ -66,8 +65,6 @@ BaseLevel::~BaseLevel () {
 	stopMusic();
 
 	if (paletteEffects) delete paletteEffects;
-
-	if (tileSet) SDL_FreeSurface(tileSet);
 
 	if (spriteSet) delete[] spriteSet;
 
