@@ -51,6 +51,95 @@
 #define SKEY 254 /* Sprite colour key */
 
 
+int Level::loadPanel () {
+
+	File* file;
+	unsigned char* pixels;
+	unsigned char* sorted;
+	int x, y;
+
+
+	try {
+
+		file = new File(F_PANEL, false);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	pixels = file->loadRLE(46272);
+
+	delete file;
+
+
+	// Create the panel background
+	panel = createSurface(pixels, SW, 32);
+
+
+	// De-scramble the panel's ammo graphics
+
+	sorted = new unsigned char[64 * 27];
+
+	for (y = 0; y < 27; y++) {
+
+		for (x = 0; x < 64; x++)
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
+
+	}
+
+	panelAmmo[0] = createSurface(sorted, 64, 27);
+
+
+	for (y = 0; y < 27; y++) {
+
+		for (x = 0; x < 64; x++)
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (61 * 320)];
+
+	}
+
+	panelAmmo[1] = createSurface(sorted, 64, 27);
+
+
+	for (y = 0; y < 27; y++) {
+
+		for (x = 0; x < 64; x++)
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (68 * 320)];
+
+	}
+
+	panelAmmo[2] = createSurface(sorted, 64, 27);
+
+
+	for (y = 0; y < 27; y++) {
+
+		for (x = 0; x < 64; x++)
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (74 * 320)];
+
+	}
+
+	panelAmmo[3] = createSurface(sorted, 64, 27);
+
+
+	for (y = 0; y < 27; y++) {
+
+		for (x = 0; x < 64; x++)
+			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (86 * 320)];
+
+	}
+
+	panelAmmo[4] = createSurface(sorted, 64, 27);
+
+	delete[] sorted;
+
+	delete[] pixels;
+
+	return E_NONE;
+
+}
+
+
 void Level::loadSprite (File* file, Sprite* sprite) {
 
 	unsigned char* pixels;
@@ -330,18 +419,33 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	unsigned char startX, startY;
 
 
+	difficulty = diff;
+
+
+	// Load font
+
 	try {
 
 		font = new Font(false);
 
 	} catch (int e) {
 
-		throw e;
+		return e;
 
 	}
 
 
-	difficulty = diff;
+	// Load panel
+
+	count = loadPanel();
+
+	if (count < 0) {
+
+		delete font;
+
+		return count;
+
+	}
 
 
 	// Show loading screen
@@ -367,6 +471,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 		} catch (int e) {
 
 			delete[] string;
+			deletePanel();
 			delete font;
 
 			return e;
@@ -434,6 +539,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	} catch (int e) {
 
+		deletePanel();
 		delete font;
 
 		return e;
@@ -495,6 +601,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	if (tiles < 0) {
 
 		delete file;
+		deletePanel();
 		delete font;
 
 		return tiles;
@@ -513,6 +620,7 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	if (count < 0) {
 
 		delete file;
+		deletePanel();
 		delete font;
 
 		return count;

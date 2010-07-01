@@ -94,6 +94,8 @@ class Scene;
 class Level : public BaseLevel {
 
 	private:
+		SDL_Surface*  panel;
+		SDL_Surface*  panelAmmo[5];
 		char*         musicFile;
 		char*         sceneFile;
 		Anim          animSet[ANIMS];
@@ -114,6 +116,8 @@ class Level : public BaseLevel {
 		fixed         waterLevelSpeed;
 		fixed         energyBar;
 
+		void deletePanel  ();
+		int  loadPanel    ();
 		void loadSprite   (File* file, Sprite* sprite);
 		int  loadSprites  (char* fileName);
 		int  loadTiles    (char* fileName);

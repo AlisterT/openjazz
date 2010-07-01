@@ -102,10 +102,6 @@ EXTERN SDL_Surface* canvas;
 EXTERN int          viewH, canvasW, canvasH;
 #define viewW canvasW
 
-// Panel
-EXTERN SDL_Surface* panel;
-EXTERN SDL_Surface* panelAmmo[5];
-
 EXTERN Video video;
 
 

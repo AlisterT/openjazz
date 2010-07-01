@@ -82,6 +82,20 @@ Level::Level (char* fileName, unsigned char diff, bool checkpoint) {
 }
 
 
+void Level::deletePanel () {
+
+	SDL_FreeSurface(panel);
+	SDL_FreeSurface(panelAmmo[0]);
+	SDL_FreeSurface(panelAmmo[1]);
+	SDL_FreeSurface(panelAmmo[2]);
+	SDL_FreeSurface(panelAmmo[3]);
+	SDL_FreeSurface(panelAmmo[4]);
+
+	return;
+
+}
+
+
 Level::~Level () {
 
 	int count;
@@ -101,6 +115,8 @@ Level::~Level () {
 
 	delete[] sceneFile;
 	delete[] musicFile;
+
+	deletePanel();
 
 	delete font;
 
@@ -592,9 +608,8 @@ int Level::play () {
 
 				if (timeBonus == -1) {
 
-					timeBonus = ((endTime - ticks) / 60000) * 100;
-
-					if (timeBonus < 0) timeBonus = 0;
+					if (ticks < endTime) timeBonus = ((endTime - ticks) / 60000) * 100;
+					else timeBonus = 0;
 
 					if ((levelPlayer->getEnemies() == enemies) &&
 						(levelPlayer->getItems() == items)) perfect = 100;
