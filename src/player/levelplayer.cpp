@@ -124,7 +124,7 @@ LevelPlayer::~LevelPlayer () {
 
 void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
-	event = 0;
+	event = LPE_NONE;
 	energy = 4;
 	floating = false;
 	facing = true;
@@ -158,7 +158,7 @@ void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	// If the location matches, clear the event
 
-	if ((gridX == eventX) && (gridY == eventY)) event = 0;
+	if ((gridX == eventX) && (gridY == eventY)) event = LPE_NONE;
 
 	return;
 
@@ -320,10 +320,10 @@ void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
 
 		// Upwards spring
 		jumpY = y + (set[E_MAGNITUDE] * (F20 + F1));
-		event = 1;
+		event = LPE_SPRING;
 
-	} else if (set[E_MODIFIER] == 6) event = 3;
-	else if (set[E_BEHAVIOUR] == 28) event = 4;
+	} else if (set[E_MODIFIER] == 6) event = LPE_PLATFORM;
+	else if (set[E_BEHAVIOUR] == 28) event = LPE_BRIDGE;
 	else return;
 
 	eventX = gridX;
@@ -607,7 +607,7 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 				eventX = gridX;
 				eventY = gridY;
-				event = 2;
+				event = LPE_FLOAT;
 
 				if (dy > set[E_MULTIPURPOSE] * -F20)
 					dy -= set[E_MULTIPURPOSE] * 320 * msps;

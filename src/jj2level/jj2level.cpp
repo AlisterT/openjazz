@@ -27,6 +27,7 @@
  */
 
 
+#include "jj2event/jj2event.h"
 #include "jj2level.h"
 
 #include "game/game.h"

@@ -31,6 +31,7 @@
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/sound.h"
+#include "jj2level/jj2event/jj2event.h"
 #include "jj2level/jj2level.h"
 
 #include <string.h>
@@ -127,6 +128,7 @@ JJ2LevelPlayer::~JJ2LevelPlayer () {
 
 void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
+	event = NULL;
 	energy = 5;
 	floating = false;
 	facing = true;
@@ -304,14 +306,43 @@ void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 }
 
 
-bool JJ2LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
+bool JJ2LevelPlayer::takeEvent (JJ2Event* event, unsigned int ticks) {
 
 	return true;
 
 }
 
 
-bool JJ2LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
+bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps) {
+
+	switch (touched->getType()) {
+
+		case 85: // Red spring
+
+			jumpY = y - TTOF(6);
+			event = touched;
+
+			break;
+
+		case 86: // Green spring
+
+			jumpY = y - TTOF(12);
+			event = touched;
+
+			break;
+
+		case 87: // Blue spring
+
+			jumpY = y - TTOF(18);
+			event = touched;
+
+			break;
+
+		default:
+
+			break;
+
+	}
 
 	return false;
 

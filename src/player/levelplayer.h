@@ -133,11 +133,17 @@
 #define PYA_SINK    1000
 
 
-// Enum
+// Enums
 
 enum PlayerReaction {
 
 	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
+
+};
+
+enum LevelPlayerEvent {
+
+	LPE_NONE, LPE_SPRING, LPE_FLOAT, LPE_PLATFORM, LPE_BRIDGE
 
 };
 
@@ -150,28 +156,28 @@ class Bird;
 class LevelPlayer : public Movable {
 
 	private:
-		Bird*          bird;
-		SDL_Color      palette[256];
-		char           anims[PANIMS];
-		int            energy;
-		int            shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-		bool           floating; /* false = normal, true = boarding/bird/etc. */
-		bool           facing;
-		unsigned char  animType;
-		unsigned char  eventX;
-		unsigned char  eventY; /* Position of an event (spring, platform, bridge) */
-		int            event;  /* 0 = none, 1 = spring, 2 = float up, 3 = platform, 4 = bridge */
-		int            lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
-		PlayerReaction reaction;
-		unsigned int   reactionTime;
-		unsigned int   fireTime;
-		fixed          jumpHeight;
-		fixed          jumpY;
-		unsigned int   fastFeetTime;
-		unsigned char  warpX, warpY;
-		unsigned int   warpTime;
-		int            enemies, items;
-		bool           gem;
+		Bird*            bird;
+		SDL_Color        palette[256];
+		char             anims[PANIMS];
+		int              energy;
+		int              shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
+		bool             floating; /* false = normal, true = boarding/bird/etc. */
+		bool             facing;
+		unsigned char    animType;
+		unsigned char    eventX;
+		unsigned char    eventY; /* Position of an event (spring, platform, bridge) */
+		LevelPlayerEvent event;
+		int              lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
+		PlayerReaction   reaction;
+		unsigned int     reactionTime;
+		unsigned int     fireTime;
+		fixed            jumpHeight;
+		fixed            jumpY;
+		unsigned int     fastFeetTime;
+		unsigned char    warpX, warpY;
+		unsigned int     warpTime;
+		int              enemies, items;
+		bool             gem;
 
 	public:
 		Player* player;

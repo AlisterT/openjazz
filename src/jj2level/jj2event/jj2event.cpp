@@ -56,3 +56,32 @@ JJ2Event::~JJ2Event () {
 
 }
 
+
+void JJ2Event::destroy (unsigned int ticks) {
+
+	time = ticks + 1000;
+
+	return;
+
+}
+
+
+unsigned char JJ2Event::getType () {
+
+	return type;
+
+}
+
+
+JJ2Event* JJ2Event::remove () {
+
+	JJ2Event *oldNext;
+
+	oldNext = next;
+	next = NULL;
+	delete this;
+
+	return oldNext;
+
+}
+

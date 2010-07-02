@@ -40,7 +40,7 @@
 
 int JJ2Level::step () {
 
-	int x, y;
+	int x;
 	int msps;
 
 
@@ -54,7 +54,7 @@ int JJ2Level::step () {
 
 
 	// Process events
-	if (events) events = events->step(msps);
+	if (events) events = events->step(ticks, msps);
 
 
 	// Apply as much of those trajectories as possible, without going into the

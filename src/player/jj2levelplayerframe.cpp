@@ -33,6 +33,7 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "jj2level/jj2event/jj2event.h"
 #include "jj2level/jj2level.h"
 #include "util.h"
 
@@ -40,6 +41,10 @@
 void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	bool platform;
+	unsigned char type;
+
+	if (event) type = event->getType();
+	else type = 0;
 
 	// Respond to controls, unless the player has been killed
 
@@ -153,12 +158,13 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		/*if (event) {
+		if (type) {
 
-			if (event == 1) dy = jj2Level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
-			else if (event == 2) dy = PYS_JUMP;
+			if (type == 85) dy = PYS_JUMP;
+			else if (type == 86) dy = PYS_JUMP;
+			else if (type == 87) dy = PYS_JUMP;
 
-		}*/
+		}
 
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		if (dy > PXS_RUN) dy = PXS_RUN;
@@ -182,7 +188,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 				if (dx < 0) jumpY += dx >> 4;
 				else if (dx > 0) jumpY -= dx >> 4;
 
-				//event = 0;
+				event = NULL;
 
 			}
 
@@ -219,14 +225,14 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			if (dx < 0) jumpY += dx >> 3;
 			else if (dx > 0) jumpY -= dx >> 3;
 
-			//event = 0;
+			event = NULL;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] /*&& (event != 1) && (event != 2)*/)
+		if (!player->pcontrols[C_JUMP] && (type != 85) && (type != 86) && (type != 87))
 			jumpY = TTOF(256);
 
 		if (y >= jumpY) {
@@ -235,19 +241,15 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			dy = (jumpY - y - F64) * 4;
 
-			// Spring/float up speed limit
-			/*if ((event == 1) || (event == 2)) {
+			// Spring up speed limit
+			if ((type == 85) || (type == 86) || (type == 87)) {
 
-				speed = jj2Level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+				if (dy < PYS_JUMP) dy = PYS_JUMP;
 
-				if (speed >= 0) speed = PYS_JUMP;
-
-				if (dy < speed) dy = speed;
-
-			}*/
+			}
 
 			// Avoid jumping too fast, unless caused by an event
-			if (/* !event &&*/ (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -282,7 +284,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		jumpY = TTOF(256);
 		if (dy < 0) dy = 0;
 
-		//if ((event != 3) && (event != 4)) event = 0;
+		/*if ((event != 3) && (event != 4))*/ event = NULL;
 
 	}
 
@@ -291,7 +293,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		jumpY = TTOF(256);
 
-		//if ((event != 3) && (event != 4)) event = 0;
+		/*if ((event != 3) && (event != 4))*/ event = NULL;
 
 	}
 
@@ -362,8 +364,8 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	else if (dy < 0) {
 
-		/*if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
-		else*/ animType = facing? PA_RJUMP: PA_LJUMP;
+		if ((type == 85) || (type == 86) || (type == 87)) animType = facing? PA_RSPRING: PA_LSPRING;
+		else animType = facing? PA_RJUMP: PA_LJUMP;
 
 	} else if (platform) {
 

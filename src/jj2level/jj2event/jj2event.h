@@ -41,12 +41,17 @@ class JJ2Event : public Movable {
 		unsigned char frame;
 		unsigned int  flashTime;
 
+		JJ2Event* remove  ();
+		void      destroy (unsigned int ticks);
+
 	public:
 		JJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char* properties);
 		~JJ2Event ();
 
-		JJ2Event* step (int msps);
-		void      draw (int change);
+		unsigned char getType ();
+
+		JJ2Event*     step    (int ticks, int msps);
+		void          draw    (int change);
 
 };
 

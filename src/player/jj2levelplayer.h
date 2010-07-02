@@ -166,11 +166,13 @@ enum JJ2Shield {
 // Classes
 
 class Anim;
+class JJ2Event;
 
 class JJ2LevelPlayer : public Movable {
 
 	private:
 		bool              bird; // Placeholder for eventual JJ2Bird object
+		JJ2Event*         event;
 		SDL_Color         palette[256];
 		char              anims[PANIMS];
 		int               energy;
@@ -210,8 +212,8 @@ class JJ2LevelPlayer : public Movable {
 		JJ2PlayerReaction reacted     (unsigned int ticks);
 		void              setPosition (fixed newX, fixed newY);
 		void              setSpeed    (fixed newDx, fixed newDy);
-		bool              takeEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks);
-		bool              touchEvent  (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
+		bool              takeEvent   (JJ2Event* event, unsigned int ticks);
+		bool              touchEvent  (JJ2Event* touched, unsigned int ticks, int msps);
 
 		void              send        (unsigned char* buffer);
 		void              receive     (unsigned char* buffer);

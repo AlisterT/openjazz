@@ -114,7 +114,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 
 	// Check for platform event, bridge or level mask below player
-	platform = (event >= 3) ||
+	platform = (event == LPE_PLATFORM) || (event == LPE_BRIDGE) ||
 		level->checkMaskDown(x + PXO_ML, y + 1) ||
 		level->checkMaskDown(x + PXO_MID, y + 1) ||
 		level->checkMaskDown(x + PXO_MR, y + 1) ||
@@ -160,10 +160,10 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (event) {
+		if (event != LPE_NONE) {
 
-			if (event == 1) dy = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
-			else if (event == 2) dy = PYS_JUMP;
+			if (event == LPE_SPRING) dy = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+			else if (event == LPE_FLOAT) dy = PYS_JUMP;
 
 		}
 
@@ -189,7 +189,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 				if (dx < 0) jumpY += dx >> 4;
 				else if (dx > 0) jumpY -= dx >> 4;
 
-				event = 0;
+				event = LPE_NONE;
 
 			}
 
@@ -226,14 +226,14 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			if (dx < 0) jumpY += dx >> 3;
 			else if (dx > 0) jumpY -= dx >> 3;
 
-			event = 0;
+			event = LPE_NONE;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && (event != 1) && (event != 2))
+		if (!player->pcontrols[C_JUMP] && (event != LPE_SPRING) && (event != LPE_FLOAT))
 			jumpY = TTOF(LH);
 
 		if (y >= jumpY) {
@@ -243,7 +243,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			dy = (jumpY - y - F64) * 4;
 
 			// Spring/float up speed limit
-			if ((event == 1) || (event == 2)) {
+			if ((event == LPE_SPRING) || (event == LPE_FLOAT)) {
 
 				speed = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
 
@@ -254,7 +254,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			}
 
 			// Avoid jumping too fast, unless caused by an event
-			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if ((event == LPE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -265,7 +265,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		if ((dy > 0) && (event >= 3)) dy = 0;
+		if ((dy > 0) && ((event == LPE_PLATFORM) || (event == LPE_BRIDGE))) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -284,12 +284,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != 2)) {
+	if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != LPE_FLOAT)) {
 
 		jumpY = TTOF(LH);
 		if (dy < 0) dy = 0;
 
-		if ((event != 3) && (event != 4)) event = 0;
+		if ((event != LPE_PLATFORM) && (event != LPE_BRIDGE)) event = LPE_NONE;
 
 	}
 
@@ -298,7 +298,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		jumpY = TTOF(LH);
 
-		if ((event != 3) && (event != 4)) event = 0;
+		if ((event != LPE_PLATFORM) && (event != LPE_BRIDGE)) event = LPE_NONE;
 
 	}
 
@@ -370,7 +370,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	else if (dy < 0) {
 
-		if (event == 1) animType = facing? PA_RSPRING: PA_LSPRING;
+		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
 		else animType = facing? PA_RJUMP: PA_LJUMP;
 
 	} else if (platform) {
@@ -385,12 +385,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
 			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != 3) && (event != 4))
+			(event != LPE_PLATFORM) && (event != LPE_BRIDGE))
 			animType = PA_LEDGE;
 
 		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
 			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != 3) && (event != 4))
+			(event != LPE_PLATFORM) && (event != LPE_BRIDGE))
 			animType = PA_REDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
@@ -597,10 +597,10 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == 2) && level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+	if ((event == LPE_FLOAT) && level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
 
 		jumpY = TTOF(LH);
-		event = 0;
+		event = LPE_NONE;
 
 	}
 
@@ -733,7 +733,7 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 		FTOI(-PYO_TOP), 88);*/
 
 	// Uncomment the following to show the player's event tile
-	// if (event) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
+	// if (event != LPE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
 
 
 	if (reaction == PR_INVINCIBLE) {
