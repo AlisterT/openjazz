@@ -26,6 +26,7 @@
  */
 
 
+#include "jj2event/jj2event.h"
 #include "jj2level.h"
 
 #include "game/game.h"
@@ -39,7 +40,7 @@
 
 int JJ2Level::step () {
 
-	int x;
+	int x, y;
 	int msps;
 
 
@@ -50,6 +51,10 @@ int JJ2Level::step () {
 
 	// Determine the players' trajectories
 	for (x = 0; x < nPlayers; x++) players[x].getJJ2LevelPlayer()->control(ticks, msps);
+
+
+	// Process events
+	if (events) events = events->step(msps);
 
 
 	// Apply as much of those trajectories as possible, without going into the
@@ -88,8 +93,13 @@ int JJ2Level::step () {
 
 void JJ2Level::draw () {
 
+	int width, height;
 	int x, y;
 	unsigned int change;
+
+
+	width = layer->getWidth();
+	height = layer->getHeight();
 
 
 	// Calculate viewport
@@ -112,16 +122,7 @@ void JJ2Level::draw () {
 
 
 	// Show the events
-	/*for (y = 0; y < ITOT(viewH); y++) {
-
-		for (x = 0; x < ITOT(viewW ); x++) {
-
-			if (events[y + FTOT(viewY)][x + FTOT(viewX)].type > 2)
-				drawRect(8 + TTOI(x) - (FTOI(viewX) & 31), 8 + TTOI(y) - (FTOI(viewY) & 31), 16, 16, events[y + FTOT(viewY)][x + FTOT(viewX)].type);
-
-		}
-
-	}*/
+	if (events) events->draw(change);
 
 
 	// Show the players
@@ -129,8 +130,8 @@ void JJ2Level::draw () {
 
 		players[x].getJJ2LevelPlayer()->draw(ticks, change);
 
-		// Show type of overlapping event
-		//panelBigFont->showNumber(events[FTOT(players[x].getJJ2LevelPlayer()->getY() + PYO_MID)][FTOT(players[x].getJJ2LevelPlayer()->getX() + PXO_MID)].type, viewW >> 1, viewH >> 1);
+		// Show type of overlapping modifier
+		//panelBigFont->showNumber(mods[FTOT(players[x].getJJ2LevelPlayer()->getY() + PYO_MID)][FTOT(players[x].getJJ2LevelPlayer()->getX() + PXO_MID)].type, viewW >> 1, viewH >> 1);
 
 	}
 

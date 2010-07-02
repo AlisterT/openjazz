@@ -57,7 +57,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 	dx = 0;
 	dy = 0;
 
-	next = level->events;
+	next = level->getEvents();
 	gridX = gX;
 	gridY = gY;
 	flashTime = 0;

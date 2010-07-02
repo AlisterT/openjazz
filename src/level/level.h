@@ -97,6 +97,7 @@ class Level : public BaseLevel {
 		SDL_Surface*  tileSet;
 		SDL_Surface*  panel;
 		SDL_Surface*  panelAmmo[5];
+		Event*        events;
 		char*         musicFile;
 		char*         sceneFile;
 		Anim          animSet[ANIMS];
@@ -125,13 +126,13 @@ class Level : public BaseLevel {
 		int  playBonus    ();
 
 	protected:
+		Font*         font;
+
 		int  load (char* fileName, unsigned char diff, bool checkpoint);
 		int  step ();
 		void draw ();
 
 	public:
-		Font*     font;
-		Event*    events;
 		Bullet*   bullets;
 		EventPath path[PATHS];
 
@@ -144,6 +145,7 @@ class Level : public BaseLevel {
 		bool          checkSpikes   (fixed x, fixed y);
 		void          setNext       (int nextLevel, int nextWorld);
 		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
+		Event*        getEvents     ();
 		signed char*  getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);

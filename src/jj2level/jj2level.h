@@ -4,6 +4,7 @@
  * jj2level.h
  *
  * 29th June 2010: Created jj2level.h from parts of level.h
+ * 2nd July 2010: Created jj2event.h from parts of jj2level.h
  *
  * Part of the OpenJazz project
  *
@@ -53,14 +54,14 @@ typedef struct {
 	unsigned char      frame; // Current frame being used (for animated tiles)
 	bool               flipped;
 
-} JJ2GridElement;
+} JJ2Tile;
 
 typedef struct {
 
 	unsigned char type;
-	unsigned char data[3];
+	int property;
 
-} JJ2Event;
+} JJ2Modifier;
 
 
 // Classes
@@ -70,8 +71,8 @@ class Font;
 class JJ2Layer {
 
 	private:
-		JJ2GridElement** grid;
-		int              width, height;
+		JJ2Tile** grid;
+		int       width, height;
 
 	public:
 		JJ2Layer  ();
@@ -89,11 +90,15 @@ class JJ2Layer {
 
 };
 
+class JJ2Event;
+
 class JJ2Level : public BaseLevel {
 
 	private:
 		SDL_Surface*  tileSet;
 		SDL_Surface*  flippedTileSet;
+		JJ2Event*     events;
+		Font*         font;
 		char*         mask;
 		char*         flippedMask;
 		char*         musicFile;
@@ -102,8 +107,7 @@ class JJ2Level : public BaseLevel {
 		int           soundMap[32];
 		JJ2Layer*     layers[LAYERS];
 		JJ2Layer*     layer;
-		JJ2Event**    events;
-		int           width, height;
+		JJ2Modifier** mods;
 		bool          TSF;
 		unsigned char difficulty;
 		fixed         waterLevel;
@@ -118,8 +122,6 @@ class JJ2Level : public BaseLevel {
 		void draw        ();
 
 	public:
-		Font*     font;
-
 		JJ2Level  (char* fileName, unsigned char diff, bool checkpoint);
 		~JJ2Level ();
 

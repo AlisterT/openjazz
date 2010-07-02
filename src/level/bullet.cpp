@@ -196,7 +196,7 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 			// If the bullet is TNT, hit all destructible events nearby twice
 			if (type == -1) {
 
-				event = level->events;
+				event = level->getEvents();
 
 				while (event) {
 
@@ -242,7 +242,7 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 
 			// Check if an event has been hit
 
-			event = level->events;
+			event = level->getEvents();
 
 			while (event) {
 

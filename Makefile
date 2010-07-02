@@ -9,6 +9,7 @@ objects = src/bonus/bonus.o \
 	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
 	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o \
 	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/jj2level/jj2event/jj2event.o src/jj2level/jj2event/jj2eventframe.o \
 	src/jj2level/jj2layer.o src/jj2level/jj2level.o \
 	src/jj2level/jj2levelframe.o src/jj2level/jj2levelload.o \
 	src/level/event/bridge.o src/level/event/guardians.o \

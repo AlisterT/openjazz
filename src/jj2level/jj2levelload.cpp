@@ -26,6 +26,7 @@
  */
 
 
+#include "jj2event/jj2event.h"
 #include "jj2level.h"
 
 #include "game/game.h"
@@ -406,7 +407,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	int count, x, y;
 	unsigned char tileQuad[8];
 	short int* quadRefs;
-	int layerWidth, pitch, layerHeight;
+	int width, pitch, height;
 	int worldNum;
 	unsigned char startX, startY;
 
@@ -518,24 +519,17 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	for (count = 0; count < LAYERS; count++) {
 
-		layerWidth = ((int *)(aBuffer + 8443 + 8))[count];
+		width = ((int *)(aBuffer + 8443 + 8))[count];
 		pitch = ((int *)(aBuffer + 8443 + 40))[count];
-		layerHeight = ((int *)(aBuffer + 8443 + 72))[count];
-
-		if (count == 3) {
-
-			width = layerWidth;
-			height = layerHeight;
-
-		}
+		height = ((int *)(aBuffer + 8443 + 72))[count];
 
 		if (aBuffer[8443 + count]) {
 
-			layers[count] = new JJ2Layer(layerWidth, layerHeight);
+			layers[count] = new JJ2Layer(width, height);
 
-			for (y = 0; y < layerHeight; y++) {
+			for (y = 0; y < height; y++) {
 
-				for (x = 0; x < layerWidth; x++) {
+				for (x = 0; x < width; x++) {
 
 					if ((x & 3) == 0) memcpy(tileQuad, cBuffer + (quadRefs[x >> 2] << 3), 8);
 
@@ -558,30 +552,47 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	}
 
 	layer = layers[3];
+	width = layer->getWidth();
+	height = layer->getHeight();
+
 
 
 	// Load events
 	startX = 0;
 	startY = 0;
 
-	events = new JJ2Event *[height];
-	*events = new JJ2Event[width * height];
+	mods = new JJ2Modifier *[height];
+	*mods = new JJ2Modifier[width * height];
+
+	events = NULL;
 
 	for (y = 0; y < height; y++) {
 
-		events[y] = events[0] + (y * width);
+		mods[y] = *mods + (y * width);
 
 		for (x = 0; x < width; x++) {
 
-			events[y][x].type = bBuffer[((y * width) + x) << 2];
-			events[y][x].data[0] = bBuffer[(((y * width) + x) << 2) + 1];
-			events[y][x].data[1] = bBuffer[(((y * width) + x) << 2) + 2];
-			events[y][x].data[2] = bBuffer[(((y * width) + x) << 2) + 3];
+			count = bBuffer[((y * width) + x) << 2];
 
-			if (events[y][x].type == 29) {
+			if (count < 33) {
 
-				startX = x;
-				startY = y;
+				mods[y][x].type = count;
+				mods[y][x].property = bBuffer[(((y * width) + x) << 2) + 1];
+
+				if (count == 29) {
+
+					// Jazz start pos
+
+					startX = x;
+					startY = y;
+
+				}
+
+			} else {
+
+				mods[y][x].type = 0;
+
+				events = new JJ2Event(events, x, y, bBuffer + (((y * width) + x) << 2));
 
 			}
 
@@ -622,8 +633,9 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 			delete[] string;
 
-			delete[] *events;
-			delete[] events;
+			if (events) delete events;
+			delete[] *mods;
+			delete[] mods;
 
 			for (count = 0; count < LAYERS; count++) delete layers[count];
 
@@ -659,8 +671,9 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		delete file;
 
-		delete[] *events;
-		delete[] events;
+		if (events) delete events;
+		delete[] *mods;
+		delete[] mods;
 
 		for (x = 0; x < LAYERS; x++) delete layers[x];
 

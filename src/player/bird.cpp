@@ -145,7 +145,7 @@ bool Bird::step (unsigned int ticks, int msps) {
 			// Check for nearby targets
 
 			target = false;
-			event = level->events;
+			event = level->getEvents();
 
 			if (player->getFacing()) {
 

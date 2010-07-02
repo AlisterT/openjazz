@@ -36,8 +36,8 @@ JJ2Layer::JJ2Layer () {
 
 	width = height = 1;
 
-	grid = new JJ2GridElement *[1];
-	*(grid) = new JJ2GridElement[1];
+	grid = new JJ2Tile *[1];
+	*grid = new JJ2Tile[1];
 
 	(*grid)->tile = 0;
 
@@ -53,10 +53,10 @@ JJ2Layer::JJ2Layer (int newWidth, int newHeight) {
 	width = newWidth;
 	height = newHeight;
 
-	grid = new JJ2GridElement *[height];
-	*(grid) = new JJ2GridElement[width * height];
+	grid = new JJ2Tile *[height];
+	*grid = new JJ2Tile[width * height];
 
-	for (row = 0; row < height; row++) grid[row] = *(grid) + (row * width);
+	for (row = 0; row < height; row++) grid[row] = *grid + (row * width);
 
 	return;
 
@@ -65,7 +65,7 @@ JJ2Layer::JJ2Layer (int newWidth, int newHeight) {
 
 JJ2Layer::~JJ2Layer () {
 
-	delete[] *(grid);
+	delete[] *grid;
 	delete[] grid;
 
 	return;
@@ -118,7 +118,7 @@ void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) 
 
 void JJ2Layer::setTile (unsigned char x, unsigned char y, unsigned short int tile, int tiles) {
 
-	JJ2GridElement* ge;
+	JJ2Tile* ge;
 
 	ge = grid[y] + x;
 

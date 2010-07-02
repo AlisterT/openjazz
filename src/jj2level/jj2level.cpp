@@ -4,6 +4,8 @@
  * jj2level.cpp
  *
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
+ * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
+ * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
  *
  * Part of the OpenJazz project
  *
@@ -20,7 +22,7 @@
  */
 
 /*
- * Deals with the creating, playing and freeing of levels.
+ * Deals with the creating, playing and freeing of JJ2 levels.
  *
  */
 
@@ -62,8 +64,9 @@ JJ2Level::~JJ2Level () {
 
 	int count;
 
-	delete[] *events;
-	delete[] events;
+	if (events) delete events;
+	delete[] *mods;
+	delete[] mods;
 
 	for (count = 0; count < LAYERS; count++) delete layers[count];
 
@@ -99,7 +102,7 @@ bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 		return true;
 
 	// Event 1 is one-way
-	if (events[tY][tX].type == 1) return false;
+	if (mods[tY][tX].type == 1) return false;
 
 	// Check the mask in the tile in question
 	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
@@ -132,10 +135,11 @@ bool JJ2Level::checkSpikes (fixed x, fixed y) {
 	tY = FTOT(y);
 
 	// Anything off the edge of the map is not spikes
-	// JJ2Layer::getTile while return the blank tile for these cases, so do not need to do anything
+	if ((x < 0) || (y < 0) || (tX >= layer->getWidth()) || (tY >= layer->getHeight()))
+		return false;
 
 	// Event 2 is spikes
-	if (events[tY][tX].type != 2) return false;
+	if (mods[tY][tX].type != 2) return false;
 
 	// Check the mask in the tile in question
 	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];

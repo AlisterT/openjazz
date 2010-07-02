@@ -225,6 +225,13 @@ void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char til
 }
 
 
+Event* Level::getEvents () {
+
+	return events;
+
+}
+
+
 signed char* Level::getEvent (unsigned char gridX, unsigned char gridY) {
 
 	int event = grid[gridY][gridX].event;
