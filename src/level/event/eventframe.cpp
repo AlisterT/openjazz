@@ -161,7 +161,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 6:
 
-			int count = level->path[set[E_MULTIPURPOSE]].node;
+			count = level->path[set[E_MULTIPURPOSE]].node;
 
 			// Use the path from the level file
 			dx = TTOF(gridX) + ITOF(level->path[set[E_MULTIPURPOSE]].x[count]) - x;
