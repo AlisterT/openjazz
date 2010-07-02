@@ -118,6 +118,7 @@ class JJ2Level : public BaseLevel {
 		int  loadSprites (char* fileName);
 		int  loadTiles   (char* fileName);
 		int  load        (char* fileName, unsigned char diff, bool checkpoint);
+
 		int  step        ();
 		void draw        ();
 
@@ -125,17 +126,20 @@ class JJ2Level : public BaseLevel {
 		JJ2Level  (char* fileName, unsigned char diff, bool checkpoint);
 		~JJ2Level ();
 
-		bool    checkMaskUp   (fixed x, fixed y);
-		bool    checkMaskDown (fixed x, fixed y);
-		bool    checkSpikes   (fixed x, fixed y);
-		void    setNext       (char* fileName);
-		void    setFrame      (unsigned char gridX, unsigned char gridY, unsigned char frame);
-		Sprite* getSprite     (unsigned char sprite);
-		Anim*   getAnim       (unsigned char anim);
-		void    setWaterLevel (unsigned char gridY);
-		fixed   getWaterLevel ();
-		void    receive       (unsigned char* buffer);
-		int     play          ();
+		bool         checkMaskDown (fixed x, fixed y, bool drop);
+		bool         checkMaskUp   (fixed x, fixed y);
+		bool         checkSpikes   (fixed x, fixed y);
+		Anim*        getAnim       (unsigned char anim);
+		JJ2Modifier* getModifier   (unsigned char gridX, unsigned char gridY);
+		Sprite*      getSprite     (unsigned char sprite);
+		fixed        getWaterLevel ();
+		void         setFrame      (unsigned char gridX, unsigned char gridY, unsigned char frame);
+		void         setNext       (char* fileName);
+		void         setWaterLevel (unsigned char gridY);
+
+		void         receive       (unsigned char* buffer);
+
+		int          play          ();
 
 };
 

@@ -45,11 +45,14 @@ JJ2Event* JJ2Event::step (int ticks, int msps) {
 
 	switch (type) {
 
+		case 60: // Frozen green spring
+		case 62: // Spring crate
+		case 83: // Checkpoint
 		case 85: // Red spring
 		case 86: // Green spring
 		case 87: // Blue spring
 
-			if (!jj2Level->checkMaskDown(x, y + F8)) y += F8;
+			if (!jj2Level->checkMaskDown(x, y + F1, true)) y += F1;
 
 			break;
 
@@ -98,6 +101,24 @@ void JJ2Event::draw (int change) {
 	drawY = getDrawY(change);
 
 	switch (type) {
+
+		case 60: // Frozen green spring
+
+			an = jj2Level->getAnim(35);
+
+			break;
+
+		case 62: // Spring crate
+
+			an = jj2Level->getAnim(37);
+
+			break;
+
+		case 83: // Checkpoint
+
+			an = jj2Level->getAnim(49);
+
+			break;
 
 		case 85: // Red spring
 

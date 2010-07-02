@@ -28,6 +28,7 @@
 
 #include "jj2levelplayer.h"
 
+#include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
@@ -40,11 +41,16 @@
 
 void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
-	bool platform;
+	JJ2Modifier* nextMod;
+	bool drop, platform;
 	unsigned char type;
+
 
 	if (event) type = event->getType();
 	else type = 0;
+
+	nextMod = jj2Level->getModifier(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+
 
 	// Respond to controls, unless the player has been killed
 
@@ -87,7 +93,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		facing = false;
 
-	} else {
+	} else if ((nextMod->type >> 1) != 3) {
 
 		// Slow down
 
@@ -111,14 +117,15 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	if (dx > PXS_RUN) dx = PXS_RUN;
 
 
+	drop = player->pcontrols[C_DOWN];
+
 	// Check for platform event, bridge or level mask below player
 	platform = /*(event >= 3) ||*/
-		jj2Level->checkMaskDown(x + PXO_ML, y + 1) ||
-		jj2Level->checkMaskDown(x + PXO_MID, y + 1) ||
-		jj2Level->checkMaskDown(x + PXO_MR, y + 1) ||
-		((dx > 0) && jj2Level->checkMaskDown(x + PXO_ML, y + F8)) ||
-		((dx < 0) && jj2Level->checkMaskDown(x + PXO_MR, y + F8));
-
+		jj2Level->checkMaskDown(x + PXO_ML, y + 1, drop) ||
+		jj2Level->checkMaskDown(x + PXO_MID, y + 1, drop) ||
+		jj2Level->checkMaskDown(x + PXO_MR, y + 1, drop) ||
+		((dx > 0) && jj2Level->checkMaskDown(x + PXO_ML, y + F8, drop)) ||
+		((dx < 0) && jj2Level->checkMaskDown(x + PXO_MR, y + F8, drop));
 
 	if (floating) {
 
@@ -138,7 +145,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
 			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
 
-		} else {
+		} else if ((nextMod->type >> 1) != 3) {
 
 			// Slow down
 
@@ -160,9 +167,9 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (type) {
 
-			if (type == 85) dy = PYS_JUMP;
-			else if (type == 86) dy = PYS_JUMP;
-			else if (type == 87) dy = PYS_JUMP;
+			if (type == 85) dy = PYS_RSPRING;
+			else if (type == 86) dy = PYS_GSPRING;
+			else if (type == 87) dy = PYS_BSPRING;
 
 		}
 
@@ -242,11 +249,9 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			dy = (jumpY - y - F64) * 4;
 
 			// Spring up speed limit
-			if ((type == 85) || (type == 86) || (type == 87)) {
-
-				if (dy < PYS_JUMP) dy = PYS_JUMP;
-
-			}
+			if ((type == 85) && (dy < PYS_RSPRING)) dy = PYS_RSPRING;
+			if ((type == 86) && (dy < PYS_GSPRING)) dy = PYS_GSPRING;
+			if ((type == 87) && (dy < PYS_BSPRING)) dy = PYS_BSPRING;
 
 			// Avoid jumping too fast, unless caused by an event
 			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
@@ -296,6 +301,125 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		/*if ((event != 3) && (event != 4))*/ event = NULL;
 
 	}
+
+
+	// Handle modifiers
+
+	switch (nextMod->type) {
+
+		case 4: // Hook
+
+			dx = 0;
+
+			break;
+
+		case 6: // H-pole
+
+			if (!stopTime) {
+
+				// Catch player
+				if (nextMod != mod) {
+
+					dy = 0;
+					x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+					y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
+					stopTime = ticks + 1000;
+
+				}
+
+			} else if (ticks < stopTime) {
+
+				dy = 0;
+				x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+				y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
+
+			} else {
+
+				dx = (dx > 0) ? PXS_POLE: -PXS_POLE;
+				stopTime = 0;
+
+			}
+
+			break;
+
+		case 7: // V-pole
+
+			if (!stopTime) {
+
+				// Catch player
+				if (nextMod != mod) {
+
+					dx = 0;
+					x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+					y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
+					stopTime = ticks + 1000;
+
+				}
+
+			} else if (ticks < stopTime) {
+
+				dx = 0;
+				x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+				y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
+
+			} else {
+
+				dy = (dy > 0) ? PYS_POLE: -PYS_POLE;
+				stopTime = 0;
+
+			}
+
+			break;
+
+		case 8: // Fly off
+
+			floating = false;
+
+			break;
+
+		case 17: // End of level
+
+			if (!energy) return;
+
+			if (!gameMode) {
+
+				if (game) game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+
+				jj2Level->setStage(LS_END);
+
+			} else if (!(gameMode->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID)))) return;
+
+			break;
+
+		case 230: // Warp
+
+			if (!stopTime) {
+
+				// Catch player
+				dx = 0;
+				dy = 0;
+				stopTime = ticks + 1000;
+
+			} if (ticks > stopTime) {
+
+				// TODO: Find corresponding warp target
+				//x = TTOF();
+				//y = TTOF();
+				stopTime = 0;
+
+			}
+
+			break;
+
+		default:
+
+			stopTime = 0;
+
+			break;
+
+	}
+
+	mod = nextMod;
 
 
 	// Handle firing
@@ -377,13 +501,13 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			else if ((dx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (!jj2Level->checkMaskDown(x + PXO_ML, y + F12) &&
-			!jj2Level->checkMaskDown(x + PXO_L, y + F2) /*&&
+		} else if (!jj2Level->checkMaskDown(x + PXO_ML, y + F12, drop) &&
+			!jj2Level->checkMaskDown(x + PXO_L, y + F2, drop) /*&&
 			(event != 3) && (event != 4)*/)
 			animType = PA_LEDGE;
 
-		else if (!jj2Level->checkMaskDown(x + PXO_MR, y + F12) &&
-			!jj2Level->checkMaskDown(x + PXO_R, y + F2) /*&&
+		else if (!jj2Level->checkMaskDown(x + PXO_MR, y + F12, drop) &&
+			!jj2Level->checkMaskDown(x + PXO_R, y + F2, drop) /*&&
 			(event != 3) && (event != 4)*/)
 			animType = PA_REDGE;
 
@@ -415,14 +539,8 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
 	int count;
+	bool drop;
 
-	if (warpTime && (ticks > warpTime)) {
-
-		x = TTOF(warpX);
-		y = TTOF(warpY + 1);
-		warpTime = 0;
-
-	}
 
 	// Apply as much of the trajectory as possible, without going into the
 	// scenery
@@ -439,37 +557,40 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	}
 
+
 	// First for the vertical component of the trajectory
+
+	drop = player->pcontrols[C_DOWN];
 
 	if (pdy < 0) {
 
 		// Moving up
 
-		count = (-pdy) >> 12;
+		count = (-pdy) >> 10;
 
 		while (count > 0) {
 
-			if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+			if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1)) {
 
-				y &= ~4095;
+				y &= ~1023;
 				dy = 0;
 
 				break;
 
 			}
 
-			y -= F4;
+			y -= F1;
 			count--;
 
 		}
 
-		pdy = (-pdy) & 4095;
+		pdy = (-pdy) & 1023;
 
 		if (!jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
 			y -= pdy;
 		else {
 
-			y &= ~4095;
+			y &= ~1023;
 			dy = 0;
 
 		}
@@ -478,35 +599,35 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		// Moving down
 
-		count = pdy >> 12;
+		count = pdy >> 10;
 
 		while (count > 0) {
 
-			if (jj2Level->checkMaskDown(x + PXO_ML, y + F4) ||
-				jj2Level->checkMaskDown(x + PXO_MID, y + F4) ||
-				jj2Level->checkMaskDown(x + PXO_MR, y + F4)) {
+			if (jj2Level->checkMaskDown(x + PXO_ML, y + F1, drop) ||
+				jj2Level->checkMaskDown(x + PXO_MID, y + F1, drop) ||
+				jj2Level->checkMaskDown(x + PXO_MR, y + F1, drop)) {
 
-				y |= 4095;
+				y |= 1023;
 				dy = 0;
 
 				break;
 
 			}
 
-			y += F4;
+			y += F1;
 			count--;
 
 		}
 
-		pdy &= 4095;
+		pdy &= 1023;
 
-		if (!(jj2Level->checkMaskDown(x + PXO_ML, y + pdy) ||
-			jj2Level->checkMaskDown(x + PXO_MID, y + pdy) ||
-			jj2Level->checkMaskDown(x + PXO_MR, y + pdy)))
+		if (!(jj2Level->checkMaskDown(x + PXO_ML, y + pdy, drop) ||
+			jj2Level->checkMaskDown(x + PXO_MID, y + pdy, drop) ||
+			jj2Level->checkMaskDown(x + PXO_MR, y + pdy, drop)))
 			y += pdy;
 		else {
 
-			y |= 4095;
+			y |= 1023;
 			dy = 0;
 
 		}
@@ -521,71 +642,71 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		// Moving left
 
-		count = (-pdx) >> 12;
+		count = (-pdx) >> 10;
 
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (jj2Level->checkMaskUp(x + PXO_L - F4, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + PXO_L - F1, y + PYO_MID)) {
 
-				x &= ~4095;
+				x &= ~1023;
 
 				break;
 
 			}
 
-			x -= F4;
+			x -= F1;
 			count--;
 
 			// If on an uphill slope, push the player upwards
 			if (jj2Level->checkMaskUp(x + PXO_ML, y) &&
-				!jj2Level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
+				!jj2Level->checkMaskUp(x + PXO_ML, y - F1)) y -= F1;
 
 		}
 
-		pdx = (-pdx) & 4095;
+		pdx = (-pdx) & 1023;
 
 		if (!jj2Level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
-		else x &= ~4095;
+		else x &= ~1023;
 
 		// If on an uphill slope, push the player upwards
 		while (jj2Level->checkMaskUp(x + PXO_ML, y) &&
-			!jj2Level->checkMaskUp(x + PXO_ML, y - F4)) y -= F1;
+			!jj2Level->checkMaskUp(x + PXO_ML, y - F1)) y -= F1;
 
 	} else if (pdx > 0) {
 
 		// Moving right
 
-		count = pdx >> 12;
+		count = pdx >> 10;
 
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (jj2Level->checkMaskUp(x + PXO_R + F4, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + PXO_R + F1, y + PYO_MID)) {
 
-				x |= 4095;
+				x |= 1023;
 
 				break;
 
 			}
 
-			x += F4;
+			x += F1;
 			count--;
 
 			// If on an uphill slope, push the player upwards
 			if (jj2Level->checkMaskUp(x + PXO_MR, y) &&
-				!jj2Level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
+				!jj2Level->checkMaskUp(x + PXO_MR, y - F1)) y -= F1;
 
 		}
 
-		pdx &= 4095;
+		pdx &= 1023;
 
 		if (!jj2Level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
-		else x |= 4095;
+		else x |= 1023;
 
 		// If on an uphill slope, push the player upwards
 		while (jj2Level->checkMaskUp(x + PXO_MR, y) &&
-			!jj2Level->checkMaskUp(x + PXO_MR, y - F4)) y -= F1;
+			!jj2Level->checkMaskUp(x + PXO_MR, y - F1)) y -= F1;
 
 	}
 
@@ -603,10 +724,10 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 	// Handle spikes
-	if (jj2Level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
-		jj2Level->checkSpikes(x + PXO_MID, y + F4) ||
-		jj2Level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
-		jj2Level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(NULL, ticks);
+	if (jj2Level->checkSpikes(x + PXO_MID, y + PYO_TOP - F1) ||
+		jj2Level->checkSpikes(x + PXO_MID, y + F1) ||
+		jj2Level->checkSpikes(x + PXO_L - F1, y + PYO_MID) ||
+		jj2Level->checkSpikes(x + PXO_R + F1, y + PYO_MID)) hit(NULL, ticks);
 
 
 	return;

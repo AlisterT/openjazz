@@ -103,7 +103,9 @@ bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 		return true;
 
 	// Event 1 is one-way
-	if (mods[tY][tX].type == 1) return false;
+	// Event 3 is vine
+	// Event 4 is hook
+	if ((mods[tY][tX].type == 1) || (mods[tY][tX].type == 3) || (mods[tY][tX].type == 4)) return false;
 
 	// Check the mask in the tile in question
 	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
@@ -111,7 +113,7 @@ bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 }
 
 
-bool JJ2Level::checkMaskDown (fixed x, fixed y) {
+bool JJ2Level::checkMaskDown (fixed x, fixed y, bool drop) {
 
 	int tX, tY;
 
@@ -121,6 +123,10 @@ bool JJ2Level::checkMaskDown (fixed x, fixed y) {
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (tX >= layer->getWidth()) || (tY >= layer->getHeight()))
 		return true;
+
+	// Event 3 is vine
+	// Event 4 is hook
+	if (drop && ((mods[tY][tX].type == 3) || (mods[tY][tX].type == 4))) return false;
 
 	// Check the mask in the tile in question
 	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
@@ -192,6 +198,13 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
 	}
 
 	return;
+
+}
+
+
+JJ2Modifier* JJ2Level::getModifier (unsigned char gridX, unsigned char gridY) {
+
+	return mods[gridY] + gridX;
 
 }
 
@@ -358,8 +371,12 @@ int JJ2Level::play () {
 
 			// The level is over, so draw gem counts
 
-			returnTime = ticks + 1000;
-			playSound(S_UPLOOP);
+			if (!returnTime) {
+
+				returnTime = ticks + 3000;
+				playSound(S_UPLOOP);
+
+			}
 
 			// Display statistics
 

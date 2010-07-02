@@ -129,6 +129,7 @@ JJ2LevelPlayer::~JJ2LevelPlayer () {
 void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
 	event = NULL;
+	mod = NULL;
 	energy = 5;
 	floating = false;
 	facing = true;
@@ -138,7 +139,7 @@ void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 	jumpHeight = ITOF(92);
 	jumpY = TTOF(256);
 	fastFeetTime = 0;
-	warpTime = 0;
+	stopTime = 0;
 	dx = 0;
 	dy = 0;
 	x = TTOF(startX);
@@ -317,16 +318,36 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 	switch (touched->getType()) {
 
+		case 60: // Frozen green spring
+
+			jumpY = y - TTOF(14);
+			event = touched;
+
+			break;
+
+		case 62: // Spring crate
+
+			jumpY = y - TTOF(18);
+			event = touched;
+
+			break;
+
+		case 83: // Checkpoint
+
+			game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+
+			break;
+
 		case 85: // Red spring
 
-			jumpY = y - TTOF(6);
+			jumpY = y - TTOF(7);
 			event = touched;
 
 			break;
 
 		case 86: // Green spring
 
-			jumpY = y - TTOF(12);
+			jumpY = y - TTOF(14);
 			event = touched;
 
 			break;

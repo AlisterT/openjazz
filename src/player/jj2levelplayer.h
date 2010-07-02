@@ -31,6 +31,7 @@
 
 #include "player.h"
 
+#include "jj2level/jj2level.h"
 #include "level/movable.h"
 #include "OpenJazz.h"
 
@@ -138,6 +139,12 @@
 #define PYS_SINK  ITOF(150)
 #define PYS_JUMP  ITOF(-350)
 
+#define PXS_POLE    ITOF(3000)
+#define PYS_POLE    ITOF(1000)
+#define PYS_RSPRING ITOF(-500)
+#define PYS_GSPRING ITOF(-600)
+#define PYS_BSPRING ITOF(-700)
+
 // Player accelerations
 #define PXA_REVERSE 900
 #define PXA_STOP    1000
@@ -172,6 +179,7 @@ class JJ2LevelPlayer : public Movable {
 
 	private:
 		bool              bird; // Placeholder for eventual JJ2Bird object
+		JJ2Modifier*      mod;
 		JJ2Event*         event;
 		SDL_Color         palette[256];
 		char              anims[PANIMS];
@@ -187,8 +195,7 @@ class JJ2LevelPlayer : public Movable {
 		fixed             jumpHeight;
 		fixed             jumpY;
 		unsigned int      fastFeetTime;
-		unsigned char     warpX, warpY;
-		unsigned int      warpTime;
+		unsigned int      stopTime;
 		int               gems[4];
 
 	public:

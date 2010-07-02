@@ -503,7 +503,10 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 
 	// Next level
-	nextLevel = createString((char *)aBuffer + 115);
+	string = (char *)aBuffer + 115;
+
+	if (fileExists(string)) nextLevel = createString(string);
+	else nextLevel = createString(string, ".j2l");
 
 
 	// Music file
@@ -574,7 +577,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 			count = bBuffer[((y * width) + x) << 2];
 
-			if (count < 33) {
+			if ((count < 33) || (count == 230)) {
 
 				mods[y][x].type = count;
 				mods[y][x].property = bBuffer[(((y * width) + x) << 2) + 1];
