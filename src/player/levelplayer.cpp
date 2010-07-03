@@ -323,7 +323,7 @@ void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
 		event = LPE_SPRING;
 
 	} else if (set[E_MODIFIER] == 6) event = LPE_PLATFORM;
-	else if (set[E_BEHAVIOUR] == 28) event = LPE_BRIDGE;
+	else if (set[E_BEHAVIOUR] == 28) event = LPE_PLATFORM;
 	else return;
 
 	eventX = gridX;
@@ -371,7 +371,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 		case 8: // Boss
 		case 27: // End of level
 
-			if (!getEnergy()) return false;
+			if (!energy) return false;
 
 			if (!gameMode) {
 
@@ -389,7 +389,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 1: // Invincibility
 
-			if (!getEnergy()) return false;
+			if (!energy) return false;
 
 			reaction = PR_INVINCIBLE;
 			reactionTime = ticks + PRT_INVINCIBLE;

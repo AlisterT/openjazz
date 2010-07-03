@@ -98,9 +98,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			if (dx < PXA_STOP * msps) dx = 0;
 			else dx -= PXA_STOP * msps;
 
-		}
-
-		if (dx < 0) {
+		} else if (dx < 0) {
 
 			if (dx > -PXA_STOP * msps) dx = 0;
 			else dx += PXA_STOP * msps;
@@ -110,11 +108,11 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 	}
 
 	if (dx < -PXS_RUN) dx = -PXS_RUN;
-	if (dx > PXS_RUN) dx = PXS_RUN;
+	else if (dx > PXS_RUN) dx = PXS_RUN;
 
 
 	// Check for platform event, bridge or level mask below player
-	platform = (event == LPE_PLATFORM) || (event == LPE_BRIDGE) ||
+	platform = (event == LPE_PLATFORM) ||
 		level->checkMaskDown(x + PXO_ML, y + 1) ||
 		level->checkMaskDown(x + PXO_MID, y + 1) ||
 		level->checkMaskDown(x + PXO_MR, y + 1) ||
@@ -149,9 +147,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 				if (dy < PXA_STOP * msps) dy = 0;
 				else dy -= PXA_STOP * msps;
 
-			}
-
-			if (dy < 0) {
+			} else if (dy < 0) {
 
 				if (dy > -PXA_STOP * msps) dy = 0;
 				else dy += PXA_STOP * msps;
@@ -168,7 +164,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
-		if (dy > PXS_RUN) dy = PXS_RUN;
+		else if (dy > PXS_RUN) dy = PXS_RUN;
 
 	} else if (y + PYO_MID > level->getWaterLevel()) {
 
@@ -211,7 +207,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
-		if (dy > PXS_RUN) dy = PXS_RUN;
+		else if (dy > PXS_RUN) dy = PXS_RUN;
 
 	} else {
 
@@ -239,7 +235,6 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		if (y >= jumpY) {
 
 			// If jumping, rise
-
 			dy = (jumpY - y - F64) * 4;
 
 			// Spring/float up speed limit
@@ -265,7 +260,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		if ((dy > 0) && ((event == LPE_PLATFORM) || (event == LPE_BRIDGE))) dy = 0;
+		if ((dy > 0) && (event == LPE_PLATFORM)) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -289,7 +284,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 		jumpY = TTOF(LH);
 		if (dy < 0) dy = 0;
 
-		if ((event != LPE_PLATFORM) && (event != LPE_BRIDGE)) event = LPE_NONE;
+		if (event != LPE_PLATFORM) event = LPE_NONE;
 
 	}
 
@@ -298,7 +293,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		jumpY = TTOF(LH);
 
-		if ((event != LPE_PLATFORM) && (event != LPE_BRIDGE)) event = LPE_NONE;
+		if (event != LPE_PLATFORM) event = LPE_NONE;
 
 	}
 
@@ -385,12 +380,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		} else if (!level->checkMaskDown(x + PXO_ML, y + F12) &&
 			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != LPE_PLATFORM) && (event != LPE_BRIDGE))
+			(event != LPE_PLATFORM))
 			animType = PA_LEDGE;
 
 		else if (!level->checkMaskDown(x + PXO_MR, y + F12) &&
 			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != LPE_PLATFORM) && (event != LPE_BRIDGE))
+			(event != LPE_PLATFORM))
 			animType = PA_REDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))

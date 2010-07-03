@@ -43,11 +43,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	JJ2Modifier* nextMod;
 	bool drop, platform;
-	unsigned char type;
 
-
-	if (event) type = event->getType();
-	else type = 0;
 
 	nextMod = jj2Level->getModifier(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
 
@@ -113,14 +109,11 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	}
 
-	if (dx < -PXS_RUN) dx = -PXS_RUN;
-	if (dx > PXS_RUN) dx = PXS_RUN;
-
 
 	drop = player->pcontrols[C_DOWN];
 
 	// Check for platform event, bridge or level mask below player
-	platform = /*(event >= 3) ||*/
+	platform = (event == LPE_PLATFORM) ||
 		jj2Level->checkMaskDown(x + PXO_ML, y + 1, drop) ||
 		jj2Level->checkMaskDown(x + PXO_MID, y + 1, drop) ||
 		jj2Level->checkMaskDown(x + PXO_MR, y + 1, drop) ||
@@ -165,16 +158,12 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (type) {
+		if (event != LPE_NONE) {
 
-			if (type == 85) dy = PYS_RSPRING;
-			else if (type == 86) dy = PYS_GSPRING;
-			else if (type == 87) dy = PYS_BSPRING;
+			if (event == LPE_SPRING) dy = PYS_SPRING;
+			else if (event == LPE_FLOAT) dy = PYS_JUMP;
 
 		}
-
-		if (dy < -PXS_RUN) dy = -PXS_RUN;
-		if (dy > PXS_RUN) dy = PXS_RUN;
 
 	} else if (y + PYO_MID > jj2Level->getWaterLevel()) {
 
@@ -190,12 +179,12 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			if (!jj2Level->checkMaskUp(x + PXO_MID, y - F36)) {
 
-				jumpY = y - jumpHeight;
+				throwY = y - jumpHeight;
 
-				if (dx < 0) jumpY += dx >> 4;
-				else if (dx > 0) jumpY -= dx >> 4;
+				if (dx < 0) throwY += dx >> 4;
+				else if (dx > 0) throwY -= dx >> 4;
 
-				event = NULL;
+				event = LPE_NONE;
 
 			}
 
@@ -216,9 +205,6 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (dy < -PXS_RUN) dy = -PXS_RUN;
-		if (dy > PXS_RUN) dy = PXS_RUN;
-
 	} else {
 
 		if (platform && player->pcontrols[C_JUMP] &&
@@ -226,35 +212,29 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Jump
 
-			jumpY = y - jumpHeight;
+			throwY = y - jumpHeight;
 
 			// Increase jump height if walking/running
-			if (dx < 0) jumpY += dx >> 3;
-			else if (dx > 0) jumpY -= dx >> 3;
+			if (dx < 0) throwY += dx >> 3;
+			else if (dx > 0) throwY -= dx >> 3;
 
-			event = NULL;
+			event = LPE_NONE;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && (type != 85) && (type != 86) && (type != 87))
-			jumpY = TTOF(256);
+		if (!player->pcontrols[C_JUMP] && (event != LPE_SPRING) && (event != LPE_FLOAT))
+			throwY = TTOF(256);
 
-		if (y >= jumpY) {
+		if (y >= throwY) {
 
 			// If jumping, rise
-
-			dy = (jumpY - y - F64) * 4;
-
-			// Spring up speed limit
-			if ((type == 85) && (dy < PYS_RSPRING)) dy = PYS_RSPRING;
-			if ((type == 86) && (dy < PYS_GSPRING)) dy = PYS_GSPRING;
-			if ((type == 87) && (dy < PYS_BSPRING)) dy = PYS_BSPRING;
+			dy = (throwY - y - F64) * 4;
 
 			// Avoid jumping too fast, unless caused by an event
-			if (!event && (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if ((event == LPE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -265,7 +245,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		//if ((dy > 0) && (event >= 3)) dy = 0;
+		if ((dy > 0) && (event == LPE_PLATFORM)) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -284,21 +264,21 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) /*&& (event != 2)*/) {
+	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (throwY < y) && (event != LPE_FLOAT)) {
 
-		jumpY = TTOF(256);
+		throwY = TTOF(256);
 		if (dy < 0) dy = 0;
 
-		/*if ((event != 3) && (event != 4))*/ event = NULL;
+		if (event != LPE_PLATFORM) event = LPE_NONE;
 
 	}
 
 	// If jump completed, stop rising
-	if (y <= jumpY) {
+	if (y <= throwY) {
 
-		jumpY = TTOF(256);
+		throwY = TTOF(256);
 
-		/*if ((event != 3) && (event != 4))*/ event = NULL;
+		if (event != LPE_PLATFORM) event = LPE_NONE;
 
 	}
 
@@ -364,7 +344,17 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			} else {
 
-				dy = (dy > 0) ? PYS_POLE: -PYS_POLE;
+				if (dy < 0) {
+
+					throwY = y - TTOF(16);
+					dy = -PYS_POLE;
+
+				} else {
+
+					dy = PYS_POLE;
+
+				}
+
 				stopTime = 0;
 
 			}
@@ -420,6 +410,15 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	}
 
 	mod = nextMod;
+
+
+	// Limit speed
+
+	if (dx < -PXS_LIMIT) dx = -PXS_LIMIT;
+	else if (dx > PXS_LIMIT) dx = PXS_LIMIT;
+
+	if (dy < -PYS_LIMIT) dy = -PYS_LIMIT;
+	else if (dy > PYS_LIMIT) dy = PYS_LIMIT;
 
 
 	// Handle firing
@@ -488,7 +487,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	else if (dy < 0) {
 
-		if ((type == 85) || (type == 86) || (type == 87)) animType = facing? PA_RSPRING: PA_LSPRING;
+		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
 		else animType = facing? PA_RJUMP: PA_LJUMP;
 
 	} else if (platform) {
@@ -712,12 +711,12 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	/*if ((event == 2) && jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+	if ((event == LPE_FLOAT) && jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1)) {
 
-		jumpY = TTOF(256);
-		event = 0;
+		throwY = TTOF(256);
+		event = LPE_NONE;
 
-	}*/
+	}
 
 
 	if (jj2Level->getStage() == LS_END) return;

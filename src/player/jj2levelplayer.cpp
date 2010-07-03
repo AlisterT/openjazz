@@ -128,16 +128,16 @@ JJ2LevelPlayer::~JJ2LevelPlayer () {
 
 void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
-	event = NULL;
 	mod = NULL;
 	energy = 5;
 	floating = false;
 	facing = true;
 	animType = PA_RSTAND;
+	event = LPE_NONE;
 	reaction = JJ2PR_NONE;
 	reactionTime = 0;
 	jumpHeight = ITOF(92);
-	jumpY = TTOF(256);
+	throwY = TTOF(256);
 	fastFeetTime = 0;
 	stopTime = 0;
 	dx = 0;
@@ -320,15 +320,17 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 		case 60: // Frozen green spring
 
-			jumpY = y - TTOF(14);
-			event = touched;
+			throwY = y - TTOF(14);
+			dx = 0;
+			event = LPE_SPRING;
 
 			break;
 
 		case 62: // Spring crate
 
-			jumpY = y - TTOF(18);
-			event = touched;
+			throwY = y - TTOF(18);
+			dx = 0;
+			event = LPE_SPRING;
 
 			break;
 
@@ -340,22 +342,25 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 		case 85: // Red spring
 
-			jumpY = y - TTOF(7);
-			event = touched;
+			throwY = y - TTOF(7);
+			dx = 0;
+			event = LPE_SPRING;
 
 			break;
 
 		case 86: // Green spring
 
-			jumpY = y - TTOF(14);
-			event = touched;
+			throwY = y - TTOF(14);
+			dx = 0;
+			event = LPE_SPRING;
 
 			break;
 
 		case 87: // Blue spring
 
-			jumpY = y - TTOF(18);
-			event = touched;
+			throwY = y - TTOF(18);
+			dx = 0;
+			event = LPE_SPRING;
 
 			break;
 
@@ -383,10 +388,10 @@ void JJ2LevelPlayer::send (unsigned char *buffer) {
 	buffer[30] = (jumpHeight >> 16) & 255;
 	buffer[31] = (jumpHeight >> 8) & 255;
 	buffer[32] = jumpHeight & 255;
-	buffer[33] = jumpY >> 24;
-	buffer[34] = (jumpY >> 16) & 255;
-	buffer[35] = (jumpY >> 8) & 255;
-	buffer[36] = jumpY & 255;
+	buffer[33] = throwY >> 24;
+	buffer[34] = (throwY >> 16) & 255;
+	buffer[35] = (throwY >> 8) & 255;
+	buffer[36] = throwY & 255;
 	buffer[37] = x >> 24;
 	buffer[38] = (x >> 16) & 255;
 	buffer[39] = (x >> 8) & 255;
@@ -428,7 +433,7 @@ void JJ2LevelPlayer::receive (unsigned char *buffer) {
 			floating = buffer[26];
 			facing = buffer[27];
 			jumpHeight = (buffer[29] << 24) + (buffer[30] << 16) + (buffer[31] << 8) + buffer[32];
-			jumpY = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];
+			throwY = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];
 			x = (buffer[37] << 24) + (buffer[38] << 16) + (buffer[39] << 8) + buffer[40];
 			y = (buffer[41] << 24) + (buffer[42] << 16) + (buffer[43] << 8) + buffer[44];
 

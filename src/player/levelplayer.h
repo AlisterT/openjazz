@@ -118,7 +118,6 @@
 // Player speeds
 #define PXS_WALK  ITOF(300)
 #define PXS_RUN   ITOF(325)
-#define PXS_FFRUN ITOF(500)
 #define PYS_FALL  ITOF(350)
 #define PYS_SINK  ITOF(150)
 #define PYS_JUMP  ITOF(-350)
@@ -128,22 +127,15 @@
 #define PXA_STOP    1000
 #define PXA_WALK    500
 #define PXA_RUN     200
-#define PXA_FFRUN   200
 #define PYA_GRAVITY 2750
 #define PYA_SINK    1000
 
 
-// Enums
+// Enum
 
 enum PlayerReaction {
 
 	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
-
-};
-
-enum LevelPlayerEvent {
-
-	LPE_NONE, LPE_SPRING, LPE_FLOAT, LPE_PLATFORM, LPE_BRIDGE
 
 };
 
@@ -166,7 +158,7 @@ class LevelPlayer : public Movable {
 		unsigned char    animType;
 		unsigned char    eventX;
 		unsigned char    eventY; /* Position of an event (spring, platform, bridge) */
-		LevelPlayerEvent event;
+		PlayerEvent      event;
 		int              lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
 		PlayerReaction   reaction;
 		unsigned int     reactionTime;

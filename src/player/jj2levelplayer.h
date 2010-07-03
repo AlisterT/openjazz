@@ -132,6 +132,9 @@
 #define PYO_MID (-F10)
 
 // Player speeds
+#define PXS_LIMIT ITOF(500)
+#define PYS_LIMIT ITOF(500)
+
 #define PXS_WALK  ITOF(300)
 #define PXS_RUN   ITOF(325)
 #define PXS_FFRUN ITOF(500)
@@ -139,11 +142,9 @@
 #define PYS_SINK  ITOF(150)
 #define PYS_JUMP  ITOF(-350)
 
-#define PXS_POLE    ITOF(3000)
-#define PYS_POLE    ITOF(1000)
-#define PYS_RSPRING ITOF(-500)
-#define PYS_GSPRING ITOF(-600)
-#define PYS_BSPRING ITOF(-700)
+#define PXS_POLE   ITOF(3000)
+#define PYS_POLE   ITOF(3000)
+#define PYS_SPRING ITOF(-500)
 
 // Player accelerations
 #define PXA_REVERSE 900
@@ -180,7 +181,6 @@ class JJ2LevelPlayer : public Movable {
 	private:
 		bool              bird; // Placeholder for eventual JJ2Bird object
 		JJ2Modifier*      mod;
-		JJ2Event*         event;
 		SDL_Color         palette[256];
 		char              anims[PANIMS];
 		int               energy;
@@ -188,12 +188,13 @@ class JJ2LevelPlayer : public Movable {
 		int               floating; /* 0 = normal, 1 = helicopter ears, 2 = boarding */
 		bool              facing;
 		unsigned char     animType;
+		PlayerEvent       event;
 		int               lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
 		JJ2PlayerReaction reaction;
 		unsigned int      reactionTime;
 		unsigned int      fireTime;
 		fixed             jumpHeight;
-		fixed             jumpY;
+		fixed             throwX, throwY;
 		unsigned int      fastFeetTime;
 		unsigned int      stopTime;
 		int               gems[4];

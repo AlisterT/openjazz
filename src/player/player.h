@@ -49,7 +49,7 @@
 #define PCOLOURS    4 /* Number of configurable colour ranges */
 
 
-// Enum
+// Enums
 
 enum PlayerColour {
 
@@ -67,6 +67,12 @@ enum PlayerColour {
 	PC_SANIM  = 11,
 	PC_LANIM  = 12,
 	PC_LEVEL5 = 13
+
+};
+
+enum PlayerEvent {
+
+	LPE_NONE, LPE_SPRING, LPE_FLOAT, LPE_PLATFORM
 
 };
 
