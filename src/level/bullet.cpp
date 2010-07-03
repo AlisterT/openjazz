@@ -102,7 +102,7 @@ Bullet::Bullet (Event* sourceEvent, bool facing, unsigned int ticks) {
 
 	anim = level->getAnim(sourceEvent->getProperty(facing? E_LSHOOTANIM: E_RSHOOTANIM));
 	x = sourceEvent->getX() + anim->getShootX();
-	y = sourceEvent->getY() + anim->getShootY();
+	y = sourceEvent->getY() + anim->getShootY() - ITOF((sprite->getHeight() / 2) - 2);
 	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
 	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
 	time = ticks + T_BULLET;
@@ -306,7 +306,7 @@ void Bullet::draw (int change) {
 	if (next) next->draw(change);
 
 	// Show the bullet
-	sprite->draw(FTOI(getDrawX(change)), FTOI(getDrawY(change)));
+	sprite->draw(FTOI(getDrawX(change)), FTOI(getDrawY(change)), false);
 
 	return;
 

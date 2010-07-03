@@ -119,12 +119,22 @@ void Sprite::restorePalette () {
 }
 
 
-void Sprite::draw (int x, int y) {
+void Sprite::draw (int x, int y, bool includeOffsets) {
 
 	SDL_Rect dst;
 
-	dst.x = x + xOffset;
-	dst.y = y + yOffset;
+	if (includeOffsets) {
+
+		dst.x = x + xOffset;
+		dst.y = y + yOffset;
+
+	}
+	else {
+
+		dst.x = x;
+		dst.y = y;
+
+	}
 
 	SDL_BlitSurface(pixels, NULL, canvas, &dst);
 
