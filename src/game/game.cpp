@@ -286,11 +286,11 @@ void Game::view (int change) {
 
 	// Move the viewport towards the exit sign
 
-	if (TTOF(checkX) > viewX + (viewW << 9) + change) viewX += change;
-	else if (TTOF(checkX) < viewX + (viewW << 9) - change) viewX -= change;
+	if (TTOF(checkX) > viewX + (canvasW << 9) + change) viewX += change;
+	else if (TTOF(checkX) < viewX + (canvasW << 9) - change) viewX -= change;
 
-	if (TTOF(checkY) > viewY + (viewH << 9) + change) viewY += change;
-	else if (TTOF(checkY) < viewY + (viewH << 9) - change) viewY -= change;
+	if (TTOF(checkY) > viewY + (canvasH << 9) + change) viewY += change;
+	else if (TTOF(checkY) < viewY + (canvasH << 9) - change) viewY -= change;
 
 	return;
 

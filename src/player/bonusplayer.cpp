@@ -191,7 +191,7 @@ void BonusPlayer::draw (unsigned int ticks, Anim* animSet) {
 	anim = animSet + anims[animType];
 	anim->disableDefaultOffset();
 	anim->setFrame(ticks / 75, true);
-	anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));
+	anim->drawScaled(ITOF(canvasW >> 1), ITOF(canvasH - ((((anim->getHeight() >> 1) + 28) * canvasW) / SW)), ITOF(canvasW) / SW);
 
 	return;
 

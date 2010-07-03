@@ -145,6 +145,16 @@ void Anim::draw (fixed x, fixed y) {
 }
 
 
+void Anim::drawScaled (fixed x, fixed y, fixed scale) {
+
+	// Used to draw bonus level player, so no offset
+	sprites[frame]->drawScaled(FTOI(x), FTOI(y), scale);
+
+	return;
+
+}
+
+
 void Anim::disableDefaultOffset() {
 
 	ignoreDefaultYOffset = true;

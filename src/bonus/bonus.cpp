@@ -773,9 +773,9 @@ int Bonus::play () {
 
 			// Draw the menu
 
-			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 60, 0);
+			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, 0);
 
-			for (count = 0; count < 3; count++) {
+			for (count = 0; count < 5; count++) {
 
 				if (count == option) fontmn2->mapPalette(240, 8, 31, 16);
 				else fontmn2->mapPalette(240, 8, 0, 16);

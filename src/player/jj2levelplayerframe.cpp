@@ -368,6 +368,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			break;
 
 		case 17: // End of level
+		case 18: // End of level
 
 			if (!energy) return;
 
@@ -744,13 +745,11 @@ void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 	oldViewX = viewX;
 	oldViewY = viewY;
 
-	// There is no panel, so use the whole height
-	viewH = canvasH;
 
 	// Find new position
 
-	viewX = x + F8 - (viewW << 9);
-	viewY = y - F24 - (viewH << 9);
+	viewX = x + F8 - (canvasW << 9);
+	viewY = y - F24 - (canvasH << 9);
 
 	if ((lookTime > 0) && ((int)ticks > 1000 + lookTime)) {
 

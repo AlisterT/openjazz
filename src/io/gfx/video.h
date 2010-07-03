@@ -99,8 +99,7 @@ class Video {
 // Variables
 
 EXTERN SDL_Surface* canvas;
-EXTERN int          viewH, canvasW, canvasH;
-#define viewW canvasW
+EXTERN int          canvasW, canvasH;
 
 EXTERN Video video;
 

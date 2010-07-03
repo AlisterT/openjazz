@@ -178,9 +178,9 @@ void JJ2Layer::draw (SDL_Surface* tileSet, SDL_Surface* flippedTileSet) {
 
 	}
 
-	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
+	for (y = 0; y <= ITOT(canvasH - 1) + 1; y++) {
 
-		for (x = 0; x <= ITOT(viewW - 1) + 1; x++) {
+		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
 
 			dst.x = TTOI(x) - (vX & 31);
 			dst.y = TTOI(y) - (vY & 31);

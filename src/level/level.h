@@ -181,9 +181,12 @@ class DemoLevel : public Level {
 };
 
 
-// Variable
+// Variables
 
 EXTERN Level* level;
+
+EXTERN int    viewH;
+#define viewW canvasW
 
 #endif
 

@@ -63,6 +63,7 @@ class Anim {
 		fixed getShootY             ();
 		fixed getOffset             ();
 		void  draw                  (fixed x, fixed y);
+		void  drawScaled            (fixed x, fixed y, fixed scale);
 		void  disableDefaultOffset  ();
 		void  setPalette            (SDL_Color *palette, int start, int amount);
 		void  flashPalette          (int index);

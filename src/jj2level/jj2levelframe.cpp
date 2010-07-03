@@ -108,9 +108,9 @@ void JJ2Level::draw () {
 
 	// Ensure the new viewport is within the level
 	if (viewX < 0) viewX = 0;
-	if (FTOI(viewX) + viewW >= TTOI(width)) viewX = ITOF(TTOI(width) - viewW);
+	if (FTOI(viewX) + canvasW >= TTOI(width)) viewX = ITOF(TTOI(width) - canvasW);
 	if (viewY < 0) viewY = 0;
-	if (FTOI(viewY) + viewH >= TTOI(height)) viewY = ITOF(TTOI(height) - viewH);
+	if (FTOI(viewY) + canvasH >= TTOI(height)) viewY = ITOF(TTOI(height) - canvasH);
 
 
 	// Show background layers
@@ -126,14 +126,7 @@ void JJ2Level::draw () {
 
 
 	// Show the players
-	for (x = 0; x < nPlayers; x++) {
-
-		players[x].getJJ2LevelPlayer()->draw(ticks, change);
-
-		// Show type of overlapping modifier
-		//panelBigFont->showNumber(mods[FTOT(players[x].getJJ2LevelPlayer()->getY() + PYO_MID)][FTOT(players[x].getJJ2LevelPlayer()->getX() + PXO_MID)].type, viewW >> 1, viewH >> 1);
-
-	}
+	for (x = 0; x < nPlayers; x++) players[x].getJJ2LevelPlayer()->draw(ticks, change);
 
 
 	// Show foreground layers
@@ -160,7 +153,7 @@ void JJ2Level::draw () {
 
 	for (y = 1; y <= x; y++) {
 
-		drawRect(viewW - (y * 12), 4, 8, 8, 48);
+		drawRect(canvasW - (y * 12), 4, 8, 8, 48);
 
 	}
 
@@ -172,10 +165,10 @@ void JJ2Level::draw () {
 	// Show ammo
 	if (localPlayer->getAmmo(false) == -1) {
 
-		panelSmallFont->showString(":", viewW - 24, canvasH - 16);
-		panelSmallFont->showString(";", viewW - 16, canvasH - 16);
+		panelSmallFont->showString(":", canvasW - 24, canvasH - 16);
+		panelSmallFont->showString(";", canvasW - 16, canvasH - 16);
 
-	} else panelSmallFont->showNumber(localPlayer->getAmmo(true), viewW - 8, canvasH - 16);
+	} else panelSmallFont->showNumber(localPlayer->getAmmo(true), canvasW - 8, canvasH - 16);
 
 
 	return;

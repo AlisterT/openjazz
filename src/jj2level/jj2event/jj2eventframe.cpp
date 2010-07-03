@@ -29,6 +29,7 @@
 #include "../jj2level.h"
 
 #include "io/gfx/anim.h"
+#include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "player/jj2levelplayer.h"
 
@@ -95,7 +96,7 @@ void JJ2Event::draw (int change) {
 
 	// Don't draw if too far off-screen
 	if ((x < viewX - F64) || (y < viewY - F64) ||
-		(x > viewX + ITOF(viewW) + F64) || (y > viewY + ITOF(viewH) + F64)) return;
+		(x > viewX + ITOF(canvasW) + F64) || (y > viewY + ITOF(canvasH) + F64)) return;
 
 	drawX = getDrawX(change);
 	drawY = getDrawY(change);
@@ -141,6 +142,7 @@ void JJ2Event::draw (int change) {
 		default:
 
 			drawRect(FTOI(drawX) + 8, FTOI(drawY) + 8, 16, 16, type);
+			panelBigFont->showNumber(type, FTOI(drawX) + 24, FTOI(drawY) + 12);
 
 			return;
 
