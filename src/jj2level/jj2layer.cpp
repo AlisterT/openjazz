@@ -46,7 +46,7 @@ JJ2Layer::JJ2Layer () {
 }
 
 
-JJ2Layer::JJ2Layer (int newWidth, int newHeight) {
+JJ2Layer::JJ2Layer (int newWidth, int newHeight, int flags) {
 
 	int row;
 
@@ -57,6 +57,11 @@ JJ2Layer::JJ2Layer (int newWidth, int newHeight) {
 	*grid = new JJ2Tile[width * height];
 
 	for (row = 0; row < height; row++) grid[row] = *grid + (row * width);
+
+	tileX = flags & 1;
+	tileY = flags & 2;
+	limit = flags & 4;
+	warp = flags & 8;
 
 	return;
 
@@ -93,9 +98,10 @@ int JJ2Layer::getHeight () {
 
 int JJ2Layer::getTile (int x, int y) {
 
-	if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) return 0;
+	if (((x < 0) || (x >= width)) && !tileX) return 0;
+	if (((y < 0) || (y >= height)) && !tileY) return 0;
 
-	return grid[y][x].tile;
+	return grid[tileY? y % height: y][tileX? x % width: x].tile;
 
 }
 

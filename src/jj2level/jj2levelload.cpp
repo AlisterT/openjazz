@@ -293,12 +293,12 @@ int JJ2Level::loadTiles (char* fileName) {
 
 	// Load tiles
 
-	tiles = aBuffer[1024] + (aBuffer[1025] << 8);
+	tiles = createShort(aBuffer + 1024);
 	tileBuffer = new unsigned char[tiles << 10];
 
 	for (count = 0; count < tiles; count++) {
 
-		memcpy(tileBuffer + (count << 10), bBuffer + ((int *)aBuffer)[257 + (maxTiles >> 1) + count], 1024);
+		memcpy(tileBuffer + (count << 10), bBuffer + createInt(aBuffer + 1028 + (maxTiles << 1) + (count << 2)), 1024);
 
 	}
 
@@ -334,7 +334,7 @@ int JJ2Level::loadTiles (char* fileName) {
 		for (y = 0; y < 32; y++) {
 
 			for (x = 0; x < 32; x++)
-				mask[(count << 10) + (y << 5) + x] = (dBuffer[((int *)aBuffer)[257 + ((maxTiles * 9) >> 1) + count] + (y << 2) + (x >> 3)] >> (x & 7)) & 1;
+				mask[(count << 10) + (y << 5) + x] = (dBuffer[createInt(aBuffer + 1028 + (maxTiles * 18) + (count << 2)) + (y << 2) + (x >> 3)] >> (x & 7)) & 1;
 
 		}
 
@@ -348,7 +348,7 @@ int JJ2Level::loadTiles (char* fileName) {
 		for (y = 0; y < 32; y++) {
 
 			for (x = 0; x < 32; x++)
-				flippedMask[(count << 10) + (y << 5) + x] = (dBuffer[((int *)aBuffer)[257 + ((maxTiles * 11) >> 1) + count] + (y << 2) + (x >> 3)] >> (x & 7)) & 1;
+				flippedMask[(count << 10) + (y << 5) + x] = (dBuffer[createInt(aBuffer + 1028 + (maxTiles * 22) + (count << 2)) + (y << 2) + (x >> 3)] >> (x & 7)) & 1;
 
 		}
 
@@ -407,7 +407,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	int count, x, y;
 	unsigned char tileQuad[8];
 	short int* quadRefs;
-	int width, pitch, height;
+	int flags, width, pitch, height;
 	int worldNum;
 	unsigned char startX, startY;
 
@@ -522,13 +522,14 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	for (count = 0; count < LAYERS; count++) {
 
-		width = ((int *)(aBuffer + 8443 + 8))[count];
-		pitch = ((int *)(aBuffer + 8443 + 40))[count];
-		height = ((int *)(aBuffer + 8443 + 72))[count];
+		flags = aBuffer[8403 + (count << 2)];
+		width = createInt(aBuffer + 8403 + 48 + (count << 2));
+		pitch = createInt(aBuffer + 8403 + 80 + (count << 2));
+		height = createInt(aBuffer + 8403 + 112 + (count << 2));
 
-		if (aBuffer[8443 + count]) {
+		if (aBuffer[8403 + 40 + count]) {
 
-			layers[count] = new JJ2Layer(width, height);
+			layers[count] = new JJ2Layer(width, height, flags);
 
 			for (y = 0; y < height; y++) {
 
@@ -536,7 +537,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 					if ((x & 3) == 0) memcpy(tileQuad, cBuffer + (quadRefs[x >> 2] << 3), 8);
 
-					layers[count]->setTile(x, y, tileQuad[(x & 3) << 1] + (tileQuad[((x & 3) << 1) + 1] << 8), TSF? -tiles: tiles);
+					layers[count]->setTile(x, y, createShort(tileQuad + ((x & 3) << 1)), TSF? -tiles: tiles);
 
 				}
 
@@ -559,10 +560,9 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	height = layer->getHeight();
 
 
-
 	// Load events
-	startX = 0;
-	startY = 0;
+	startX = 1;
+	startY = 1;
 
 	mods = new JJ2Modifier *[height];
 	*mods = new JJ2Modifier[width * height];

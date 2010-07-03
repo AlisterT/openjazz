@@ -61,6 +61,28 @@ bool fileExists (const char * fileName) {
 }
 
 
+unsigned short int createShort (unsigned char* data) {
+
+	unsigned short int val;
+
+	val = data[0] + (data[1] << 8);
+
+	return val;
+
+}
+
+
+int createInt (unsigned char* data) {
+
+	unsigned int val;
+
+	val = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+
+	return *((int *)&val);
+
+}
+
+
 char * createString (const char *string) {
 
 	char *cloned;

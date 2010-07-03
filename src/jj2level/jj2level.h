@@ -73,10 +73,11 @@ class JJ2Layer {
 	private:
 		JJ2Tile** grid;
 		int       width, height;
+		bool      tileX, tileY, limit, warp;
 
 	public:
 		JJ2Layer  ();
-		JJ2Layer  (int newWidth, int newHeight);
+		JJ2Layer  (int newWidth, int newHeight, int flags);
 		~JJ2Layer ();
 
 		bool getFlipped (int x, int y);
