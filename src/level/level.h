@@ -143,6 +143,7 @@ class Level : public BaseLevel {
 		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
 		bool          checkSpikes   (fixed x, fixed y);
+		int           getWorld      ();
 		void          setNext       (int nextLevel, int nextWorld);
 		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
 		Event*        getEvents     ();

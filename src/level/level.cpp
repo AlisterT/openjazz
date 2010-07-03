@@ -177,6 +177,13 @@ bool Level::checkSpikes (fixed x, fixed y) {
 }
 
 
+int Level::getWorld() {
+
+	return worldNum;
+
+}
+
+
 void Level::setNext (int nextLevel, int nextWorld) {
 
 	unsigned char buffer[MTL_L_PROP];

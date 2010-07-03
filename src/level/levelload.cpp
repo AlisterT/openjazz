@@ -470,20 +470,24 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		} catch (int e) {
 
-			delete[] string;
-			deletePanel();
-			delete font;
-
-			return e;
+			file = NULL;
 
 		}
 
 		delete[] string;
 
-		file->seek(2, true);
-		string = file->loadString();
+		if (file) {
 
-		delete file;
+			file->seek(2, true);
+			string = file->loadString();
+
+			delete file;
+
+		} else {
+
+			string = createString("CUSTOM");
+
+		}
 
 	}
 
@@ -581,16 +585,9 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	file->seek(8, false);
 	ext = file->loadString();
 
-	if (!strcmp(ext, "999")) {
-
-		// Use the level file's extension instead
-		delete[] ext;
-		ext = createString(fileName + strlen(fileName) - 3);
-
-	}
-
-	// Allocate space for file names
-	string = createFileName(F_BLOCKS, ext);
+	// Create tile set file name
+	if (!strcmp(ext, "999")) string = createFileName(F_BLOCKS, worldNum);
+	else string = createFileName(F_BLOCKS, ext);
 
 	delete[] ext;
 

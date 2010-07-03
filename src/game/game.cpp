@@ -209,7 +209,7 @@ int Game::play () {
 			}
 
 			planet = NULL;
-			fileName = createFileName(F_PLANET, levelFile + strlen(levelFile) - 3);
+			fileName = createFileName(F_PLANET, level->getWorld());
 
 			try {
 
