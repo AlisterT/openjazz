@@ -1,0 +1,101 @@
+target openjazz.exe
+targetpath \sys\bin
+targettype exe
+
+
+SYSTEMINCLUDE 	\epoc32\include\ESDL
+SYSTEMINCLUDE   \epoc32\include \epoc32\include\libc ..\..\src
+
+sourcepath ..\..\src\platforms
+source symbian.cpp
+
+SOURCEPATH 	.
+START RESOURCE  openjazz.rss
+HEADER
+TARGETPATH              \Resource\Apps
+LANG                    SC
+END
+
+
+START RESOURCE  openjazz_reg.rss
+TARGETPATH              \private\10003a3f\apps
+END
+
+
+EPOCSTACKSIZE	80000
+EPOCHEAPSIZE	8192000 32768000
+
+UID             0x100039ce 0xA000A005
+
+LIBRARY cone.lib  eikcore.lib 
+LIBRARY euser.lib apparc.lib fbscli.lib  
+LIBRARY  apgrfx.lib
+staticlibrary modpluglibpsm.lib
+staticlibrary esdl.lib sdl_mixer.lib  sdl_net.lib zlib.lib 
+LIBRARY gdi.lib hal.lib bitgdi.lib
+LIBRARY mediaclientaudiostream.lib efsrv.lib ws32.lib
+library bafl.lib estlib.lib esock.lib insock.lib 
+library avkon.lib
+MACRO S60V3
+
+CAPABILITY      NetworkServices LocalServices
+
+sourcepath ..\..\src
+userinclude ..\..\src
+source main.cpp util.cpp baselevel.cpp
+
+sourcepath ..\..\src\bonus
+userinclude ..\..\src\bonus
+source bonus.cpp
+
+
+sourcepath ..\..\src\scene
+userinclude ..\..\src\scene
+source scene.cpp sceneload.cpp
+
+sourcepath ..\..\src\game
+userinclude ..\..\src\game
+source clientgame.cpp game.cpp gamemode.cpp servergame.cpp
+
+sourcepath ..\..\src\planet
+userinclude ..\..\src\planet
+source planet.cpp
+
+sourcepath ..\..\src\io
+userinclude ..\..\src\io
+source controls.cpp file.cpp network.cpp sound.cpp
+
+sourcepath ..\..\src\io\gfx
+userinclude ..\..\src\io\gfx
+source anim.cpp font.cpp paletteeffects.cpp sprite.cpp video.cpp
+
+sourcepath ..\..\src\level
+userinclude ..\..\src\level
+source bullet.cpp demolevel.cpp level.cpp levelframe.cpp levelload.cpp movable.cpp
+
+sourcepath ..\..\src\level\event
+userinclude ..\..\src\level\event
+source event.cpp eventframe.cpp bridge.cpp guardians.cpp
+
+sourcepath ..\..\src\menu
+userinclude ..\..\src\menu
+source gamemenu.cpp mainmenu.cpp menu.cpp setupmenu.cpp plasma.cpp
+
+sourcepath ..\..\src\player
+userinclude ..\..\src\player
+source bird.cpp bonusplayer.cpp jj2levelplayer.cpp jj2levelplayerframe.cpp levelplayer.cpp  levelplayerframe.cpp player.cpp
+
+userinclude ..\..\src\jj2level
+sourcepath ..\..\src\jj2level
+source jj2layer.cpp jj2level.cpp jj2levelframe.cpp jj2levelload.cpp
+
+userinclude ..\..\src\jj2level\jj2event
+sourcepath ..\..\src\jj2level\jj2event
+source jj2event.cpp jj2eventframe.cpp
+
+MACRO USE_SDL_NET
+MACRO USE_MODPLUG
+MACRO FULLSCREEN_ONLY
+
+OPTION   GCCE -Wno-multichar -Wno-reorder -Wno-unused -Wno-format -fsigned-char
+OPTION   CW -char signed

@@ -1,0 +1,6 @@
+PRJ_PLATFORMS
+GCCE WINSCW THUMB
+
+PRJ_MMPFILES
+gnumakefile icons.mk
+.\openjazz.mmp

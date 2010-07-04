@@ -1,0 +1,39 @@
+;
+; Basic install file for openjazz
+;
+
+; Languages
+; none -  English only by default
+
+; Installation header
+; Only one component name as we only support English
+; UID is the app's UID -
+&EN
+
+; List of localised vendor names - one per language. At least one must be provided (English [EN]).
+; List must correspond to list of languages specified elsewhere in the .pkg
+%{"SomeOne"}
+; The non-localised, globally unique vendor name (mandatory)
+:"SomeOne"
+
+
+#{"OpenJazz"},(0xA000A005),0,2,1
+
+;Supports Series 60 v 3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+; Application file
+"\epoc32\release\gcce\urel\openjazz.exe"-"!:\sys\bin\openjazz.exe"
+
+"\epoc32\data\z\resource\apps\openjazz.rsc"-"!:\resource\apps\openjazz.rsc"
+"\epoc32\data\z\private\10003a3f\apps\openjazz_reg.rsc"-"!:\private\10003a3f\import\apps\openjazz_reg.rsc"
+"\epoc32\data\z\resource\apps\openjazz.mif"-"!:\resource\apps\openjazz.mif"
+"..\..\openjazz.000"-"c:\data\openjazz\openjazz.000"
+
+""-"c:\data\openjazz\sdl.ini",FN
+""-"c:\data\openjazz\openjazz.cfg",FN
+; Required files
+; None
+; Component .sis files
+; None
+
