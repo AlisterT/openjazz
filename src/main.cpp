@@ -68,7 +68,7 @@ int loadMain (int argc, char *argv[]) {
 
 	File* file;
 	unsigned char* pixels;
-	int count, x, y;
+	int count;
 	int screenW, screenH;
 	int scaleFactor;
 #ifndef FULLSCREEN_ONLY

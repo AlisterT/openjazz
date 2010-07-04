@@ -405,7 +405,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (throwY < y) && (event != LPE_FLOAT)) {
+	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1) && (throwY < y) && (event != LPE_FLOAT)) {
 
 		throwY = TTOF(256);
 		if (dy < 0) dy = 0;

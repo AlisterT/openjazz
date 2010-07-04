@@ -473,7 +473,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 		case 85: // Red spring
 
-			throwY = y - TTOF(7);
+			throwY = y - TTOF(8);
 			dx = 0;
 			event = LPE_SPRING;
 

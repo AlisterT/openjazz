@@ -527,6 +527,8 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 		pitch = createInt(aBuffer + 8403 + 80 + (count << 2));
 		height = createInt(aBuffer + 8403 + 112 + (count << 2));
 
+		if (pitch & 3) pitch += 4;
+
 		if (aBuffer[8403 + 40 + count]) {
 
 			layers[count] = new JJ2Layer(width, height, flags);
