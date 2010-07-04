@@ -36,7 +36,7 @@ class JJ2Event : public Movable {
 		unsigned char type;
 		unsigned char data[3];
 		unsigned char hits;  // Number of times the event has been shot
-		int           time;  /* Point at which the event will do something, e.g. terminate */
+		int           endTime;  // Point at which the event will terminate
 		unsigned char anim;
 		unsigned char frame;
 		unsigned int  flashTime;

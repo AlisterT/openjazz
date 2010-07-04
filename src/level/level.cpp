@@ -632,12 +632,12 @@ int Level::play () {
 
 				} else if (timeBonus - count >= 0) {
 
-					localPlayer->addScore(count);
+					localPlayer->addScore(count * 10);
 					timeBonus -= count;
 
 				} else {
 
-					localPlayer->addScore(timeBonus);
+					localPlayer->addScore(timeBonus * 10);
 					timeBonus = 0;
 
 				}

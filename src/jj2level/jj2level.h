@@ -59,7 +59,7 @@ typedef struct {
 typedef struct {
 
 	unsigned char type;
-	int property;
+	int properties;
 
 } JJ2Modifier;
 
@@ -92,6 +92,7 @@ class JJ2Layer {
 };
 
 class JJ2Event;
+class JJ2LevelPlayer;
 
 class JJ2Level : public BaseLevel {
 
@@ -129,7 +130,6 @@ class JJ2Level : public BaseLevel {
 
 		bool         checkMaskDown (fixed x, fixed y, bool drop);
 		bool         checkMaskUp   (fixed x, fixed y);
-		bool         checkSpikes   (fixed x, fixed y);
 		Anim*        getAnim       (unsigned char anim);
 		JJ2Modifier* getModifier   (unsigned char gridX, unsigned char gridY);
 		Sprite*      getSprite     (unsigned char sprite);
@@ -137,6 +137,7 @@ class JJ2Level : public BaseLevel {
 		void         setFrame      (unsigned char gridX, unsigned char gridY, unsigned char frame);
 		void         setNext       (char* fileName);
 		void         setWaterLevel (unsigned char gridY);
+		void         warp          (JJ2LevelPlayer *player, int id);
 
 		void         receive       (unsigned char* buffer);
 

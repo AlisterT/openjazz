@@ -144,7 +144,7 @@ void JJ2Level::draw () {
 
 	// Show score
 	if (gameMode) gameMode->drawScore(font);
-	else panelSmallFont->showNumber(localPlayer->getScore(), 16, 8);
+	else panelSmallFont->showNumber(localPlayer->getScore(), 64, 8);
 
 
 	// Draw hearts

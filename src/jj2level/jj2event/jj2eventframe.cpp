@@ -64,6 +64,16 @@ JJ2Event* JJ2Event::step (int ticks, int msps) {
 	}
 
 
+	// If the reaction time has expired
+	if (endTime && (ticks > endTime)) {
+
+		return remove();
+
+	}
+
+	if (endTime) return this;
+
+
 	// Handle contact with player
 
 	for (count = 0; count < nPlayers; count++) {
@@ -141,7 +151,7 @@ void JJ2Event::draw (int change) {
 
 		default:
 
-			drawRect(FTOI(drawX) + 8, FTOI(drawY) + 8, 16, 16, type);
+			if (!endTime) drawRect(FTOI(drawX) + 8, FTOI(drawY) + 8, 16, 16, type);
 			panelBigFont->showNumber(type, FTOI(drawX) + 24, FTOI(drawY) + 12);
 
 			return;

@@ -145,6 +145,7 @@ void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 	x = TTOF(startX);
 	y = TTOF(startY);
 	gems[0] = gems[1] = gems[2] = gems[3] = 0;
+	coins = 0;
 
 	return;
 
@@ -154,6 +155,24 @@ void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 void JJ2LevelPlayer::addGem (int colour) {
 
 	gems[colour]++;
+
+	return;
+
+}
+
+
+void JJ2LevelPlayer::centreX () {
+
+	x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+
+	return;
+
+}
+
+
+void JJ2LevelPlayer::centreY () {
+
+	y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
 
 	return;
 
@@ -307,16 +326,62 @@ void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 }
 
 
-bool JJ2LevelPlayer::takeEvent (JJ2Event* event, unsigned int ticks) {
-
-	return true;
-
-}
-
-
 bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps) {
 
-	switch (touched->getType()) {
+	unsigned char type;
+	bool fullPickup = false;
+
+	type = touched->getType();
+
+	switch (type) {
+
+		case 34: // Ammo
+
+			player->addAmmo(2, 3);
+			player->addScore(100);
+
+			return true;
+
+		case 36: // Ammo
+
+			player->addAmmo(1, 3);
+			player->addScore(100);
+
+			return true;
+
+		case 37: // Ammo
+
+			player->addAmmo(0, 3);
+			player->addScore(100);
+
+			return true;
+
+		case 38: // TNT
+
+			player->addAmmo(3, 3);
+			player->addScore(100);
+
+			return true;
+
+		case 44:
+
+			coins++;
+			player->addScore(500);
+
+			return true;
+
+		case 45:
+
+			coins += 5;
+			player->addScore(1000);
+
+			return true;
+
+		case 59: // Board
+
+			floating = true;
+
+			return true;
 
 		case 60: // Frozen green spring
 
@@ -326,6 +391,12 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			break;
 
+		case 61: // Rapid fire
+
+			player->fireSpeed++;
+
+			return true;
+
 		case 62: // Spring crate
 
 			throwY = y - TTOF(18);
@@ -333,6 +404,66 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 			event = LPE_SPRING;
 
 			break;
+
+		case 63: // Red gem
+
+			gems[0]++;
+			player->addScore(100);
+
+			return true;
+
+		case 64: // Green gem
+
+			gems[1]++;
+			player->addScore(100);
+
+			return true;
+
+		case 65: // Blue gem
+
+			gems[2]++;
+			player->addScore(100);
+
+			return true;
+
+		case 66: // Purple gem
+
+			gems[3]++;
+			player->addScore(100);
+
+			return true;
+
+		case 72: // Carrot
+
+			if ((energy < 5) || fullPickup) {
+
+				if (energy < 5) energy++;
+
+				player->addScore(200);
+
+				return true;
+
+			}
+
+			break;
+
+		case 73: // Full carrot
+
+			if ((energy < 5) || fullPickup) {
+
+				energy = 5;
+
+				return true;
+
+			}
+
+			break;
+
+		case 80: // 1-up
+
+			player->addLife();
+
+			return true;
 
 		case 83: // Checkpoint
 
@@ -364,7 +495,62 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			break;
 
+		case 88: //Invincibility
+
+			reaction = JJ2PR_INVINCIBLE;
+			reactionTime = ticks + PRT_INVINCIBLE;
+
+			return true;
+
+		case 91: // Horizontal red spring
+
+			if (true) throwX = x + TTOF(7);
+			else throwX = x - TTOF(7);
+
+			dy = 0;
+
+			break;
+
+		case 92: // Horizontal green spring
+
+			if (true) throwX = x + TTOF(14);
+			else throwX = x - TTOF(14);
+
+			dy = 0;
+
+			break;
+
+		case 93: // Horizontal blue spring
+
+			if (true) throwX = x + TTOF(18);
+			else throwX = x - TTOF(18);
+
+			dy = 0;
+
+			break;
+
+		case 96: // Helicarrot
+
+			floating = true;
+
+			return true;
+
+		case 192: // Gem ring
+
+			gems[0] += 8;
+
+			return true;
+
 		default:
+
+			if (((type >= 141) && (type <= 147)) || ((type >= 154) && (type <= 182))) {
+
+				// Food
+				player->addScore(50);
+
+				return true;
+
+			}
 
 			break;
 

@@ -577,10 +577,13 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 			count = bBuffer[((y * width) + x) << 2];
 
-			if ((count < 33) || (count == 230)) {
+			if ((count < 33) || (count == 206) || (count == 230) || (count == 240)) {
 
 				mods[y][x].type = count;
-				mods[y][x].property = bBuffer[(((y * width) + x) << 2) + 1];
+				mods[y][x].properties =
+					(bBuffer[(((y * width) + x) << 2) + 1] >> 4) +
+					(bBuffer[(((y * width) + x) << 2) + 2] << 4) +
+					(bBuffer[(((y * width) + x) << 2) + 3] << 12);
 
 				if (count == 29) {
 

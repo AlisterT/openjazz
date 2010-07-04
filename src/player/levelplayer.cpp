@@ -534,7 +534,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 	}
 
-	player->addScore(set[E_ADDEDSCORE]);
+	player->addScore(set[E_ADDEDSCORE] * 10);
 
 	// Add to player's enemy/item tally
 	// If the event hurts and can be killed, it is an enemy

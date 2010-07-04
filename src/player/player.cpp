@@ -241,7 +241,7 @@ bool Player::getControl (int control) {
 
 void Player::addScore (int addedScore) {
 
-	score += addedScore * 10;
+	score += addedScore;
 
 	return;
 

@@ -142,8 +142,8 @@
 #define PYS_SINK  ITOF(150)
 #define PYS_JUMP  ITOF(-350)
 
-#define PXS_POLE   ITOF(3000)
-#define PYS_POLE   ITOF(3000)
+#define PXS_POLE   ITOF(500)
+#define PYS_POLE   ITOF(500)
 #define PYS_SPRING ITOF(-500)
 
 // Player accelerations
@@ -198,6 +198,11 @@ class JJ2LevelPlayer : public Movable {
 		unsigned int      fastFeetTime;
 		unsigned int      stopTime;
 		int               gems[4];
+		int               coins;
+
+		void              centreX ();
+		void              centreY ();
+		void              modify  (JJ2Modifier* nextMod, unsigned int ticks);
 
 	public:
 		Player* player;
@@ -220,7 +225,6 @@ class JJ2LevelPlayer : public Movable {
 		JJ2PlayerReaction reacted     (unsigned int ticks);
 		void              setPosition (fixed newX, fixed newY);
 		void              setSpeed    (fixed newDx, fixed newDy);
-		bool              takeEvent   (JJ2Event* event, unsigned int ticks);
 		bool              touchEvent  (JJ2Event* touched, unsigned int ticks, int msps);
 
 		void              send        (unsigned char* buffer);

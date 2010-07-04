@@ -134,26 +134,6 @@ bool JJ2Level::checkMaskDown (fixed x, fixed y, bool drop) {
 }
 
 
-bool JJ2Level::checkSpikes (fixed x, fixed y) {
-
-	int tX, tY;
-
-	tX = FTOT(x);
-	tY = FTOT(y);
-
-	// Anything off the edge of the map is not spikes
-	if ((x < 0) || (y < 0) || (tX >= layer->getWidth()) || (tY >= layer->getHeight()))
-		return false;
-
-	// Event 2 is spikes
-	if (mods[tY][tX].type != 2) return false;
-
-	// Check the mask in the tile in question
-	return (layer->getFlipped(tX, tY)? flippedMask: mask)[(layer->getTile(tX, tY) << 10) + ((y >> 5) & 992) + ((x >> 10) & 31)];
-
-}
-
-
 void JJ2Level::setNext (char* fileName) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -249,6 +229,29 @@ void JJ2Level::setWaterLevel (unsigned char gridY) {
 fixed JJ2Level::getWaterLevel () {
 
 	return waterLevel;
+
+}
+
+
+void JJ2Level::warp (JJ2LevelPlayer *player, int id) {
+
+	int x, y;
+
+	for (y = 0; y < layer->getHeight(); y++) {
+
+		for (x = 0; x < layer->getWidth(); x++) {
+
+			if ((mods[y][x].type == 240) && ((mods[y][x].properties & 255) == id)) {
+
+				player->setPosition(TTOF(x), TTOF(y));
+
+				return;
+
+			}
+
+		}
+
+	}
 
 }
 

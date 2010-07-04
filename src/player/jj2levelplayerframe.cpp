@@ -39,35 +39,176 @@
 #include "util.h"
 
 
+void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
+
+	switch (nextMod->type) {
+
+		case 2: // Spikes
+
+			if (jj2Level->checkMaskDown(x + PXO_MID, y + F1, false))
+				hit(NULL, ticks);
+
+			break;
+
+		case 4: // Hook
+
+			dx = 0;
+
+			break;
+
+		case 6: // H-pole
+
+			if (!stopTime) {
+
+				// Catch player
+				if (nextMod != mod) {
+
+					centreX();
+					centreY();
+					stopTime = ticks + 1000;
+
+				}
+
+			} else if (ticks > stopTime) {
+
+				dx = (dx > 0) ? PXS_POLE: -PXS_POLE;
+				stopTime = 0;
+
+			}
+
+			break;
+
+		case 7: // V-pole
+
+			if (!stopTime) {
+
+				// Catch player
+				if (nextMod != mod) {
+
+					centreX();
+					centreY();
+					stopTime = ticks + 1000;
+
+				}
+
+			} else if (ticks > stopTime) {
+
+				if (dy < 0) {
+
+					throwY = y - TTOF(16);
+					dy = -PYS_POLE;
+
+				} else {
+
+					dy = PYS_POLE;
+
+				}
+
+				stopTime = 0;
+
+			}
+
+			break;
+
+		case 8: // Fly off
+
+			floating = false;
+
+			break;
+
+		case 17: // End of level
+		case 18: // End of level
+
+			if (!energy) return;
+
+			if (!gameMode) {
+
+				if (game) game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+
+				jj2Level->setStage(LS_END);
+
+			} else if (!(gameMode->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID)))) return;
+
+			break;
+
+		case 206: // Sucker tube
+
+			dx = (nextMod->properties & 0x40) ? -((nextMod->properties << 15) & 0x1F8000): ((nextMod->properties << 15) & 0x1F8000);
+			dy = (nextMod->properties & 0x2000) ? -((nextMod->properties << 8) & 0x1F8000): ((nextMod->properties << 8) & 0x1F8000);
+
+			if (dx) centreY();
+			if (dy) centreX();
+
+			break;
+
+		case 230: // Warp
+
+			if (!stopTime) {
+
+				// Catch player
+				if (coins >= ((nextMod->properties >> 8) & 255)) stopTime = ticks + 1000;
+
+			} else if (ticks > stopTime) {
+
+				coins -= (nextMod->properties >> 8) & 255;
+				jj2Level->warp(this, nextMod->properties & 255);
+
+				stopTime = 0;
+
+			}
+
+			break;
+
+		default:
+
+			stopTime = 0;
+
+			break;
+
+	}
+
+	mod = nextMod;
+
+	return;
+
+}
+
+
 void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	JJ2Modifier* nextMod;
 	bool drop, platform;
 
 
-	nextMod = jj2Level->getModifier(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
-
-
 	// Respond to controls, unless the player has been killed
 
-	// If the player has been killed, drop but otherwise do not move
+	// If the player has been killed, do not move
 	if (!energy) {
 
 		dx = 0;
-
-		if (floating) dy = 0;
-		else {
-
-			dy += PYA_GRAVITY * msps;
-			if (dy > PYS_FALL) dy = PYS_FALL;
-
-		}
+		dy = 0;
 
 		animType = facing? PA_RDIE: PA_LDIE;
 
 		return;
 
 	}
+
+
+	// Get overlapping modifier
+	nextMod = jj2Level->getModifier(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+
+
+	if (stopTime) {
+
+		// Can't control player, so just apply modifier
+
+		modify(nextMod, ticks);
+
+		return;
+
+	}
+
 
 	if (player->pcontrols[C_RIGHT]) {
 
@@ -283,134 +424,8 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	}
 
 
-	// Handle modifiers
-
-	switch (nextMod->type) {
-
-		case 4: // Hook
-
-			dx = 0;
-
-			break;
-
-		case 6: // H-pole
-
-			if (!stopTime) {
-
-				// Catch player
-				if (nextMod != mod) {
-
-					dy = 0;
-					x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
-					y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
-					stopTime = ticks + 1000;
-
-				}
-
-			} else if (ticks < stopTime) {
-
-				dy = 0;
-				x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
-				y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
-
-			} else {
-
-				dx = (dx > 0) ? PXS_POLE: -PXS_POLE;
-				stopTime = 0;
-
-			}
-
-			break;
-
-		case 7: // V-pole
-
-			if (!stopTime) {
-
-				// Catch player
-				if (nextMod != mod) {
-
-					dx = 0;
-					x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
-					y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
-					stopTime = ticks + 1000;
-
-				}
-
-			} else if (ticks < stopTime) {
-
-				dx = 0;
-				x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
-				y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
-
-			} else {
-
-				if (dy < 0) {
-
-					throwY = y - TTOF(16);
-					dy = -PYS_POLE;
-
-				} else {
-
-					dy = PYS_POLE;
-
-				}
-
-				stopTime = 0;
-
-			}
-
-			break;
-
-		case 8: // Fly off
-
-			floating = false;
-
-			break;
-
-		case 17: // End of level
-		case 18: // End of level
-
-			if (!energy) return;
-
-			if (!gameMode) {
-
-				if (game) game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
-
-				jj2Level->setStage(LS_END);
-
-			} else if (!(gameMode->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID)))) return;
-
-			break;
-
-		case 230: // Warp
-
-			if (!stopTime) {
-
-				// Catch player
-				dx = 0;
-				dy = 0;
-				stopTime = ticks + 1000;
-
-			} if (ticks > stopTime) {
-
-				// TODO: Find corresponding warp target
-				//x = TTOF();
-				//y = TTOF();
-				stopTime = 0;
-
-			}
-
-			break;
-
-		default:
-
-			stopTime = 0;
-
-			break;
-
-	}
-
-	mod = nextMod;
+	// Apply modifier
+	modify(nextMod, ticks);
 
 
 	// Limit speed
@@ -540,6 +555,9 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 	fixed pdx, pdy;
 	int count;
 	bool drop;
+
+
+	if (stopTime) return;
 
 
 	// Apply as much of the trajectory as possible, without going into the
@@ -723,13 +741,6 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 	if (jj2Level->getStage() == LS_END) return;
 
 
-	// Handle spikes
-	if (jj2Level->checkSpikes(x + PXO_MID, y + PYO_TOP - F1) ||
-		jj2Level->checkSpikes(x + PXO_MID, y + F1) ||
-		jj2Level->checkSpikes(x + PXO_L - F1, y + PYO_MID) ||
-		jj2Level->checkSpikes(x + PXO_R + F1, y + PYO_MID)) hit(NULL, ticks);
-
-
 	return;
 
 }
@@ -794,8 +805,8 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	// Get position
 
-	drawX = getDrawX(change);
-	drawY = getDrawY(change);
+	drawX = getDrawX(stopTime? 0: change);
+	drawY = getDrawY(stopTime? 0: change);
 
 
 	// Choose sprite
@@ -883,6 +894,8 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 		panelBigFont->showString(player->name,
 			FTOI(drawX + PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
 			FTOI(drawY - F32 - F16));
+
+	//panelBigFont->showNumber(mod->properties, FTOI(drawX) + 24, FTOI(drawY) + 12);
 
 	return;
 

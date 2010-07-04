@@ -45,6 +45,7 @@ JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY,
 	data[2] = properties[3];
 
 	hits = 0;
+	endTime = 0;
 
 	return;
 
@@ -59,7 +60,7 @@ JJ2Event::~JJ2Event () {
 
 void JJ2Event::destroy (unsigned int ticks) {
 
-	time = ticks + 1000;
+	endTime = ticks + 1000;
 
 	return;
 
