@@ -180,7 +180,7 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) {
 
 	animType = E_LEFTANIM;
-	stage = 1;
+	stage = 0;
 	direction = 1;
 	shoot = false;
 
