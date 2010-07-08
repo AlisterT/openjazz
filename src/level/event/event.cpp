@@ -270,6 +270,9 @@ Anim* Event::getAnim (unsigned char property) {
 		case E_LSHOOTANIM:
 		case E_RSHOOTANIM:
 
+			if (getProperty(property) < 0)
+				return level->getAnim(getProperty(property) + 128);
+
 			return level->getAnim(getProperty(property));
 
 		default:

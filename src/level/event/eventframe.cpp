@@ -963,23 +963,16 @@ void Event::draw (unsigned int ticks, int change) {
 	fixed changeX = getDrawX(change);
 	fixed changeY = getDrawY(change);
 
+	anim = getAnim(animType);
 
 	// Check if an explosive effect should be drawn
 	drawExplosion = false;
 	if (set[animType] < 0) {
 
-		anim = level->getAnim(set[animType] + 128);
-
 		// Explosions may only occur with finish animations
 		drawExplosion = (animType == E_RFINISHANIM || animType == E_LFINISHANIM);
 
 	}
-	else {
-
-		anim = level->getAnim(set[animType]);
-
-	}
-
 
 	// Decide on the frame to draw
 	anim->setFrame(frame + gridX + gridY, true);

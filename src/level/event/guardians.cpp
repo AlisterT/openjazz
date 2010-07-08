@@ -26,13 +26,16 @@
 
 
 #include "../level.h"
+#include "../bullet.h"
 #include "guardians.h"
 
 #include "io/gfx/video.h"
 #include "player/player.h"
 
+#include "util.h"
 
-DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) {
+
+Guardian::Guardian(unsigned char gX, unsigned char gY) {
 
 	x = TTOF(gX);
 	y = TTOF(gY + 1);
@@ -45,6 +48,13 @@ DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) {
 	flashTime = 0;
 
 	stage = 0;
+
+	return;
+
+}
+
+
+DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) : Guardian(gX, gY) {
 
 	return;
 
@@ -166,4 +176,233 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 }
 
+
+MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) {
+
+	animType = E_LEFTANIM;
+	stage = 1;
+	direction = 1;
+	shoot = false;
+
+	return;
+
+}
+
+
+/*bool MedGuardian::overlap(fixed left, fixed top, fixed width, fixed height) {
+
+	return false;
+
+}*/
+
+
+Event* MedGuardian::step(unsigned int ticks, int msps) {
+
+	Anim *anim = getAnim(animType);
+
+	if (level->getEventHits(gridX, gridY) == getProperty(E_HITSTOKILL) / 2)
+ 		stage = 1;
+
+	fixed sin = fSin(ticks / 2);
+	fixed cos = fCos(ticks / 2);
+
+	// Stage 0: Move in an eight shape and fire the occasional shot
+
+	if (stage == 0) {
+
+		if (direction == 1) {
+
+			// Lower right part of the eight
+			animType = E_LEFTANIM;
+
+			dx = TTOF(gridX) + (sin * 96) - x + ITOF(96);
+			dy = TTOF(gridY) - (cos * 64) - y;
+
+			if (cos > 0) direction = 2;
+
+		}
+
+		if (direction == 2) {
+
+			// Upper left part of the eight
+			animType = E_LEFTANIM;
+
+			dx = TTOF(gridX) - (sin * 96) - x - ITOF(96);
+			dy = TTOF(gridY) - (cos * 64) - y;
+
+			if (cos < 0) direction = 3;
+
+		}
+
+		if (direction == 3) {
+
+			// Lower left part of the eight
+			animType = E_RIGHTANIM;
+
+			dx = TTOF(gridX) - (sin * 96) - x - ITOF(96);
+			dy = TTOF(gridY) - (cos * 64) - y;
+
+			if (cos > 0) direction = 4;
+
+		}
+
+		if (direction == 4) {
+
+			// Upper right part of the eight
+			animType = E_RIGHTANIM;
+
+			dx = TTOF(gridX) + (sin * 96) - x + ITOF(96);
+			dy = TTOF(gridY) - (cos * 64) - y;
+
+			if (cos < 0) direction = 1;
+
+		}
+
+		// Decide if there should be a shot
+		if ((ticks % (getProperty(E_BULLETSP) * 25) >
+				(unsigned int)(getProperty(E_BULLETSP) * 25) - T_SHOOT)) {
+
+			level->setEventTime(gridX, gridY, ticks + T_SHOOT);
+			shoot = true;
+
+		}
+
+		// Shoot if there is a shot
+		if (level->getEventTime(gridX, gridY) &&
+				(ticks > level->getEventTime(gridX, gridY)) &&
+				shoot) {
+
+			if ((getProperty(E_BULLET) < 32) &&
+					(level->getBullet(getProperty(E_BULLET))[B_SPRITE] != 0))
+				level->bullets = new Bullet(
+						x + anim->getAccessoryShootX(),
+						y + anim->getAccessoryShootY(),
+						getProperty(E_BULLET), (animType != E_LEFTANIM), ticks);
+
+			shoot = false;
+
+		}
+
+	}
+
+	// Stage 1: Hop back and forth destroying the bottom row of tiles
+
+	if (stage == 1) {
+
+		if (direction < 5) {
+
+			// Move up or down towards the starting position for hopping
+			if (y > TTOF(gridY) - ITOF(48))
+				direction = 5;
+			else
+				direction = 6;
+
+		}
+
+		// Move up to the correct height
+		if (direction == 5) {
+
+			if (y > TTOF(gridY) - ITOF(48)) {
+
+				dx = 0;
+				dy = ITOF(-2);
+
+			}
+			else direction = 7;
+
+		}
+
+		// Move down to the correct height
+		if (direction == 6) {
+
+			if (y < TTOF(gridY) - ITOF(48)) {
+
+				dx = 0;
+				dy = ITOF(2);
+
+			} else direction = 7;
+
+		}
+
+		// Hop back and forth
+		if (direction == 7) {
+
+			if (level->checkMaskUp(x, y - anim->getOffset()) ||
+					level->checkMaskUp(x + getWidth(), y - anim->getOffset()))
+				animType = (animType == E_LEFTANIM) ? E_RIGHTANIM : E_LEFTANIM;
+
+			if (cos < 0)
+				dy = sin * -7;
+			else
+				dy = sin * 7;
+
+			if (animType == E_RIGHTANIM)
+				dx = ((cos < 0 ? -cos : cos) * 7);
+			else
+				dx = ((cos < 0 ? -cos : cos) * -7);
+
+		}
+
+
+		// Stand still and shake
+		/*if (direction == 6) {
+
+			// Set a timer
+			if (level->getEventTime(gridX, gridY) &&
+					(ticks > level->getEventTime(gridX, gridY))) {
+
+				dx = 0;
+				dy = 0;
+
+			}
+			else
+				level->setEventTime(gridX, gridY, ticks + 2000);
+		}*/
+
+	}
+
+	dx = ((dx << 10) / msps);
+	dy = ((dy << 10) / msps);
+	x += (dx * msps) >> 10;
+	y += (dy * msps) >> 10;
+
+	return this;
+
+}
+
+
+void MedGuardian::draw(unsigned int ticks, int change) {
+
+	Anim *anim;
+	Anim *accessory;
+
+	if (next) next->draw(ticks, change);
+
+	fixed xChange = getDrawX(change);
+	fixed yChange = getDrawY(change);
+
+
+	if (getProperty(E_ANIMSP))
+		frame = ticks / (getProperty(E_ANIMSP) * 40);
+	else
+		frame = ticks / 20;
+
+
+	if (stage == 0)
+		anim = getAnim(animType);
+	else
+		anim = getAnim(animType == E_LEFTANIM ? E_LFINISHANIM : E_RFINISHANIM);
+
+
+	anim->setFrame(frame + gridX + gridY, true);
+	anim->draw(xChange, yChange);
+
+	accessory = anim->getAccessory();
+	accessory->setFrame(frame + gridX + gridY, true);
+	accessory->disableDefaultOffset();
+	accessory->draw(xChange + (anim->getAccessoryX()), yChange + anim->getAccessoryY());
+
+	return;
+
+}
 

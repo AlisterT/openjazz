@@ -84,6 +84,12 @@ int Level::step () {
 
 							break;
 
+						case 41:
+
+							events = new MedGuardian(x, y);
+
+							break;
+
 						case 60:
 
 							events = new DeckGuardian(x, y);

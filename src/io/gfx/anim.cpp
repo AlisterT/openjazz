@@ -96,7 +96,7 @@ int Anim::getHeight () {
 
 fixed Anim::getShootX () {
 
-	return ITOF(shootX + xOffsets[frame]);
+	return ITOF(shootX + (xOffsets[frame] << 2));
 
 }
 
@@ -108,12 +108,47 @@ fixed Anim::getShootY () {
 }
 
 
+fixed Anim::getAccessoryX () {
+
+	return ITOF(accessoryX << 2);
+
+}
+
+
+fixed Anim::getAccessoryY () {
+
+	return ITOF(accessoryY - yOffset);
+
+}
+
+
+fixed Anim::getAccessoryShootX () {
+
+	return ITOF(shootX + (accessoryX << 2) + xOffsets[frame]);
+
+}
+
+
+fixed Anim::getAccessoryShootY () {
+
+	return ITOF(shootY + accessoryY + yOffsets[frame] - yOffset);
+
+}
+
+
 fixed Anim::getOffset () {
 
 	if (!ignoreDefaultYOffset && yOffset == 0)
 		return ITOF(yOffset) + TTOF(1);
 
 	return ITOF(yOffset);
+
+}
+
+
+Anim* Anim::getAccessory() {
+
+	return level->getAnim(accessory);
 
 }
 

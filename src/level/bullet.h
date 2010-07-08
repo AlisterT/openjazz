@@ -70,6 +70,7 @@ class Bullet : public Movable {
 		Bullet  (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
 		Bullet  (Event* sourceEvent, bool facing, unsigned int ticks);
 		Bullet  (Bird* sourceBird, bool lower, unsigned int ticks);
+		Bullet  (fixed xStart, fixed yStart, int bullet, bool facing, unsigned int ticks);
 		~Bullet ();
 
 		LevelPlayer* getSource  ();

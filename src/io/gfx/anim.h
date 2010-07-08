@@ -61,7 +61,12 @@ class Anim {
 		int   getHeight             ();
 		fixed getShootX             ();
 		fixed getShootY             ();
+		fixed getAccessoryX         ();
+		fixed getAccessoryY         ();
+		fixed getAccessoryShootX    ();
+		fixed getAccessoryShootY    ();
 		fixed getOffset             ();
+		Anim* getAccessory			();
 		void  draw                  (fixed x, fixed y);
 		void  drawScaled            (fixed x, fixed y, fixed scale);
 		void  disableDefaultOffset  ();

@@ -29,10 +29,19 @@
 
 // Class
 
-class DeckGuardian : public Event {
 
-	private:
+class Guardian : public Event {
+
+	protected:
 		int stage;
+
+	public:
+		Guardian (unsigned char gX, unsigned char gY);
+
+};
+
+
+class DeckGuardian : public Guardian {
 
 	public:
 		DeckGuardian (unsigned char gX, unsigned char gY);
@@ -42,6 +51,23 @@ class DeckGuardian : public Event {
 		void   draw    (unsigned int ticks, int change);
 
 };
+
+
+class MedGuardian : public Guardian {
+
+	private:
+		unsigned char direction;
+		bool shoot;
+
+	public:
+		MedGuardian (unsigned char gX, unsigned char gY);
+
+		//bool   overlap (fixed left, fixed top, fixed width, fixed height);
+		Event* step    (unsigned int ticks, int msps);
+		void   draw    (unsigned int ticks, int change);
+
+};
+
 
 #endif
 

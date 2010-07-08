@@ -114,6 +114,29 @@ Bullet::Bullet (Event* sourceEvent, bool facing, unsigned int ticks) {
 }
 
 
+Bullet::Bullet (fixed xStart, fixed yStart, int bullet, bool facing, unsigned int ticks) {
+
+	// Properties based on a given bullet type and starting position
+
+	next = level->bullets;
+	source = NULL;
+	type = bullet;
+	direction = facing? 1: 0;
+	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
+
+	x = xStart;
+	y = yStart;
+	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
+	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
+	time = ticks + T_BULLET;
+
+	level->playSound(level->getBullet(type)[B_STARTSOUND]);
+
+	return;
+
+}
+
+
 Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 
 	// Properties based on the bird and its player
