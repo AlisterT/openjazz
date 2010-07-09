@@ -203,8 +203,10 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 	fixed sin = fSin(ticks / 2);
 	fixed cos = fCos(ticks / 2);
 
-	if (level->getEventHits(gridX, gridY) == getProperty(E_HITSTOKILL) / 2)
+	if (level->getEventHits(gridX, gridY) >= getProperty(E_HITSTOKILL) / 2)
  		stage = 1;
+	if (level->getEventHits(gridX, gridY) >= getProperty(E_HITSTOKILL))
+		stage = 2;
 
 	// Stage 0: Move in an eight shape and fire the occasional shot
 
@@ -289,20 +291,19 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 	if (stage == 1) {
 
+		fixed startPos = TTOF(gridY) + ITOF(40);
+
 		if (direction < 5) {
 
 			// Move up or down towards the starting position for hopping
-			if (y > TTOF(gridY) + ITOF(48))
-				direction = 5;
-			else
-				direction = 6;
+			direction = (y > startPos) ? 5 : 6;
 
 		}
 
 		// Move up to the correct height
 		if (direction == 5) {
 
-			if (y > TTOF(gridY) + ITOF(40)) {
+			if (y > startPos) {
 
 				dx = 0;
 				dy = ITOF(-2);
@@ -315,7 +316,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 		// Move down to the correct height
 		if (direction == 6) {
 
-			if (y < TTOF(gridY) + ITOF(40)) {
+			if (y < startPos) {
 
 				dx = 0;
 				dy = ITOF(2);
@@ -324,44 +325,64 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 		}
 
-		// Wait until the cosinus is zero.
+		// Cosinus should be near zero before we start hopping.
 		if (direction == 7) {
 
 			dx = 0;
 			dy = 0;
 
-			if (cos > 0 && cos < 200) direction = 8;
+			if (cos > -100 && cos < 100) direction = 8;
 
 		}
 
 		// Start hopping
 		if (direction == 8) {
+
 			if (level->checkMaskUp(x, y) ||
 					level->checkMaskUp(x + getWidth(), y))
 				animType = (animType == E_LEFTANIM) ? E_RIGHTANIM : E_LEFTANIM;
 
-			dy = TTOF(gridY) + ITOF(40) - abs(cos * 96) - y;
+			dy = startPos - abs(cos * 96) - y;
+			dx = abs(cos * 6);
 
-			dx = -abs(cos * 6);
-			if (animType == E_RIGHTANIM)
+			if (animType == E_LEFTANIM)
 				dx *= -1;
+
+			if (cos < 0 &&
+					level->checkMaskDown(x + ITOF(anim->getWidth() / 2), y + TTOF(1)))
+				direction = 9;
+
 		}
 
+		// Destroy the block underneath
+		if (direction == 9) {
 
-		// Stand still and shake
-		/*if (direction == 6) {
+			// Shake a bit
+			dx = (FTOI(x) % 2) ? ITOF(1) : ITOF(-1);
+			dy = 0;
 
-			// Set a timer
-			if (level->getEventTime(gridX, gridY) &&
-					(ticks > level->getEventTime(gridX, gridY))) {
+			// Remove the tile
+			if (cos > 0 && cos < 100) {
 
-				dx = 0;
-				dy = 0;
+				level->setTile(
+						FTOT(x + ITOF((anim->getWidth() / 2))),
+						FTOT(y) + 1,
+						getProperty(E_MAGNITUDE));
+
+				direction = 8;
 
 			}
-			else
-				level->setEventTime(gridX, gridY, ticks + 2000);
-		}*/
+
+		}
+
+	}
+
+	// Stage 2: End of behavior
+
+	if (stage == 2) {
+
+		dx = 0;
+		dy = ITOF(4);
 
 	}
 
