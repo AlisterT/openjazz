@@ -200,11 +200,11 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 	Anim *anim = getAnim(animType);
 
-	if (level->getEventHits(gridX, gridY) == getProperty(E_HITSTOKILL) / 2)
- 		stage = 1;
-
 	fixed sin = fSin(ticks / 2);
 	fixed cos = fCos(ticks / 2);
+
+	if (level->getEventHits(gridX, gridY) == getProperty(E_HITSTOKILL) / 2)
+ 		stage = 1;
 
 	// Stage 0: Move in an eight shape and fire the occasional shot
 
@@ -292,7 +292,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction < 5) {
 
 			// Move up or down towards the starting position for hopping
-			if (y > TTOF(gridY) - ITOF(48))
+			if (y > TTOF(gridY) + ITOF(48))
 				direction = 5;
 			else
 				direction = 6;
@@ -302,7 +302,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 		// Move up to the correct height
 		if (direction == 5) {
 
-			if (y > TTOF(gridY) - ITOF(48)) {
+			if (y > TTOF(gridY) + ITOF(40)) {
 
 				dx = 0;
 				dy = ITOF(-2);
@@ -315,7 +315,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 		// Move down to the correct height
 		if (direction == 6) {
 
-			if (y < TTOF(gridY) - ITOF(48)) {
+			if (y < TTOF(gridY) + ITOF(40)) {
 
 				dx = 0;
 				dy = ITOF(2);
@@ -324,23 +324,27 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 		}
 
-		// Hop back and forth
+		// Wait until the cosinus is zero.
 		if (direction == 7) {
 
-			if (level->checkMaskUp(x, y - anim->getOffset()) ||
-					level->checkMaskUp(x + getWidth(), y - anim->getOffset()))
+			dx = 0;
+			dy = 0;
+
+			if (cos > 0 && cos < 200) direction = 8;
+
+		}
+
+		// Start hopping
+		if (direction == 8) {
+			if (level->checkMaskUp(x, y) ||
+					level->checkMaskUp(x + getWidth(), y))
 				animType = (animType == E_LEFTANIM) ? E_RIGHTANIM : E_LEFTANIM;
 
-			if (cos < 0)
-				dy = sin * -7;
-			else
-				dy = sin * 7;
+			dy = TTOF(gridY) + ITOF(40) - abs(cos * 96) - y;
 
+			dx = -abs(cos * 6);
 			if (animType == E_RIGHTANIM)
-				dx = ((cos < 0 ? -cos : cos) * 7);
-			else
-				dx = ((cos < 0 ? -cos : cos) * -7);
-
+				dx *= -1;
 		}
 
 
