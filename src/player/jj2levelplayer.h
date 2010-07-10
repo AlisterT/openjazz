@@ -73,44 +73,112 @@
 #define JJ2PCL_LEVEL5    16
 
 // Animations
-#define PA_LWALK    0
-#define PA_RWALK    1
-#define PA_LJUMP    2
-#define PA_RJUMP    3
-#define PA_LSPIN    4
-#define PA_RSPIN    5
-#define PA_LSHOOT   6
-#define PA_RSHOOT   7
-#define PA_LCROUCH  8
-#define PA_RCROUCH  9
-#define PA_LFALL    10
-#define PA_RFALL    11
-#define PA_LHURT    12
-#define PA_RHURT    13
-#define PA_LLEAN    14
-#define PA_RLEAN    15
-#define PA_LBOARD   16
-#define PA_RBOARD   17
-#define PA_LSTAND   18
-#define PA_RSTAND   19
-#define PA_LEAT     20
-#define PA_REAT     21
-#define PA_LEDGE    22
-#define PA_REDGE    23
-#define PA_LOOKUP   24
-#define PA_LOOKDOWN 25
-#define PA_LSWIM    26
-#define PA_RSWIM    27
-#define PA_LRUN     28
-#define PA_RRUN     29
-#define PA_LDIE     30
-#define PA_RDIE     31
-#define PA_LSTOP    32
-#define PA_RSTOP    33
-#define PA_LHALT    34 /* Yeah, I was wondering the same thing... */
-#define PA_RHALT    35
-#define PA_RSPRING  36
-#define PA_LSPRING  37 /* Surely these are the wrong way round? */
+#define PA_WOOZYSHAKE   0
+#define PA_BOARD        1
+#define PA_BOARDSW      2
+#define PA_STOMP        3
+#define PA_DEAD         4
+#define PA_DIE          5
+#define PA_CROUCH1      6
+#define PA_CROUCHED     7
+#define PA_CROUCHSHOOT  8
+#define PA_CROUCH2      9
+#define PA_EXIT1        10
+#define PA_VINE         11
+#define PA_EXIT2        12
+#define PA_FALL         13
+#define PA_STOMPING     14
+#define PA_LAND         15
+#define PA_STANDSHOOT   16
+#define PA_STANDSHOOTUP 17
+#define PA_WHIP1        18
+#define PA_UNFROG       19
+#define PA_MOUNT        20
+#define PA_HOOKWHIP     21
+#define PA_HOOKDIAG     22
+#define PA_HOOKSHOOTUP  23
+#define PA_HOOK1        24
+#define PA_HOOK2        25
+#define PA_HOOKWHIPUP   26
+#define PA_HOOKSHOOT    27
+#define PA_HELI         28
+#define PA_HELIWHIP     29
+#define PA_HELISHOOT    30
+#define PA_HPOLE        31
+#define PA_HURT1        32
+#define PA_WAIT1        33
+#define PA_WAIT2        34
+#define PA_WAIT3        35
+#define PA_WAIT4        36
+#define PA_WAIT5        37
+#define PA_FALLWHIP     38
+#define PA_FALLSHOOT    39
+#define PA_FLOAT1       40
+#define PA_FLOAT2       41
+#define PA_UP1          42
+#define PA_EDGE         43
+#define PA_CARRY        44
+#define PA_UNLOAD       45
+#define PA_LOAD         46
+#define PA_LOOKUP1      47
+#define PA_WALK45       48
+#define PA_WALK90       49
+#define PA_WALK135      50
+#define PA_WALK180      51
+#define PA_WALK225      52
+#define PA_WALK270      53
+#define PA_WALK315      54
+#define PA_WOOZYWALK    55
+#define PA_PUSH         56
+#define PA_WHIP2        57
+#define PA_EXIT3        58
+#define PA_SPEED1       59
+#define PA_SPEED2       60
+#define PA_FALLMOVE     61
+#define PA_MYSTERY1     62
+#define PA_JUMP2        63
+#define PA_FALLMOVEWHIP 64
+#define PA_MYSTERY2     65
+#define PA_JUMPSHOOTUP  66
+#define PA_BALL         67
+#define PA_WALKSHOOT    68
+#define PA_WALKDIAG     69
+#define PA_RUN          70
+#define PA_SPEEDRUN     71
+#define PA_STOP1        72
+#define PA_MYSTERY3     73
+#define PA_STOP2        74
+#define PA_UP2          75
+#define PA_STAND        76
+#define PA_POWER        77
+#define PA_POWEREND     78
+#define PA_POWERSTART   79
+#define PA_WOOZYSTAND   80
+#define PA_SWIMDOWN     81
+#define PA_SWIM         82
+#define PA_SWIMDIAGDOWN 83
+#define PA_SWIMDIAGUP   84
+#define PA_SWIMUP       85
+#define PA_VINESDIAG    86
+#define PA_WARPOUT      87
+#define PA_WARPFALLIN   88
+#define PA_WARPFALL     89
+#define PA_WARPFALLOUT  90
+#define PA_WARPIN       91
+#define PA_VPOLE        92
+#define PA_CROUCH3      93
+#define PA_CROUCH4      94
+#define PA_FALLSTRANGE1 95
+#define PA_HURT2        96
+#define PA_WAIT6        97
+#define PA_FALLSTRANGE2 98
+#define PA_CROUCH5      99
+#define PA_LOOKUP2      100
+#define PA_WALK2        101
+#define PA_WORRY        102
+#define PA_LOOKUP3      103
+
+#define JJ2PANIMS       104 /* Number of player animations. */
 
 // Player reaction times
 #define PRT_HURT       1000
@@ -180,9 +248,10 @@ class JJ2LevelPlayer : public Movable {
 
 	private:
 		bool              bird; // Placeholder for eventual JJ2Bird object
+		Anim*             anims;
+		Anim*             flippedAnims;
 		JJ2Modifier*      mod;
 		SDL_Color         palette[256];
-		char              anims[PANIMS];
 		int               energy;
 		JJ2Shield         shield;
 		int               floating; /* 0 = normal, 1 = helicopter ears, 2 = boarding */
@@ -207,13 +276,13 @@ class JJ2LevelPlayer : public Movable {
 	public:
 		Player* player;
 
-		JJ2LevelPlayer  (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird);
+		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
 		~JJ2LevelPlayer ();
 
 		void              reset       (unsigned char startX, unsigned char startY);
 
 		void              addGem      (int colour);
-		unsigned char     getAnim     ();
+		Anim*             getAnim     ();
 		int               getEnemies  ();
 		int               getEnergy   ();
 		bool              getFacing   ();

@@ -122,7 +122,7 @@ void JJ2Level::draw () {
 
 
 	// Show the events
-	if (events) events->draw(change);
+	if (events) events->draw(ticks, change);
 
 
 	// Show the players

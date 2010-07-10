@@ -39,7 +39,7 @@
 #include <string.h>
 
 
-LevelPlayer::LevelPlayer (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
+LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
 	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
 		PCO_LEVEL1, PCO_YELLOW, PCO_LEVEL2, PCO_ORANGE, PCO_LEVEL3, PCO_LEVEL4,
@@ -49,8 +49,7 @@ LevelPlayer::LevelPlayer (Player* parent, char* newAnims, unsigned char startX, 
 
 	player = parent;
 
-	if (newAnims) memcpy(anims, newAnims, PANIMS);
-	else memset(anims, 0, PANIMS);
+	memcpy(anims, newAnims, PANIMS * sizeof(Anim*));
 
 	if (hasBird) bird = new Bird(this, startX, startY - 2);
 	else bird = NULL;
@@ -165,7 +164,7 @@ void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
-unsigned char LevelPlayer::getAnim () {
+Anim* LevelPlayer::getAnim () {
 
 	return anims[animType];
 
@@ -680,13 +679,16 @@ void LevelPlayer::send (unsigned char *buffer) {
 
 void LevelPlayer::receive (unsigned char *buffer) {
 
+	int count;
+
 	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 
 		case MT_P_ANIMS:
 
-			memcpy(anims, (char *)buffer + 3, PANIMS);
+			for (count = 0; count < PANIMS; count++)
+				anims[count] = level->getAnim(buffer[MTL_P_ANIMS + count]);
 
 			break;
 

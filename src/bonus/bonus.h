@@ -60,6 +60,7 @@ class Bonus : public BaseLevel {
 		SDL_Surface*     tileSet;
 		SDL_Surface*     background;
 		Font*            font;
+		Sprite*          spriteSet;
 		Anim             animSet[BANIMS];
 		BonusGridElement grid[BLH][BLW];
 		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks

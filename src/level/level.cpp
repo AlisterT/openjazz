@@ -116,6 +116,8 @@ Level::~Level () {
 	delete[] sceneFile;
 	delete[] musicFile;
 
+	delete[] spriteSet;
+
 	SDL_FreeSurface(tileSet);
 
 	deletePanel();

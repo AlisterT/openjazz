@@ -44,7 +44,6 @@
 #define CHAR_WBAND 8
 
 // General
-#define PANIMS     38 /* Number of player animations. Is probably higher. */
 #define PCONTROLS   8 /* Number of player controls. */
 #define PCOLOURS    4 /* Number of configurable colour ranges */
 
@@ -79,6 +78,7 @@ enum PlayerEvent {
 
 // Classes
 
+class Anim;
 class LevelPlayer;
 class BonusPlayer;
 class JJ2LevelPlayer;
@@ -111,7 +111,7 @@ class Player {
 		void            init              (char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit            ();
 		void            reset             (unsigned char x, unsigned char y);
-		void            reset             (LevelType levelType, char* newAnims, unsigned char x, unsigned char y);
+		void            reset             (LevelType levelType, Anim** anims, unsigned char x, unsigned char y);
 
 		void            addLife           ();
 		void            addScore          (int addedScore);

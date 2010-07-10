@@ -36,19 +36,19 @@ class Sprite;
 class Anim {
 
 	private:
-		Sprite        *sprites[19];
-		bool		   ignoreDefaultYOffset;
+		Sprite**       sprites;
+		signed char*   xOffsets;
+		signed char*   yOffsets;
+		bool           ignoreDefaultYOffset;
 		signed char    shootX;
 		signed char    shootY;
-		signed char	   accessoryX;
-		signed char	   accessoryY;
+		signed char    accessoryX;
+		signed char    accessoryY;
 		signed char    yOffset;
-		signed char    xOffsets[19];
-		signed char    yOffsets[19];
-		unsigned char  frames;       // Number of frames
-		unsigned char  frame;        // Current frame
-		unsigned char  accessory;	 // Number of an animation that is an accessory to this animation
-									 // Most of the time accessories are used with guardians.
+		unsigned char  frames;    // Number of frames
+		unsigned char  frame;     // Current frame
+		unsigned char  accessory; // Number of an animation that is an accessory to this animation
+		                          // Most of the time accessories are used with guardians.
 
 	public:
 		Anim                        ();
@@ -66,7 +66,7 @@ class Anim {
 		fixed getAccessoryShootX    ();
 		fixed getAccessoryShootY    ();
 		fixed getOffset             ();
-		Anim* getAccessory			();
+		Anim* getAccessory          ();
 		void  draw                  (fixed x, fixed y);
 		void  drawScaled            (fixed x, fixed y, fixed scale);
 		void  disableDefaultOffset  ();

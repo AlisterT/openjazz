@@ -77,6 +77,15 @@ JJ2Level::~JJ2Level () {
 	delete[] musicFile;
 	delete[] nextLevel;
 
+	for (count = 0; count < nAnimSets; count++) {
+
+		if (animSets[count]) delete[] animSets[count];
+
+	}
+
+	delete[] animSets;
+	delete[] spriteSet;
+
 	SDL_FreeSurface(flippedTileSet);
 	SDL_FreeSurface(tileSet);
 
@@ -196,9 +205,9 @@ Sprite* JJ2Level::getSprite (unsigned char sprite) {
 }
 
 
-Anim* JJ2Level::getAnim (unsigned char anim) {
+Anim* JJ2Level::getAnim (int set, int anim, bool flipped) {
 
-	return animSet + anim;
+	return (flipped? flippedAnimSets: animSets)[set] + anim;
 
 }
 

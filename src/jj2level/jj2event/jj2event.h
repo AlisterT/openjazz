@@ -40,6 +40,7 @@ class JJ2Event : public Movable {
 		unsigned char anim;
 		unsigned char frame;
 		unsigned int  flashTime;
+		bool          facing;
 
 		JJ2Event* remove  ();
 		void      destroy (unsigned int ticks);
@@ -51,7 +52,7 @@ class JJ2Event : public Movable {
 		unsigned char getType ();
 
 		JJ2Event*     step    (int ticks, int msps);
-		void          draw    (int change);
+		void          draw    (unsigned int ticks, int change);
 
 };
 

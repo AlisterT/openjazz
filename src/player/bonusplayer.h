@@ -41,6 +41,8 @@
 #define PA_CRASH 5
 #define PA_OTHER 6
 
+#define BPANIMS  7
+
 // Player speeds
 #define PRS_REVERSE ITOF(-32)
 #define PRS_RUN     ITOF(64)
@@ -61,7 +63,7 @@ class BonusPlayer {
 
 	private:
 		SDL_Color     palette[256];
-		char          anims[PANIMS];
+		Anim*         anims[BPANIMS];
 		fixed         x, y, direction, dr;
 		unsigned char animType;
 		int           gems;
@@ -69,7 +71,7 @@ class BonusPlayer {
 	public:
 		Player* player;
 
-		BonusPlayer  (Player* parent, char* newAnims, unsigned char startX, unsigned char startY);
+		BonusPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY);
 		~BonusPlayer ();
 
 		void          addGem       ();
@@ -79,7 +81,7 @@ class BonusPlayer {
 		fixed         getY         ();
 
 		void          step         (unsigned int ticks, int msps, Bonus* bonus);
-		void          draw         (unsigned int ticks, Anim* animSet);
+		void          draw         (unsigned int ticks);
 
 };
 

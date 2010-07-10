@@ -64,7 +64,7 @@
 #define MTL_G_PROPS 8
 #define MTL_G_PJOIN 10
 #define MTL_G_PQUIT 3
-#define MTL_G_LEVEL 4
+#define MTL_G_LEVEL 4 /* + amount of level data */
 #define MTL_G_CHECK 4
 #define MTL_G_SCORE 3
 
@@ -72,7 +72,7 @@
 #define MTL_L_GRID  6
 #define MTL_L_STAGE 3
 
-#define MTL_P_ANIMS (PANIMS + 3)
+#define MTL_P_ANIMS 3 /* + PANIMS, BPANIMS, or 1 (for JJ2) */
 #define MTL_P_TEMP  46
 
 #define BUFFER_LENGTH 255 /* Should always be big enough to hold any message */
@@ -80,6 +80,7 @@
 
 // Classes
 
+class Anim;
 class File;
 
 class Game {
@@ -104,7 +105,7 @@ class Game {
 		virtual void score         (unsigned char team);
 		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY);
 		void         resetPlayer   (Player *player);
-		void         resetPlayer   (Player *player, LevelType levelType, char* anims);
+		void         resetPlayer   (Player *player, LevelType levelType, Anim** anims);
 
 };
 

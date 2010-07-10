@@ -97,12 +97,12 @@ JJ2Event* JJ2Event::step (int ticks, int msps) {
 }
 
 
-void JJ2Event::draw (int change) {
+void JJ2Event::draw (unsigned int ticks, int change) {
 
 	Anim* an;
 	int drawX, drawY;
 
-	if (next) next->draw(change);
+	if (next) next->draw(ticks, change);
 
 	// Don't draw if too far off-screen
 	if ((x < viewX - F64) || (y < viewY - F64) ||
@@ -115,37 +115,37 @@ void JJ2Event::draw (int change) {
 
 		case 60: // Frozen green spring
 
-			an = jj2Level->getAnim(35);
+			an = jj2Level->getAnim(92, 5, !facing);
 
 			break;
 
 		case 62: // Spring crate
 
-			an = jj2Level->getAnim(37);
+			an = jj2Level->getAnim(92, 0, !facing);
 
 			break;
 
 		case 83: // Checkpoint
 
-			an = jj2Level->getAnim(49);
+			an = jj2Level->getAnim(67, 14, !facing);
 
 			break;
 
 		case 85: // Red spring
 
-			an = jj2Level->getAnim(32);
+			an = jj2Level->getAnim(92, 7, !facing);
 
 			break;
 
 		case 86: // Green spring
 
-			an = jj2Level->getAnim(35);
+			an = jj2Level->getAnim(92, 5, !facing);
 
 			break;
 
 		case 87: // Blue spring
 
-			an = jj2Level->getAnim(37);
+			an = jj2Level->getAnim(92, 0, !facing);
 
 			break;
 
@@ -158,6 +158,7 @@ void JJ2Event::draw (int change) {
 
 	}
 
+	an->setFrame((int)ticks / 60, true);
 	an->draw(drawX, drawY);
 
 	return;

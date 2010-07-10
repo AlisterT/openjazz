@@ -84,6 +84,7 @@
 #define F_PANEL        "PANEL.000"
 #define F_SOUNDS       "SOUNDS.000"
 #define F_BONUS        "BONUS.000"
+#define F_ANIMS_J2A    "ANIMS.J2A"
 
 #define F_BONUS_0SC    "BONUS.0SC"
 #define F_END_0SC      "END.0SC"

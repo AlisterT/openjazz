@@ -100,6 +100,7 @@ class Level : public BaseLevel {
 		Event*        events;
 		char*         musicFile;
 		char*         sceneFile;
+		Sprite*       spriteSet;
 		Anim          animSet[ANIMS];
 		char          miscAnims[4];
 		signed char   bulletSet[BULLETS][BLENGTH];

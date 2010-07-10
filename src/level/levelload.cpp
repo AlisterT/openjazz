@@ -408,12 +408,13 @@ int Level::loadTiles (char* fileName) {
 }
 
 
-int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
+int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
-	File *file;
-	unsigned char *buffer;
-	const char *ext;
-	char *string;
+	Anim* pAnims[PANIMS];
+	File* file;
+	unsigned char* buffer;
+	const char* ext;
+	char* string;
 	int tiles;
 	int count, x, y, type;
 	unsigned char startX, startY;
@@ -874,35 +875,40 @@ int Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	// Load player's animation set references
 
 	buffer = file->loadRLE(PANIMS * 2);
-	string = new char[PANIMS + 3];
+	string = new char[MTL_P_ANIMS + PANIMS];
 
-	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
+	for (x = 0; x < PANIMS; x++) {
+
+		pAnims[x] = animSet + buffer[x << 1];
+		string[MTL_P_ANIMS + x] = buffer[x << 1];
+
+	}
 
 	delete[] buffer;
 
 	if (gameMode) {
 
-		string[0] = MTL_P_ANIMS;
+		string[0] = MTL_P_ANIMS + PANIMS;
 		string[1] = MT_P_ANIMS;
 		string[2] = 0;
 		game->send((unsigned char *)string);
 
 	}
 
+	delete[] string;
+
 	// Set the players' initial values
 	if (game) {
 
 		if (!checkpoint) game->setCheckpoint(startX, startY);
 
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_LEVEL, string + 3);
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_LEVEL, pAnims);
 
 	} else {
 
-		localPlayer->reset(LT_LEVEL, string + 3, startX, startY);
+		localPlayer->reset(LT_LEVEL, pAnims, startX, startY);
 
 	}
-
-	delete[] string;
 
 
 	// Load miscellaneous animations

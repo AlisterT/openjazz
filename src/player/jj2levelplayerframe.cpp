@@ -188,7 +188,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		dx = 0;
 		dy = 0;
 
-		animType = facing? PA_RDIE: PA_LDIE;
+		animType = PA_DIE;
 
 		return;
 
@@ -443,7 +443,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		if (ticks > fireTime) {
 
 			// Make sure bullet position is taken from correct animation
-			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
+			if (platform) animType = PA_STANDSHOOT;
 
 			// TODO: Create new bullet
 
@@ -494,55 +494,53 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	// Choose animation
 
 	if ((reaction == JJ2PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
-		animType = facing? PA_RHURT: PA_LHURT;
+		animType = PA_HURT1;
 
 	else if (y + PYO_MID > jj2Level->getWaterLevel())
-		animType = facing? PA_RSWIM: PA_LSWIM;
+		animType = PA_SWIM;
 
-	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
+	else if (floating) animType = PA_BOARD;
 
 	else if (dy < 0) {
 
-		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
-		else animType = facing? PA_RJUMP: PA_LJUMP;
+		if (event == LPE_SPRING) animType = PA_FLOAT1;
+		else animType = PA_JUMP2;
 
 	} else if (platform) {
 
 		if (dx) {
 
-			if (dx <= -PXS_RUN) animType = PA_LRUN;
-			else if (dx >= PXS_RUN) animType = PA_RRUN;
-			else if ((dx < 0) && facing) animType = PA_LSTOP;
-			else if ((dx > 0) && !facing) animType = PA_RSTOP;
-			else animType = facing? PA_RWALK: PA_LWALK;
+			if (dx <= -PXS_RUN) animType = PA_RUN;
+			else if (dx >= PXS_RUN) animType = PA_RUN;
+			else if ((dx < 0) && facing) animType = PA_STOP1;
+			else if ((dx > 0) && !facing) animType = PA_STOP1;
+			else animType = PA_WALK2;
 
 		} else if (!jj2Level->checkMaskDown(x + PXO_ML, y + F12, drop) &&
-			!jj2Level->checkMaskDown(x + PXO_L, y + F2, drop) /*&&
-			(event != 3) && (event != 4)*/)
-			animType = PA_LEDGE;
+			!jj2Level->checkMaskDown(x + PXO_L, y + F2, drop) &&
+			(event != LPE_PLATFORM))
+			animType = PA_EDGE;
 
 		else if (!jj2Level->checkMaskDown(x + PXO_MR, y + F12, drop) &&
-			!jj2Level->checkMaskDown(x + PXO_R, y + F2, drop) /*&&
-			(event != 3) && (event != 4)*/)
-			animType = PA_REDGE;
+			!jj2Level->checkMaskDown(x + PXO_R, y + F2, drop) &&
+			(event != LPE_PLATFORM))
+			animType = PA_EDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-			animType = PA_LOOKUP;
+			animType = PA_LOOKUP1;
 
 		else if (lookTime > 0) {
 
-			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
-			else animType = PA_LOOKDOWN;
+			if ((int)ticks < 1000 + lookTime) animType = PA_CROUCHED;
+			else animType = PA_CROUCH1;
 
 		}
 
-		else if (player->pcontrols[C_FIRE])
-			animType = facing? PA_RSHOOT: PA_LSHOOT;
+		else if (player->pcontrols[C_FIRE]) animType = PA_STANDSHOOT;
 
-		else
-			animType = facing? PA_RSTAND: PA_LSTAND;
+		else animType = PA_STAND;
 
-	} else animType = facing? PA_RFALL: PA_LFALL;
+	} else animType = PA_FALL;
 
 
 	return;
@@ -811,15 +809,14 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	// Choose sprite
 
-	an = jj2Level->getAnim(getAnim());
+	an = getAnim();
 	an->setFrame(frame, reaction != JJ2PR_KILLED);
 
 
 	// Show the player
 
 	// Use player colour
-	an->setPalette(palette, 23, 41);
-	an->setPalette(palette, 88, 8);
+	an->setPalette(palette, 16, 32);
 
 	// Flash on and off if hurt
 	if ((reaction != JJ2PR_HURT) || ((ticks / 30) & 2)) {

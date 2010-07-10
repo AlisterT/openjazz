@@ -46,76 +46,112 @@
 #define SKEY 254 /* Sprite colour key */
 
 
-void JJ2Level::loadSprite (File* file, Sprite* sprite) {
-
-	// TODO: Load sprites from JJ2 files
+void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite) {
 
 	unsigned char* pixels;
-	int pos, maskOffset;
 	int width, height;
+	int srcPos, dstPos, rle;
+	int x, y;
 
 	// Load dimensions
-	width = file->loadShort() << 2;
-	height = file->loadShort();
+	width = createShort(parameters);
+	height = createShort(parameters + 2);
 
-	file->seek(2, false);
+	if ((width == 0) || (height == 0)) {
 
-	maskOffset = file->loadShort();
+		sprite->clearPixels();
 
-	pos = file->loadShort() << 2;
-
-	// Sprites can be either masked or not masked.
-	if (maskOffset) {
-
-		// Masked
-
-		height++;
-
-		// Skip to mask
-		file->seek(maskOffset, false);
-
-		// Find the end of the data
-		pos += file->tell() + ((width >> 2) * height);
-
-		// Read scrambled, masked pixel data
-		pixels = file->loadPixels(width * height, SKEY);
-		sprite->setPixels(pixels, width, height, SKEY);
-
-		delete[] pixels;
-
-		file->seek(pos, true);
-
-	} else if (width) {
-
-		// Not masked
-
-		// Read scrambled pixel data
-		pixels = file->loadPixels(width * height);
-		sprite->setPixels(pixels, width, height, SKEY);
-
-		delete[] pixels;
+		return;
 
 	}
 
+
+	// Decompress pixels
+
+	pixels = new unsigned char[width * height];
+	memset(pixels, 0, width * height);
+
+	srcPos = createInt(parameters + 16);
+	dstPos = 0;
+
+	while (dstPos < width * height) {
+
+		rle = compressedPixels[srcPos];
+		srcPos++;
+
+		if (rle > 128) {
+
+			rle &= 127;
+
+			if (dstPos + rle < width * height)
+				memcpy(pixels + dstPos, compressedPixels + srcPos, rle);
+
+			srcPos += rle;
+			dstPos += rle;
+
+		} else if (rle == 128) {
+
+			rle = dstPos % width;
+
+			if (rle) dstPos = dstPos + width - rle;
+
+		} else {
+
+			dstPos += rle;
+
+		}
+
+	}
+
+
+	// Set sprite data
+	sprite->xOffset = createShort(parameters + 8);
+	sprite->yOffset = createShort(parameters + 10);
+	sprite->setPixels(pixels, width, height, 0);
+
+	// Flip sprite
+	for (y = 0; y < height; y++) {
+
+		for (x = 0; x < (width >> 1); x++) {
+
+			rle = pixels[(y * width) + x];
+			pixels[(y * width) + x] = pixels[(y * width) + (width - 1) - x];
+			pixels[(y * width) + (width - 1) - x] = rle;
+
+		}
+
+	}
+
+	// Set flipped sprite data
+	flippedSprite->xOffset = -createShort(parameters + 8) - width;
+	flippedSprite->yOffset = createShort(parameters + 10);
+	flippedSprite->setPixels(pixels, width, height, 0);
+
+	delete[] pixels;
 
 	return;
 
 }
 
 
-int JJ2Level::loadSprites (char * fileName) {
+int JJ2Level::loadSprites () {
 
-	// TODO: Load sprites from JJ2 files
+	File* file;
+	unsigned char* aBuffer;
+	unsigned char* bBuffer;
+	unsigned char* cBuffer;
+	int* setOffsets;
+	int aCLength, bCLength, cCLength, dCLength;
+	int aLength, bLength, cLength, dLength;
+	int setAnims, sprites, animSprites;
+	int set, anim, sprite, setSprite;
 
-	File* mainFile = NULL;
-	File* specFile = NULL;
-	int count;
+	// Thanks to Neobeo for working out the .j2a format
 
 
-	// Open fileName
 	try {
 
-		specFile = new File(fileName, false);
+		file = new File(F_ANIMS_J2A, false);
 
 	} catch (int e) {
 
@@ -123,104 +159,109 @@ int JJ2Level::loadSprites (char * fileName) {
 
 	}
 
+	file->seek(24, true);
 
-	// This function loads all the sprites, not fust those in fileName
-	try {
+	nAnimSets = file->loadInt();
 
-		mainFile = new File(F_MAINCHAR, false);
+	setOffsets = new int[nAnimSets];
 
-	} catch (int e) {
+	for (set = 0; set < nAnimSets; set++) setOffsets[set] = file->loadInt();
 
-		delete specFile;
 
-		return e;
+	// Count number of sprites
+
+	sprites = 0;
+
+	for (set = 0; set < nAnimSets; set++) {
+
+		file->seek(setOffsets[set] + 6, true);
+
+		sprites += file->loadShort();
 
 	}
 
-
-	sprites = specFile->loadShort();
-
-	// Include space in the sprite set for the blank sprite at the end
-	spriteSet = new Sprite[sprites + 1];
-
-	// Read horizontal offsets
-	for (count = 0; count < sprites; count++)
-		spriteSet[count].xOffset = specFile->loadChar() << 2;
-
-	// Read vertical offsets
-	for (count = 0; count < sprites; count++)
-		spriteSet[count].yOffset = specFile->loadChar();
+	spriteSet = new Sprite[sprites];
+	flippedSpriteSet = new Sprite[sprites];
+	animSets = new Anim *[nAnimSets];
+	flippedAnimSets = new Anim *[nAnimSets];
 
 
-	// Skip to where the sprites start in mainchar.000
-	mainFile->seek(2, true);
+	// Load animations and sprites
 
+	sprites = 0;
 
-	// Loop through all the sprites to be loaded
-	for (count = 0; count < sprites; count++) {
+	for (set = 0; set < nAnimSets; set++) {
 
-		if (specFile->loadChar() == 0xFF) {
+		file->seek(setOffsets[set] + 4, true);
 
-			// Go to the next sprite/file indicator
-			specFile->seek(1, false);
+		setAnims = file->loadChar();
 
-			if (mainFile->loadChar() == 0xFF) {
+		if (setAnims) {
 
-				// Go to the next sprite/file indicator
-				mainFile->seek(1, false);
-
-				/* Both fileName and mainchar.000 have file indicators, so
-				create a blank sprite */
-				spriteSet[count].clearPixels();
-
-				continue;
-
-			} else {
-
-				// Return to the start of the sprite
-				mainFile->seek(-1, false);
-
-				// Load the individual sprite data
-				loadSprite(mainFile, spriteSet + count);
-
-			}
+			animSets[set] = new Anim[setAnims];
+			flippedAnimSets[set] = new Anim[setAnims];
 
 		} else {
 
-			// Return to the start of the sprite
-			specFile->seek(-1, false);
-
-			// Go to the main file's next sprite/file indicator
-			mainFile->seek(2, false);
-
-			// Load the individual sprite data
-			loadSprite(specFile, spriteSet + count);
+			animSets[set] = NULL;
+			flippedAnimSets[set] = NULL;
 
 		}
 
+		file->seek(7, false);
 
-		// Check if the next sprite exists
-		// If not, create blank sprites for the remainder
-		if (specFile->tell() >= specFile->getSize()) {
+		aCLength = file->loadInt();
+		aLength = file->loadInt();
+		bCLength = file->loadInt();
+		bLength = file->loadInt();
+		cCLength = file->loadInt();
+		cLength = file->loadInt();
+		dCLength = file->loadInt();
+		dLength = file->loadInt();
 
-			for (count++; count < sprites; count++) {
+		aBuffer = file->loadLZ(aCLength, aLength);
+		bBuffer = file->loadLZ(bCLength, bLength);
+		cBuffer = file->loadLZ(cCLength, cLength);
 
-				spriteSet[count].clearPixels();
+		setSprite = 0;
+
+		for (anim = 0; anim < setAnims; anim++) {
+
+			animSprites = createShort(aBuffer + (anim * 8));
+
+			// Fonts are loaded separately
+			if (animSprites == 224) animSprites = 1;
+
+			animSets[set][anim].setData(animSprites, 0, 0, 0, 0, 0, 0);
+			flippedAnimSets[set][anim].setData(animSprites, 0, 0, 0, 0, 0, 0);
+
+			for (sprite = 0; sprite < animSprites; sprite++) {
+
+				loadSprite(bBuffer + (setSprite * 24), cBuffer, spriteSet + sprites, flippedSpriteSet + sprites);
+
+				animSets[set][anim].setFrame(sprite, false);
+				animSets[set][anim].setFrameData(spriteSet + sprites, 0, 0);
+				flippedAnimSets[set][anim].setFrame(sprite, false);
+				flippedAnimSets[set][anim].setFrameData(flippedSpriteSet + sprites, 0, 0);
+
+				setSprite++;
+				sprites++;
 
 			}
 
 		}
 
+		delete[] cBuffer;
+		delete[] bBuffer;
+		delete[] aBuffer;
+
 	}
 
-	delete mainFile;
-	delete specFile;
 
+	delete[] setOffsets;
 
-	// Include a blank sprite at the end
-	spriteSet[sprites].clearPixels();
-	spriteSet[sprites].xOffset = 0;
-	spriteSet[sprites].yOffset = 0;
+	delete file;
+
 
 	return E_NONE;
 
@@ -306,7 +347,7 @@ int JJ2Level::loadTiles (char* fileName) {
 	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, 0);
 
 	// Flip tiles
-	for (count = 0; count < tiles * 32; count++) {
+	for (count = 0; count < TTOI(tiles); count++) {
 
 		for (x = 0; x < 16; x++) {
 
@@ -394,8 +435,8 @@ int JJ2Level::loadTiles (char* fileName) {
 
 int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
+	Anim* pAnims[2];
 	File *file;
-	unsigned char *buffer;
 	char *string;
 	unsigned char* aBuffer;
 	unsigned char* bBuffer;
@@ -408,7 +449,6 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	unsigned char tileQuad[8];
 	short int* quadRefs;
 	int flags, width, pitch, height;
-	int worldNum;
 	unsigned char startX, startY;
 
 	// Thanks to Neobeo for working out the most of the .j2l format
@@ -614,68 +654,9 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	delete[] aBuffer;
 
 
+	// Load anims from anims.j2a
 
-	// Open JJ1 level file for remaining data
-
-	// Use first level
-	worldNum = 0;
-
-	string = createFileName(F_LEVEL, 0, worldNum);
-
-	try {
-
-		file = new File(string, false);
-
-	} catch (int e) {
-
-		// Failed to load first level, so try loading first Christmas level
-
-		worldNum = 50;
-		string[8] = '5';
-
-		try {
-
-			file = new File(string, false);
-
-		} catch (int e) {
-
-			delete[] string;
-
-			if (events) delete events;
-			delete[] *mods;
-			delete[] mods;
-
-			for (count = 0; count < LAYERS; count++) delete layers[count];
-
-			delete[] flippedMask;
-			delete[] mask;
-
-			delete[] musicFile;
-			delete[] nextLevel;
-
-			SDL_FreeSurface(flippedTileSet);
-			SDL_FreeSurface(tileSet);
-
-			delete font;
-
-			return e;
-
-		}
-
-	}
-
-	delete[] string;
-
-
-	// Load sprite set from corresponding Sprites.###
-
-	string = createFileName(F_SPRITES, worldNum);
-
-	count = loadSprites(string);
-
-	delete[] string;
-
-	if (count < 0) {
+	if (loadSprites() < 0) {
 
 		delete file;
 
@@ -701,154 +682,48 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	}
 
 
-	// Skip to tile and event reference data
-	file->seek(39, true);
-
-	// Skip tile references
-	file->skipRLE();
-
-	// A mysterious block of mystery
-	file->skipRLE();
-
-	// Skip mask data
-	file->skipRLE();
-
-	// Skip special event path
-	file->skipRLE();
-
-	// Skip event set
-	file->skipRLE();
-
-	// Yet more doubtless essential data
-	file->skipRLE();
+	// Set initial water level
+	waterLevelTarget = TTOF(layer->getHeight() + 1);
+	waterLevel = waterLevelTarget - F8;
+	waterLevelSpeed = 0;
 
 
-	// Load animation set
+	// Generate player's animation set references
 
-	buffer = file->loadRLE(128 << 6);
+	if (gameMode) {
 
-	// Create animation set based on that data
-	for (count = 0; count < 128; count++) {
+		string = new char[MTL_P_ANIMS + 1];
 
-		animSet[count].setData(buffer[(count << 6) + 6],
-			buffer[count << 6], buffer[(count << 6) + 1],
-			buffer[(count << 6) + 3], buffer[(count << 6) + 4],
-			buffer[(count << 6) + 2], buffer[(count << 6) + 5]);
+		string[0] = MTL_P_ANIMS + 1;
+		string[1] = MT_P_ANIMS;
+		string[2] = 0;
+		string[3] = 54;
 
-		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
-
-			// Get frame
-			x = buffer[(count << 6) + 7 + y];
-			if (x > sprites) x = sprites;
-
-			// Assign sprite and vertical offset
-			animSet[count].setFrame(y, true);
-			animSet[count].setFrameData(spriteSet + x,
-				buffer[(count << 6) + 26 + y], buffer[(count << 6) + 45 + y]);
-
-		}
-
-	}
-
-	delete[] buffer;
-
-
-	// At general data
-
-	// There's a a whole load of unknown data around here
-
-	// Like another one of those pesky RLE blocks
-	file->skipRLE();
-
-	// And 217 bytes of DOOM
-	file->seek(217, false);
-
-
-	// Load sound map
-
-	x = file->tell();
-
-	for (count = 0; count < 32; count++) {
-
-		file->seek(x + (count * 9), true);
-
-		string = file->loadString();
-
-		soundMap[count] = -1;
-
-		// Search for matching sound
-
-		for (y = 0; (y < nSounds) && (soundMap[count] == -1); y++) {
-
-			if (!strcmp(string, sounds[y].name)) soundMap[count] = y;
-
-		}
+		game->send((unsigned char *)string);
 
 		delete[] string;
 
 	}
 
-	// Skip file names
-	file->seek(x + 366, true);
-
-	// Skip the players' initial coordinates
-	file->seek(4, false);
-
-	// Skip next level numbers
-	file->seek(2, false);
-
-
-	// Thanks to Doubble Dutch for the water level bytes
-	file->seek(4, false);
-	waterLevelTarget = ITOF(file->loadShort());
-	waterLevel = waterLevelTarget - F8;
-	waterLevelSpeed = 0;
-
-
-	// Thanks to Feline and the JCS94 team for the next bits:
-
-	file->seek(3, false);
-
-	// Now at "Section 15"
-
-
-	// Load player's animation set references
-
-	buffer = file->loadRLE(PANIMS * 2);
-	string = new char[PANIMS + 3];
-
-	for (x = 0; x < PANIMS; x++) string[x + 3] = buffer[x << 1];
-
-	delete[] buffer;
-
-	if (gameMode) {
-
-		string[0] = MTL_P_ANIMS;
-		string[1] = MT_P_ANIMS;
-		string[2] = 0;
-		game->send((unsigned char *)string);
-
-	}
-
 	// Set the players' initial values
+
+	pAnims[0] = animSets[54];
+	pAnims[1] = flippedAnimSets[54];
+
 	if (game) {
 
 		if (!checkpoint) game->setCheckpoint(startX, startY);
 
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_JJ2LEVEL, string + 3);
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_JJ2LEVEL, pAnims);
 
 	} else {
 
-		localPlayer->reset(LT_JJ2LEVEL, string + 3, startX, startY);
+		localPlayer->reset(LT_JJ2LEVEL, pAnims, startX, startY);
 
 	}
 
-	delete[] string;
-
 
 	// And that's us done!
-
-	delete file;
 
 
 	// Set the tick at which the level will end, though this is not used

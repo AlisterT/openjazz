@@ -79,7 +79,7 @@ Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
 
 	}
 
-	anim = level->getAnim(source->getAnim());
+	anim = source->getAnim();
 	x = source->getX() + anim->getShootX() + PXO_MID - F4;
 	y = source->getY() + anim->getShootY() - F4;
 

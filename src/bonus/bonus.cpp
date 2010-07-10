@@ -185,6 +185,7 @@ int Bonus::loadTiles (char *fileName) {
 
 Bonus::Bonus (char * fileName, unsigned char diff) {
 
+	Anim* pAnims[BPANIMS];
 	File *file;
 	unsigned char *buffer;
 	char *string, *fileString;
@@ -214,7 +215,16 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 	}
 
 	// Load sprites
-	loadSprites();
+	count = loadSprites();
+
+	if (count < 0) {
+
+		delete file;
+		delete font;
+
+		throw count;
+
+	}
 
 
 	// Load tileset
@@ -324,25 +334,20 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 	// Generate player's animation set references
 
-	string = new char[PANIMS];
-
-	for (count = 0; count < PANIMS; count++) string[count] = count & 31;
+	for (count = 0; count < BPANIMS; count++) pAnims[count] = animSet + count;
 
 	// Set the players' initial values
 	if (game) {
 
 		game->setCheckpoint(x, y);
 
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_BONUS, string);
+		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_BONUS, pAnims);
 
 	} else {
 
-		localPlayer->reset(LT_BONUS, string, x, y);
+		localPlayer->reset(LT_BONUS, pAnims, x, y);
 
 	}
-
-	delete[] string;
-
 
 
 	delete file;
@@ -375,6 +380,8 @@ Bonus::~Bonus () {
 	panelBigFont->restorePalette();
 
 	SDL_FreeSurface(tileSet);
+
+	delete[] spriteSet;
 
 	delete font;
 
@@ -667,7 +674,7 @@ void Bonus::draw () {
 
 
 	// Show the player
-	bonusPlayer->draw(ticks, animSet);
+	bonusPlayer->draw(ticks);
 
 
 	// Show gem count

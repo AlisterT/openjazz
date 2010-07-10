@@ -96,6 +96,8 @@
 #define PA_RSPRING  36
 #define PA_LSPRING  37 /* Surely these are the wrong way round? */
 
+#define PANIMS      38 /* Number of player animations. May be higher. */
+
 // Player reaction times
 #define PRT_HURT       1000
 #define PRT_HURTANIM   200
@@ -150,7 +152,7 @@ class LevelPlayer : public Movable {
 	private:
 		Bird*            bird;
 		SDL_Color        palette[256];
-		char             anims[PANIMS];
+		Anim*            anims[PANIMS];
 		int              energy;
 		int              shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
 		bool             floating; /* false = normal, true = boarding/bird/etc. */
@@ -174,14 +176,14 @@ class LevelPlayer : public Movable {
 	public:
 		Player* player;
 
-		LevelPlayer  (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird);
+		LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
 		~LevelPlayer ();
 
 		void           reset       (unsigned char startX, unsigned char startY);
 
 		void           addItem     ();
 		void           clearEvent  (unsigned char gridX, unsigned char gridY);
-		unsigned char  getAnim     ();
+		Anim*          getAnim     ();
 		int            getEnemies  ();
 		int            getEnergy   ();
 		bool           getFacing   ();

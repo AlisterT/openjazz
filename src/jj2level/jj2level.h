@@ -105,19 +105,22 @@ class JJ2Level : public BaseLevel {
 		char*         flippedMask;
 		char*         musicFile;
 		char*         nextLevel;
-		Anim          animSet[128];
-		int           soundMap[32];
+		Sprite*       spriteSet;
+		Sprite*       flippedSpriteSet;
+		Anim**        animSets;
+		Anim**        flippedAnimSets;
 		JJ2Layer*     layers[LAYERS];
 		JJ2Layer*     layer;
 		JJ2Modifier** mods;
+		int           nAnimSets;
 		bool          TSF;
 		unsigned char difficulty;
 		fixed         waterLevel;
 		fixed         waterLevelTarget;
 		fixed         waterLevelSpeed;
 
-		void loadSprite  (File* file, Sprite* sprite);
-		int  loadSprites (char* fileName);
+		void loadSprite  (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite);
+		int  loadSprites ();
 		int  loadTiles   (char* fileName);
 		int  load        (char* fileName, unsigned char diff, bool checkpoint);
 
@@ -130,7 +133,7 @@ class JJ2Level : public BaseLevel {
 
 		bool         checkMaskDown (fixed x, fixed y, bool drop);
 		bool         checkMaskUp   (fixed x, fixed y);
-		Anim*        getAnim       (unsigned char anim);
+		Anim*        getAnim       (int set, int anim, bool flipped);
 		JJ2Modifier* getModifier   (unsigned char gridX, unsigned char gridY);
 		Sprite*      getSprite     (unsigned char sprite);
 		fixed        getWaterLevel ();

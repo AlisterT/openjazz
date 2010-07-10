@@ -126,13 +126,14 @@ void Player::deinit () {
 void Player::reset (unsigned char x, unsigned char y) {
 
 	if (levelPlayer) levelPlayer->reset(x, y);
+	else if (jj2LevelPlayer) jj2LevelPlayer->reset(x, y);
 
 	return;
 
 }
 
 
-void Player::reset (LevelType levelType, char* newAnims, unsigned char x, unsigned char y) {
+void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned char y) {
 
 	int count;
 
@@ -163,19 +164,19 @@ void Player::reset (LevelType levelType, char* newAnims, unsigned char x, unsign
 
 		case LT_LEVEL:
 
-			levelPlayer = new LevelPlayer(this, newAnims, x, y, bird);
+			levelPlayer = new LevelPlayer(this, anims, x, y, bird);
 
 			break;
 
 		case LT_BONUS:
 
-			bonusPlayer = new BonusPlayer(this, newAnims, x, y);
+			bonusPlayer = new BonusPlayer(this, anims, x, y);
 
 			break;
 
 		case LT_JJ2LEVEL:
 
-			jj2LevelPlayer = new JJ2LevelPlayer(this, newAnims, x, y, bird);
+			jj2LevelPlayer = new JJ2LevelPlayer(this, anims, x, y, bird);
 
 			break;
 

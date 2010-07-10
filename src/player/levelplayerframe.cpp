@@ -688,7 +688,7 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 
 	// Choose sprite
 
-	an = level->getAnim(getAnim());
+	an = anims[animType];
 	an->setFrame(frame, reaction != PR_KILLED);
 
 

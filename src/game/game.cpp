@@ -343,9 +343,28 @@ void Game::resetPlayer (Player *player) {
 }
 
 
-void Game::resetPlayer (Player *player, LevelType levelType, char* anims) {
+void Game::resetPlayer (Player *player, LevelType levelType, Anim** anims) {
 
-	player->reset(levelType, anims, checkX, checkY);
+	Anim* pAnims[PANIMS];
+	int count;
+
+	if (anims) {
+
+		player->reset(levelType, anims, checkX, checkY);
+
+	} else if (level) {
+
+		for (count = 0; count < PANIMS; count++) pAnims[count] = level->getAnim(0);
+		player->reset(levelType, pAnims, checkX, checkY);
+
+	} else if (jj2Level) {
+
+		pAnims[0] = jj2Level->getAnim(54, 0, false);
+		pAnims[1] = jj2Level->getAnim(54, 0, true);
+
+		player->reset(levelType, pAnims, checkX, checkY);
+
+	}
 
 	return;
 

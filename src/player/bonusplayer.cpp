@@ -37,14 +37,14 @@
 #include <string.h>
 
 
-BonusPlayer::BonusPlayer (Player* parent, char *newAnims, unsigned char startX, unsigned char startY) {
+BonusPlayer::BonusPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY) {
 
 	int count;
 
 
 	player = parent;
 
-	memcpy(anims, newAnims, PANIMS);
+	memcpy(anims, newAnims, BPANIMS * sizeof(Anim*));
 
 	x = TTOF(startX) + F16;
 	y = TTOF(startY) + F16;
@@ -184,11 +184,11 @@ void BonusPlayer::step (unsigned int ticks, int msps, Bonus* bonus) {
 }
 
 
-void BonusPlayer::draw (unsigned int ticks, Anim* animSet) {
+void BonusPlayer::draw (unsigned int ticks) {
 
 	Anim* anim;
 
-	anim = animSet + anims[animType];
+	anim = anims[animType];
 	anim->disableDefaultOffset();
 	anim->setFrame(ticks / 75, true);
 	if (canvasW <= SW) anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 28));

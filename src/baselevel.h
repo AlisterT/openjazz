@@ -69,7 +69,6 @@ class BaseLevel {
 		SetupMenu setupMenu;
 
 	protected:
-		Sprite*        spriteSet;
 		PaletteEffect* paletteEffects;
 		SDL_Color      palette[256];
 		int            sprites;

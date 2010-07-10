@@ -38,8 +38,8 @@ class Sprite {
 		SDL_Surface* pixels;
 
 	public:
-		unsigned char xOffset;
-		unsigned char yOffset;
+		short int xOffset;
+		short int yOffset;
 
 		Sprite              ();
 		~Sprite             ();

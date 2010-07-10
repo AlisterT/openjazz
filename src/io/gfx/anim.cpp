@@ -28,6 +28,10 @@
 
 Anim::Anim () {
 
+	sprites = new Sprite *[19];
+	xOffsets = new signed char[19];
+	yOffsets = new signed char[19];
+
 	frame = 0;
 	yOffset = 0;
 	ignoreDefaultYOffset = false;
@@ -39,12 +43,28 @@ Anim::Anim () {
 
 Anim::~Anim () {
 
+	delete[] sprites;
+	delete[] xOffsets;
+	delete[] yOffsets;
+
 	return;
 
 }
 
 
 void Anim::setData (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y) {
+
+	if (amount > 19) {
+
+		delete[] sprites;
+		delete[] xOffsets;
+		delete[] yOffsets;
+
+		sprites = new Sprite *[amount];
+		xOffsets = new signed char[amount];
+		yOffsets = new signed char[amount];
+
+	}
 
 	frames = amount;
 	shootX = sX;

@@ -47,6 +47,8 @@ JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY,
 	hits = 0;
 	endTime = 0;
 
+	facing = true;
+
 	return;
 
 }

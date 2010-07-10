@@ -46,7 +46,6 @@ BaseLevel::BaseLevel () {
 	smoothfps = 50.0f;
 
 	paletteEffects = NULL;
-	spriteSet = NULL;
 
 	paused = false;
 
@@ -65,8 +64,6 @@ BaseLevel::~BaseLevel () {
 	stopMusic();
 
 	if (paletteEffects) delete paletteEffects;
-
-	if (spriteSet) delete[] spriteSet;
 
 	return;
 

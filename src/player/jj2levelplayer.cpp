@@ -37,7 +37,7 @@
 #include <string.h>
 
 
-JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
+JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
 	int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
 		JJ2PCO_LGREEN, JJ2PCO_LEVEL1, JJ2PCO_YELLOW, JJ2PCO_LEVEL2,
@@ -52,8 +52,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char st
 
 	player = parent;
 
-	if (newAnims) memcpy(anims, newAnims, PANIMS);
-	else memset(anims, 0, PANIMS);
+	anims = newAnims[0];
+	flippedAnims = newAnims[1];
 
 	bird = hasBird;
 
@@ -74,8 +74,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char st
 	length = lengths[player->cols[0]];
 
 	for (count = 0; count < 16; count++)
-		palette[count + 48].r = palette[count + 48].g = palette[count + 48].b =
-			(count * length / 16) + start;
+		palette[count + 16].r = palette[count + 16].g = palette[count + 16].b =
+			(count * length / 8) + start;
 
 
 	// Bandana colours
@@ -84,8 +84,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char st
 	length = lengths[player->cols[1]];
 
 	for (count = 0; count < 16; count++)
-		palette[count + 32].r = palette[count + 32].g = palette[count + 32].b =
- 			(count * length / 16) + start;
+		palette[count + 24].r = palette[count + 24].g = palette[count + 24].b =
+ 			(count * length / 8) + start;
 
 
 	// Gun colours
@@ -94,8 +94,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char st
 	length = lengths[player->cols[2]];
 
 	for (count = 0; count < 9; count++)
-		palette[count + 23].r = palette[count + 23].g = palette[count + 23].b =
-			(count * length / 9) + start;
+		palette[count + 32].r = palette[count + 32].g = palette[count + 32].b =
+			(count * length / 8) + start;
 
 
 	// Wristband colours
@@ -104,14 +104,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, char* newAnims, unsigned char st
 	length = lengths[player->cols[3]];
 
 	for (count = 0; count < 8; count++)
-		palette[count + 88].r = palette[count + 88].g = palette[count + 88].b =
+		palette[count + 40].r = palette[count + 40].g = palette[count + 40].b =
 			(count * length / 8) + start;
-
-
-	// Fix creepy black eyes
-
-	for (count = 0; count < 16; count++)
-		palette[count].r = palette[count].g = palette[count].b = (count >> 1) + 64;
 
 
 	return;
@@ -132,7 +126,7 @@ void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 	energy = 5;
 	floating = false;
 	facing = true;
-	animType = PA_RSTAND;
+	animType = PA_STAND;
 	event = LPE_NONE;
 	reaction = JJ2PR_NONE;
 	reactionTime = 0;
@@ -179,9 +173,9 @@ void JJ2LevelPlayer::centreY () {
 }
 
 
-unsigned char JJ2LevelPlayer::getAnim () {
+Anim* JJ2LevelPlayer::getAnim () {
 
-	return anims[animType];
+	return (facing? anims: flippedAnims) + animType;
 
 }
 
@@ -600,7 +594,8 @@ void JJ2LevelPlayer::receive (unsigned char *buffer) {
 
 		case MT_P_ANIMS:
 
-			memcpy(anims, (char *)buffer + 3, PANIMS);
+			anims = jj2Level->getAnim(buffer[3], 0, false);
+			flippedAnims = jj2Level->getAnim(buffer[3], 0, true);
 
 			break;
 
