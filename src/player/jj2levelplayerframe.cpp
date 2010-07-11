@@ -141,6 +141,16 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 			break;
 
+		case 207: // Text
+
+			break;
+
+		case 208: // Water level
+
+			jj2Level->setWaterLevel(nextMod->properties & 0xFF, nextMod->properties & 0x100);
+
+			break;
+
 		case 230: // Warp
 
 			if (!stopTime) {
@@ -822,10 +832,10 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 	if ((reaction != JJ2PR_HURT) || ((ticks / 30) & 2)) {
 
 		// Draw "motion blur"
-		if (fastFeetTime > ticks) an->draw(drawX - (dx >> 6), drawY);
+		if (fastFeetTime > ticks) an->draw(drawX + F16 - (dx >> 6), drawY + F16);
 
 		// Draw player
-		an->draw(drawX, drawY);
+		an->draw(drawX + F16, drawY + F16);
 
 	}
 

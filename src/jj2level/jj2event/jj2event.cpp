@@ -30,7 +30,7 @@
 #include "baselevel.h"
 
 
-JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char* properties) {
+JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties) {
 
 	x = TTOF(gridX);
 	y = TTOF(gridY);
@@ -39,15 +39,12 @@ JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY,
 
 	next = newNext;
 
-	type = properties[0];
-	data[0] = properties[1];
-	data[1] = properties[2];
-	data[2] = properties[3];
+	type = newType;
+	properties = newProperties;
 
-	hits = 0;
 	endTime = 0;
 
-	facing = true;
+	flipped = false;
 
 	return;
 
@@ -60,9 +57,81 @@ JJ2Event::~JJ2Event () {
 }
 
 
+PickupJJ2Event::PickupJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
+
+	floating = true;
+
+	return;
+
+}
+
+
+PickupJJ2Event::~PickupJJ2Event () {
+
+	return;
+
+}
+
+
+AmmoJJ2Event::AmmoJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType) : PickupJJ2Event(newNext, gridX, gridY, newType, 0) {
+
+	return;
+
+}
+
+
+AmmoJJ2Event::~AmmoJJ2Event () {
+
+	return;
+
+}
+
+
+CoinGemJJ2Event::CoinGemJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType) : PickupJJ2Event(newNext, gridX, gridY, newType, 0) {
+
+	return;
+
+}
+
+
+CoinGemJJ2Event::~CoinGemJJ2Event () {
+
+	return;
+
+}
+
+
+FoodJJ2Event::FoodJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType) : PickupJJ2Event(newNext, gridX, gridY, newType, 0) {
+
+	return;
+
+}
+
+
+FoodJJ2Event::~FoodJJ2Event () {
+
+	return;
+
+}
+
+
+OtherJJ2Event::OtherJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
+
+	return;
+
+}
+
+
+OtherJJ2Event::~OtherJJ2Event () {
+
+	return;
+
+}
+
+
 void JJ2Event::destroy (unsigned int ticks) {
 
-	endTime = ticks + 1000;
+	endTime = ticks + 500;
 
 	return;
 

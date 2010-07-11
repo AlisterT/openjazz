@@ -433,6 +433,84 @@ int JJ2Level::loadTiles (char* fileName) {
 }
 
 
+void JJ2Level::createEvent (int x, int y, unsigned char* data) {
+
+	unsigned char type;
+	int properties;
+
+	type = *data;
+	properties = (data[1] >> 4) + (data[2] << 4) + (data[3] << 12);
+
+	if ((type < 33) || ((type >= 206) && (type <= 208)) || (type == 230) || (type == 240) || (type == 245)) {
+
+		mods[y][x].type = type;
+		mods[y][x].properties = properties;
+
+		return;
+
+	}
+
+	mods[y][x].type = 0;
+
+	if (type < 41) {
+
+		events = new AmmoJJ2Event(events, x, y, type);
+
+	} else if (type < 44) {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	} else if (type < 46) {
+
+		events = new CoinGemJJ2Event(events, x, y, type);
+
+	} else if (type < 63) {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	} else if (type < 67) {
+
+		events = new CoinGemJJ2Event(events, x, y, type);
+
+	} else if (type < 72) {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	} else if (type < 74) {
+
+		events = new FoodJJ2Event(events, x, y, type);
+
+	} else if (type == 80) {
+
+		events = new FoodJJ2Event(events, x, y, type);
+
+	} else if (type < 141) {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	} else if (type < 148) {
+
+		events = new FoodJJ2Event(events, x, y, type);
+
+	} else if (type < 154) {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	} else if (type < 183) {
+
+		events = new FoodJJ2Event(events, x, y, type);
+
+	} else {
+
+		events = new OtherJJ2Event(events, x, y, type, properties);
+
+	}
+
+	return;
+
+}
+
+
 int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	Anim* pAnims[2];
@@ -617,30 +695,15 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 		for (x = 0; x < width; x++) {
 
-			count = bBuffer[((y * width) + x) << 2];
+			// Create event or assign modifier
+			createEvent(x, y, bBuffer + (((y * width) + x) << 2));
 
-			if ((count < 33) || (count == 206) || (count == 230) || (count == 240)) {
+			if (mods[y][x].type == 29) {
 
-				mods[y][x].type = count;
-				mods[y][x].properties =
-					(bBuffer[(((y * width) + x) << 2) + 1] >> 4) +
-					(bBuffer[(((y * width) + x) << 2) + 2] << 4) +
-					(bBuffer[(((y * width) + x) << 2) + 3] << 12);
+				// Jazz start pos
 
-				if (count == 29) {
-
-					// Jazz start pos
-
-					startX = x;
-					startY = y;
-
-				}
-
-			} else {
-
-				mods[y][x].type = 0;
-
-				events = new JJ2Event(events, x, y, bBuffer + (((y * width) + x) << 2));
+				startX = x;
+				startY = y;
 
 			}
 

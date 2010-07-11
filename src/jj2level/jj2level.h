@@ -119,10 +119,11 @@ class JJ2Level : public BaseLevel {
 		fixed         waterLevelTarget;
 		fixed         waterLevelSpeed;
 
+		void createEvent (int x, int y, unsigned char* data);
+		int  load        (char* fileName, unsigned char diff, bool checkpoint);
 		void loadSprite  (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite);
 		int  loadSprites ();
 		int  loadTiles   (char* fileName);
-		int  load        (char* fileName, unsigned char diff, bool checkpoint);
 
 		int  step        ();
 		void draw        ();
@@ -139,7 +140,7 @@ class JJ2Level : public BaseLevel {
 		fixed        getWaterLevel ();
 		void         setFrame      (unsigned char gridX, unsigned char gridY, unsigned char frame);
 		void         setNext       (char* fileName);
-		void         setWaterLevel (unsigned char gridY);
+		void         setWaterLevel (unsigned char gridY, bool instant);
 		void         warp          (JJ2LevelPlayer *player, int id);
 
 		void         receive       (unsigned char* buffer);

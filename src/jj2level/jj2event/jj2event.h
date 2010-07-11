@@ -29,30 +29,90 @@
 
 // Classes
 
+class Anim;
+
 class JJ2Event : public Movable {
 
 	private:
-		JJ2Event*     next;
-		unsigned char type;
-		unsigned char data[3];
-		unsigned char hits;  // Number of times the event has been shot
-		int           endTime;  // Point at which the event will terminate
-		unsigned char anim;
-		unsigned char frame;
-		unsigned int  flashTime;
-		bool          facing;
+		JJ2Event* next;
 
-		JJ2Event* remove  ();
-		void      destroy (unsigned int ticks);
+	protected:
+		unsigned char type;
+		int           properties;
+		unsigned int  endTime;  // Point at which the event will terminate
+		bool          flipped;
+
+		JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties);
+
+		void      destroy     (unsigned int ticks);
+		bool      prepareStep (unsigned int ticks, int msps);
+		bool      prepareDraw (unsigned int ticks, int change);
+		JJ2Event* remove      ();
 
 	public:
-		JJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char* properties);
-		~JJ2Event ();
+		virtual ~JJ2Event ();
 
-		unsigned char getType ();
+		unsigned char     getType ();
 
-		JJ2Event*     step    (int ticks, int msps);
-		void          draw    (unsigned int ticks, int change);
+		virtual JJ2Event* step    (unsigned int ticks, int msps) = 0;
+		virtual void      draw    (unsigned int ticks, int change) = 0;
+
+};
+
+class PickupJJ2Event : public JJ2Event {
+
+	private:
+		bool floating;
+
+	protected:
+		PickupJJ2Event          (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties);
+		virtual ~PickupJJ2Event ();
+
+		JJ2Event* step (unsigned int ticks, int msps);
+
+};
+
+class AmmoJJ2Event : public PickupJJ2Event {
+
+	public:
+		AmmoJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType);
+		~AmmoJJ2Event ();
+
+		void      draw (unsigned int ticks, int change);
+
+};
+
+class CoinGemJJ2Event : public PickupJJ2Event {
+
+	private:
+		void mapPalette (Anim* anim, int start);
+
+	public:
+		CoinGemJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType);
+		~CoinGemJJ2Event ();
+
+		void      draw (unsigned int ticks, int change);
+
+};
+
+class FoodJJ2Event : public PickupJJ2Event {
+
+	public:
+		FoodJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType);
+		~FoodJJ2Event ();
+
+		void      draw (unsigned int ticks, int change);
+
+};
+
+class OtherJJ2Event : public JJ2Event {
+
+	public:
+		OtherJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties);
+		~OtherJJ2Event ();
+
+		JJ2Event* step (unsigned int ticks, int msps);
+		void      draw (unsigned int ticks, int change);
 
 };
 

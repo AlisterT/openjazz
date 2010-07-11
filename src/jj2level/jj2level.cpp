@@ -212,11 +212,13 @@ Anim* JJ2Level::getAnim (int set, int anim, bool flipped) {
 }
 
 
-void JJ2Level::setWaterLevel (unsigned char gridY) {
+void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 
 	unsigned char buffer[MTL_L_PROP];
 
 	waterLevelTarget = TTOF(gridY);
+
+	if (instant) waterLevel = waterLevelTarget - F8;
 
 	if (gameMode) {
 
