@@ -753,7 +753,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	// Generate player's animation set references
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		string = new char[MTL_P_ANIMS + 1];
 

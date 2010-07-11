@@ -183,7 +183,7 @@ int Bonus::loadTiles (char *fileName) {
 }
 
 
-Bonus::Bonus (char * fileName, unsigned char diff) {
+Bonus::Bonus (char * fileName, unsigned char diff, bool multi) {
 
 	Anim* pAnims[BPANIMS];
 	File *file;
@@ -367,6 +367,9 @@ Bonus::Bonus (char * fileName, unsigned char diff) {
 
 	// Adjust panelBigFont to use bonus level palette
 	panelBigFont->mapPalette(0, 32, 15, -16);
+
+
+	multiplayer = multi;
 
 
 	return;

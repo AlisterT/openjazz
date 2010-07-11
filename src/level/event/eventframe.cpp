@@ -1057,9 +1057,11 @@ void Event::drawEnergy (unsigned int ticks) {
 	// Get the event properties
 	set = level->getEvent(gridX, gridY);
 
-	if (set[E_MODIFIER] != 8) {
+	if (!set || set[E_MODIFIER] != 8) {
 
 		if (next) next->drawEnergy(ticks);
+
+		return;
 
 	} else if (set[E_HITSTOKILL]) {
 

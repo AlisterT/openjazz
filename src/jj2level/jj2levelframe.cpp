@@ -77,7 +77,7 @@ int JJ2Level::step () {
 
 		if (players[x].getJJ2LevelPlayer()->reacted(ticks) == JJ2PR_KILLED) {
 
-			if (!gameMode) return LOST;
+			if (!multiplayer) return LOST;
 
 			game->resetPlayer(players + x);
 
@@ -143,7 +143,7 @@ void JJ2Level::draw () {
 	// Show "panel" data
 
 	// Show score
-	if (gameMode) gameMode->drawScore(font);
+	if (multiplayer) game->getMode()->drawScore(font);
 	else panelSmallFont->showNumber(localPlayer->getScore(), 64, 8);
 
 

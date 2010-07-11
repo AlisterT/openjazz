@@ -129,7 +129,7 @@ class JJ2Level : public BaseLevel {
 		void draw        ();
 
 	public:
-		JJ2Level  (char* fileName, unsigned char diff, bool checkpoint);
+		JJ2Level  (char* fileName, unsigned char diff, bool checkpoint, bool multi);
 		~JJ2Level ();
 
 		bool         checkMaskDown (fixed x, fixed y, bool drop);

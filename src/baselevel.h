@@ -76,9 +76,10 @@ class BaseLevel {
 		unsigned int   endTime;
 		float          smoothfps;
 		int            items;
+		bool           multiplayer;
 		bool           paused;
 		LevelStage     stage;
-		int stats;
+		int            stats;
 
 		int  playScene (char* file);
 		void timeCalcs ();

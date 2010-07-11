@@ -217,7 +217,7 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 	if (source && (source->getTeam() == player->team)) return false;
 
 
-	if (!gameMode || gameMode->hit(source, player)) {
+	if (game->getMode()->hit(source, player)) {
 
 		energy--;
 
@@ -259,7 +259,7 @@ void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != JJ2PR_NONE) return;
 
-	if (!gameMode || gameMode->kill(source, player)) {
+	if (game->getMode()->kill(source, player)) {
 
 		energy = 0;
 		player->lives--;

@@ -138,7 +138,7 @@ class Level : public BaseLevel {
 		EventPath path[PATHS];
 
 		Level          ();
-		Level          (char* fileName, unsigned char diff, bool checkpoint);
+		Level          (char* fileName, unsigned char diff, bool checkpoint, bool multi);
 		virtual ~Level ();
 
 		bool          checkMaskUp   (fixed x, fixed y);

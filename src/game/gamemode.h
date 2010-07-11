@@ -59,6 +59,15 @@ class GameMode {
 
 };
 
+class SingleGameMode : public GameMode {
+
+	public:
+		GameModeType  getMode    ();
+		unsigned char chooseTeam ();
+		void          drawScore  (Font* font);
+
+};
+
 class CooperativeGameMode : public GameMode {
 
 	public:
@@ -86,8 +95,7 @@ class TeamGameMode : public GameMode {
 class CoopGameMode : public CooperativeGameMode {
 
 	public:
-		GameModeType getMode    ();
-		bool         endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
+		GameModeType getMode ();
 
 };
 
@@ -122,17 +130,6 @@ class RaceGameMode : public FreeForAllGameMode {
 		bool         endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
 
 };
-
-
-// Variable
-
-EXTERN GameMode *gameMode; // NULL for single-player games
-
-
-// Function
-
-GameMode * createGameMode (GameModeType mode);
-
 
 #endif
 

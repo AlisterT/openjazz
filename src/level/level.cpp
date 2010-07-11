@@ -67,7 +67,7 @@ Level::Level () {
 }
 
 
-Level::Level (char* fileName, unsigned char diff, bool checkpoint) {
+Level::Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
 
 	int ret;
 
@@ -76,6 +76,8 @@ Level::Level (char* fileName, unsigned char diff, bool checkpoint) {
 	ret = load(fileName, diff, checkpoint);
 
 	if (ret < 0) throw ret;
+
+	multiplayer = multi;
 
 	return;
 
@@ -193,7 +195,7 @@ void Level::setNext (int nextLevel, int nextWorld) {
 	nextLevelNum = nextLevel;
 	nextWorldNum = nextWorld;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
@@ -216,7 +218,7 @@ void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char til
 
 	grid[gridY][gridX].tile = tile;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
@@ -276,7 +278,7 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	grid[gridY][gridX].event = 0;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
@@ -325,7 +327,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* sour
 
 	}
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
@@ -387,7 +389,7 @@ void Level::setWaterLevel (unsigned char gridY) {
 
 	waterLevelTarget = TTOF(gridY);
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
@@ -444,7 +446,7 @@ int Level::playBonus () {
 
 	try {
 
-		baseLevel = bonus = new Bonus(bonusFile, difficulty);
+		baseLevel = bonus = new Bonus(bonusFile, difficulty, multiplayer);
 
 	} catch (int e) {
 
@@ -556,7 +558,7 @@ int Level::play () {
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
-			if (!gameMode) {
+			if (!multiplayer) {
 
 				// If the gem has been collected, play the bonus level
 				if (playBonus() == E_QUIT) return E_QUIT;

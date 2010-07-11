@@ -43,7 +43,7 @@ ClientGame::ClientGame (char* address) {
 	unsigned char buffer[BUFFER_LENGTH];
 	unsigned int timeout;
 	int count, ret;
-	GameModeType mode;
+	GameModeType modeType;
 
 	sock = net->join(address);
 
@@ -111,13 +111,13 @@ ClientGame::ClientGame (char* address) {
 	printf("Connected to server (version %d).\n", buffer[2]);
 
 	// Copy game parameters
-	mode = GameModeType(buffer[3]);
+	modeType = GameModeType(buffer[3]);
 	difficulty = buffer[4];
 	maxPlayers = buffer[5];
 	nPlayers = buffer[6];
 	clientID = buffer[7];
 
-	printf("Game mode %d, difficulty %d, %d of %d players.\n", mode, difficulty, nPlayers, maxPlayers);
+	printf("Game mode %d, difficulty %d, %d of %d players.\n", modeType, difficulty, nPlayers, maxPlayers);
 
 	if (nPlayers > maxPlayers) {
 
@@ -128,9 +128,9 @@ ClientGame::ClientGame (char* address) {
 	}
 
 
-	gameMode = createGameMode(mode);
+	mode = createMode(modeType);
 
-	if (gameMode == NULL) {
+	if (!mode) {
 
 		net->close(sock);
 
@@ -157,7 +157,7 @@ ClientGame::ClientGame (char* address) {
 
 		if (file) delete file;
 
-		delete gameMode;
+		delete mode;
 
 		throw ret;
 
@@ -187,7 +187,7 @@ ClientGame::ClientGame (char* address) {
 
 			if (file) delete file;
 
-			delete gameMode;
+			delete mode;
 
 			throw E_QUIT;
 
@@ -199,7 +199,7 @@ ClientGame::ClientGame (char* address) {
 
 			if (file) delete file;
 
-			delete gameMode;
+			delete mode;
 
 			throw E_UNUSED;
 
@@ -216,7 +216,7 @@ ClientGame::ClientGame (char* address) {
 
 			if (file) delete file;
 
-			delete gameMode;
+			delete mode;
 
 			throw ret;
 
@@ -235,7 +235,7 @@ ClientGame::~ClientGame () {
 
 	if (file) delete file;
 
-	delete gameMode;
+	delete mode;
 
 	return;
 
@@ -524,7 +524,7 @@ void ClientGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];
 
-	if (gameMode) {
+	if (mode) {
 
 		buffer[0] = MTL_G_CHECK;
 		buffer[1] = MT_G_CHECK;

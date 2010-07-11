@@ -121,13 +121,7 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 			if (!energy) return;
 
-			if (!gameMode) {
-
-				if (game) game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
-
-				jj2Level->setStage(LS_END);
-
-			} else if (!(gameMode->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID)))) return;
+			if (!game->getMode()->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID))) return;
 
 			break;
 
@@ -897,7 +891,7 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Show the player's name
-	if (gameMode)
+	if (nPlayers > 1)
 		panelBigFont->showString(player->name,
 			FTOI(drawX + PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
 			FTOI(drawY - F32 - F16));

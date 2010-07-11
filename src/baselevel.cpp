@@ -210,7 +210,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 	int ret;
 
 	// Networking
-	if (gameMode) {
+	if (multiplayer) {
 
 		ret = game->step(ticks);
 
@@ -248,7 +248,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 	if (controls.release(C_STATS)) {
 
-		if (!gameMode) stats ^= S_SCREEN;
+		if (!multiplayer) stats ^= S_SCREEN;
 		else stats = (stats + 1) & 3;
 
 	}
@@ -281,7 +281,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 				case 3: // Setup
 
-					if (!gameMode) {
+					if (!multiplayer) {
 
 						if (setupMenu.setup() == E_QUIT) return E_QUIT;
 
@@ -302,7 +302,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 	}
 
-	if (!gameMode) paused = message || menu;
+	if (!multiplayer) paused = message || menu;
 
 	timeCalcs();
 
@@ -319,7 +319,7 @@ void BaseLevel::addTimer () {
 
 	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
@@ -344,7 +344,7 @@ void BaseLevel::setStage (LevelStage newStage) {
 
 	stage = newStage;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_STAGE;
 		buffer[1] = MT_L_STAGE;

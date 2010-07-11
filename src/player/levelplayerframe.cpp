@@ -791,7 +791,7 @@ void LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Show the player's name
-	if (gameMode)
+	if (nPlayers > 1)
 		panelBigFont->showString(player->name,
 			FTOI(drawX + PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
 			FTOI(drawY - F32 - F16));

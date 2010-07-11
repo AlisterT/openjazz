@@ -58,7 +58,7 @@ Game::Game (char *firstLevel, int gameDifficulty) {
 
 	difficulty = gameDifficulty;
 
-	gameMode = NULL;
+	mode = new SingleGameMode();
 
 	// Create the player
 	nPlayers = 1;
@@ -82,6 +82,44 @@ Game::~Game () {
 }
 
 
+GameMode* Game::createMode (GameModeType modeType) {
+
+	switch (modeType) {
+
+		case M_SINGLE:
+
+			return new SingleGameMode();
+
+		case M_COOP:
+
+			return new CoopGameMode();
+
+		case M_BATTLE:
+
+			return new BattleGameMode();
+
+		case M_TEAMBATTLE:
+
+			return new TeamBattleGameMode();
+
+		case M_RACE:
+
+			return new RaceGameMode();
+
+	}
+
+	return NULL;
+
+}
+
+
+GameMode* Game::getMode () {
+
+	return mode;
+
+}
+
+
 int Game::setLevel (char *fileName) {
 
 	if (levelFile) delete[] levelFile;
@@ -99,10 +137,12 @@ int Game::play () {
 	Planet* planet;
 	Bonus* bonus;
 	char* fileName;
+	bool multiplayer;
 	bool checkpoint;
 	int ret;
 	int planetId;
 
+	multiplayer = (mode->getMode() != M_SINGLE);
 	checkpoint = false;
 	planetId = -1;
 
@@ -120,7 +160,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = bonus = new Bonus(levelFile, difficulty);
+				baseLevel = bonus = new Bonus(levelFile, difficulty, multiplayer);
 
 			} catch (int e) {
 
@@ -155,7 +195,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = jj2Level = new JJ2Level(levelFile, difficulty, checkpoint);
+				baseLevel = jj2Level = new JJ2Level(levelFile, difficulty, checkpoint, multiplayer);
 
 			} catch (int e) {
 
@@ -200,7 +240,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = level = new Level(levelFile, difficulty, checkpoint);
+				baseLevel = level = new Level(levelFile, difficulty, checkpoint, multiplayer);
 
 			} catch (int e) {
 
@@ -208,35 +248,39 @@ int Game::play () {
 
 			}
 
-			planet = NULL;
-			fileName = createFileName(F_PLANET, level->getWorld());
+			if (!multiplayer) {
 
-			try {
+				planet = NULL;
+				fileName = createFileName(F_PLANET, level->getWorld());
 
-				planet = new Planet(fileName, planetId);
+				try {
 
-			} catch (int e) {
+					planet = new Planet(fileName, planetId);
 
-				// Do nothing
+				} catch (int e) {
 
-			}
-
-			delete[] fileName;
-
-			if (planet) {
-
-				if (planet->play() == E_QUIT) {
-
-					delete planet;
-					delete level;
-
-					return E_QUIT;
+					// Do nothing
 
 				}
 
-				planetId = planet->getId();
+				delete[] fileName;
 
-				delete planet;
+				if (planet) {
+
+					if (planet->play() == E_QUIT) {
+
+						delete planet;
+						delete level;
+
+						return E_QUIT;
+
+					}
+
+					planetId = planet->getId();
+
+					delete planet;
+
+				}
 
 			}
 

@@ -36,7 +36,7 @@
 #include <string.h>
 
 
-ServerGame::ServerGame (GameModeType mode, char* firstLevel, int gameDifficulty) {
+ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficulty) {
 
 	int count;
 
@@ -77,7 +77,7 @@ ServerGame::ServerGame (GameModeType mode, char* firstLevel, int gameDifficulty)
 
 	difficulty = gameDifficulty;
 
-	gameMode = createGameMode(mode);
+	mode = createMode(modeType);
 
 	return;
 
@@ -98,7 +98,7 @@ ServerGame::~ServerGame () {
 
 	if (levelData) delete[] levelData;
 
-	delete gameMode;
+	delete mode;
 
 	return;
 
@@ -253,7 +253,7 @@ int ServerGame::step (unsigned int ticks) {
 
 							// Set up the new player
 
-							recvBuffers[count][4] = gameMode->chooseTeam();
+							recvBuffers[count][4] = mode->chooseTeam();
 
 							players[nPlayers].init((char *)(recvBuffers[count]) + 9,
 								recvBuffers[count] + 5, recvBuffers[count][4]);
@@ -339,7 +339,7 @@ int ServerGame::step (unsigned int ticks) {
 					sendBuffer[0] = MTL_G_PROPS;
 					sendBuffer[1] = MT_G_PROPS;
 					sendBuffer[2] = 1; // Server version
-					sendBuffer[3] = gameMode->getMode();
+					sendBuffer[3] = mode->getMode();
 					sendBuffer[4] = difficulty;
 					sendBuffer[5] = MAX_PLAYERS;
 					sendBuffer[6] = nPlayers; // Number of players

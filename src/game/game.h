@@ -86,17 +86,21 @@ class File;
 class Game {
 
 	protected:
-		char          *levelFile;
+		GameMode*      mode;
+		char*          levelFile;
 		int            difficulty;
 		unsigned int   sendTime, checkTime;
 		unsigned char  checkX, checkY;
 
 		Game ();
 
+		GameMode* createMode (GameModeType modeType);
+
 	public:
 		Game                       (char *firstLevel, int gameDifficulty);
 		virtual ~Game              ();
 
+		GameMode*    getMode       ();
 		virtual int  setLevel      (char *fileName);
 		int          play          ();
 		void         view          (int change);

@@ -73,7 +73,7 @@ class Bonus : public BaseLevel {
 		void draw        ();
 
 	public:
-		Bonus  (char* fileName, unsigned char diff);
+		Bonus  (char* fileName, unsigned char diff, bool multi);
 		~Bonus ();
 
 		bool checkMask (fixed x, fixed y);

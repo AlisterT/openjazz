@@ -138,12 +138,16 @@ int Level::step () {
 	// Check if time has run out
 	if (ticks > endTime) {
 
-		if (!gameMode) {
+		if (multiplayer) {
+
+			game->getMode()->outOfTime();
+
+		} else {
 
 			if ((difficulty >= 2) && (stage == LS_NORMAL))
 				localPlayer->getLevelPlayer()->kill(NULL, endTime);
 
-		} else gameMode->outOfTime();
+		}
 
 	}
 
@@ -161,7 +165,7 @@ int Level::step () {
 
 		if (players[x].getLevelPlayer()->reacted(ticks) == PR_KILLED) {
 
-			if (!gameMode) return LOST;
+			if (!multiplayer) return LOST;
 
 			game->resetPlayer(players + x);
 
@@ -335,7 +339,7 @@ void Level::draw () {
 
 
 	// If this is a competitive game, draw the score
-	if (gameMode) gameMode->drawScore(font);
+	if (multiplayer) game->getMode()->drawScore(font);
 
 
 	// Show panel

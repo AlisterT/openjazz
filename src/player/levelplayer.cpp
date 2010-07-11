@@ -224,7 +224,7 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	if (shield == 3) shield = 0;
 	else if (shield) shield--;
-	else if (!gameMode || gameMode->hit(source, player)) {
+	else if (game->getMode()->hit(source, player)) {
 
 		energy--;
 
@@ -266,7 +266,7 @@ void LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
-	if (!gameMode || gameMode->kill(source, player)) {
+	if (game->getMode()->kill(source, player)) {
 
 		energy = 0;
 		player->lives--;
@@ -274,9 +274,9 @@ void LevelPlayer::kill (Player *source, unsigned int ticks) {
 		reaction = PR_KILLED;
 		reactionTime = ticks + PRT_KILLED;
 
-	}
+		if (game->getMode()->getMode() == M_SINGLE) level->flash(0, 0, 0, T_END << 1);
 
-	if (!gameMode) level->flash(0, 0, 0, T_END << 1);
+	}
 
 	return;
 
@@ -372,13 +372,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 			if (!energy) return false;
 
-			if (!gameMode) {
-
-				if (game) game->setCheckpoint(gridX, gridY);
-
-				level->setStage(LS_END);
-
-			} else if (!(gameMode->endOfLevel(player, gridX, gridY))) return false;
+			if (!game->getMode()->endOfLevel(player, gridX, gridY)) return false;
 
 			break;
 

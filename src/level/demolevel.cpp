@@ -45,7 +45,7 @@ DemoLevel::DemoLevel (const char* fileName) {
 	char* levelFile;
 	int lNum, wNum, diff, ret;
 
-	gameMode = NULL;
+	multiplayer = false;
 
 	try {
 

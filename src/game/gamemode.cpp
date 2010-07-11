@@ -62,6 +62,27 @@ void GameMode::outOfTime () {
 }
 
 
+GameModeType SingleGameMode::getMode () {
+
+	return M_SINGLE;
+
+}
+
+
+unsigned char SingleGameMode::chooseTeam () {
+
+	return 0;
+
+}
+
+
+void SingleGameMode::drawScore (Font* font) {
+
+	return;
+
+}
+
+
 unsigned char CooperativeGameMode::chooseTeam () {
 
 	// All players are on the same team
@@ -153,17 +174,6 @@ GameModeType CoopGameMode::getMode () {
 }
 
 
-bool CoopGameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gridY) {
-
-	game->setCheckpoint(gridX, gridY);
-
-	baseLevel->setStage(LS_END);
-
-	return true;
-
-}
-
-
 GameModeType BattleGameMode::getMode () {
 
 	return M_BATTLE;
@@ -201,36 +211,4 @@ bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX, unsigned cha
 	return false;
 
 }
-
-
-GameMode * createGameMode (GameModeType mode) {
-
-	switch (mode) {
-
-		case M_SINGLE:
-
-			return NULL;
-
-		case M_COOP:
-
-			return new CoopGameMode();
-
-		case M_BATTLE:
-
-			return new BattleGameMode();
-
-		case M_TEAMBATTLE:
-
-			return new TeamBattleGameMode();
-
-		case M_RACE:
-
-			return new RaceGameMode();
-
-	}
-
-	return NULL;
-
-}
-
 

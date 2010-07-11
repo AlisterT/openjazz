@@ -886,7 +886,7 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
 	delete[] buffer;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		string[0] = MTL_P_ANIMS + PANIMS;
 		string[1] = MT_P_ANIMS;

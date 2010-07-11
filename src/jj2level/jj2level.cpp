@@ -46,7 +46,7 @@
 #include <string.h>
 
 
-JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint) {
+JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
 
 	int ret;
 
@@ -55,6 +55,8 @@ JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint) {
 	ret = load(fileName, diff, checkpoint);
 
 	if (ret < 0) throw ret;
+
+	multiplayer = multi;
 
 	return;
 
@@ -150,7 +152,7 @@ void JJ2Level::setNext (char* fileName) {
 	delete[] nextLevel;
 	nextLevel = createString(fileName);
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
@@ -173,7 +175,7 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
 
 	layer->setFrame(gridX, gridY, frame);
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
@@ -220,7 +222,7 @@ void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 
 	if (instant) waterLevel = waterLevelTarget - F8;
 
-	if (gameMode) {
+	if (multiplayer) {
 
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
