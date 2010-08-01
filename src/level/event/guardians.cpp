@@ -34,6 +34,8 @@
 
 #include "util.h"
 
+#include <stdlib.h>
+
 
 Guardian::Guardian(unsigned char gX, unsigned char gY) {
 
