@@ -277,7 +277,7 @@ int SetupMenu::setupResolution () {
 		resolutions = SDL_ListModes(NULL, FULLSCREEN_FLAGS);
 
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	maxW = 320;
 	maxH = 240;
 #else
@@ -570,7 +570,12 @@ int SetupMenu::setup () {
 
 			case 2:
 
+#if !defined(DINGOO)
 				setupJoystick();
+
+#else
+				message("FEATURE NOT AVAILABLE");
+#endif
 
 				break;
 

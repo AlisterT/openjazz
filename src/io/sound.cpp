@@ -51,7 +51,7 @@
 	#ifdef __SYMBIAN32__
 		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
 		#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
-	#elif defined(WIZ) || defined(GP2X)
+	#elif defined(WIZ) || defined(GP2X) || defined(DINGOO)
 		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
 		#define MUSIC_FLAGS 0
 	#else

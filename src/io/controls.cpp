@@ -57,17 +57,29 @@ Controls::Controls () {
 	keys[C_YES].key    = SDLK_y;
 	keys[C_NO].key     = SDLK_n;
 #if defined(WIZ) || defined(GP2X)
-	buttons[C_UP].button		= GP2X_BUTTON_UP;
-	buttons[C_DOWN].button		= GP2X_BUTTON_DOWN;
-	buttons[C_LEFT].button		= GP2X_BUTTON_LEFT;
-	buttons[C_RIGHT].button		= GP2X_BUTTON_RIGHT;
-	buttons[C_JUMP].button		= GP2X_BUTTON_A;
-	buttons[C_FIRE].button		= GP2X_BUTTON_X;
-	buttons[C_CHANGE].button	= GP2X_BUTTON_Y;
-	buttons[C_ENTER].button 	= GP2X_BUTTON_R;
-	buttons[C_ESCAPE].button 	= GP2X_BUTTON_L;
-	buttons[C_STATS].button 	= GP2X_BUTTON_SELECT;
-	buttons[C_PAUSE].button 	= GP2X_BUTTON_START;
+        buttons[C_UP].button            = GP2X_BUTTON_UP;
+        buttons[C_DOWN].button          = GP2X_BUTTON_DOWN;
+        buttons[C_LEFT].button          = GP2X_BUTTON_LEFT;
+        buttons[C_RIGHT].button         = GP2X_BUTTON_RIGHT;
+        buttons[C_JUMP].button          = GP2X_BUTTON_A;
+        buttons[C_FIRE].button          = GP2X_BUTTON_X;
+        buttons[C_CHANGE].button        = GP2X_BUTTON_Y;
+        buttons[C_ENTER].button         = GP2X_BUTTON_R;
+        buttons[C_ESCAPE].button        = GP2X_BUTTON_L;
+        buttons[C_STATS].button         = GP2X_BUTTON_SELECT;
+        buttons[C_PAUSE].button         = GP2X_BUTTON_START;
+#elif defined(DINGOO)
+        buttons[C_UP].button            = SDLK_UP;
+        buttons[C_DOWN].button          = SDLK_DOWN;
+        buttons[C_LEFT].button          = SDLK_LEFT;
+        buttons[C_RIGHT].button         = SDLK_RIGHT;
+        buttons[C_JUMP].button          = SDLK_LCTRL;
+        buttons[C_FIRE].button          = SDLK_LALT;
+        buttons[C_CHANGE].button        = SDLK_LSHIFT;
+        buttons[C_ENTER].button         = SDLK_RETURN;
+        buttons[C_ESCAPE].button        = SDLK_ESCAPE;
+        buttons[C_STATS].button         = SDLK_BACKSPACE;
+        buttons[C_PAUSE].button         = SDLK_TAB;
 #else
 	buttons[C_UP].button = -1;
 	buttons[C_DOWN].button = -1;

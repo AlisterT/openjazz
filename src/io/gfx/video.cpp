@@ -101,7 +101,7 @@ bool Video::create (int width, int height) {
 	if (canvas != screen) SDL_FreeSurface(canvas);
 #endif
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
 #else
 	#ifdef FULLSCREEN_ONLY
