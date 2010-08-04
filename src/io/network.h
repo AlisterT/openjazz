@@ -32,7 +32,11 @@
 // Constants
 
 // Defaults
-#define NET_ADDRESS "192.168.0.1"
+#if defined(DINGOO)
+	#define NET_ADDRESS "10.1.0.1"
+#else
+	#define NET_ADDRESS "192.168.0.1"
+#endif
 #define NET_PORT    10052
 
 // Timeout interval

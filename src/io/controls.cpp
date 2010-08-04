@@ -45,10 +45,12 @@ Controls::Controls () {
 	keys[C_JUMP].key   = SDLK_LCTRL;
 	keys[C_FIRE].key   = SDLK_LALT;
 	keys[C_CHANGE].key = SDLK_LSHIFT;
-	keys[C_ENTER].key  = SDLK_RETURN;
+	keys[C_ENTER].key  = SDLK_LCTRL;
 	keys[C_ESCAPE].key = SDLK_ESCAPE;
-	keys[C_STATS].key  = SDLK_BACKSPACE;
-	keys[C_PAUSE].key  = SDLK_TAB;
+	keys[C_STATS].key  = SDLK_TAB;
+	keys[C_PAUSE].key  = SDLK_RETURN;
+	keys[C_YES].key    = SDLK_LCTRL;
+	keys[C_NO].key     = SDLK_LALT;
 #else
 	#ifdef WIN32
 	keys[C_JUMP].key   = SDLK_RALT;
