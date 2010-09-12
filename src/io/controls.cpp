@@ -28,7 +28,7 @@
 #include "controls.h"
 #include "loop.h"
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
 #include "platforms/wiz.h"
 #endif
 
@@ -70,7 +70,7 @@ Controls::Controls () {
 	keys[C_SWIM].key   = keys[C_JUMP].key;
 
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
 	buttons[C_UP].button            = GP2X_BUTTON_UP;
 	buttons[C_DOWN].button          = GP2X_BUTTON_DOWN;
 	buttons[C_LEFT].button          = GP2X_BUTTON_LEFT;

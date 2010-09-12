@@ -570,7 +570,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 	video.setPalette(menuPalette);
 
-	clearScreen(0);
+	video.clearScreen(0);
 
 	x = (canvasW >> 1) - ((strlen(string) + 6) << 2);
 	x = fontmn2->showString("LOADING ", x - 60, (canvasH >> 1) - 16);

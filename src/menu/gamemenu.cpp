@@ -124,7 +124,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		for (count = 0; count < 4; count++) {
 
@@ -250,7 +250,7 @@ int GameMenu::loadGame () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(15);
+		video.clearScreen(15);
 
 		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
 		fontmn2->showString("choose world:", 32, canvasH / 3);
@@ -375,7 +375,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		dst.x = canvasW - 144;
 		dst.y = (canvasH - 110) >> 1;

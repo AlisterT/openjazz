@@ -101,7 +101,7 @@ bool Video::create (int width, int height) {
 	if (canvas != screen) SDL_FreeSurface(canvas);
 #endif
 
-#if defined(WIZ) || defined(GP2X) || defined(DINGOO)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
 #else
 	#ifdef FULLSCREEN_ONLY
@@ -139,7 +139,7 @@ bool Video::create (int width, int height) {
 	}
 #endif
 
-#if !(defined(WIZ) || defined(GP2X))
+#if !defined(CAANOO) && !(defined(WIZ) && defined(GP2X))
 	expose();
 #endif
 
@@ -163,7 +163,7 @@ bool Video::create (int width, int height) {
 void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
-	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
+	video.clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
 #ifndef SCALE
 	SDL_Flip(screen);
 #endif
@@ -315,11 +315,11 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 }
 
 
-void clearScreen (int index) {
+void Video::clearScreen (int index) {
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
 	// always 240 lines cleared to black
-	memset(video->pixels, index, 320*240);
+	memset(video.screen->pixels, index, 320*240);
 #else
 	SDL_FillRect(canvas, NULL, index);
 #endif

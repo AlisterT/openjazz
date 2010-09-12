@@ -44,7 +44,7 @@ SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
 	soundId = -1;
 	this->frameData = frameData;
 	this->frameType = frameType;
-	this->frameSize = frameSize;		
+	this->frameSize = frameSize;
 	prev = NULL;
 	next = NULL;
 	}
@@ -62,7 +62,7 @@ void SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frame
 		frame->prev = lastFrame;
 		lastFrame->next = frame;
 	}
-	
+
 	lastFrame = frame;
 	frames++;
 }
@@ -93,7 +93,7 @@ SceneAnimation::SceneAnimation  (SceneAnimation* newNext)
 SceneAnimation::~SceneAnimation ()
 	{
 	if (next) delete next;
-	
+
 	if(sceneFrames) {
 		SceneFrame* frame = sceneFrames;
 		SceneFrame* nextFrame = NULL;
@@ -105,7 +105,7 @@ SceneAnimation::~SceneAnimation ()
 			frame = nextFrame;
 			}
 		}
-	
+
 	if (background) SDL_FreeSurface(background);
 	}
 
@@ -193,11 +193,11 @@ Scene::Scene (const char * fileName) {
 		throw e;
 
 	}
-	
+
 	images = NULL;
 	palettes = NULL;
 	animations = NULL;
-	
+
 	file->seek(ESignatureLength, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 
@@ -261,13 +261,13 @@ int Scene::play () {
 	int	frameDelay = 0;
 	int prevFrame = 0;
 	int continueToNextPage = 0;
-	
+
 	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
 	int newpage = true;
 	SDL_Rect textRect = {0, 0, SW, SH};
 
-	clearScreen(0);
+	video.clearScreen(0);
 
 	while (true) {
 
@@ -291,16 +291,16 @@ int Scene::play () {
 
 		int upOrLeft = 0;
 		int downOrRight = 0;
-		
-		
+
+
 		if(pages[sceneIndex].askForYesNo) {
 			// Should check for Y also
 			downOrRight = controls.release(C_ENTER) || controls.release(C_YES);;
 		} else {
 			upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
-			downOrRight = (controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER));			
+			downOrRight = (controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER));
 		}
-		
+
 		if ((sceneIndex > 0 && upOrLeft) ||
 			 downOrRight || continueToNextPage ||
 			((globalTicks-lastTicks) >= pageTime * 1000 && pageTime != 256 && pageTime != 0)) {
@@ -308,7 +308,7 @@ int Scene::play () {
 			if(pages[sceneIndex].stopMusic) {
 				stopMusic();
 			}
-			
+
 			if (upOrLeft) sceneIndex--;
 			else sceneIndex++;
 
@@ -351,10 +351,10 @@ int Scene::play () {
 
 			}
 
-			if(pages[sceneIndex].musicFile) {				
+			if(pages[sceneIndex].musicFile) {
 				playMusic(pages[sceneIndex].musicFile);
-			}						
-			
+			}
+
 			newpage = 0;
 
 		}
@@ -473,7 +473,7 @@ int Scene::play () {
 
 			}
 
-		} else clearScreen(0);
+		} else video.clearScreen(0);
 
 
 		// Draw the texts associated with this page

@@ -315,7 +315,7 @@ int MainMenu::main () {
 
 
 		//as long as we're drawing plasma, we don't need to clear the screen.
-		//clearScreen(28);
+		//video.clearScreen(28);
 
 		plasma.draw();
 

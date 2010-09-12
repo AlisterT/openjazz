@@ -84,7 +84,7 @@ int SetupMenu::setupKeyboard () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		for (count = 0; count < PCONTROLS; count++) {
 
@@ -226,7 +226,7 @@ int SetupMenu::setupJoystick () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		for (count = 0; count < 7; count++) {
 
@@ -277,7 +277,7 @@ int SetupMenu::setupResolution () {
 		resolutions = SDL_ListModes(NULL, FULLSCREEN_FLAGS);
 
 
-#if defined(WIZ) || defined(GP2X) || defined(DINGOO)
+#if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	maxW = 320;
 	maxH = 240;
 #else
@@ -310,7 +310,7 @@ int SetupMenu::setupResolution () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 
 		// Show screen corners
@@ -424,7 +424,7 @@ int SetupMenu::setupScaling () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 
 		// Show screen corners
@@ -478,7 +478,7 @@ int SetupMenu::setupSound () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 
 		// Volume
@@ -560,7 +560,7 @@ int SetupMenu::setup () {
 
 			case 1:
 
-#if !defined(WIZ) && !defined(GP2X)
+#if !defined(CAANOO) && !defined(WIZ) && !defined(GP2X)
 				setupKeyboard();
 #else
 				message("FEATURE NOT AVAILABLE");

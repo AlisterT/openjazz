@@ -59,7 +59,7 @@ int Menu::message (const char* text) {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(15);
+		video.clearScreen(15);
 
 		// Draw the message
 		fontmn2->showString(text, canvasW >> 2, (canvasH >> 1) - 16);
@@ -89,7 +89,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		for (count = 0; count < options; count++) {
 
@@ -200,7 +200,7 @@ int Menu::textInput (const char* request, char*& text) {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(15);
+		video.clearScreen(15);
 
 		// Draw the prompt
 		fontmn2->showString(request, canvasW >> 2, (canvasH >> 1) - 16);

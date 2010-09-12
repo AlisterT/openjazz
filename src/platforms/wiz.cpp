@@ -1,13 +1,12 @@
 #include "wiz.h"
 
+#if defined(WIZ) || defined(GP2X)
 #include <cstdio>
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>
 #include <fcntl.h>
 #include <unistd.h>
-
 #include "io/sound.h"
-
 
 void WIZ_AdjustVolume( int direction )
 {
@@ -37,3 +36,4 @@ void WIZ_AdjustVolume( int direction )
 		close(soundDev);
 	}
 }
+#endif

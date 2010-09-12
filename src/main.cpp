@@ -50,7 +50,7 @@
 
 #include <string.h>
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
 	#include "platforms/wiz.h"
 #endif
 
@@ -533,7 +533,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 
 				}
 #endif
-#if defined(WIZ) || defined(GP2X) || defined(DINGOO)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
 				SDL_ShowCursor(SDL_DISABLE);
 #endif
 				// Break statement intentionally omitted

@@ -128,7 +128,7 @@ int Planet::play () {
 
 		SDL_Delay(T_FRAME);
 
-		clearScreen(0);
+		video.clearScreen(0);
 
 		if (globalTicks - tickOffset < F2)
 			sprite.drawScaled(canvasW >> 1, canvasH >> 1, globalTicks - tickOffset);

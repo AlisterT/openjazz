@@ -37,7 +37,7 @@
 
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
-#if defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 #elif defined(DINGOO)
 	#define FULLSCREEN_FLAGS 0
@@ -95,6 +95,8 @@ class Video {
 		void       expose                ();
 		void       flip                  (int mspf, PaletteEffect* paletteEffects);
 
+		void       clearScreen           (int index);
+
 };
 
 
@@ -109,7 +111,6 @@ EXTERN Video video;
 // Functions
 
 EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
-EXTERN void           clearScreen    (int index);
 EXTERN void           drawRect       (int x, int y, int width, int height, int index);
 
 #endif

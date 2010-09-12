@@ -240,7 +240,7 @@ void Level::draw () {
 
 		// If there is no sky, draw a blank background
 		// This is only very occasionally actually visible
-		clearScreen(127);
+		video.clearScreen(127);
 
 	}
 
