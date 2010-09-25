@@ -139,7 +139,7 @@ bool Video::create (int width, int height) {
 	}
 #endif
 
-#if !defined(CAANOO) && !(defined(WIZ) && defined(GP2X))
+#if !defined(WIZ) && (defined(CAANOO) || defined(GP2X))
 	expose();
 #endif
 
