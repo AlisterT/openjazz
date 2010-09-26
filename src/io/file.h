@@ -50,6 +50,7 @@ class File {
 		unsigned char      loadChar    ();
 		void               storeChar   (unsigned char val);
 		unsigned short int loadShort   ();
+		unsigned short int loadShort   (unsigned short int max);
 		void               storeShort  (unsigned short int val);
 		signed long int    loadInt     ();
 		void               storeInt    (signed long int val);

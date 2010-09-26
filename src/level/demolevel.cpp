@@ -61,8 +61,8 @@ DemoLevel::DemoLevel (const char* fileName) {
 	if (file->loadShort() == 0) throw E_DEMOTYPE;
 
 	// Level file to load
-	lNum = file->loadShort();
-	wNum = file->loadShort();
+	lNum = file->loadShort(9);
+	wNum = file->loadShort(999);
 	levelFile = createFileName(F_LEVEL, lNum, wNum);
 
 	// Difficulty

@@ -169,6 +169,25 @@ unsigned short int File::loadShort () {
 }
 
 
+unsigned short int File::loadShort (unsigned short int max) {
+
+	unsigned short int val;
+
+	val = loadShort();
+
+	if (val > max) {
+
+		logError("Oversized value in file", filePath);
+
+		return max;
+
+	}
+
+	return val;
+
+}
+
+
 void File::storeShort (unsigned short int val) {
 
 	fputc(val & 255, file);
@@ -387,7 +406,7 @@ unsigned char* File::loadPixels  (int length) {
 }
 
 
-unsigned char* File::loadPixels  (int length, int key) {
+unsigned char* File::loadPixels (int length, int key) {
 
 	unsigned char* pixels;
 	unsigned char* sorted;

@@ -62,7 +62,7 @@ int Bonus::loadSprites () {
 
 	file->seek(2, true);
 
-	sprites = file->loadShort();
+	sprites = file->loadShort(256);
 	spriteSet = new Sprite[sprites];
 
 	for (count = 0; count < sprites; count++) {
@@ -71,8 +71,8 @@ int Bonus::loadSprites () {
 		spriteSet[count].yOffset = 0;
 
 		// Load dimensions
-		width = file->loadShort();
-		height = file->loadShort();
+		width = file->loadShort(SW);
+		height = file->loadShort(SH);
 
 		pixelsLength = file->loadShort();
 		maskLength = file->loadShort();

@@ -211,8 +211,8 @@ int loadMain (int argc, char *argv[]) {
 	if (file && (file->loadChar() == 3)) {
 
 		// Read video settings
-		screenW = file->loadShort();
-		screenH = file->loadShort();
+		screenW = file->loadShort(7680);
+		screenH = file->loadShort(4800);
 
 		scaleFactor = file->loadChar();
 #ifndef FULLSCREEN_ONLY

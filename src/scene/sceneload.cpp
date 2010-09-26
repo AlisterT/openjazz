@@ -285,7 +285,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 			}
 
-		} else if (type == EPlayListAniHeader) {// PL			
+		} else if (type == EPlayListAniHeader) {// PL
 			int pos = f->tell();
 			int nextPos = f->tell();
 			LOG("PL Read position", pos);
@@ -354,13 +354,13 @@ void Scene::loadAni (File *f, int dataIndex) {
 					case EFFAniHeader:
 						{
 						unsigned char* blockData = f->loadBlock(size);
-						animations->addFrame(EFFAniHeader, blockData, size);											
+						animations->addFrame(EFFAniHeader, blockData, size);
 						}
 						break;
 
 					case ERNAniHeader:
-					case ERBAniHeader:					
-					case ERLAniHeader:					
+					case ERBAniHeader:
+					case ERLAniHeader:
 					case EMXAniHeader:
 						break;
 					case ERRAniHeader: // Reverse animation when end found
@@ -374,9 +374,9 @@ void Scene::loadAni (File *f, int dataIndex) {
 						}break;
 					case ESquareAniHeader: // Full screen animation frame, that does n't clear the screen first.
 
-						{		
+						{
 							unsigned char* blockData = f->loadBlock(size);
-							animations->addFrame(ESquareAniHeader, blockData, size);														
+							animations->addFrame(ESquareAniHeader, blockData, size);
 						}
 
 						break;
@@ -477,11 +477,11 @@ void Scene::loadData (File *f) {
 
 						LOG("Data Type", "Image");
 						LOG("Data Type Image index", loop);
-						unsigned short int width = f->loadShort(); // get width
+						unsigned short int width = f->loadShort(SW); // get width
 						unsigned short int height;
 
 						if (type == 3) height = f->loadChar(); // Get height
-						else height = f->loadShort(); // Get height
+						else height = f->loadShort(SH); // Get height
 
 						f->seek(-2, false);
 						images = new SceneImage(images);
@@ -520,7 +520,7 @@ void Scene::loadScripts (File *f) {
 	int textAlignment = 0;
 	int textFont = 0;
 	int textShadow = -1;
-	
+
 	for(loop = 0; loop < scriptItems; loop++) {
 
 	    LOG("\nParse Script", loop);
@@ -563,12 +563,12 @@ void Scene::loadScripts (File *f) {
 					case ESceneAnimation:
 						{
 							pages[loop].animLoops = f->loadInt();
-							pages[loop].animSpeed = f->loadShort();							
+							pages[loop].animSpeed = f->loadShort();
 							pages[loop].animIndex = f->loadShort();
-							
+
 							LOG("ESceneAnimation loops", pages[loop].animLoops);
 							LOG("ESceneAnimation speed", pages[loop].animSpeed);
-							LOG("ESceneAnimation anim num", pages[loop].animIndex);							
+							LOG("ESceneAnimation anim num", pages[loop].animIndex);
 						}
 						break;
 
@@ -584,7 +584,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 							unsigned char fadein = f->loadChar();
-							LOG("ESceneFadeType", fadein); 
+							LOG("ESceneFadeType", fadein);
 
 						}
 
@@ -742,7 +742,7 @@ void Scene::loadScripts (File *f) {
 								f->loadChar(); // Skip this value since shadows are turned off
 								textShadow = -1; // Turn off shadow , -1 means no shadow colour
 								}
-							
+
 							LOG("ESceneTextShadow", textShadow);
 						}
 
@@ -828,7 +828,7 @@ void Scene::loadScripts (File *f) {
 							text->alignment = textAlignment;
 							text->fontId = textFont;
 							text->shadowColour = textShadow;
-							
+
 							if(textPosX != -1) {
 
 								text->x = textPosX;

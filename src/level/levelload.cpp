@@ -200,6 +200,7 @@ int Level::loadSprites (char * fileName) {
 	File* mainFile = NULL;
 	File* specFile = NULL;
 	int count;
+	bool loaded;
 
 
 	// Open fileName
@@ -214,7 +215,7 @@ int Level::loadSprites (char * fileName) {
 	}
 
 
-	// This function loads all the sprites, not fust those in fileName
+	// This function loads all the sprites, not just those in fileName
 	try {
 
 		mainFile = new File(F_MAINCHAR, false);
@@ -228,7 +229,7 @@ int Level::loadSprites (char * fileName) {
 	}
 
 
-	sprites = specFile->loadShort();
+	sprites = specFile->loadShort(256);
 
 	// Include space in the sprite set for the blank sprite at the end
 	spriteSet = new Sprite[sprites + 1];
@@ -249,44 +250,45 @@ int Level::loadSprites (char * fileName) {
 	// Loop through all the sprites to be loaded
 	for (count = 0; count < sprites; count++) {
 
+		loaded = false;
+
+		if (mainFile->loadChar() == 0xFF) {
+
+			// Go to the next sprite/file indicator
+			mainFile->seek(1, false);
+
+		} else {
+
+			// Return to the start of the sprite
+			mainFile->seek(-1, false);
+
+			// Load the individual sprite data
+			loadSprite(mainFile, spriteSet + count);
+
+			loaded = true;
+
+		}
+
 		if (specFile->loadChar() == 0xFF) {
 
 			// Go to the next sprite/file indicator
 			specFile->seek(1, false);
-
-			if (mainFile->loadChar() == 0xFF) {
-
-				// Go to the next sprite/file indicator
-				mainFile->seek(1, false);
-
-				/* Both fileName and mainchar.000 have file indicators, so
-				create a blank sprite */
-				spriteSet[count].clearPixels();
-
-				continue;
-
-			} else {
-
-				// Return to the start of the sprite
-				mainFile->seek(-1, false);
-
-				// Load the individual sprite data
-				loadSprite(mainFile, spriteSet + count);
-
-			}
 
 		} else {
 
 			// Return to the start of the sprite
 			specFile->seek(-1, false);
 
-			// Go to the main file's next sprite/file indicator
-			mainFile->seek(2, false);
-
 			// Load the individual sprite data
 			loadSprite(specFile, spriteSet + count);
 
+			loaded = true;
+
 		}
+
+		/* If both fileName and mainchar.000 have file indicators, create a
+		blank sprite */
+		if (!loaded) spriteSet[count].clearPixels();
 
 
 		// Check if the next sprite exists
@@ -848,8 +850,8 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
 
 	// The players' initial coordinates
-	startX = file->loadShort();
-	startY = file->loadShort() + 1;
+	startX = file->loadShort(LW);
+	startY = file->loadShort(LH) + 1;
 
 
 	// Next level

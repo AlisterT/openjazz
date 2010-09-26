@@ -82,7 +82,7 @@ Font::Font (const char* fileName) {
 
 		size = file->loadShort();
 
-		if (size) {
+		if (size > 4) {
 
 			pixels = file->loadRLE(size);
 
@@ -91,7 +91,10 @@ Font::Font (const char* fileName) {
 			height = pixels[2];
 			height += pixels[3] << 8;
 
-			characters[count] = createSurface(pixels + 4, width, height);
+			if (size - 4 >= width * height)
+				characters[count] = createSurface(pixels + 4, width, height);
+			else
+				characters[count] = createSurface(blank, 3, 1);
 
 			delete[] pixels;
 
@@ -230,7 +233,7 @@ Font::Font (bool bonus) {
 
 	fileSize = file->getSize();
 
-	nCharacters = file->loadShort();
+	nCharacters = file->loadShort(256);
 
 	if (bonus) {
 
@@ -264,8 +267,8 @@ Font::Font (bool bonus) {
 
 		}
 
-		width = file->loadShort();
-		height = file->loadShort();
+		width = file->loadShort(SW);
+		height = file->loadShort(SH);
 
 		if (bonus) width = (width + 3) & ~3;
 		else width <<= 2;
