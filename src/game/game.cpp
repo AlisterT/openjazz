@@ -10,6 +10,7 @@
  * 3rd June 2009: Created network.cpp from parts of game.cpp
  * 18th July 2009: Created servergame.cpp from parts of game.cpp
  * 18th July 2009: Created clientgame.cpp from parts of game.cpp
+ * 3rd October 2010: Created localgame.cpp from parts of game.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
@@ -28,14 +29,11 @@
 #include "gamemode.h"
 
 #include "bonus/bonus.h"
-#include "io/controls.h"
-#include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "jj2level/jj2level.h"
 #include "level/level.h"
 #include "planet/planet.h"
-#include "player/bonusplayer.h"
 #include "player/levelplayer.h"
 #include "util.h"
 
@@ -50,30 +48,6 @@ Game::Game () {
 	levelFile = NULL;
 
 	players = NULL;
-
-	return;
-
-}
-
-
-/**
- * Create a new game
- *
- * @param firstLevel File name of the first level to play
- * @param gameDifficulty Difficulty setting
- */
-Game::Game (char *firstLevel, int gameDifficulty) {
-
-	levelFile = createString(firstLevel);
-
-	difficulty = gameDifficulty;
-
-	mode = new SingleGameMode();
-
-	// Create the player
-	nPlayers = 1;
-	localPlayer = players = new Player[1];
-	localPlayer->init(characterName, NULL, 0);
 
 	return;
 
@@ -146,34 +120,12 @@ GameMode* Game::getMode () {
 
 
 /**
- * Set the next level
- *
- * @param fileName The file name of the next level
- *
- * @return Error code
- */
-int Game::setLevel (char *fileName) {
-
-	if (levelFile) delete[] levelFile;
-
-	if (fileName) levelFile = createString(fileName);
-	else levelFile = NULL;
-
-	return E_NONE;
-
-}
-
-
-/**
  * Play the game
  *
  * @return Error code
  */
 int Game::play () {
 
-	Planet* planet;
-	Bonus* bonus;
-	char* fileName;
 	bool multiplayer;
 	bool checkpoint;
 	int ret;
@@ -194,6 +146,8 @@ int Game::play () {
 		// Load and play the level
 
 		if (!strncasecmp(levelFile, F_BONUSMAP, 8)) {
+
+			Bonus* bonus;
 
 			try {
 
@@ -217,6 +171,8 @@ int Game::play () {
 				return ret;
 
 			} else if (ret == WON) {
+
+				char *fileName;
 
 				// Go to next level
 				fileName = createFileName(F_BONUSMAP, (levelFile[10] * 10) + levelFile[11] - 527);
@@ -287,7 +243,9 @@ int Game::play () {
 
 			if (!multiplayer) {
 
-				planet = NULL;
+				Planet *planet;
+				char *fileName;
+
 				fileName = createFileName(F_PLANET, level->getWorld());
 
 				try {
@@ -296,7 +254,7 @@ int Game::play () {
 
 				} catch (int e) {
 
-					// Do nothing
+					planet = NULL;
 
 				}
 
@@ -375,66 +333,6 @@ void Game::view (int change) {
 
 	if (TTOF(checkY) > viewY + (canvasH << 9) + change) viewY += change;
 	else if (TTOF(checkY) < viewY + (canvasH << 9) - change) viewY -= change;
-
-	return;
-
-}
-
-
-/**
- * No data is sent in single-player mode
- *
- * @param buffer Data that will not be sent. First byte indicates length.
- */
-void Game::send (unsigned char *buffer) {
-
-	// Do nothing
-
-	return;
-
-}
-
-
-/**
- * Game iteration
- *
- * @param ticks Current time
- *
- * @return Error code
- */
-int Game::step (unsigned int ticks) {
-
-	// Do nothing
-
-	return E_NONE;
-
-}
-
-
-/**
- * Assign point to team
- *
- * @param team Team to receive point
- */
-void Game::score (unsigned char team) {
-
-	// Do nothing
-
-	return;
-
-}
-
-
-/**
- * Set the checkpoint
- *
- * @param gridX X-coordinate (in tiles) of the checkpoint
- * @param gridY Y-coordinate (in tiles) of the checkpoint
- */
-void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
-
-	checkX = gridX;
-	checkY = gridY;
 
 	return;
 

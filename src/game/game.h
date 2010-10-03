@@ -84,7 +84,7 @@
 class Anim;
 class File;
 
-/// Handling for single-player games and base class for multiplayer game handling classes
+/// Base class for game handling classes
 class Game {
 
 	protected:
@@ -101,19 +101,34 @@ class Game {
 		GameMode* createMode (GameModeType modeType);
 
 	public:
-		Game                       (char *firstLevel, int gameDifficulty);
-		virtual ~Game              ();
+		virtual ~Game ();
 
 		GameMode*    getMode       ();
-		virtual int  setLevel      (char *fileName);
+		virtual int  setLevel      (char *fileName) = 0;
 		int          play          ();
 		void         view          (int change);
-		virtual void send          (unsigned char *buffer);
-		virtual int  step          (unsigned int ticks);
-		virtual void score         (unsigned char team);
-		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY);
+		virtual void send          (unsigned char *buffer) = 0;
+		virtual int  step          (unsigned int ticks) = 0;
+		virtual void score         (unsigned char team) = 0;
+		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY) = 0;
 		void         resetPlayer   (Player *player);
 		void         resetPlayer   (Player *player, LevelType levelType, Anim** anims);
+
+};
+
+
+/// Game handling for single-player local play
+class LocalGame : public Game {
+
+	public:
+		LocalGame  (char *firstLevel, int gameDifficulty);
+		~LocalGame ();
+
+		int  setLevel      (char *fileName);
+		void send          (unsigned char *buffer);
+		int  step          (unsigned int ticks);
+		void score         (unsigned char team);
+		void setCheckpoint (unsigned char gridX, unsigned char gridY);
 
 };
 

@@ -2,7 +2,7 @@
 
 objects = src/bonus/bonus.o \
 	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
-	src/game/servergame.o \
+	src/game/localgame.o src/game/servergame.o \
 	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
 	src/io/gfx/sprite.o src/io/gfx/video.o \
 	src/io/gfx/scale2x/getopt.o src/io/gfx/scale2x/pixel.o \

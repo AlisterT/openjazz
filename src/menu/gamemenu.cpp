@@ -156,7 +156,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 				try {
 
-					game = new Game(firstLevel, difficulty);
+					game = new LocalGame(firstLevel, difficulty);
 
 				} catch (int e) {
 
