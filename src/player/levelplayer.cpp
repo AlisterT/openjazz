@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * levelplayer.cpp
- *
- * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
- * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
+ * @file levelplayer.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
+ * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creation and destruction of players in levels, and their
  * interactions with other level objects.
  *

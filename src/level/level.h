@@ -1,17 +1,18 @@
 
-/*
+/**
  *
- * level.h
+ * @file level.h
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 4th February 2009: Created events.h from parts of level.h
  * 19th March 2009: Created sprite.h from parts of level.h
  * 30th March 2010: Created baselevel.h from parts of level.h
  * 29th June 2010: Created jj2level.h from parts of level.h
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -63,22 +64,24 @@
 
 // Datatypes
 
+/// JJ1 level grid element
 typedef struct {
 
-	unsigned char tile;  // Indexes the tile set
-	unsigned char bg;    // 0 = Effect background, 1 = Black background
-	unsigned char event; // Indexes the event set
-	unsigned char hits;  // Number of times the event has been shot
-	int           time;  /* Point at which the event will do something, e.g. terminate */
+	unsigned char tile; ///< Indexes the tile set
+	unsigned char bg; ///< 0 = Effect background, 1 = Black background
+	unsigned char event; ///< Indexes the event set
+	unsigned char hits; ///< Number of times the event has been shot
+	int           time; ///< Point at which the event will do something, e.g. terminate
 
 } GridElement;
 
+/// Pre-defined JJ1 event movement path
 typedef struct {
 
-	short int*    x;
-	short int*    y;
-	unsigned char length;
-	unsigned char node;
+	short int*    x; ///< X-coordinates for each node
+	short int*    y; ///< Y-coordinates for each node
+	unsigned char length; ///< Number of nodes
+	unsigned char node; ///< Current node
 
 } EventPath;
 
@@ -91,33 +94,37 @@ class Font;
 class LevelPlayer;
 class Scene;
 
+/// JJ1 level
 class Level : public BaseLevel {
 
 	private:
-		SDL_Surface*  tileSet;
-		SDL_Surface*  panel;
-		SDL_Surface*  panelAmmo[5];
-		Event*        events;
-		char*         musicFile;
-		char*         sceneFile;
-		Sprite*       spriteSet;
-		Anim          animSet[ANIMS];
-		char          miscAnims[4];
-		signed char   bulletSet[BULLETS][BLENGTH];
-		signed char   eventSet[EVENTS][ELENGTH];
-		char          mask[240][64]; // At most 240 tiles, all with 8 * 8 masks
-		GridElement   grid[LH][LW]; // All levels are the same size
-		int           soundMap[32];
-		SDL_Color     skyPalette[256];
-		bool          sky;
-		unsigned char skyOrb;
-		int           levelNum, worldNum, nextLevelNum, nextWorldNum;
-		unsigned char difficulty;
-		int           enemies;
-		fixed         waterLevel;
-		fixed         waterLevelTarget;
-		fixed         waterLevelSpeed;
-		fixed         energyBar;
+		SDL_Surface*  tileSet; ///< Tile images
+		SDL_Surface*  panel; ///< HUD background image
+		SDL_Surface*  panelAmmo[5]; ///< HUD ammo type images
+		Event*        events; ///< Events
+		char*         musicFile; ///< Music file name
+		char*         sceneFile; ///< File name of cutscene to play when level has been completed
+		Sprite*       spriteSet; ///< Sprites
+		Anim          animSet[ANIMS]; ///< Animations
+		char          miscAnims[4]; ///< Further animations
+		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
+		signed char   eventSet[EVENTS][ELENGTH]; ///< Event types
+		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
+		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
+		int           soundMap[32]; ///< Maps event sound effect numbers to actual sound effect indices
+		SDL_Color     skyPalette[256]; ///< Full palette for sky background
+		bool          sky; ///< Whether or not to use sky background
+		unsigned char skyOrb; ///< The tile to use as the background sun/moon/etc.
+		int           levelNum; ///<
+		int           worldNum; ///<
+		int           nextLevelNum; ///<
+		int           nextWorldNum; ///<
+		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo)
+		int           enemies; ///< Number of enemies to kill
+		fixed         waterLevel; ///< Height of water
+		fixed         waterLevelTarget; ///< Future height of water
+		fixed         waterLevelSpeed; ///< Rate of water level change
+		fixed         energyBar; ///< HUD energy bar fullness
 
 		void deletePanel  ();
 		int  loadPanel    ();
@@ -127,15 +134,15 @@ class Level : public BaseLevel {
 		int  playBonus    ();
 
 	protected:
-		Font*         font;
+		Font* font; ///< On-screen message font
 
 		int  load (char* fileName, unsigned char diff, bool checkpoint);
 		int  step ();
 		void draw ();
 
 	public:
-		Bullet*   bullets;
-		EventPath path[PATHS];
+		Bullet*   bullets; ///< Active bullets
+		EventPath path[PATHS]; ///< Pre-defined event movement paths
 
 		Level          ();
 		Level          (char* fileName, unsigned char diff, bool checkpoint, bool multi);
@@ -167,11 +174,11 @@ class Level : public BaseLevel {
 
 };
 
-
+/// JJ1 level played as a demo
 class DemoLevel : public Level {
 
 	private:
-		unsigned char* macro;
+		unsigned char* macro; ///< Sequence of player control codes
 
 	public:
 		DemoLevel  (const char* fileName);
@@ -184,9 +191,9 @@ class DemoLevel : public Level {
 
 // Variables
 
-EXTERN Level* level;
+EXTERN Level* level; ///< JJ1 level
 
-EXTERN int    viewH;
+EXTERN int viewH; ///< Canvas height, minus 33 if the panel obscures the whole of the bottom of the canvas
 #define viewW canvasW
 
 #endif

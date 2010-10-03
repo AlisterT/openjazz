@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * levelplayer.h
- *
- * 24th June 2010: Created levelplayer.h from parts of player.h
- * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
+ * @file levelplayer.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 24th June 2010: Created levelplayer.h from parts of player.h
+ * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -135,6 +136,7 @@
 
 // Enum
 
+/// JJ1 player reaction type
 enum PlayerReaction {
 
 	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
@@ -147,34 +149,37 @@ enum PlayerReaction {
 class Anim;
 class Bird;
 
+/// JJ1 level player
 class LevelPlayer : public Movable {
 
 	private:
-		Bird*            bird;
-		SDL_Color        palette[256];
-		Anim*            anims[PANIMS];
-		int              energy;
-		int              shield; /* 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange */
-		bool             floating; /* false = normal, true = boarding/bird/etc. */
-		bool             facing;
-		unsigned char    animType;
-		unsigned char    eventX;
-		unsigned char    eventY; /* Position of an event (spring, platform, bridge) */
-		PlayerEvent      event;
-		int              lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
-		PlayerReaction   reaction;
-		unsigned int     reactionTime;
-		unsigned int     fireTime;
-		fixed            jumpHeight;
-		fixed            jumpY;
-		unsigned int     fastFeetTime;
-		unsigned char    warpX, warpY;
-		unsigned int     warpTime;
-		int              enemies, items;
-		bool             gem;
+		Bird*            bird; ///< Bird companion
+		SDL_Color        palette[256]; ///< Palette (for custom colours)
+		Anim*            anims[PANIMS]; ///< Animations
+		int              energy; ///< 0 = dead, 4 = maximum
+		int              shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
+		bool             floating; ///< false = normal, true = boarding/bird/etc.
+		bool             facing; ///< false = left, true = right
+		unsigned char    animType; ///< Current animation
+		unsigned char    eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
+		unsigned char    eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)
+		PlayerEvent      event; ///< Event type
+		int              lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
+		PlayerReaction   reaction; ///< Reaction type
+		unsigned int     reactionTime; ///< Time reaction will end
+		unsigned int     fireTime; ///< The next time the player can fire
+		fixed            jumpHeight; ///< The height the player can reach when jumping
+		fixed            jumpY; ///< Having started jumping, the y-coordinate the player can reach
+		unsigned int     fastFeetTime; ///< Time fast feet will expire
+		unsigned char    warpX; ///< X-coordinate (in tiles) player will warp to
+		unsigned char    warpY; ///< Y-coordinate (in tiles) player will warp to
+		unsigned int     warpTime; ///< Time the warp will happen
+		int              enemies; ///< Number of enemies killed
+		int              items; ///< Number of items collected
+		bool             gem; ///< Bonus level gem collected
 
 	public:
-		Player* player;
+		Player* player; ///< Corresponding game player
 
 		LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
 		~LevelPlayer ();

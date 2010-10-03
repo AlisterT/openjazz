@@ -1,8 +1,11 @@
 
-/*
+/**
  *
- * OpenJazz.h
+ * @file OpenJazz.h
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 23rd August 2005: Created OpenJazz.h
  * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 31st January 2006: Created player.h from parts of OpenJazz.h
@@ -18,9 +21,7 @@
  * 30th April 2010: Created util.h from parts of OpenJazz.h
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

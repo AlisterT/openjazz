@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * anim.cpp
- *
- * 26th July 2009: Created anim.cpp from parts of sprite.cpp
+ * @file anim.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 26th July 2009: Created anim.cpp from parts of sprite.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

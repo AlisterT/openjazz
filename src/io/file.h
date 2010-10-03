@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * file.h
- *
- * 3rd February 2009: Created file.h from parts of OpenJazz.h
+ * @file file.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created file.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -32,6 +33,7 @@
 
 // Classes
 
+/// File i/o
 class File {
 
 	private:
@@ -66,11 +68,12 @@ class File {
 
 };
 
+/// Directory path
 class Path {
 
 	public:
-		Path* next;
-		char* path;
+		Path* next; ///< Next path to check
+		char* path; ///< Path
 
 		Path  (Path* newNext, char* newPath);
 		~Path ();

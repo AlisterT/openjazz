@@ -1,16 +1,17 @@
 
-/*
+/**
  *
- * player.cpp
+ * @file player.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 3rd February 2009: Created player.cpp
  * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -20,9 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creation and destruction of players, and their interactions
  * with other objects.
  *
@@ -295,9 +294,10 @@ unsigned char Player::getTeam () {
 }
 
 
+/**
+ * Copy data to be sent to clients/server
+ */
 void Player::send (unsigned char *buffer) {
-
-	// Copy data to be sent to clients/server
 
 	buffer[3] = pcontrols[C_UP];
 	buffer[4] = pcontrols[C_DOWN];
@@ -331,9 +331,10 @@ void Player::send (unsigned char *buffer) {
 }
 
 
+/**
+ * Interpret data received from client/server
+ */
 void Player::receive (unsigned char *buffer) {
-
-	// Interpret data received from client/server
 
 	if (buffer[1] == MT_P_TEMP) {
 

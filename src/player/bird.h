@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bird.h
- *
- * 1st March 2009: Created bird.h from parts of events.h
+ * @file bird.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 1st March 2009: Created bird.h from parts of events.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -42,12 +43,13 @@
 
 class LevelPlayer;
 
+/// JJ1 bird companion
 class Bird : public Movable {
 
 	private:
-		LevelPlayer* player;
-		bool         fleeing;
-		unsigned int fireTime;
+		LevelPlayer* player; ///< Player that rescued the bird
+		bool         fleeing; ///< Flying away, player having been shot
+		unsigned int fireTime; ///< Next time the bird will fire
 
 	public:
 		Bird  (LevelPlayer* player, unsigned char gX, unsigned char gY);

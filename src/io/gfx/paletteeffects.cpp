@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * paletteeffects.cpp
- *
- * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
- * 1st August 2009: Renamed palette.cpp to paletteeffects.cpp
+ * @file paletteeffects.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
+ * 1st August 2009: Renamed palette.cpp to paletteeffects.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -61,7 +62,7 @@ void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 
 WhiteInPaletteEffect::WhiteInPaletteEffect
-	(fixed newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
+	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
 	duration = newDuration;
 	whiteness = F1 + FH;

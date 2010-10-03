@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * controls.h
- *
- * 13th July 2009: Created controls.h from parts of OpenJazz.h
+ * @file controls.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 13th July 2009: Created controls.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -54,35 +55,35 @@
 
 // Class
 
+/// Keeps track of all control input
 class Controls {
 
 	private:
 		struct {
 
-			int  key; // Keyboard key
+			int  key; ///< Keyboard key
 			bool state;
 
 		} keys[CONTROLS];
 
 		struct {
 
-			int  button; // Joystick button
+			int  button; ///< Joystick button
 			bool state;
 
 		} buttons[CONTROLS];
 
 		struct {
 
-			int  axis;      // Joystick axis
-			bool direction; // Axis direction
+			int  axis;      ///< Joystick axis
+			bool direction; ///< Axis direction
 			bool state;
 
 		} axes[CONTROLS];
 
 		struct {
 
-			unsigned int time; /* The time from which the control will respond
-				to being pressed */
+			unsigned int time; ///< The time from which the control will respond to being pressed
 			bool         state;
 
 		} controls[CONTROLS];

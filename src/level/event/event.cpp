@@ -1,8 +1,11 @@
 
-/*
+/**
  *
- * event.cpp
+ * @file event.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 1st January 2006: Created events.c from parts of level.c
  * 3rd February 2009: Renamed events.c to events.cpp
  * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
@@ -14,9 +17,7 @@
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -26,9 +27,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with events in ordinary levels.
  *
  */
@@ -158,11 +157,17 @@ void Event::destroy (unsigned int ticks) {
 }
 
 
+/**
+ * Deal with bullet collisions
+ *
+ * @param source Source of the bullet
+ * @param ticks Current time
+ *
+ * @return Whether or not the hit was successful
+ */
 bool Event::hit (LevelPlayer *source, unsigned int ticks) {
 
 	int hitsRemaining;
-
-	// Deal with bullet collisions
 
 	// Check if event has already been destroyed
 	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM) ||

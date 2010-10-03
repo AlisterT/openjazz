@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * baselevel.cpp
- *
- * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
- *                  levelframe.cpp
+ * @file baselevel.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
+ *                  levelframe.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with functionality common to ordinary levels and bonus levels.
  *
  */
@@ -40,6 +39,9 @@
 #include "loop.h"
 
 
+/**
+ * Create a new base level
+ */
 BaseLevel::BaseLevel () {
 
 	// Arbitrary initial value
@@ -59,6 +61,9 @@ BaseLevel::BaseLevel () {
 }
 
 
+/**
+ * Destroy base level
+ */
 BaseLevel::~BaseLevel () {
 
 	stopMusic();
@@ -70,6 +75,13 @@ BaseLevel::~BaseLevel () {
 }
 
 
+/**
+ * Play a cutscene.
+ *
+ * @param file File name of the cutscene to be played
+ *
+ * @return Error code
+ */
 int BaseLevel::playScene (char* file) {
 
 	Scene* scene;
@@ -97,6 +109,9 @@ int BaseLevel::playScene (char* file) {
 }
 
 
+/**
+ * Perform timing calculations.
+ */
 void BaseLevel::timeCalcs () {
 
 	// Calculate smoothed fps
@@ -142,6 +157,11 @@ void BaseLevel::timeCalcs () {
 }
 
 
+/**
+ * Display on-screen statistics.
+ *
+ * @param bg Palette index of the statistics box(es)
+ */
 void BaseLevel::drawStats (unsigned char bg) {
 
 	int count, width;
@@ -205,6 +225,15 @@ void BaseLevel::drawStats (unsigned char bg) {
 }
 
 
+/**
+ * Process iteration.
+ *
+ * @param menu Whether or not the level menu should be displayed
+ * @param option Selected menu uption
+ * @param message Whether or not the "paused" message is being displayed
+ *
+ * @return Error code
+ */
 int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 	int ret;
@@ -311,6 +340,9 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 }
 
 
+/**
+ * Add extra time.
+ */
 void BaseLevel::addTimer () {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -336,6 +368,11 @@ void BaseLevel::addTimer () {
 }
 
 
+/**
+ * Set the level stage.
+ *
+ * @param newStage New level stage
+ */
 void BaseLevel::setStage (LevelStage newStage) {
 
 	unsigned char buffer[MTL_L_STAGE];
@@ -358,6 +395,11 @@ void BaseLevel::setStage (LevelStage newStage) {
 }
 
 
+/**
+ * Determine the current level stage.
+ *
+ * @return The current level stage.
+ */
 LevelStage BaseLevel::getStage () {
 
 	return stage;

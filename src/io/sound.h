@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * sound.h
- *
- * 2nd June 2009: Created sound.h from parts of OpenJazz.h
+ * @file sound.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd June 2009: Created sound.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -56,6 +57,7 @@
 
 // Datatype
 
+/// Sound effect
 typedef struct {
 
 	unsigned char *data;

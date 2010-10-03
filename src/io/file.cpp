@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * file.cpp
- *
- * 3rd February 2009: Created file.cpp from parts of util.cpp
+ * @file file.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created file.cpp from parts of util.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -16,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * @section Description
+ * Deals with files.
  *
  */
 
@@ -29,11 +33,15 @@
 #include <zlib.h>
 
 
+/**
+ * Try opening a file from the available paths
+ *
+ * @param name File name
+ * @param write Whether or not the file can be written to
+ */
 File::File (const char* name, bool write) {
 
 	Path* path;
-
-	// Try opening the file from all the available directories
 
 	path = firstPath;
 

@@ -1,15 +1,16 @@
 
-/*
+/**
  *
- * game.h
+ * @file game.h
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 2nd March 2009: Created network.h from parts of OpenJazz.h
  * 9th February 2009: Renamed network.h to game.h
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -83,14 +84,17 @@
 class Anim;
 class File;
 
+/// Handling for single-player games and base class for multiplayer game handling classes
 class Game {
 
 	protected:
-		GameMode*      mode;
-		char*          levelFile;
-		int            difficulty;
-		unsigned int   sendTime, checkTime;
-		unsigned char  checkX, checkY;
+		GameMode*      mode; ///< Mode-specific management
+		char*          levelFile; ///< Current level's file name
+		int            difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
+		unsigned int   sendTime; ///< The next time data will be sent
+		unsigned int   checkTime; ///< The next time a connection/disconnection will be dealt with
+		unsigned char  checkX; ///< X-coordinate of the level checkpoint
+		unsigned char  checkY; ///< Y-coordinate of the level checkpoint
 
 		Game ();
 
@@ -114,20 +118,21 @@ class Game {
 };
 
 
+/// Game handling for multiplayer servers
 class ServerGame : public Game {
 
 	private:
-		int            clientStatus[MAX_CLIENTS]; /*
+		int            clientStatus[MAX_CLIENTS]; /**< Array of client statuses
  			-2: Connected and operational
  			-1: Not connected
 			>=0: Number of bytes of the level that have been sent */
-		int            clientPlayer[MAX_CLIENTS];
-		int            clientSock[MAX_CLIENTS];
-		unsigned char  recvBuffers[MAX_CLIENTS][BUFFER_LENGTH];
-		int            received[MAX_CLIENTS];
-		unsigned char *levelData;
-		int            levelSize;
-		int            sock;
+		int            clientPlayer[MAX_CLIENTS]; ///< Array of client player indexes
+		int            clientSock[MAX_CLIENTS]; ///< Array of client sockets
+		unsigned char  recvBuffers[MAX_CLIENTS][BUFFER_LENGTH]; ///< Array of buffers containing data received from clients
+		int            received[MAX_CLIENTS]; ///< Array containing the amount of data received from each client
+		unsigned char *levelData; ///< Contents of the current level file
+		int            levelSize; ///< Size of the current level file
+		int            sock; ///< Server socket
 
 	public:
 		ServerGame         (GameModeType mode, char *firstLevel, int gameDifficulty);
@@ -142,15 +147,16 @@ class ServerGame : public Game {
 };
 
 
+/// Game handling for multiplayer clients
 class ClientGame : public Game {
 
 	private:
-		File          *file;
-		unsigned char  recvBuffer[BUFFER_LENGTH];
-		int            received;
-		int            clientID;
-		int            maxPlayers;
-		int            sock;
+		File          *file; ///< File to which the incoming level will be written
+		unsigned char  recvBuffer[BUFFER_LENGTH]; ///< Buffer containing data received from server
+		int            received; ///< Amount of data received from server
+		int            clientID; ///< Client's index on the server
+		int            maxPlayers; ///< The maximum number of players in the game
+		int            sock; ///< Client socket
 
 	public:
 		ClientGame         (char *address);
@@ -167,7 +173,7 @@ class ClientGame : public Game {
 
 // Variable
 
-EXTERN Game *game;
+EXTERN Game *game; ///< Current game
 
 #endif
 

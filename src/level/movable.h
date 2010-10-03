@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * movable.h
- *
- * 15th January 2010: Created movable.h
+ * @file movable.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 15th January 2010: Created movable.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -29,6 +30,7 @@
 
 // Class
 
+/// Base class for all movable objects (players, events, bullets, birds)
 class Movable {
 
 	protected:

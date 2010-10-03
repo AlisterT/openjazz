@@ -1,15 +1,16 @@
 
-/*
+/**
  *
- * eventframe.cpp
+ * @file eventframe.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 19th July 2009: Created eventframe.cpp from parts of events.cpp
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -19,9 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Provides the once-per-frame functions of ordinary events.
  *
  */
@@ -155,7 +154,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 5:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 5 is
 
 			break;
 
@@ -182,19 +181,19 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 8:
 
-			// TODO: Bird-esque following
+			/// @todo Bird-esque following
 
 			break;
 
 		case 9:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 9 is
 
 			break;
 
 		case 10:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 10 is
 
 			break;
 
@@ -226,13 +225,13 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 14:
 
-			// TODO: Move back and forth rapidly
+			/// @todo Move back and forth rapidly
 
 			break;
 
 		case 15:
 
-			// TODO: Rise or lower to meet jazz
+			/// @todo Rise or lower to meet jazz
 
 			break;
 
@@ -246,25 +245,25 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 17:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 17 is
 
 			break;
 
 		case 18:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 18 is
 
 			break;
 
 		case 19:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 19 is
 
 			break;
 
 		case 20:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 20 is
 
 			break;
 
@@ -278,31 +277,31 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 22:
 
-			// TODO: Fall down in random spot and repeat
+			/// @todo Fall down in random spot and repeat
 
 			break;
 
 		case 23:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 23 is
 
 			break;
 
 		case 24:
 
-			// TODO: Crawl along ground and go downstairs
+			/// @todo Crawl along ground and go downstairs
 
 			break;
 
 		case 26:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 26 is
 
 			break;
 
 		case 27:
 
-			// TODO: Face jazz
+			/// @todo Face jazz
 
 			break;
 
@@ -467,49 +466,49 @@ Event* Event::step (unsigned int ticks, int msps) {
 
 		case 39:
 
-			// TODO: Collapsing floor
+			/// @todo Collapsing floor
 
 			break;
 
 		case 40:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 40 is
 
 			break;
 
 		case 41:
 
-			// TODO: Switch left & right anim periodically
+			/// @todo Switch left & right anim periodically
 
 			break;
 
 		case 42:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 42 is
 
 			break;
 
 		case 43:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 43 is
 
 			break;
 
 		case 44:
 
-			// TODO: Leap to greet Jazz very quickly
+			/// @todo Leap to greet Jazz very quickly
 
 			break;
 
 		case 45:
 
-			// TODO: Find out what this is
+			/// @todo Find out what behaviour 45 is
 
 			break;
 
 		case 46:
 
-			// TODO: "Final" boss
+			/// @todo "Final" boss
 
 			break;
 
@@ -533,7 +532,7 @@ Event* Event::step (unsigned int ticks, int msps) {
 			// 0: Static
 			// 25: Float up / Belt
 
-			// TODO: Remaining event behaviours
+			/// @todo Remaining event behaviours
 
 			break;
 

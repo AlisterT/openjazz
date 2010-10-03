@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2levelplayer.cpp
- *
- * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
+ * @file jj2levelplayer.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creation and destruction of players in levels, and their
  * interactions with other level objects.
  *
@@ -555,9 +554,10 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 }
 
 
+/**
+ * Copy data to be sent to clients/server
+ */
 void JJ2LevelPlayer::send (unsigned char *buffer) {
-
-	// Copy data to be sent to clients/server
 
 	buffer[9] = bird? 1: 0;
 	buffer[23] = energy;
@@ -586,9 +586,10 @@ void JJ2LevelPlayer::send (unsigned char *buffer) {
 }
 
 
+/**
+ * Interpret data received from client/server
+ */
 void JJ2LevelPlayer::receive (unsigned char *buffer) {
-
-	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 

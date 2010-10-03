@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * plasma.h
- *
- * 23rd June 2010: Created plasma.h
+ * @file plasma.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd June 2010: Created plasma.h
  *
+ * @section Licence
  * Copyright (c) 2010 Alireza Nejati
  *
  * OpenJazz is distributed under the terms of
@@ -24,6 +25,7 @@
 
 #include <SDL/SDL.h>
 
+/// Main menu background plasma effect
 class Plasma {
 
 	private:

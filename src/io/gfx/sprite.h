@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * sprite.h
- *
- * 19th March 2009: Created sprite.h from parts of level.h
- * 26th July 2009: Created anim.h from parts of sprite.h
+ * @file sprite.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 19th March 2009: Created sprite.h from parts of level.h
+ * 26th July 2009: Created anim.h from parts of sprite.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -32,10 +33,11 @@
 
 // Class
 
+/// Sprite
 class Sprite {
 
 	private:
-		SDL_Surface* pixels;
+		SDL_Surface* pixels; ///< Sprite image
 
 	public:
 		short int xOffset;

@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * video.cpp
- *
- * 13th July 2009: Created graphics.cpp from parts of util.cpp
- * 26th July 2009: Renamed graphics.cpp to video.cpp
+ * @file video.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 13th July 2009: Created graphics.cpp from parts of util.cpp
+ * 26th July 2009: Renamed graphics.cpp to video.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Contains graphics utility functions.
  *
  */
@@ -152,7 +151,7 @@ bool Video::create (int width, int height) {
 		gain.
 	b) the palette is emulated, there will be a HUGE speed loss.
 	Therefore, assume the palette is emulated. */
-	// TODO: Find a better way
+	/// @todo Find a better way to determine if palette is emulated
 	fakePalette = true;
 
 	return true;

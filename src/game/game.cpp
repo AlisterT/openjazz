@@ -1,16 +1,17 @@
 
-/*
+/**
  *
- * game.cpp
+ * @file game.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
  * 3rd June 2009: Created network.cpp from parts of game.cpp
  * 18th July 2009: Created servergame.cpp from parts of game.cpp
  * 18th July 2009: Created clientgame.cpp from parts of game.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -41,6 +42,9 @@
 #include <string.h>
 
 
+/**
+ * Create base game
+ */
 Game::Game () {
 
 	levelFile = NULL;
@@ -52,6 +56,12 @@ Game::Game () {
 }
 
 
+/**
+ * Create a new game
+ *
+ * @param firstLevel File name of the first level to play
+ * @param gameDifficulty Difficulty setting
+ */
 Game::Game (char *firstLevel, int gameDifficulty) {
 
 	levelFile = createString(firstLevel);
@@ -70,6 +80,9 @@ Game::Game (char *firstLevel, int gameDifficulty) {
 }
 
 
+/**
+ * Destroy game
+ */
 Game::~Game () {
 
 	if (levelFile) delete[] levelFile;
@@ -82,6 +95,13 @@ Game::~Game () {
 }
 
 
+/**
+ * Create a new game mode
+ *
+ * @param modeType The mode to create
+ *
+ * @return The new game mode (NULL on failure)
+ */
 GameMode* Game::createMode (GameModeType modeType) {
 
 	switch (modeType) {
@@ -113,6 +133,11 @@ GameMode* Game::createMode (GameModeType modeType) {
 }
 
 
+/**
+ * Get the game's mode
+ *
+ * @return The game's mode
+ */
 GameMode* Game::getMode () {
 
 	return mode;
@@ -120,6 +145,13 @@ GameMode* Game::getMode () {
 }
 
 
+/**
+ * Set the next level
+ *
+ * @param fileName The file name of the next level
+ *
+ * @return Error code
+ */
 int Game::setLevel (char *fileName) {
 
 	if (levelFile) delete[] levelFile;
@@ -132,6 +164,11 @@ int Game::setLevel (char *fileName) {
 }
 
 
+/**
+ * Play the game
+ *
+ * @return Error code
+ */
 int Game::play () {
 
 	Planet* planet;
@@ -326,9 +363,12 @@ int Game::play () {
 }
 
 
+/**
+ * Move the viewport towards the exit sign
+ *
+ * @param change Distance to move
+ */
 void Game::view (int change) {
-
-	// Move the viewport towards the exit sign
 
 	if (TTOF(checkX) > viewX + (canvasW << 9) + change) viewX += change;
 	else if (TTOF(checkX) < viewX + (canvasW << 9) - change) viewX -= change;
@@ -341,6 +381,11 @@ void Game::view (int change) {
 }
 
 
+/**
+ * No data is sent in single-player mode
+ *
+ * @param buffer Data that will not be sent. First byte indicates length.
+ */
 void Game::send (unsigned char *buffer) {
 
 	// Do nothing
@@ -350,6 +395,13 @@ void Game::send (unsigned char *buffer) {
 }
 
 
+/**
+ * Game iteration
+ *
+ * @param ticks Current time
+ *
+ * @return Error code
+ */
 int Game::step (unsigned int ticks) {
 
 	// Do nothing
@@ -359,6 +411,11 @@ int Game::step (unsigned int ticks) {
 }
 
 
+/**
+ * Assign point to team
+ *
+ * @param team Team to receive point
+ */
 void Game::score (unsigned char team) {
 
 	// Do nothing
@@ -368,6 +425,12 @@ void Game::score (unsigned char team) {
 }
 
 
+/**
+ * Set the checkpoint
+ *
+ * @param gridX X-coordinate (in tiles) of the checkpoint
+ * @param gridY Y-coordinate (in tiles) of the checkpoint
+ */
 void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 
 	checkX = gridX;
@@ -378,6 +441,11 @@ void Game::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Make a player restart the level from the beginning/last checkpoint
+ *
+ * @param player Player to reset
+ */
 void Game::resetPlayer (Player *player) {
 
 	player->reset(checkX, checkY);
@@ -387,6 +455,13 @@ void Game::resetPlayer (Player *player) {
 }
 
 
+/**
+ * Re-create a player's level player
+ *
+ * @param player Player to reset
+ * @param levelType Type of level (and, consequently, type of level player)
+ * @param anims New level player's animations
+ */
 void Game::resetPlayer (Player *player, LevelType levelType, Anim** anims) {
 
 	Anim* pAnims[PANIMS];

@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * servergame.cpp
- *
- * 18th July 2009: Created servergame.cpp from parts of game.cpp
- * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
+ * @file servergame.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 18th July 2009: Created servergame.cpp from parts of game.cpp
+ * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -36,6 +37,13 @@
 #include <string.h>
 
 
+/**
+ * Create game server
+ *
+ * @param modeType Game mode
+ * @param firstLevel File name of the first level to play
+ * @param gameDifficulty Difficulty setting
+ */
 ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficulty) {
 
 	int count;
@@ -84,6 +92,9 @@ ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficu
 }
 
 
+/**
+ * Disconnect clients and destroy server
+ */
 ServerGame::~ServerGame () {
 
 	int count;
@@ -105,6 +116,13 @@ ServerGame::~ServerGame () {
 }
 
 
+/**
+ * Set the next level and load it into memory
+ *
+ * @param fileName The file name of the next level
+ *
+ * @return Error code
+ */
 int ServerGame::setLevel (char* fileName) {
 
 	File* file;
@@ -162,6 +180,11 @@ int ServerGame::setLevel (char* fileName) {
 }
 
 
+/**
+ * Send data to clients
+ *
+ * @param buffer Data to send. First byte indicates length.
+ */
 void ServerGame::send (unsigned char* buffer) {
 
 	int count;
@@ -182,6 +205,13 @@ void ServerGame::send (unsigned char* buffer) {
 }
 
 
+/**
+ * Game iteration
+ *
+ * @param ticks Current time
+ *
+ * @return Error code
+ */
 int ServerGame::step (unsigned int ticks) {
 
 	unsigned char sendBuffer[BUFFER_LENGTH];
@@ -449,6 +479,11 @@ int ServerGame::step (unsigned int ticks) {
 }
 
 
+/**
+ * Assign point to team and inform clients
+ *
+ * @param team Team to receive point
+ */
 void ServerGame::score (unsigned char team) {
 
 	unsigned char buffer[MTL_G_SCORE];
@@ -472,6 +507,12 @@ void ServerGame::score (unsigned char team) {
 }
 
 
+/**
+ * Set the checkpoint and inform clients
+ *
+ * @param gridX X-coordinate (in tiles) of the checkpoint
+ * @param gridY Y-coordinate (in tiles) of the checkpoint
+ */
 void ServerGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];

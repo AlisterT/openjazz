@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * jj2levelplayerframe.cpp
- *
- * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
- *                 levelplayerframe.cpp
+ * @file jj2levelplayerframe.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
+ *                 levelplayerframe.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Provides the once-per-frame functions of players in levels.
  *
  */
@@ -178,13 +177,14 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 }
 
 
+/**
+ * Respond to controls, unless the player has been killed
+ */
 void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	JJ2Modifier* nextMod;
 	bool drop, platform;
 
-
-	// Respond to controls, unless the player has been killed
 
 	// If the player has been killed, do not move
 	if (!energy) {
@@ -449,7 +449,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			// Make sure bullet position is taken from correct animation
 			if (platform) animType = PA_STANDSHOOT;
 
-			// TODO: Create new bullet
+			/// @todo Create new bullet when firing
 
 			// Set when the next bullet can be fired
 			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
@@ -748,11 +748,12 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Calculate viewport
+ */
 void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;
-
-	// Calculate viewport
 
 	// Record old viewport position for applying lag
 	oldViewX = viewX;
@@ -847,7 +848,7 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	if (reaction == JJ2PR_INVINCIBLE) {
 
-		// TODO: Show invincibility effect
+		/// @todo Show invincibility effect
 
 	}
 
@@ -861,25 +862,25 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 		case JJ2S_FLAME:
 
-			// TODO: Show shield effect
+			/// @todo Show shield effect
 
 			break;
 
 		case JJ2S_BUBBLE:
 
-			// TODO: Show shield effect
+			/// @todo Show shield effect
 
 			break;
 
 		case JJ2S_PLASMA:
 
-			// TODO: Show shield effect
+			/// @todo Show shield effect
 
 			break;
 
 		case JJ2S_LASER:
 
-			// TODO: Show shield effect
+			/// @todo Show shield effect
 
 			break;
 

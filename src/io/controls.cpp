@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * controls.cpp
- *
- * 13th July 2009: Created controls.cpp from parts of main.cpp
+ * @file controls.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with input.
  *
  */

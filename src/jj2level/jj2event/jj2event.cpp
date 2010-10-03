@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2event.cpp
- *
- * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
+ * @file jj2event.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creating and freeing of JJ2 events.
  *
  */

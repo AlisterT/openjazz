@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * menu.h
- *
- * 3rd February 2009: Created menu.h from parts of OpenJazz.h
+ * @file menu.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created menu.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -40,6 +41,7 @@
 
 // Classes
 
+/// Menu base class, providing generic menu screens
 class Menu {
 
 	protected:
@@ -49,16 +51,16 @@ class Menu {
 
 };
 
-
+/// New game menus
 class GameMenu : public Menu {
 
 	private:
-		SDL_Surface*  episodeScreens[11];
-		SDL_Surface*  difficultyScreen;
-		SDL_Color     palette[256];
-		SDL_Color     greyPalette[256];
-		int           episodes;
-		unsigned char difficulty;
+		SDL_Surface*  episodeScreens[11]; ///< Episode images
+		SDL_Surface*  difficultyScreen; ///< 4 difficulty images
+		SDL_Color     palette[256]; ///< Episode selection palette
+		SDL_Color     greyPalette[256]; ///< Greyed-out episode selection palette
+		int           episodes; ///< Number of episodes
+		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 
 		int newGameDifficulty (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
@@ -75,7 +77,7 @@ class GameMenu : public Menu {
 
 };
 
-
+/// Setup menus
 class SetupMenu : public Menu {
 
 	private:
@@ -92,15 +94,15 @@ class SetupMenu : public Menu {
 
 };
 
-
+/// Main menu
 class MainMenu : public Menu {
 
 	private:
-		SDL_Surface* background;
-		SDL_Surface* highlight;
-		SDL_Surface* logo;
-		GameMenu*    gameMenu;
-		SDL_Color    palette[256];
+		SDL_Surface* background; ///< Menu image
+		SDL_Surface* highlight; ///< Menu image with highlighted text
+		SDL_Surface* logo; ///< OJ logo image
+		GameMenu*    gameMenu; ///< New game menu
+		SDL_Color    palette[256]; ///< Menu palette
 
 	public:
 		MainMenu  ();
@@ -113,7 +115,7 @@ class MainMenu : public Menu {
 
 // Variable
 
-EXTERN SDL_Color menuPalette[256];
+EXTERN SDL_Color menuPalette[256]; /// Palette used by most menu screens
 
 #endif
 

@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * gamemode.h
- *
- * 2nd August 2009: Created gamemode.h from parts of game.h
+ * @file gamemode.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd August 2009: Created gamemode.h from parts of game.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -34,6 +35,7 @@
 
 // Enum
 
+/// Game mode identifier
 enum GameModeType {
 
 	M_SINGLE = 0, M_COOP = 1, M_BATTLE = 2, M_TEAMBATTLE = 3, M_RACE = 4
@@ -46,6 +48,7 @@ enum GameModeType {
 class Font;
 class Player;
 
+/// Game mode base class
 class GameMode {
 
 	public:
@@ -59,6 +62,7 @@ class GameMode {
 
 };
 
+/// Single-player game mode
 class SingleGameMode : public GameMode {
 
 	public:
@@ -68,6 +72,7 @@ class SingleGameMode : public GameMode {
 
 };
 
+/// Co-operative game mode base class
 class CooperativeGameMode : public GameMode {
 
 	public:
@@ -76,6 +81,7 @@ class CooperativeGameMode : public GameMode {
 
 };
 
+/// Free-for-all game mode base class
 class FreeForAllGameMode : public GameMode {
 
 	public:
@@ -84,6 +90,7 @@ class FreeForAllGameMode : public GameMode {
 
 };
 
+/// Team-based game mode base class
 class TeamGameMode : public GameMode {
 
 	public:
@@ -92,6 +99,7 @@ class TeamGameMode : public GameMode {
 
 };
 
+/// Co-operative game mode
 class CoopGameMode : public CooperativeGameMode {
 
 	public:
@@ -99,30 +107,33 @@ class CoopGameMode : public CooperativeGameMode {
 
 };
 
+/// Battle game mode
 class BattleGameMode : public FreeForAllGameMode {
 
 	private:
-		int targetKills;
+		int targetKills; ///< Number of kills required for a player to win
 
 	public:
 		GameModeType getMode ();
 
 };
 
+/// Team battle game mode
 class TeamBattleGameMode : public TeamGameMode {
 
 	private:
-		int targetKills;
+		int targetKills; ///< Number of kills required for a team to win
 
 	public:
 		GameModeType getMode ();
 
 };
 
+/// Race game mode
 class RaceGameMode : public FreeForAllGameMode {
 
 	private:
-		int targetLaps;
+		int targetLaps; ///< Number of laps required for a player to win
 
 	public:
 		GameModeType getMode    ();

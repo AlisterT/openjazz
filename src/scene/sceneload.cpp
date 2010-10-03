@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * sceneload.cpp
- *
- * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
+ * @file sceneload.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading of cutscene data.
  *
  */
@@ -454,7 +453,7 @@ void Scene::loadData (File *f) {
 		LOG("Data dataLen", dataLen);
 		// AN
 
-		if (dataLen == EAnimationData) {
+		if (dataLen == 0x4e41) {
 
 			LOG("Data Type", "ANI");
 			animations = new SceneAnimation(animations);
@@ -532,7 +531,7 @@ void Scene::loadScripts (File *f) {
 	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
 
-		if (f->loadChar() == EScriptStartTag) { // Script tag
+		if (f->loadChar() == 0x50) { // Script tag
 
 			unsigned short int scriptid = f->loadShort();
 			LOG("Script id", scriptid);

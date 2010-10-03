@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * movable.cpp
- *
- * 15th January 2010: Created movable.cpp
+ * @file movable.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 15th January 2010: Created movable.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Contains the base class for all movable objects.
  *
  */

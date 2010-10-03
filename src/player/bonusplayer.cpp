@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * bonusplayer.cpp
- *
- * 24th June 2010: Created bonusplayer.cpp from parts of player.cpp and
- *                 playerframe.cpp
+ * @file bonusplayer.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 24th June 2010: Created bonusplayer.cpp from parts of player.cpp and
+ *                 playerframe.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with players in bonus levels.
  *
  */
@@ -59,7 +58,7 @@ BonusPlayer::BonusPlayer (Player* parent, Anim **newAnims, unsigned char startX,
 	for (count = 0; count < 256; count++)
 		palette[count].r = palette[count].g = palette[count].b = count;
 
-	// TODO: Custom colours
+	/// @todo Custom colours
 
 
 	return;

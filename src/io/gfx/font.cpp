@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * font.cpp
- *
- * 23rd August 2005: Created font.c
- * 3rd February 2009: Renamed font.c to font.cpp
+ * @file font.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd August 2005: Created font.c
+ * 3rd February 2009: Renamed font.c to font.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading, displaying and freeing of screen fonts.
  *
  */
@@ -494,12 +493,18 @@ void Font::showNumber (int n, int x, int y) {
 }
 
 
+/**
+ * Map a range of palette indices to another range
+ *
+ * @param start Start of original range
+ * @param length Span of original range
+ * @param newStart Start of new range
+ * @param newLength Span of new range
+ */
 void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
 	SDL_Color palette[256];
 	int count;
-
-	// Map a range of palette indices to another range
 
 	for (count = 0; count < length; count++)
 		palette[count].r = palette[count].g = palette[count].b =

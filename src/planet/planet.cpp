@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * planet.cpp
- *
- * 23rd August 2005: Created planet.c
- * 3rd February 2009: Renamed planet.c to planet.cpp
+ * @file planet.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd August 2005: Created planet.c
+ * 3rd February 2009: Renamed planet.c to planet.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2009 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading, displaying and freeing of the planet landing
  * sequence.
  *

@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * gamemode.cpp
- *
- * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
+ * @file gamemode.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -28,6 +29,14 @@
 #include "player/levelplayer.h"
 
 
+/**
+ * Outcome of player being hit
+ *
+ * @param source Player responsible for the hit
+ * @param victim Player victim of the hit
+ *
+ * @return Whether or not the hit should result in energy loss (true)
+ */
 bool GameMode::hit (Player *source, Player *victim) {
 
 	return true;
@@ -35,6 +44,14 @@ bool GameMode::hit (Player *source, Player *victim) {
 }
 
 
+/**
+ * Outcome of player being killed
+ *
+ * @param source Player responsible for the kill
+ * @param victim Player victim of the kill
+ *
+ * @return Whether or not the player should be be killed (true)
+ */
 bool GameMode::kill (Player *source, Player *victim) {
 
 	if (source && (victim == localPlayer)) game->score(source->getTeam());
@@ -44,6 +61,15 @@ bool GameMode::kill (Player *source, Player *victim) {
 }
 
 
+/**
+ * Outcome of level being completed
+ *
+ * @param player Player that has completed level
+ * @param gridX X-coordinate (in tiles) of finishing position
+ * @param gridY Y-coordinate (in tiles) of finishing position
+ *
+ * @return Whether or not the end-of-level signpost should be destroyed (true)
+ */
 bool GameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gridY) {
 
 	game->setCheckpoint(gridX, gridY);
@@ -55,6 +81,9 @@ bool GameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gr
 }
 
 
+/**
+ * Outcome of time running out
+ */
 void GameMode::outOfTime () {
 
 	return;
@@ -62,6 +91,11 @@ void GameMode::outOfTime () {
 }
 
 
+/**
+ * Get the game mode type
+ *
+ * @return Game mode type (M_SINGLE)
+ */
 GameModeType SingleGameMode::getMode () {
 
 	return M_SINGLE;
@@ -69,6 +103,11 @@ GameModeType SingleGameMode::getMode () {
 }
 
 
+/**
+ * Choose a team for a new player
+ *
+ * @return New player's team (0)
+ */
 unsigned char SingleGameMode::chooseTeam () {
 
 	return 0;
@@ -76,6 +115,11 @@ unsigned char SingleGameMode::chooseTeam () {
 }
 
 
+/**
+ * Draw the player's team's score (not in single-player mode)
+ *
+ * @param font Font to use to draw score
+ */
 void SingleGameMode::drawScore (Font* font) {
 
 	return;
@@ -83,6 +127,11 @@ void SingleGameMode::drawScore (Font* font) {
 }
 
 
+/**
+ * Choose a team for a new player
+ *
+ * @return New player's team (0)
+ */
 unsigned char CooperativeGameMode::chooseTeam () {
 
 	// All players are on the same team
@@ -92,6 +141,11 @@ unsigned char CooperativeGameMode::chooseTeam () {
 }
 
 
+/**
+ * Draw the player's team's score (not in cooperative mode)
+ *
+ * @param font Font to use to draw score
+ */
 void CooperativeGameMode::drawScore (Font* font) {
 
 	// Do nothing
@@ -101,6 +155,11 @@ void CooperativeGameMode::drawScore (Font* font) {
 }
 
 
+/**
+ * Choose a team for a new player
+ *
+ * @return New player's team (unique)
+ */
 unsigned char FreeForAllGameMode::chooseTeam () {
 
 	// Every player is on a separate team
@@ -123,6 +182,11 @@ unsigned char FreeForAllGameMode::chooseTeam () {
 }
 
 
+/**
+ * Draw the player's team's score
+ *
+ * @param font Font to use to draw score
+ */
 void FreeForAllGameMode::drawScore (Font* font) {
 
 	font->showNumber(localPlayer->teamScore, 64, 4);
@@ -132,6 +196,11 @@ void FreeForAllGameMode::drawScore (Font* font) {
 }
 
 
+/**
+ * Choose a team for a new player
+ *
+ * @return New player's team (0 or 1)
+ */
 unsigned char TeamGameMode::chooseTeam () {
 
 	// Players are split between two teams
@@ -158,6 +227,11 @@ unsigned char TeamGameMode::chooseTeam () {
 }
 
 
+/**
+ * Draw the player's team's score
+ *
+ * @param font Font to use to draw score
+ */
 void TeamGameMode::drawScore (Font* font) {
 
 	font->showNumber(localPlayer->teamScore, 64, 4);
@@ -167,6 +241,11 @@ void TeamGameMode::drawScore (Font* font) {
 }
 
 
+/**
+ * Get the game mode type
+ *
+ * @return Game mode type (M_COOP)
+ */
 GameModeType CoopGameMode::getMode () {
 
 	return M_COOP;
@@ -174,6 +253,11 @@ GameModeType CoopGameMode::getMode () {
 }
 
 
+/**
+ * Get the game mode type
+ *
+ * @return Game mode type (M_BATTLE)
+ */
 GameModeType BattleGameMode::getMode () {
 
 	return M_BATTLE;
@@ -181,6 +265,11 @@ GameModeType BattleGameMode::getMode () {
 }
 
 
+/**
+ * Get the game mode type
+ *
+ * @return Game mode type (M_TEAMBATTLE)
+ */
 GameModeType TeamBattleGameMode::getMode () {
 
 	return M_TEAMBATTLE;
@@ -188,6 +277,11 @@ GameModeType TeamBattleGameMode::getMode () {
 }
 
 
+/**
+ * Get the game mode type
+ *
+ * @return Game mode type (M_RACE)
+ */
 GameModeType RaceGameMode::getMode () {
 
 	return M_RACE;
@@ -195,6 +289,14 @@ GameModeType RaceGameMode::getMode () {
 }
 
 
+/**
+ * Outcome of player being hit
+ *
+ * @param source Player responsible for the hit
+ * @param victim Player victim of the hit
+ *
+ * @return Whether or not the hit should result in energy loss (false)
+ */
 bool RaceGameMode::hit (Player *source, Player *victim) {
 
 	return false;
@@ -202,6 +304,15 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
 }
 
 
+/**
+ * Outcome of level being completed
+ *
+ * @param player Player that has completed level
+ * @param gridX X-coordinate (in tiles) of finishing position
+ * @param gridY Y-coordinate (in tiles) of finishing position
+ *
+ * @return Whether or not the end-of-level signpost should be destroyed (false)
+ */
 bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gridY) {
 
 	if (player == localPlayer) game->score(localPlayer->getTeam());

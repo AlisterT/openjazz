@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * paletteeffects.h
- *
- * 4th February 2009: Created palette.h from parts of OpenJazz.h
- * 1st August 2009: Renamed palette.h to paletteeffects.h
+ * @file paletteeffects.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 4th February 2009: Created palette.h from parts of OpenJazz.h
+ * 1st August 2009: Renamed palette.h to paletteeffects.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -46,10 +47,11 @@
 
 // Class
 
+/// Palette effect base class
 class PaletteEffect {
 
 	protected:
-		PaletteEffect* next; // Next effect to use
+		PaletteEffect* next; ///< Next effect to use
 
 	public:
 		PaletteEffect          (PaletteEffect* nextPE);
@@ -59,11 +61,11 @@ class PaletteEffect {
 
 };
 
-
+/// Dissolve from white palette effect
 class WhiteInPaletteEffect : public PaletteEffect {
 
 	private:
-		int   duration;  // Number of milliseconds the effect lasts
+		int   duration;  ///< Number of milliseconds the effect lasts
 		fixed whiteness;
 
 	public:
@@ -73,11 +75,11 @@ class WhiteInPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Fade in palette effect
 class FadeInPaletteEffect : public PaletteEffect {
 
 	private:
-		int   duration;  // Number of milliseconds the effect lasts
+		int   duration;  ///< Number of milliseconds the effect lasts
 		fixed blackness;
 
 	public:
@@ -87,11 +89,11 @@ class FadeInPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Dissolve to white palette effect
 class WhiteOutPaletteEffect : public PaletteEffect {
 
 	private:
-		int   duration;  // Number of milliseconds the effect lasts
+		int   duration;  ///< Number of milliseconds the effect lasts
 		fixed whiteness;
 
 	public:
@@ -101,11 +103,11 @@ class WhiteOutPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Fade out palette effect
 class FadeOutPaletteEffect : public PaletteEffect {
 
 	private:
-		int   duration;  // Number of milliseconds the effect lasts
+		int   duration;  ///< Number of milliseconds the effect lasts
 		fixed blackness;
 
 	public:
@@ -115,13 +117,13 @@ class FadeOutPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Flash colour (dissolve to it and back again) palette effect
 class FlashPaletteEffect : public PaletteEffect {
 
 	private:
-		int           duration;  // Number of milliseconds the effect lasts
+		int           duration;  ///< Number of milliseconds the effect lasts
 		fixed         progress;
-		unsigned char red, green, blue; // Flash colour
+		unsigned char red, green, blue; ///< Flash colour
 
 	public:
 		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen, unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
@@ -130,13 +132,13 @@ class FlashPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Entry rotation palette effect
 class RotatePaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;    /* The first palette index affected */
-		int           amount;   /* The number of (consecutive) palette indices affected */
-		fixed         speed;    // Rotations per second
+		unsigned char first;    ///< The first palette index affected
+		int           amount;   ///< The number of (consecutive) palette indices affected
+		fixed         speed;    ///< Rotations per second
 		fixed         position;
 
 	public:
@@ -146,14 +148,14 @@ class RotatePaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Sky palette palette effect
 class SkyPaletteEffect : public PaletteEffect {
 
 	private:
 		SDL_Color*    skyPalette;
-		unsigned char first;      /* The first palette index affected */
-		int           amount;     /* The number of (consecutive) palette indices affected */
-		fixed         speed;      // Relative Y speed - as in Jazz 2
+		unsigned char first;      ///< The first palette index affected
+		int           amount;     ///< The number of (consecutive) palette indices affected
+		fixed         speed;      ///< Relative Y speed - as in Jazz 2
 
 	public:
 		SkyPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
@@ -162,13 +164,13 @@ class SkyPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// 2D parallaxing background palette effect
 class P2DPaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;  /* The first palette index affected */
-		int           amount; /* The number of (consecutive) palette indices affected */
-		fixed         speed;  // Relative X & Y speed - as in Jazz 2
+		unsigned char first;  ///< The first palette index affected
+		int           amount; ///< The number of (consecutive) palette indices affected
+		fixed         speed;  ///< Relative X & Y speed - as in Jazz 2
 
 	public:
 		P2DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
@@ -177,13 +179,13 @@ class P2DPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// 1D parallaxing background palette effect
 class P1DPaletteEffect : public PaletteEffect {
 
 	private:
-		unsigned char first;    /* The first palette index affected */
-		int           amount;   /* The number of (consecutive) palette indices affected */
-		fixed         speed;    // Relative X & Y speed - as in Jazz 2
+		unsigned char first;    ///< The first palette index affected
+		int           amount;   ///< The number of (consecutive) palette indices affected
+		fixed         speed;    ///< Relative X & Y speed - as in Jazz 2
 
 	public:
 		P1DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
@@ -192,11 +194,11 @@ class P1DPaletteEffect : public PaletteEffect {
 
 };
 
-
+/// Underwater darkening palette effect
 class WaterPaletteEffect : public PaletteEffect {
 
 	private:
-		fixed depth; /* Number of pixels between water surface and total darkness */
+		fixed depth; ///< Number of pixels between water surface and total darkness
 
 	public:
 		WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE);

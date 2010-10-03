@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * anim.h
- *
- * 26th July 2009: Created anim.h from parts of sprite.h
+ * @file anim.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 26th July 2009: Created anim.h from parts of sprite.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -33,10 +34,11 @@
 
 class Sprite;
 
+/// Animation
 class Anim {
 
 	private:
-		Sprite**       sprites;
+		Sprite**       sprites;   ///< Sprite images
 		signed char*   xOffsets;
 		signed char*   yOffsets;
 		bool           ignoreDefaultYOffset;
@@ -45,10 +47,10 @@ class Anim {
 		signed char    accessoryX;
 		signed char    accessoryY;
 		signed char    yOffset;
-		unsigned char  frames;    // Number of frames
-		unsigned char  frame;     // Current frame
-		unsigned char  accessory; // Number of an animation that is an accessory to this animation
-		                          // Most of the time accessories are used with guardians.
+		unsigned char  frames;    ///< Number of frames
+		unsigned char  frame;     ///< Current frame
+		unsigned char  accessory; ///< Number of an animation that is an accessory to this animation
+		                          ///< Most of the time accessories are used with guardians.
 
 	public:
 		Anim                        ();

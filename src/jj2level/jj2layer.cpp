@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2layer.cpp
- *
- * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
+ * @file jj2layer.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Handles JJ2 level layers.
  *
  */
@@ -30,9 +29,10 @@
 #include "io/gfx/video.h"
 
 
+/**
+ * Create a blank layer
+ */
 JJ2Layer::JJ2Layer () {
-
-	// Create a blank layer
 
 	width = height = 1;
 
@@ -78,9 +78,10 @@ JJ2Layer::~JJ2Layer () {
 }
 
 
+/**
+ * Get flipped. We aim to offend!
+ */
 bool JJ2Layer::getFlipped (int x, int y) {
-
-	// Get flipped. We aim to offend!
 
 	if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) return false;
 

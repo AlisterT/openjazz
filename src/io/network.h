@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * network.h
- *
- * 3rd June 2009: Created network.h from parts of OpenJazz.h
+ * @file network.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd June 2009: Created network.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -48,6 +49,7 @@
 
 // Class
 
+/// Networking
 class Network {
 
 	public:
@@ -75,7 +77,7 @@ class Network {
 
 // Variables
 
-EXTERN char    *netAddress;
+EXTERN char    *netAddress; /// Server address
 EXTERN Network *net;
 
 #endif

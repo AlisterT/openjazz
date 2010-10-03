@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bonus.h
- *
- * 3rd February 2009: Created bonus.h
+ * @file bonus.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created bonus.h
  *
+ * @section Licence
  * Copyright (c) 2009-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -42,10 +43,11 @@
 
 // Datatype
 
+/// JJ1 bonus level grid element
 typedef struct {
 
-	unsigned char tile;  // Indexes the tile set
-	unsigned char event;
+	unsigned char tile;  ///< Indexes the tile set
+	unsigned char event; ///< Event type
 
 } BonusGridElement;
 
@@ -54,17 +56,18 @@ typedef struct {
 
 class Font;
 
+/// JJ1 bonus level
 class Bonus : public BaseLevel {
 
 	private:
-		SDL_Surface*     tileSet;
-		SDL_Surface*     background;
-		Font*            font;
-		Sprite*          spriteSet;
-		Anim             animSet[BANIMS];
-		BonusGridElement grid[BLH][BLW];
-		char             mask[60][64]; // At most 60 tiles, all with 8 * 8 masks
-		fixed            direction;
+		SDL_Surface*     tileSet; ///< Tile images
+		SDL_Surface*     background; ///< Background image
+		Font*            font; ///< On-screen message font
+		Sprite*          spriteSet; ///< Sprite images
+		Anim             animSet[BANIMS]; ///< Animations
+		BonusGridElement grid[BLH][BLW]; ///< Level grid
+		char             mask[60][64]; ///< Tile masks (at most 60 tiles, all with 8 * 8 masks)
+		fixed            direction; ///< Player's direction
 
 		int  loadSprites ();
 		int  loadTiles   (char* fileName);

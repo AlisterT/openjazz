@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bullet.cpp
- *
- * 11th February 2009: Created bullet.cpp from parts of events.cpp
+ * @file bullet.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 11th February 2009: Created bullet.cpp from parts of events.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

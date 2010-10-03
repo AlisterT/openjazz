@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2eventframe.cpp
- *
- * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
+ * @file jj2eventframe.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the playing of JJ2 levels.
  *
  */
@@ -34,7 +33,7 @@
 #include "player/jj2levelplayer.h"
 
 
-// Look-up table for ammo animations (in animSet 1)
+/// Look-up table for ammo animations (in animSet 1)
 const unsigned char ammoAnims[] = {
 	28, // Ice
 	24, // Bouncer
@@ -46,7 +45,7 @@ const unsigned char ammoAnims[] = {
 	67 // Sparks
 };
 
-// Look-up table for food etc. animations (in animSet 67)
+/// Look-up table for food etc. animations (in animSet 67)
 const unsigned char pickupAnims[] = {
 	0, // 0
 	0, // 1
@@ -347,7 +346,7 @@ JJ2Event* PickupJJ2Event::step (unsigned int ticks, int msps) {
 
 	} else {
 
-		// TODO: Check for bullet overlap
+		/// @todo Check for bullet overlap
 		// floating = false;
 
 	}
@@ -367,7 +366,7 @@ void AmmoJJ2Event::draw (unsigned int ticks, int change) {
 	drawX = getDrawX(change);
 	drawY = getDrawY(change);
 
-	// TODO: Check if ammo is powered up
+	/// @todo Check if ammo is powered up
 	if (!endTime)an = jj2Level->getAnim(0, ammoAnims[type - 33] + 1, flipped);
 	else an = jj2Level->getAnim(67, 86, flipped);
 

@@ -1,15 +1,16 @@
 
-/*
+/**
  *
- * player.h
+ * @file player.h
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 31st January 2006: Created player.h from parts of OpenJazz.h
  * 24th June 2010: Created levelplayer.h from parts of player.h
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -50,6 +51,7 @@
 
 // Enums
 
+/// Player colours
 enum PlayerColour {
 
 	PC_GREY   = 0,
@@ -69,6 +71,7 @@ enum PlayerColour {
 
 };
 
+/// Player event types
 enum PlayerEvent {
 
 	LPE_NONE, LPE_SPRING, LPE_FLOAT, LPE_PLATFORM
@@ -83,27 +86,28 @@ class LevelPlayer;
 class BonusPlayer;
 class JJ2LevelPlayer;
 
+/// Game player
 class Player {
 
 	private:
-		LevelPlayer*    levelPlayer;
-		BonusPlayer*    bonusPlayer;
-		JJ2LevelPlayer* jj2LevelPlayer;
-		char*           name;
-		bool            pcontrols[PCONTROLS];
-		unsigned char   cols[PCOLOURS];
-		int             ammo[4];
-		int             ammoType; /* -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT */
-		int             score;
-		int             lives;
-		int             fireSpeed;
-		bool            bird;
-		unsigned char   team;
+		LevelPlayer*    levelPlayer; ///< JJ1 level player
+		BonusPlayer*    bonusPlayer; ///< JJ1 bonus level player
+		JJ2LevelPlayer* jj2LevelPlayer; ///< JJ2 level player
+		char*           name; ///< Name
+		bool            pcontrols[PCONTROLS]; ///< Control status
+		unsigned char   cols[PCOLOURS]; ///< Character colours
+		int             ammo[4]; ///< Amount of ammo
+		int             ammoType; ///< Ammo type. -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT
+		int             score; ///< Total score
+		int             lives; ///< Remaining lives
+		int             fireSpeed; ///< Rapid-fire rate
+		bool            bird; ///< Accompanied by a bird
+		unsigned char   team; ///< Team ID
 
 		void addAmmo (int type, int amount);
 
 	public:
-		int teamScore;
+		int teamScore; ///< Team's total score
 
 		Player  ();
 		~Player ();

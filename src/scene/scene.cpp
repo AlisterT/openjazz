@@ -1,16 +1,17 @@
 
-/*
+/**
  *
- * scene.cpp
+ * @file scene.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 23rd August 2005: Created scene.c
  * 3rd February 2009: Created scene.h from parts of scene.c
  * 3rd February 2009: Renamed scene.c to scene.cpp
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -20,9 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the displaying and freeing of the cutscenes.
  *
  */
@@ -198,7 +197,7 @@ Scene::Scene (const char * fileName) {
 	palettes = NULL;
 	animations = NULL;
 
-	file->seek(ESignatureLength, true); // Skip Digital Dimensions header
+	file->seek(0x13, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
 
 	scriptItems = file->loadShort(); // Get number of script items

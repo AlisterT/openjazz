@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * network.cpp
- *
- * 3rd June 2009: Created network.cpp from parts of game.cpp
+ * @file network.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd June 2009: Created network.cpp from parts of game.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -17,9 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with a platform-specific networking API.
  *
  * On most platforms, USE_SOCKETS should be defined.
@@ -73,6 +72,7 @@ Network::Network () {
 
 }
 
+
 Network::~Network () {
 
 #ifdef USE_SOCKETS
@@ -87,6 +87,7 @@ Network::~Network () {
 	return;
 
 }
+
 
 int Network::host () {
 
@@ -140,6 +141,7 @@ int Network::host () {
 #endif
 
 }
+
 
 int Network::join (char *address) {
 
@@ -250,6 +252,7 @@ int Network::join (char *address) {
 
 }
 
+
 int Network::accept (int sock) {
 
 #ifdef USE_SOCKETS
@@ -281,6 +284,7 @@ int Network::accept (int sock) {
 
 }
 
+
 void Network::close (int sock) {
 
 #ifdef USE_SOCKETS
@@ -297,6 +301,7 @@ void Network::close (int sock) {
 
 }
 
+
 int Network::send (int sock, unsigned char *buffer) {
 
 #ifdef USE_SOCKETS
@@ -309,6 +314,7 @@ int Network::send (int sock, unsigned char *buffer) {
 
 }
 
+
 int Network::recv (int sock, unsigned char *buffer, int length) {
 
 #ifdef USE_SOCKETS
@@ -320,6 +326,7 @@ int Network::recv (int sock, unsigned char *buffer, int length) {
 #endif
 
 }
+
 
 bool Network::isConnected (int sock) {
 

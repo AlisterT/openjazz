@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * loop.h
- *
- * 30th April 2010: Created loop.h from parts of OpenJazz.h
+ * @file loop.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -29,6 +30,7 @@
 
 // Enum
 
+/// Ways the loop function should handle input.
 enum LoopType {
 
 	NORMAL_LOOP, TYPING_LOOP, SET_KEY_LOOP, SET_JOYSTICK_LOOP

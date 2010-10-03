@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bullet.h
- *
- * 11th February 2009: Created bullet.h from parts of events.h
+ * @file bullet.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 11th February 2009: Created bullet.h from parts of events.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -54,15 +55,16 @@ class Event;
 class LevelPlayer;
 class Sprite;
 
+/// Bullet
 class Bullet : public Movable {
 
 	private:
 		Bullet*      next;
-		LevelPlayer* source;    // If NULL, was fired by an event
-		Sprite*      sprite;
-		int          type;      // -1 is TNT, otherwise indexes the bullet set
-		int          direction; // 0: Left, 1: Right, 2: L (lower), 3: R (lower)
-		unsigned int time;      // Time at which the bullet will self-destruct
+		LevelPlayer* source; ///< Source player. If NULL, was fired by an event
+		Sprite*      sprite; ///< Sprite
+		int          type; ///< -1 is TNT, otherwise indexes the bullet set
+		int          direction; ///< 0: Left, 1: Right, 2: L (lower), 3: R (lower)
+		unsigned int time; ///< Time at which the bullet will self-destruct
 
 		Bullet* remove ();
 

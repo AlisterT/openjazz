@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * clientgame.cpp
- *
- * 18th July 2009: Created clientgame.cpp from parts of game.cpp
+ * @file clientgame.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 18th July 2009: Created clientgame.cpp from parts of game.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -38,6 +39,11 @@
 #include <string.h>
 
 
+/**
+ * Create game client
+ *
+ * @param address Address of the server to which to connect
+ */
 ClientGame::ClientGame (char* address) {
 
 	unsigned char buffer[BUFFER_LENGTH];
@@ -229,6 +235,9 @@ ClientGame::ClientGame (char* address) {
 }
 
 
+/**
+ * Disconnect and destroy client
+ */
 ClientGame::~ClientGame () {
 
 	net->close(sock);
@@ -242,6 +251,13 @@ ClientGame::~ClientGame () {
 }
 
 
+/**
+ * Set the next level and receive level data from server
+ *
+ * @param fileName The file name of the next level
+ *
+ * @return Error code
+ */
 int ClientGame::setLevel (char* fileName) {
 
 	int ret;
@@ -291,6 +307,11 @@ int ClientGame::setLevel (char* fileName) {
 }
 
 
+/**
+ * Send data to server
+ *
+ * @param buffer Data to send. First byte indicates length.
+ */
 void ClientGame::send (unsigned char* buffer) {
 
 	net->send(sock, buffer);
@@ -300,6 +321,13 @@ void ClientGame::send (unsigned char* buffer) {
 }
 
 
+/**
+ * Game iteration
+ *
+ * @param ticks Current time
+ *
+ * @return Error code
+ */
 int ClientGame::step (unsigned int ticks) {
 
 	unsigned char sendBuffer[BUFFER_LENGTH];
@@ -505,6 +533,11 @@ int ClientGame::step (unsigned int ticks) {
 }
 
 
+/**
+ * Ask server to award team a point
+ *
+ * @param team Team to receive point
+ */
 void ClientGame::score (unsigned char team) {
 
 	unsigned char buffer[MTL_G_SCORE];
@@ -520,19 +553,21 @@ void ClientGame::score (unsigned char team) {
 }
 
 
+/**
+ * Ask server to approve new checkpoint
+ *
+ * @param gridX X-coordinate (in tiles) of the checkpoint
+ * @param gridY Y-coordinate (in tiles) of the checkpoint
+ */
 void ClientGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];
 
-	if (mode) {
-
-		buffer[0] = MTL_G_CHECK;
-		buffer[1] = MT_G_CHECK;
-		buffer[2] = gridX;
-		buffer[3] = gridY;
-		send(buffer);
-
-	}
+	buffer[0] = MTL_G_CHECK;
+	buffer[1] = MT_G_CHECK;
+	buffer[2] = gridX;
+	buffer[3] = gridY;
+	send(buffer);
 
 	return;
 

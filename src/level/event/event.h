@@ -1,17 +1,18 @@
 
-/*
+/**
  *
- * event.h
+ * @file event.h
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 4th February 2009: Created events.h from parts of level.h
  * 11th February 2009: Created bullet.h from parts of events.h
  * 1st March 2009: Created bird.h from parts of events.h
  * 19th July 2009: Renamed events.h to event.h
  * 2nd March 2010: Created guardians.h from parts of event.h
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -79,14 +80,15 @@
 
 class LevelPlayer;
 
+/// JJ1 level event
 class Event : public Movable {
 
 	protected:
 		Event*        next;
-		unsigned char gridX, gridY; // Grid position of the event
-		unsigned char animType;     // E_LEFTANIM, etc, or 0
-		unsigned char frame;
-		unsigned int  flashTime;
+		unsigned char gridX, gridY; ///< Grid position of the event
+		unsigned char animType; ///< E_LEFTANIM, etc, or 0
+		unsigned char frame; ///< Current animation frame
+		unsigned int  flashTime;///< Time flash will end
 		bool          noAnimOffset;
 		bool          onlyLAnimOffset;
 		bool          onlyRAnimOffset;
@@ -119,6 +121,7 @@ class Event : public Movable {
 
 };
 
+/// JJ1 level bridge
 class Bridge : public Event {
 
 	private:

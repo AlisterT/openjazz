@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * video.h
- *
- * 13th July 2009: Created graphics.h from parts of OpenJazz.h
- * 26th July 2009: Renamed graphics.h to video.h
+ * @file video.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 13th July 2009: Created graphics.h from parts of OpenJazz.h
+ * 26th July 2009: Renamed graphics.h to video.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -53,26 +54,28 @@
 
 // Class
 
+/// Video output
 class Video {
 
 	private:
-		SDL_Surface* screen;
+		SDL_Surface* screen; ///< Output surface
 
 		// Palettes
-		SDL_Color*   currentPalette;
-		SDL_Color    logicalPalette[256];
-		bool         fakePalette;
+		SDL_Color*   currentPalette; ///< Current palette
+		SDL_Color    logicalPalette[256]; ///< Logical palette (greyscale)
+		bool         fakePalette; ///< Whether or not the palette mode is being emulated
 
-		int          screenW, screenH;
+		int          screenW; ///< Real width
+		int          screenH; ///< Real height
 #ifdef SCALE
-		int          scaleFactor;
+		int          scaleFactor; ///< Scaling factor
 #endif
 #ifndef FULLSCREEN_ONLY
-		bool         fullscreen;
+		bool         fullscreen; ///< Full-screen mode
 #endif
 
 	public:
-		Video  ();
+		Video ();
 
 		bool       create                (int width, int height);
 
@@ -102,10 +105,11 @@ class Video {
 
 // Variables
 
-EXTERN SDL_Surface* canvas;
-EXTERN int          canvasW, canvasH;
+EXTERN SDL_Surface* canvas; ///< Surface used for drawing
+EXTERN int          canvasW; ///< Drawing surface width
+EXTERN int          canvasH; ///< Drawing surface height
 
-EXTERN Video video;
+EXTERN Video video; ///< Video output
 
 
 // Functions

@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * font.h
- *
- * 3rd February 2009: Created font.h from parts of OpenJazz.h
+ * @file font.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created font.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -33,13 +34,14 @@
 
 class File;
 
+/// Font
 class Font {
 
 	private:
-		SDL_Surface   *characters[128];
-		int            nCharacters;
-		unsigned char  lineHeight;
-		char           map[128]; // Maps ASCII values to letter positions
+		SDL_Surface   *characters[128]; ///< Symbol images
+		int            nCharacters; ///< Number of symbols
+		unsigned char  lineHeight; ///< Vertical spacing of displayed characters
+		char           map[128]; ///< Maps ASCII values to symbol indices
 
 	public:
 		Font                     (const char *fileName);
@@ -61,13 +63,13 @@ class Font {
 
 // Variables
 
-EXTERN Font *font2;          /* Taken from .0FN file name */
-EXTERN Font *fontbig;        /* Taken from .0FN file name */
-EXTERN Font *fontiny;        /* Taken from .0FN file name */
-EXTERN Font *fontmn1;        /* Taken from .0FN file name */
-EXTERN Font *fontmn2;        /* Taken from .0FN file name */
-EXTERN Font *panelBigFont;   /* Found in PANEL.000 */
-EXTERN Font *panelSmallFont; /* Found in PANEL.000 */
+EXTERN Font *font2;          /** Taken from .0FN file name */
+EXTERN Font *fontbig;        /** Taken from .0FN file name */
+EXTERN Font *fontiny;        /** Taken from .0FN file name */
+EXTERN Font *fontmn1;        /** Taken from .0FN file name */
+EXTERN Font *fontmn2;        /** Taken from .0FN file name */
+EXTERN Font *panelBigFont;   /** Found in PANEL.000 */
+EXTERN Font *panelSmallFont; /** Found in PANEL.000 */
 
 #endif
 

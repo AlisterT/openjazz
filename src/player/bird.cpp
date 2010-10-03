@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bird.cpp
- *
- * 1st March 2009: Created bird.cpp from parts of events.cpp
+ * @file bird.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 1st March 2009: Created bird.cpp from parts of events.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

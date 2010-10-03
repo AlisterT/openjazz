@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * sound.cpp
- *
- * 23rd August 2005: Created sound.c
- * 3rd February 2009: Renamed sound.c to sound.cpp
+ * @file sound.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd August 2005: Created sound.c
+ * 3rd February 2009: Renamed sound.c to sound.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading, playing and freeing of music and sound effects.
  *
  * For music, USE_MODPLUG must be defined.
@@ -354,9 +353,10 @@ void freeSounds () {
 }
 
 
+/**
+ * Set the sound to be played
+ */
 void playSound (int newSound) {
-
-	// Set the sound to be played
 
 	if (sounds && (newSound >= 0)) sounds[newSound].position = 0;
 

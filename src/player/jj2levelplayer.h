@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2levelplayer.h
- *
- * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
+ * @file jj2levelplayer.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -226,12 +227,14 @@
 
 // Enum
 
+/// JJ2 player reaction type
 enum JJ2PlayerReaction {
 
 	JJ2PR_NONE, JJ2PR_HURT, JJ2PR_KILLED, JJ2PR_INVINCIBLE
 
 };
 
+/// JJ2 shield type
 enum JJ2Shield {
 
 	 JJ2S_NONE = 0, JJ2S_FLAME = 1, JJ2S_BUBBLE = 2, JJ2S_PLASMA = 3, JJ2S_LASER = 4
@@ -244,37 +247,39 @@ enum JJ2Shield {
 class Anim;
 class JJ2Event;
 
+/// JJ2 level player
 class JJ2LevelPlayer : public Movable {
 
 	private:
-		bool              bird; // Placeholder for eventual JJ2Bird object
-		Anim*             anims;
-		Anim*             flippedAnims;
-		JJ2Modifier*      mod;
-		SDL_Color         palette[256];
-		int               energy;
-		JJ2Shield         shield;
-		int               floating; /* 0 = normal, 1 = helicopter ears, 2 = boarding */
-		bool              facing;
-		unsigned char     animType;
-		PlayerEvent       event;
-		int               lookTime; /* Negative if looking up, positive if looking down, 0 if neither */
-		JJ2PlayerReaction reaction;
-		unsigned int      reactionTime;
-		unsigned int      fireTime;
-		fixed             jumpHeight;
-		fixed             throwX, throwY;
+		bool              bird; ///< Placeholder for eventual JJ2Bird object
+		Anim*             anims; ///< Animations
+		Anim*             flippedAnims; ///< Animations (flipped)
+		JJ2Modifier*      mod; ///< Modifier currently affecting player
+		SDL_Color         palette[256]; ///< Palette (for custom colours)
+		int               energy; ///< 0 = dead, 3 or 5 = maximum
+		JJ2Shield         shield; ///< Current shield
+		int               floating; ///< 0 = normal, 1 = helicopter ears, 2 = boarding
+		bool              facing; ///< false = left, true = right
+		unsigned char     animType; ///< Current animation
+		PlayerEvent       event; ///< Event type
+		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
+		JJ2PlayerReaction reaction; ///< Reaction type
+		unsigned int      reactionTime; ///< Time reaction will end
+		unsigned int      fireTime; ///< The next time the player can fire
+		fixed             jumpHeight; ///< The height the player can reach when jumping
+		fixed             throwX; ///< Having been thrown, the x-coordinate the player can reach
+		fixed             throwY; ///< Having been thrown, the y-coordinate the player can reach
 		unsigned int      fastFeetTime;
 		unsigned int      stopTime;
-		int               gems[4];
-		int               coins;
+		int               gems[4]; ///< Gems collected
+		int               coins; ///< Value of coins collected
 
 		void              centreX ();
 		void              centreY ();
 		void              modify  (JJ2Modifier* nextMod, unsigned int ticks);
 
 	public:
-		Player* player;
+		Player* player; ///< Corresponding game player
 
 		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
 		~JJ2LevelPlayer ();

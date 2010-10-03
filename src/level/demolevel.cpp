@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * demolevel.cpp
- *
- * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
- *                 levelload.cpp
+ * @file demolevel.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
+ *                 levelload.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading and playing of demo levels.
  *
  */

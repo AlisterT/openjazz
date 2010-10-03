@@ -1,8 +1,11 @@
 
-/*
+/**
  *
- * level.cpp
+ * @file level.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 23rd August 2005: Created level.c
  * 1st January 2006: Created events.c from parts of level.c
  * 22nd July 2008: Created levelload.c from parts of level.c
@@ -17,9 +20,7 @@
  *                  levelframe.cpp
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -29,9 +30,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creating, playing and freeing of levels.
  *
  */
@@ -468,9 +467,12 @@ int Level::playBonus () {
 }
 
 
+/**
+ * Interpret data received from client/server
+ *
+ * @param buffer Received data
+ */
 void Level::receive (unsigned char* buffer) {
-
-	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 

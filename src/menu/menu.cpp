@@ -1,8 +1,11 @@
 
-/*
+/**
  *
- * menu.cpp
+ * @file menu.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 23rd of August 2005: Created menu.c
  * 3rd of February 2009: Renamed menu.c to menu.cpp
  * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
@@ -12,9 +15,7 @@
  * 19th July 2009: Created menumain.cpp from parts of menu.cpp
  * 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -24,9 +25,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Provides various generic menus.
  *
  */
@@ -44,9 +43,10 @@
 #include <string.h>
 
 
+/**
+ * Display a message to the user
+ */
 int Menu::message (const char* text) {
-
-	// Display a message to the user
 
 	video.setPalette(menuPalette);
 
@@ -71,9 +71,10 @@ int Menu::message (const char* text) {
 }
 
 
+/**
+ * Let the user select from a menu of the given options
+ */
 int Menu::generic (const char** optionNames, int options, int& chosen) {
-
-	// Let the user select from a menu of the given options
 
 	int count;
 
@@ -121,9 +122,10 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 }
 
 
+/**
+ * Let the user edit a text string
+ */
 int Menu::textInput (const char* request, char*& text) {
-
-	// Let the user to edit a text string
 
 	char *input;
 	int count, terminate, character, x;

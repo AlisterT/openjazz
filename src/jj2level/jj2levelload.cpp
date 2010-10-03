@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * levelloadjj2.cpp
- *
- * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
- * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
+ * @file jj2levelload.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
+ * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading of JJ2 level data.
  *
  */

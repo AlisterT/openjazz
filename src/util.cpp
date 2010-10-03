@@ -1,17 +1,18 @@
 
-/*
+/**
  *
- * util.cpp
+ * @file util.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 22nd July 2008: Created util.c from parts of main.c
  * 3rd February 2009: Renamed util.c to util.cpp
  * 3rd February 2009: Created file.cpp from parts of util.cpp
  * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
  * 13th July 2009: Created graphics.cpp from parts of util.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -21,9 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Contains core utility functions.
  *
  */

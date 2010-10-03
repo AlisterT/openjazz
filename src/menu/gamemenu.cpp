@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * gamemenu.cpp
- *
- * 18th July 2009: Created menugame.cpp from parts of menu.cpp
- * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
+ * @file gamemenu.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 18th July 2009: Created menugame.cpp from parts of menu.cpp
+ * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the running of the menus used to create a new game.
  *
  */
@@ -234,7 +233,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 
 int GameMenu::loadGame () {
 
-	// TODO: Actual loading of saved games
+	/// @todo Actual loading of saved games
 
 	int option, worldNum, levelNum;
 

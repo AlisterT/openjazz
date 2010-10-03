@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * planet.h
- *
- * 3rd of February 2009: Created planet.h
+ * @file planet.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd of February 2009: Created planet.h
  *
+ * @section Licence
  * Copyright (c) 2009 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -31,13 +32,14 @@
 
 // Class
 
+/// Planet approach sequence
 class Planet {
 
 	private:
-		SDL_Color palette[256];
-		Sprite    sprite;
-		char*     name;
-		int       id;
+		SDL_Color palette[256]; /// Palette
+		Sprite    sprite; /// Planet image
+		char*     name; /// Planet name
+		int       id; /// World number
 
 	public:
 		Planet  (char * fileName, int previous);

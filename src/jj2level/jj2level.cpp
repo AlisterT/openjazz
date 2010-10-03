@@ -1,15 +1,16 @@
 
-/*
+/**
  *
- * jj2level.cpp
+ * @file jj2level.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
  * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -19,9 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the creating, playing and freeing of JJ2 levels.
  *
  */
@@ -269,9 +268,12 @@ void JJ2Level::warp (JJ2LevelPlayer *player, int id) {
 }
 
 
+/**
+ * Interpret data received from client/server
+ *
+ * @param buffer Received data
+ */
 void JJ2Level::receive (unsigned char* buffer) {
-
-	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 

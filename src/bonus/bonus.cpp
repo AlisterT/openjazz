@@ -1,14 +1,15 @@
 
-/*
+/**
  *
- * bonus.cpp
- *
- * 23rd August 2005: Created bonus.c
- * 3rd February 2009: Renamed bonus.c to bonus.cpp
+ * @file bonus.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd August 2005: Created bonus.c
+ * 3rd February 2009: Renamed bonus.c to bonus.cpp
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,9 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading, running and freeing of bonus levels.
  *
  */
@@ -416,9 +415,12 @@ bool Bonus::checkMask (fixed x, fixed y) {
 }
 
 
+/**
+ * Interpret data received from client/server
+ *
+ * @param buffer Received data
+ */
 void Bonus::receive (unsigned char* buffer) {
-
-	// Interpret data received from client/server
 
 	switch (buffer[1]) {
 

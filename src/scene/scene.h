@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * scene.h
- *
- * 3rd February 2009: Created scene.h from parts of scene.c
+ * @file scene.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 3rd February 2009: Created scene.h from parts of scene.c
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -32,11 +33,12 @@
 // Enums
 
 /**
+ * Cutscene file animation headers
 11
 1L
 /0/0
 PB
-FF 
+FF
 RN
 RB
 RC
@@ -48,36 +50,28 @@ AN
 _E
 MX
 ST
-SL 
+SL
 */
-
 enum ANIHeaders
 	{
-	E11AniHeader = 0x3131, // Background/start image
+	E11AniHeader = 0x3131, ///< Background/start image
 	E1LAniHeader = 0x4c31,
 	EPBAniHeader = 0x4250,
-	EFFAniHeader = 0x4646, // Floodfill? or full frame?
+	EFFAniHeader = 0x4646, ///< Floodfill? or full frame?
 	ERNAniHeader = 0x4e52,
 	ERBAniHeader = 0x4252,
 	ERCAniHeader = 0x4352,
 	ERLAniHeader = 0x4c52,
 	ERRAniHeader = 0x5252,
-	E_EHeader = 0x455F, // ANI End
+	E_EHeader = 0x455F, ///< ANI End
 	ESquareAniHeader = 0x5b5d,
 	EMXAniHeader = 0x584d,
-	ESTAniHeader = 0x5453, // Sound tag
+	ESTAniHeader = 0x5453, ///< Sound tag
 	ESoundListAniHeader = 0x4C53,
 	EPlayListAniHeader = 0x4C50
 	};
 
-enum
-{
-    ESignatureLength = 0x13,
-    EScriptStartTag = 0x50,  
-    EAnimationData = 0x4e41
-};
-
-// These are the known script types
+/// Cutscene script types - these are the known types
 enum {
 	ESceneYesNo = 0x23,
 	ESceneMusic = 0x2A,
@@ -111,6 +105,7 @@ enum {
 
 class Font;
 
+/// Cutscene page text
 class SceneText {
 
 	public:
@@ -127,6 +122,7 @@ class SceneText {
 
 };
 
+/// Cutscene page
 class ScenePage {
 
 	public:
@@ -134,13 +130,13 @@ class ScenePage {
 		int                bgIndex[30];
 		unsigned short int bgX[30];
 		unsigned short int bgY[30];
-	
+
 		int animLoops;
 		int animSpeed;
-		int animIndex;		
+		int animIndex;
 		int nextPageAfterAnim;
-		
-		// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
+
+		/// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
 		int                pageTime;
 		SceneText          texts[100];
 		int                nTexts;
@@ -153,6 +149,7 @@ class ScenePage {
 
 };
 
+/// Cutscene background image
 class SceneImage {
 
 	public:
@@ -165,6 +162,7 @@ class SceneImage {
 
 };
 
+/// Cutscene palette
 class ScenePalette {
 
 	public:
@@ -177,6 +175,7 @@ class ScenePalette {
 
 };
 
+/// Cutscene font
 class SceneFont {
 
 	public:
@@ -185,6 +184,7 @@ class SceneFont {
 
 };
 
+/// Cutscene animation frame
 class SceneFrame
 	{
 public:
@@ -198,6 +198,7 @@ public:
 	SceneFrame*  prev;
 	};
 
+/// Cutscene animation
 class SceneAnimation
 	{
 public:
@@ -205,7 +206,7 @@ public:
 		~SceneAnimation ();
 		void addFrame(int frameType, unsigned char* frameData, int frameSize);
 		SDL_Surface*       background;
-		SceneAnimation*  next;		
+		SceneAnimation*  next;
 		int id;
 		int noSounds;
 		char soundNames[16][10];
@@ -215,9 +216,10 @@ public:
 		int reverseAnimation;
 	};
 
+/// Cutscene
 class Scene {
 
-	private:		
+	private:
 		SceneAnimation*    animations;
 		SceneImage*        images;
 		ScenePalette*      palettes;
@@ -228,7 +230,7 @@ class Scene {
 		signed long int*   scriptStarts;
 		signed long int*   dataOffsets;
 
-		// Scripts all information needed to render script pages, text etc
+		/// Scripts all information needed to render script pages, text etc
 		ScenePage*         pages;
 
 		void               loadScripts      (File* f);

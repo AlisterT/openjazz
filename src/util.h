@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * util.h
- *
- * 30th April 2010: Created util.h from parts of OpenJazz.h
+ * @file util.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 30th April 2010: Created util.h from parts of OpenJazz.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -29,7 +30,7 @@
 
 // Variable
 
-// Trigonometric function look-up table
+/// Trigonometric function look-up table
 EXTERN fixed sinLut[1024];
 
 

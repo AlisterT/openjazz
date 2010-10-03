@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * baselevel.h
- *
- * 30th March 2010: Created baselevel.h from parts of level.h
+ * @file baselevel.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 30th March 2010: Created baselevel.h from parts of level.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -39,18 +40,21 @@
 
 // Enums
 
+/// Level type
 enum LevelType {
 
 	LT_LEVEL, LT_BONUS, LT_JJ2LEVEL
 
 };
 
+/// Which stats to display on-screen
 enum LevelStats {
 
 	S_PLAYERS = 1, S_SCREEN = 2
 
 };
 
+/// Level stage
 enum LevelStage {
 
 	LS_NORMAL = 0, LS_SUDDENDEATH = 1, LS_END = 2
@@ -63,23 +67,27 @@ enum LevelStage {
 class File;
 class Sprite;
 
+/// Base class for all level classes
 class BaseLevel {
 
 	private:
-		SetupMenu setupMenu;
+		SetupMenu setupMenu; ///< Setup menu to run on the player's command
 
 	protected:
-		PaletteEffect* paletteEffects;
-		SDL_Color      palette[256];
-		int            sprites;
-		unsigned int   tickOffset, prevStepTicks, prevTicks, ticks;
-		unsigned int   endTime;
-		float          smoothfps;
-		int            items;
-		bool           multiplayer;
-		bool           paused;
-		LevelStage     stage;
-		int            stats;
+		PaletteEffect* paletteEffects; ///< Palette effects in use while playing the level
+		SDL_Color      palette[256]; ///< Palette in use while playing the level
+		int            sprites; ///< The number of sprite that have been loaded
+		unsigned int   tickOffset; ///< Level time offset from system time
+		unsigned int   prevStepTicks; ///< Time the last step started
+		unsigned int   prevTicks; ///< Time the last visual update started
+		unsigned int   ticks; ///< Current time
+		unsigned int   endTime; ///< Tick at which the level will end
+		float          smoothfps; ///< Smoothed FPS counter
+		int            items; ///< Number of items to be collected
+		bool           multiplayer; ///< Whether or not this is a multiplayer game
+		bool           paused; ///< Whether or not the level is paused
+		LevelStage     stage; ///< Level stage
+		int            stats; ///< Which statistics to display on-screen, see #LevelStats
 
 		int  playScene (char* file);
 		void timeCalcs ();
@@ -100,8 +108,8 @@ class BaseLevel {
 
 // Variables
 
-EXTERN BaseLevel* baseLevel;
-EXTERN fixed  viewX, viewY;
+EXTERN BaseLevel* baseLevel; ///< Current level
+EXTERN fixed      viewX, viewY; ///< Level viewing co-ordinates
 
 #endif
 

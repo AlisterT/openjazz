@@ -1,17 +1,18 @@
 
-/*
+/**
  *
- * main.cpp
+ * @file main.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 23rd August 2005: Created main.c
  * 22nd July 2008: Created util.c from parts of main.c
  * 3rd February 2009: Renamed main.c to main.cpp
  * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -21,9 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Contains the main function.
  *
  */
@@ -64,6 +63,17 @@ extern float sinf (float);
 #define PI 3.141592f
 
 
+/**
+ * Initialises OpenJazz.
+ *
+ * Establishes the paths from which to read files, loads configuration, sets up
+ * the game window and loads required data.
+ *
+ * @param argc Number of arguments, as passed to main function
+ * @param argv Array of argument strings, as apsse to main function
+ *
+ * @return Error code
+ */
 int loadMain (int argc, char *argv[]) {
 
 	File* file;
@@ -400,6 +410,11 @@ int loadMain (int argc, char *argv[]) {
 }
 
 
+/**
+ * De-initialises OpenJazz.
+ *
+ * Frees data, writes configuration, and shuts down SDL.
+ */
 void freeMain () {
 
 	File *file;
@@ -503,6 +518,16 @@ void freeMain () {
 }
 
 
+/**
+ * Process iteration.
+ *
+ * Called once per game iteration. Updates timing, video, and input
+ *
+ * @param type Type of loop. Normal, typing, or input configuration
+ * @param paletteEffects Palette effects to apply to video output
+ *
+ * @return Error code
+ */
 int loop (LoopType type, PaletteEffect* paletteEffects) {
 
 	SDL_Event event;
@@ -597,6 +622,11 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 }
 
 
+/**
+ * Main.
+ *
+ * Initialises SDL and launches game.
+ */
 int main(int argc, char *argv[]) {
 
 	MainMenu *mainMenu = NULL;

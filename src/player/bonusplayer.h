@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * bonusplayer.h
- *
- * 24th June 2010: Created bonusplayer.h from parts of player.h
+ * @file bonusplayer.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -59,17 +60,21 @@
 class Anim;
 class Bonus;
 
+/// JJ1 bonus level player
 class BonusPlayer {
 
 	private:
-		SDL_Color     palette[256];
-		Anim*         anims[BPANIMS];
-		fixed         x, y, direction, dr;
-		unsigned char animType;
-		int           gems;
+		SDL_Color     palette[256]; ///< Palette (for custom colours)
+		Anim*         anims[BPANIMS]; ///< Animations
+		fixed         x; ///< X-coordinate
+		fixed         y; ///< Y-coordinate
+		fixed         direction; ///< Direction
+		fixed         dr; ///< Forward speed
+		unsigned char animType; ///< Current animation
+		int           gems; ///< Number of gems collected
 
 	public:
-		Player* player;
+		Player* player; ///< Corresponding game player
 
 		BonusPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY);
 		~BonusPlayer ();

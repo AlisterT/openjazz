@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * jj2event.h
- *
- * 2nd July 2010: Created jj2event.h from parts of jj2level.h
+ * @file jj2event.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd July 2010: Created jj2event.h from parts of jj2level.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -31,6 +32,7 @@
 
 class Anim;
 
+/// JJ2 level "movable" event
 class JJ2Event : public Movable {
 
 	private:
@@ -39,8 +41,8 @@ class JJ2Event : public Movable {
 	protected:
 		unsigned char type;
 		int           properties;
-		unsigned int  endTime;  // Point at which the event will terminate
-		bool          flipped;
+		unsigned int  endTime; ///< Point at which the event will terminate
+		bool          flipped; ///< Whether or not the sprite image should be flipped
 
 		JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties);
 
@@ -59,6 +61,7 @@ class JJ2Event : public Movable {
 
 };
 
+/// JJ2 level pickup event
 class PickupJJ2Event : public JJ2Event {
 
 	private:
@@ -72,6 +75,7 @@ class PickupJJ2Event : public JJ2Event {
 
 };
 
+/// JJ2 level ammo
 class AmmoJJ2Event : public PickupJJ2Event {
 
 	public:
@@ -82,6 +86,7 @@ class AmmoJJ2Event : public PickupJJ2Event {
 
 };
 
+/// JJ2 level gold/silver coin
 class CoinGemJJ2Event : public PickupJJ2Event {
 
 	private:
@@ -95,6 +100,7 @@ class CoinGemJJ2Event : public PickupJJ2Event {
 
 };
 
+/// JJ2 level food
 class FoodJJ2Event : public PickupJJ2Event {
 
 	public:
@@ -105,6 +111,7 @@ class FoodJJ2Event : public PickupJJ2Event {
 
 };
 
+/// Unimplemented JJ2 level event
 class OtherJJ2Event : public JJ2Event {
 
 	public:

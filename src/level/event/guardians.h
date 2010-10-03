@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * guardians.h
- *
- * 2nd March 2010: Created guardians.h from parts of event.h
+ * @file guardians.h
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 2nd March 2010: Created guardians.h from parts of event.h
  *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -29,7 +30,7 @@
 
 // Class
 
-
+/// Guardian event base class
 class Guardian : public Event {
 
 	protected:
@@ -40,7 +41,7 @@ class Guardian : public Event {
 
 };
 
-
+/// Episode B guardian
 class DeckGuardian : public Guardian {
 
 	public:
@@ -52,7 +53,7 @@ class DeckGuardian : public Guardian {
 
 };
 
-
+/// Episode 1 guardian
 class MedGuardian : public Guardian {
 
 	private:

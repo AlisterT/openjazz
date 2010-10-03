@@ -1,13 +1,14 @@
 
-/*
+/**
  *
- * plasma.cpp
- *
- * 23rd June 2010: Created plasma.c
+ * @file plasma.cpp
  *
  * Part of the OpenJazz project
  *
+ * @section History
+ * 23rd June 2010: Created plasma.cpp
  *
+ * @section Licence
  * Copyright (c) 2010 Alireza Nejati
  *
  * OpenJazz is distributed under the terms of
@@ -17,10 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Cool plasma effects for the main menu.
+ *
  */
 
 
@@ -35,7 +35,9 @@
 	#include "io/gfx/scale2x/scalebit.h"
 #endif
 
-// Precalculate buffers
+/**
+ * Precalculate buffers
+ */
 Plasma::Plasma(){
 
 	p0=0;
@@ -47,9 +49,11 @@ Plasma::Plasma(){
 	// -1024 < out < 1024
 }
 
-// TODO: this code is awful in so many ways
+/// @todo this code is awful in so many ways
 
-// Draws plasma onto canvas
+/**
+ * Draws plasma onto canvas
+ */
 int Plasma::draw(){
 	int x,y;
 
@@ -59,7 +63,7 @@ int Plasma::draw(){
 	unsigned char colour;
 	unsigned int colb;
 
-	// draw plasma	
+	// draw plasma
 
 	SDL_LockSurface(canvas);
 
@@ -68,7 +72,7 @@ int Plasma::draw(){
 	pitch 	= canvas->pitch;
 
 	px = (unsigned char *)canvas->pixels;
-	
+
     t1 = p0;
     t2 = p1;
     for(y=0;y<h;y++){
@@ -81,7 +85,7 @@ int Plasma::draw(){
 
             t3 += 3;
             t4 += 2;
-                        
+
             px[x] = colour;
 		}
 		// go to next row
@@ -89,12 +93,12 @@ int Plasma::draw(){
         t1 += 2;
         t2 += 1;
 	}
-        
+
 	p0 = p0 < 256 ? p0+1 : 1;
 	p1 = p1 < 256 ? p1+2 : 2;
 	p2 = p2 < 256 ? p2+3 : 3;
 	p3 = p3 < 256 ? p3+4 : 4;
-	
+
 	SDL_UnlockSurface(canvas);
 
 	return E_NONE;

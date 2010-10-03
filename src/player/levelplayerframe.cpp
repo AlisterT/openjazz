@@ -1,16 +1,17 @@
 
-/*
+/**
  *
- * levelplayerframe.cpp
+ * @file levelplayerframe.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  * 24th June 2010: Renamed playerframe.cpp to levelplayerframe.cpp
  * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
  *                 levelplayerframe.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -20,9 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Provides the once-per-frame functions of players in levels.
  *
  */
@@ -43,12 +42,14 @@
 #include "util.h"
 
 
+/**
+ * Respond to controls, unless the player has been killed
+ */
 void LevelPlayer::control (unsigned int ticks, int msps) {
 
 	int speed;
 	bool platform;
 
-	// Respond to controls, unless the player has been killed
 
 	// If the player has been killed, drop but otherwise do not move
 	if (!energy) {
@@ -619,11 +620,12 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Calculate viewport
+ */
 void LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;
-
-	// Calculate viewport
 
 	// Record old viewport position for applying lag
 	oldViewX = viewX;

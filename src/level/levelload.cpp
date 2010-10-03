@@ -1,8 +1,11 @@
 
-/*
+/**
  *
- * levelload.cpp
+ * @file levelload.cpp
  *
+ * Part of the OpenJazz project
+ *
+ * @section History
  * 22nd July 2008: Created levelload.c from parts of level.c
  * 3rd February 2009: Renamed levelload.c to levelload.cpp
  * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
@@ -10,9 +13,7 @@
  * 19th July 2009: Added parts of levelload.cpp to level.cpp
  * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
  *
- * Part of the OpenJazz project
- *
- *
+ * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,9 +23,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- */
-
-/*
+ * @section Description
  * Deals with the loading of level data.
  *
  */
