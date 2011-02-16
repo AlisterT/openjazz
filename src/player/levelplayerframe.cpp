@@ -43,7 +43,10 @@
 
 
 /**
- * Respond to controls, unless the player has been killed
+ * Respond to controls, unless the player has been killed.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
  */
 void LevelPlayer::control (unsigned int ticks, int msps) {
 
@@ -159,7 +162,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (event != LPE_NONE) {
 
-			if (event == LPE_SPRING) dy = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+			if (event == LPE_SPRING) dy = level->getEvent(eventX, eventY)->multiA * -F20;
 			else if (event == LPE_FLOAT) dy = PYS_JUMP;
 
 		}
@@ -241,7 +244,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			// Spring/float up speed limit
 			if ((event == LPE_SPRING) || (event == LPE_FLOAT)) {
 
-				speed = level->getEvent(eventX, eventY)[E_MULTIPURPOSE] * -F20;
+				speed = level->getEvent(eventX, eventY)->multiA * -F20;
 
 				if (speed >= 0) speed = PYS_JUMP;
 
@@ -413,6 +416,12 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Move the player.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ */
 void LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
@@ -621,7 +630,10 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 /**
- * Calculate viewport
+ * Calculate viewport.
+ *
+ * @param ticks Time
+ * @param mspf Ticks per frame
  */
 void LevelPlayer::view (unsigned int ticks, int mspf) {
 
@@ -670,6 +682,12 @@ void LevelPlayer::view (unsigned int ticks, int mspf) {
 
 }
 
+/**
+ * Draw the player.
+ *
+ * @param ticks Time
+ * @param change Time since last step
+ */
 void LevelPlayer::draw (unsigned int ticks, int change) {
 
 	Anim *an;

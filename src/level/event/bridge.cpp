@@ -30,29 +30,22 @@
 #include "player/levelplayer.h"
 
 
-Bridge::Bridge (unsigned char gX, unsigned char gY) {
+/**
+ * Create bridge.
+ *
+ * @param gX X-coordinate
+ * @param gY Y-coordinate
+ */
+Bridge::Bridge (unsigned char gX, unsigned char gY) : Event(gX, gY) {
 
-	signed char* set;
-
-	set = level->getEvent(gX, gY);
-
-	x = TTOF(gX);
-	y = TTOF(gY) + ITOF(set[E_YAXIS]) - F8 - F1;
-	dx = 0;
-	dy = 0;
-
-	next = level->getEvents();
-	gridX = gX;
-	gridY = gY;
-	animType = E_LEFTANIM;
-	flashTime = 0;
+	y = TTOF(gY) + ITOF(set->multiB);
 
 	// Bridges should ignore the default yOffsets
-	dontUseAnimOffset();
+	noAnimOffset = true;
 
 	// leftDipX and rightDipX used to store leftmost and rightmost player on bridge
 	// Start with minimum values
-	leftDipX = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
+	leftDipX = set->multiA * set->pieceSize * F4;
 	rightDipX = 0;
 
 	return;
@@ -60,10 +53,17 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) {
 }
 
 
+/**
+ * Bridge iteration.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Remaining event
+ */
 Event* Bridge::step (unsigned int ticks, int msps) {
 
 	LevelPlayer* levelPlayer;
-	signed char* set;
 	int count;
 	fixed bridgeLength, playerDipX, playerDipY;
 
@@ -73,7 +73,7 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 	if (!set) return remove();
 
 
-	bridgeLength = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
+	bridgeLength = set->multiA * set->pieceSize * F4;
 
 
 	// Gradually stop the bridge sagging
@@ -92,8 +92,8 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 		if (playerDipX < bridgeLength >> 1) playerDipY = playerDipX >> 3;
 		else playerDipY = (bridgeLength - playerDipX) >> 3;
 
-		if (levelPlayer->overlap(x, y + playerDipY - F4, bridgeLength, F8) &&
-			!level->checkMaskDown(x + playerDipX, y + playerDipY - F32)) {
+		if (levelPlayer->overlap(x, y - F8 + playerDipY - F4, bridgeLength, F8) &&
+			!level->checkMaskDown(x + playerDipX, y - F8 + playerDipY - F32)) {
 
 			// Player is on the bridge
 
@@ -103,7 +103,7 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 
 			if (playerDipX > rightDipX) rightDipX = playerDipX;
 
-			levelPlayer->setPosition(levelPlayer->getX(), y + playerDipY);
+			levelPlayer->setPosition(levelPlayer->getX(), y - F8 - F1 + playerDipY);
 
 		} else levelPlayer->clearEvent(gridX, gridY);
 
@@ -115,52 +115,55 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Draw bridge.
+ *
+ * @param ticks Time
+ * @param change Time since last iteration
+ */
 void Bridge::draw (unsigned int ticks, int change) {
 
-	Anim *anim;
-	signed char *set;
+	Anim* anim;
+	unsigned char frame;
 	int count;
-	fixed bridgeLength, leftDipY, rightDipY;
+	fixed bridgeLength, anchorY, leftDipY, rightDipY;
 
 
 	if (next) next->draw(ticks, change);
 
-
-	// Get the event properties
-	set = level->getEvent(gridX, gridY);
 
 	// If the event has been removed from the grid, do not show it
 	if (!set) return;
 
 
 	// Check if the event has anything to draw
-	if (!animType || (set[animType] < 0)) return;
+	if ((animType == E_NOANIM) || ((set->anims[animType] & 0x7F) == 0)) return;
 
 
-	if (set[E_ANIMSP]) frame = ticks / (set[E_ANIMSP] * 40);
-	else frame = ticks / 20;
+	frame = ticks / (set->animSpeed << 5);
 
-	anim = level->getAnim(set[animType]);
+	anim = getAnim();
 	anim->setFrame(frame + gridX + gridY, true);
 
 
 	// Draw the bridge
 
-	bridgeLength = set[E_MULTIPURPOSE] * set[E_BRIDGELENGTH] * F4;
+	bridgeLength = set->multiA * set->pieceSize * F4;
+	anchorY = getDrawY(change) - F10 + anim->getOffset();
 
 	if (rightDipX >= leftDipX) {
 
 		leftDipY = (leftDipX <= (bridgeLength >> 1)) ? leftDipX >> 3: (bridgeLength - leftDipX) >> 3;
 		rightDipY = (rightDipX <= (bridgeLength >> 1)) ? rightDipX >> 3: (bridgeLength - rightDipX) >> 3;
 
-		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
+		for (count = 0; count < bridgeLength; count += F4 * set->pieceSize) {
 
 			if (count < leftDipX)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + (count * leftDipY / leftDipX));
-			else if (count < dy)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
+				anim->draw(getDrawX(change) + count, anchorY + (count * leftDipY / leftDipX));
+			else if (count < rightDipX)
+				anim->draw(getDrawX(change) + count, anchorY + leftDipY + ((count - leftDipX) * (rightDipY - leftDipY) / (rightDipX - leftDipX)));
 			else
-				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
+				anim->draw(getDrawX(change) + count, anchorY + ((bridgeLength - count) * rightDipY / (bridgeLength - rightDipX)));
 
 		}
 
@@ -174,12 +177,12 @@ void Bridge::draw (unsigned int ticks, int change) {
 		// Dip
 		rightDipY = (rightDipX < bridgeLength - leftDipX) ? rightDipX >> 3: (bridgeLength - leftDipX) >> 3;
 
-		for (count = 0; count < bridgeLength; count += F4 * set[E_BRIDGELENGTH]) {
+		for (count = 0; count < bridgeLength; count += F4 * set->pieceSize) {
 
 			if (count < leftDipY)
-				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + (count * rightDipY / leftDipY));
+				anim->draw(getDrawX(change) + count, anchorY + (count * rightDipY / leftDipY));
 			else
-				anim->draw(getDrawX(change) + count, getDrawY(change) + TTOF(1) + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
+				anim->draw(getDrawX(change) + count, anchorY + ((bridgeLength - count) * rightDipY / (bridgeLength - leftDipY)));
 
 		}
 

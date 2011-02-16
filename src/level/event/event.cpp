@@ -16,6 +16,7 @@
  * 19th July 2009: Renamed events.cpp to event.cpp
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
+ * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2010 Alister Thomson
@@ -36,20 +37,22 @@
 #include "../level.h"
 #include "event.h"
 
+#include "io/gfx/video.h"
 #include "io/sound.h"
 #include "player/player.h"
 
 #include "util.h"
 
 
-Event::Event () {
-
-	return;
-
-}
-
-
+/**
+ * Create event
+ *
+ * @param gX X-coordinate
+ * @param gY Y-coordinate
+ */
 Event::Event (unsigned char gX, unsigned char gY) {
+
+	set = level->getEvent(gX, gY);
 
 	x = TTOF(gX);
 	y = TTOF(gY + 1);
@@ -61,59 +64,17 @@ Event::Event (unsigned char gX, unsigned char gY) {
 	gridY = gY;
 	flashTime = 0;
 
-	onlyLAnimOffset = false;
-	onlyRAnimOffset = false;
+	animType = E_LEFTANIM;
 	noAnimOffset = false;
-
-	switch (getProperty(E_BEHAVIOUR)) {
-
-		case 2: // Walk from side to side
-		case 4: // Walk from side to side and down hills
-
-			animType = E_LEFTANIM;
-			useRightAnimOffset();
-
-			break;
-
-		case 6: // Use the path from the level file
-		case 7: // Flying snake behavior
-
-			animType = E_LEFTANIM;
-			dontUseAnimOffset();
-
-			break;
-
-		case 21: // Destructible block
-		case 25: // Float up / Belt
-		case 37: // Sucker tubes
-		case 38: // Sucker tubes
-		case 40: // Monochrome
-		case 57: // Bubbles
-
-			animType = 0;
-
-			break;
-
-		case 26: // Flip animation
-
-			animType = E_RIGHTANIM;
-			useLeftAnimOffset();
-
-			break;
-
-		default:
-
-			animType = E_LEFTANIM;
-
-			break;
-
-	}
 
 	return;
 
 }
 
 
+/**
+ * Delete all events
+ */
 Event::~Event () {
 
 	if (next) delete next;
@@ -123,6 +84,11 @@ Event::~Event () {
 }
 
 
+/**
+ * Delete this event
+ *
+ * @return The next event
+ */
 Event* Event::remove () {
 
 	Event *oldNext;
@@ -136,6 +102,11 @@ Event* Event::remove () {
 }
 
 
+/**
+ * Get the next event
+ *
+ * @return The next event
+ */
 Event * Event::getNext () {
 
 	return next;
@@ -143,14 +114,18 @@ Event * Event::getNext () {
 }
 
 
+/**
+ * Initiate the destruction of the event
+ *
+ * @param ticks Time
+ */
 void Event::destroy (unsigned int ticks) {
 
-	level->setEventTime(gridX, gridY, ticks + T_FINISH);
+	animType = E_LFINISHANIM | (animType & 1);
 
-	animType = ((animType == E_RIGHTANIM) || (animType == E_RSHOOTANIM)) ?
-			E_RFINISHANIM: E_LFINISHANIM;
+	level->setEventTime(gridX, gridY, ticks + (getAnim()->getLength() * set->animSpeed << 3));
 
-	level->playSound(getProperty(E_SOUND));
+	level->playSound(set->sound);
 
 	return;
 
@@ -170,8 +145,7 @@ bool Event::hit (LevelPlayer *source, unsigned int ticks) {
 	int hitsRemaining;
 
 	// Check if event has already been destroyed
-	if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM) ||
-		(ticks < flashTime)) return false;
+	if (((animType & ~1) == E_LFINISHANIM) || (ticks < flashTime)) return false;
 
 	hitsRemaining = level->hitEvent(gridX, gridY, source);
 
@@ -190,17 +164,23 @@ bool Event::hit (LevelPlayer *source, unsigned int ticks) {
 }
 
 
+/**
+ * Determine whether or not the event is an enemy
+ *
+ * @return Whether or not the event is an enemy
+ */
 bool Event::isEnemy () {
 
-	signed char *set;
-
-	set = level->getEvent(gridX, gridY);
-
-	return set[E_HITSTOKILL] && (set[E_MODIFIER] == 0);
+	return set->strength && (set->modifier == 0);
 
 }
 
 
+/**
+ * Determine whether or not the event is from the given position
+ *
+ * @return Whether or not the event is from the given position
+ */
 bool Event::isFrom (unsigned char gX, unsigned char gY) {
 
 	return (gX == gridX) && (gY == gridY);
@@ -208,15 +188,20 @@ bool Event::isFrom (unsigned char gX, unsigned char gY) {
 }
 
 
+/**
+ * Get the width of the event
+ *
+ * @return The width of the event
+ */
 fixed Event::getWidth () {
 
 	fixed width;
 
-	if (!animType) return F32;
+	if (animType == E_NOANIM) return F32;
 
-	if (getProperty(animType) <= 0) return 0;
+	if ((set->anims[animType] & 0x7F) == 0) return 0;
 
-	width = ITOF(level->getAnim(getProperty(animType))->getWidth());
+	width = ITOF(getAnim()->getWidth());
 
 	// Blank sprites for e.g. invisible springs
 	if ((width == F1) && (getHeight() == F1)) return F32;
@@ -226,22 +211,37 @@ fixed Event::getWidth () {
 }
 
 
+/**
+ * Get the height of the event
+ *
+ * @return The height of the event
+ */
 fixed Event::getHeight () {
 
-	if (!animType) return F32;
+	if (animType == E_NOANIM) return F32;
 
-	if (getProperty(animType) <= 0) return 0;
+	if ((set->anims[animType] & 0x7F) == 0) return 0;
 
-	return ITOF(level->getAnim(getProperty(animType))->getHeight());
+	return ITOF(getAnim()->getHeight());
 
 }
 
 
+/**
+ * Determine whether or not the event is overlapping the given area
+ *
+ * @param left The x-coordinate of the left of the area
+ * @param top The y-coordinate of the top of the area
+ * @param width The width of the area
+ * @param height The height of the area
+ *
+ * @return Whether or not there is an overlap
+ */
 bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	fixed offset = 0;
-	if (getAnim(animType) && noAnimOffset)
-		offset = getAnim(animType)->getOffset();
+	if (getAnim() && noAnimOffset)
+		offset = getAnim()->getOffset();
 
 	return (x + getWidth() >= left) &&
 		(x < left + width) &&
@@ -251,42 +251,99 @@ bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 }
 
 
-signed char Event::getProperty (unsigned char property) {
+/**
+ * Get the current animation
+ *
+ * @return Animation
+ */
+Anim* Event::getAnim () {
 
-	signed char *set;
+	if (animType == E_NOANIM) return NULL;
 
-	set = level->getEvent(gridX, gridY);
+	// If there is no shooting animation, use the normal animation instead
+	if (((animType & ~1) == E_LSHOOTANIM) && (set->anims[animType] == 0))
+		return level->getAnim(set->anims[animType & 1] & 0x7F);
 
-	if (set) return set[property];
-
-	return 0;
+	return level->getAnim(set->anims[animType] & 0x7F);
 
 }
 
 
-Anim* Event::getAnim (unsigned char property) {
+/**
+ * Functionality required by all event types on each iteration
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Animation
+ */
+EventType* Event::prepareStep (unsigned int ticks, int msps) {
 
-	switch (property) {
+	// Process the next event
+	if (next) next = next->step(ticks, msps);
 
-		case E_LEFTANIM:
-		case E_RIGHTANIM:
-		case E_LFINISHANIM:
-		case E_RFINISHANIM:
-		case E_LSHOOTANIM:
-		case E_RSHOOTANIM:
+	// Get the event properties
+	set = level->getEvent(gridX, gridY);
 
-			if (getProperty(property) < 0)
-				return level->getAnim(getProperty(property) + 128);
+	// If the event has been removed from the grid, destroy it
+	if (!set) return NULL;
 
-			return level->getAnim(getProperty(property));
+	// If the event and its origin are off-screen, the event is not in the
+	// process of self-destruction, remove it
+	if (((animType & ~1) != E_LFINISHANIM) &&
+		((x < viewX - F192) || (x > viewX + ITOF(viewW) + F192) ||
+		(y < viewY - F160) || (y > viewY + ITOF(viewH) + F160)) &&
+		((gridX < FTOT(viewX) - 1) ||
+		(gridX > ITOT(FTOI(viewX) + viewW) + 1) ||
+		(gridY < FTOT(viewY) - 1) ||
+		(gridY > ITOT(FTOI(viewY) + viewH) + 1))) return NULL;
 
-		default:
+	return set;
 
-			return 0;
+}
+
+
+/**
+ * Draw the event's energy bar
+ *
+ * @param ticks Time
+ */
+void Event::drawEnergy (unsigned int ticks) {
+
+	Anim* anim;
+	int hits;
+
+	if (!set || set->modifier != 8) {
+
+		if (next) next->drawEnergy(ticks);
+
+		return;
+
+	} else if (set->strength) {
+
+		// Draw boss energy bar
+
+		hits = level->getEventHits(gridX, gridY) * 100 / set->strength;
+
+
+		// Devan head
+
+		anim = level->getMiscAnim(1);
+		anim->setFrame(0, true);
+
+		if (ticks < flashTime) anim->flashPalette(0);
+
+		anim->draw(ITOF(viewW - 44), ITOF(hits + 48));
+
+		if (ticks < flashTime) anim->restorePalette();
+
+
+		// Bar
+		drawRect(viewW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
 
 	}
 
+	return;
+
 }
-
-
 

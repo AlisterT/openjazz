@@ -38,6 +38,15 @@
 #include <string.h>
 
 
+/**
+ * Create a JJ1 level player.
+ *
+ * @param parent The game player corresponding to this level player.
+ * @param newAnims Animations
+ * @param startX Starting position x-coordinate
+ * @param startY Starting position y-coordinate
+ * @param hasBird Whether or not the player is being accompanied by a bird
+ */
 LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
 	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
@@ -111,6 +120,9 @@ LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX,
 }
 
 
+/**
+ * Delete the JJ1 level player.
+ */
 LevelPlayer::~LevelPlayer () {
 
 	if (bird) delete bird;
@@ -120,6 +132,12 @@ LevelPlayer::~LevelPlayer () {
 }
 
 
+/**
+ * Reset the player's position, energy etc.
+ *
+ * @param startX New x-coordinate
+ * @param startY New y-coordinate
+ */
 void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
 	event = LPE_NONE;
@@ -143,6 +161,9 @@ void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 }
 
 
+/**
+ * Add to the player's item tally.
+ */
 void LevelPlayer::addItem () {
 
 	items++;
@@ -152,6 +173,12 @@ void LevelPlayer::addItem () {
 }
 
 
+/**
+ * If the player is tied to the event from the given tile, untie it.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ */
 void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	// If the location matches, clear the event
@@ -163,6 +190,11 @@ void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Determine the player's current animation.
+ *
+ * @return The current animation
+ */
 Anim* LevelPlayer::getAnim () {
 
 	return anims[animType];
@@ -170,6 +202,11 @@ Anim* LevelPlayer::getAnim () {
 }
 
 
+/**
+ * Determine the number of enemies the player has killed.
+ *
+ * @return Number of enemies killed
+ */
 int LevelPlayer::getEnemies () {
 
 	return enemies;
@@ -177,6 +214,11 @@ int LevelPlayer::getEnemies () {
 }
 
 
+/**
+ * Determine the player's current energy level.
+ *
+ * @return Energy level
+ */
 int LevelPlayer::getEnergy () {
 
 	return energy;
@@ -184,6 +226,11 @@ int LevelPlayer::getEnergy () {
 }
 
 
+/**
+ * Determine the direction the player is facing.
+ *
+ * @return True if the player is facing right
+ */
 bool LevelPlayer::getFacing () {
 
 	return facing;
@@ -191,6 +238,11 @@ bool LevelPlayer::getFacing () {
 }
 
 
+/**
+ * Determine the number of items the player has collected.
+ *
+ * @return Number of items collected
+ */
 int LevelPlayer::getItems () {
 
 	return items;
@@ -198,6 +250,11 @@ int LevelPlayer::getItems () {
 }
 
 
+/**
+ * Determine whether or not the player is being accompanied by a bird.
+ *
+ * @return Whether or not the player is being accompanied by a bird
+ */
 bool LevelPlayer::hasBird () {
 
 	return bird;
@@ -205,6 +262,11 @@ bool LevelPlayer::hasBird () {
 }
 
 
+/**
+ * Determine whether or not the player has collected a gem.
+ *
+ * @return Whether or not the player has collected a gem
+ */
 bool LevelPlayer::hasGem () {
 
 	return gem;
@@ -212,6 +274,14 @@ bool LevelPlayer::hasGem () {
 }
 
 
+/**
+ * Deal with bullet collisions.
+ *
+ * @param source Player that fired the bullet (NULL if an event)
+ * @param ticks Time
+ *
+ * @return Whether or not the hit was successful
+ */
 bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
@@ -261,6 +331,12 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 }
 
 
+/**
+ * Kill the player.
+ *
+ * @param source Player responsible for the kill (NULL if due to an event or time)
+ * @param ticks time
+ */
 void LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
@@ -282,6 +358,16 @@ void LevelPlayer::kill (Player *source, unsigned int ticks) {
 }
 
 
+/**
+ * Determine whether or not the player is overlapping the given area.
+ *
+ * @param left The x-coordinate of the left of the area
+ * @param top The y-coordinate of the top of the area
+ * @param width The width of the area
+ * @param height The height of the area
+ *
+ * @return Whether or not there is an overlap
+ */
 bool LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	return (x + PXO_R >= left) && (x + PXO_L < left + width) &&
@@ -290,6 +376,13 @@ bool LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
 }
 
 
+/**
+ * Handle the player's reaction.
+ *
+ * @param ticks Time
+ *
+ * @return The reaction the player has just finished
+ */
 PlayerReaction LevelPlayer::reacted (unsigned int ticks) {
 
 	PlayerReaction oldReaction;
@@ -308,20 +401,26 @@ PlayerReaction LevelPlayer::reacted (unsigned int ticks) {
 }
 
 
+/**
+ * Tie the player to the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ */
 void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
 
-	signed char *set;
+	EventType *set;
 
 	set = level->getEvent(gridX, gridY);
 
-	if (set[E_MODIFIER] == 29) {
+	if (set->modifier == 29) {
 
 		// Upwards spring
-		jumpY = y + (set[E_MAGNITUDE] * (F20 + F1));
+		jumpY = y + (set->magnitude * (F20 + F1));
 		event = LPE_SPRING;
 
-	} else if (set[E_MODIFIER] == 6) event = LPE_PLATFORM;
-	else if (set[E_BEHAVIOUR] == 28) event = LPE_PLATFORM;
+	} else if (set->modifier == 6) event = LPE_PLATFORM;
+	else if (set->movement == 28) event = LPE_PLATFORM;
 	else return;
 
 	eventX = gridX;
@@ -332,6 +431,12 @@ void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Set the player's position.
+ *
+ * @param newX New x-coordinate
+ * @param newY New y-coordinate
+ */
 void LevelPlayer::setPosition (fixed newX, fixed newY) {
 
 	x = newX;
@@ -342,6 +447,12 @@ void LevelPlayer::setPosition (fixed newX, fixed newY) {
 }
 
 
+/**
+ * Set the player's speed.
+ *
+ * @param newDx New x-speed
+ * @param newDy New y-speed
+ */
 void LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
@@ -352,17 +463,26 @@ void LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 }
 
 
+/**
+ * Take the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param ticks Time
+ *
+ * @return Whether or not the event should be destroyed.
+ */
 bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
-	signed char *set;
+	EventType* set;
 
 	set = level->getEvent(gridX, gridY);
 
-	switch (set[E_MODIFIER]) {
+	switch (set->modifier) {
 
 		case 41: // Bonus level
 
-			if (energy) level->setNext(set[E_MULTIPURPOSE], set[E_YAXIS]);
+			if (energy) level->setNext(set->multiA, set->multiB);
 
 			// The lack of a break statement is intentional
 
@@ -526,31 +646,41 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 	}
 
-	player->addScore(set[E_ADDEDSCORE] * 10);
+	player->addScore(set->points * 10);
 
 	// Add to player's enemy/item tally
 	// If the event hurts and can be killed, it is an enemy
 	// Anything else that scores is an item
-	if ((set[E_MODIFIER] == 0) && set[E_HITSTOKILL]) enemies++;
-	else if (set[E_ADDEDSCORE]) items++;
+	if ((set->modifier == 0) && set->strength) enemies++;
+	else if (set->points) items++;
 
 	return true;
 
 }
 
 
+/**
+ * Called when the player has touched the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Whether or not the event should be destroyed.
+ */
 bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
 
-	signed char *set;
+	EventType* set;
 
 	set = level->getEvent(gridX, gridY);
 
-	switch (set[E_MODIFIER]) {
+	switch (set->modifier) {
 
 		case 0: // Hurt
 		case 8: // Boss
 
-			if ((set[E_BEHAVIOUR] < 37) || (set[E_BEHAVIOUR] > 44)) hit(NULL, ticks);
+			if ((set->movement < 37) || (set->movement > 44)) hit(NULL, ticks);
 
 			break;
 
@@ -562,8 +692,8 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 			if (!warpTime) {
 
-				warpX = set[E_MULTIPURPOSE];
-				warpY = set[E_YAXIS];
+				warpX = set->multiA;
+				warpY = set->multiB;
 				warpTime = ticks + T_WARP;
 
 				// White flash
@@ -575,7 +705,7 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 		case 28: // Belt
 
-			x += set[E_MAGNITUDE] * 4 * msps;
+			x += set->magnitude * 4 * msps;
 
 			break;
 
@@ -583,7 +713,7 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 			setEvent(gridX, gridY);
 
-			level->playSound(set[E_SOUND]);
+			level->playSound(set->sound);
 
 			break;
 
@@ -595,26 +725,26 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 		case 32: // Float up / sideways
 
-			if (set[E_YAXIS]) {
+			if (set->multiB) {
 
 				eventX = gridX;
 				eventY = gridY;
 				event = LPE_FLOAT;
 
-				if (dy > set[E_MULTIPURPOSE] * -F20)
-					dy -= set[E_MULTIPURPOSE] * 320 * msps;
+				if (dy > set->multiA * -F20)
+					dy -= set->multiA * 320 * msps;
 
 				jumpY = y - (8 * F16);
 
-			} else if (set[E_MAGNITUDE] < 0) {
+			} else if (set->magnitude < 0) {
 
-				if (!level->checkMaskDown(x + PXO_L + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
-					x += set[E_MAGNITUDE] * 20 * msps;
+				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 20 * msps), y + PYO_MID))
+					x += set->magnitude * 20 * msps;
 
 			} else {
 
-				if (!level->checkMaskDown(x + PXO_R + (set[E_MAGNITUDE] * 20 * msps), y + PYO_MID))
-					x += set[E_MAGNITUDE] * 20 * msps;
+				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 20 * msps), y + PYO_MID))
+					x += set->magnitude * 20 * msps;
 
 			}
 
@@ -628,7 +758,7 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 
 		default:
 
-			if (!set[E_HITSTOKILL]) return takeEvent(gridX, gridY, ticks);
+			if (!set->strength) return takeEvent(gridX, gridY, ticks);
 
 			break;
 
@@ -639,6 +769,11 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
 }
 
 
+/**
+ * Fill a buffer with player data.
+ *
+ * @param buffer The buffer
+ */
 void LevelPlayer::send (unsigned char *buffer) {
 
 	// Copy data to be sent to clients/server
@@ -670,6 +805,11 @@ void LevelPlayer::send (unsigned char *buffer) {
 }
 
 
+/**
+ * Adjust player data based on the contents of a given buffer.
+ *
+ * @param buffer The buffer
+ */
 void LevelPlayer::receive (unsigned char *buffer) {
 
 	int count;

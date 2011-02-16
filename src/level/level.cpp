@@ -57,6 +57,9 @@
 #include <string.h>
 
 
+/**
+ * Base constructor for DemoLevel sub-class.
+ */
 Level::Level () {
 
 	// Do nothing
@@ -66,6 +69,14 @@ Level::Level () {
 }
 
 
+/**
+ * Create a level.
+ *
+ * @param fileName Name of the file containing the level data.
+ * @param diff Difficulty level
+ * @param checkpoint Whether or not the player(s) will start at a checkpoint
+ * @param multi Whether or not the level will be multi-player
+ */
 Level::Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
 
 	int ret;
@@ -83,6 +94,9 @@ Level::Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
 }
 
 
+/**
+ * Delete HUD graphical data.
+ */
 void Level::deletePanel () {
 
 	SDL_FreeSurface(panel);
@@ -97,6 +111,9 @@ void Level::deletePanel () {
 }
 
 
+/**
+ * Delete the level.
+ */
 Level::~Level () {
 
 	int count;
@@ -130,6 +147,14 @@ Level::~Level () {
 }
 
 
+/**
+ * Determine whether or not the given point is solid when travelling upwards.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Solidity
+ */
 bool Level::checkMaskUp (fixed x, fixed y) {
 
 	GridElement *ge;
@@ -149,6 +174,14 @@ bool Level::checkMaskUp (fixed x, fixed y) {
 }
 
 
+/**
+ * Determine whether or not the given point is solid when travelling downwards.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Solidity
+ */
 bool Level::checkMaskDown (fixed x, fixed y) {
 
 	// Anything off the edge of the map is solid
@@ -161,6 +194,14 @@ bool Level::checkMaskDown (fixed x, fixed y) {
 }
 
 
+/**
+ * Determine whether or not the given point should cause damage to the player.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Painful solidity
+ */
 bool Level::checkSpikes (fixed x, fixed y) {
 
 	GridElement *ge;
@@ -180,6 +221,11 @@ bool Level::checkSpikes (fixed x, fixed y) {
 }
 
 
+/**
+ * Determine the level's world number.
+ *
+ * @return World number
+ */
 int Level::getWorld() {
 
 	return worldNum;
@@ -187,6 +233,12 @@ int Level::getWorld() {
 }
 
 
+/**
+ * Set which level will come next.
+ *
+ * @param nextLevel Next level number
+ * @param nextWorld Next level's world number
+ */
 void Level::setNext (int nextLevel, int nextWorld) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -211,6 +263,13 @@ void Level::setNext (int nextLevel, int nextWorld) {
 }
 
 
+/**
+ * Set the tile at the given location.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param tile The new tile
+ */
 void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char tile) {
 
 	unsigned char buffer[MTL_L_GRID];
@@ -235,6 +294,11 @@ void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char til
 }
 
 
+/**
+ * Get the active events.
+ *
+ * @return The first active event
+ */
 Event* Level::getEvents () {
 
 	return events;
@@ -242,17 +306,33 @@ Event* Level::getEvents () {
 }
 
 
-signed char* Level::getEvent (unsigned char gridX, unsigned char gridY) {
+/**
+ * Get the event data for the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ *
+ * @return Event data
+ */
+EventType* Level::getEvent (unsigned char gridX, unsigned char gridY) {
 
 	int event = grid[gridY][gridX].event;
 
-	if (event) return eventSet[grid[gridY][gridX].event];
+	if (event) return eventSet + event;
 
 	return NULL;
 
 }
 
 
+/**
+ * Get the hits incurred by the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ *
+ * @return Number of hits
+ */
 unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
 
 	return grid[gridY][gridX].hits;
@@ -260,6 +340,14 @@ unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Get the set time for the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ *
+ * @return Time
+ */
 unsigned int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
 
 	return grid[gridY][gridX].time;
@@ -267,13 +355,19 @@ unsigned int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Remove the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ */
 void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_GRID];
 
 	// Ignore if the event has been un-destroyed
 	if (!grid[gridY][gridX].hits &&
-		eventSet[grid[gridY][gridX].event][E_HITSTOKILL]) return;
+		eventSet[grid[gridY][gridX].event].strength) return;
 
 	grid[gridY][gridX].event = 0;
 
@@ -295,6 +389,15 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Register a hit on the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param source The player that fired the bullet that hit the event
+ *
+ * @return The remaining number of hits until the event is destroyed
+ */
 int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* source) {
 
 	GridElement* ge;
@@ -303,7 +406,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* sour
 
 	ge = grid[gridY] + gridX;
 
-	hitsToKill = eventSet[ge->event][E_HITSTOKILL];
+	hitsToKill = eventSet[ge->event].strength;
 
 	// If the event cannot be hit, return negative
 	if (!hitsToKill) return -1;
@@ -339,12 +442,18 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* sour
 
 	}
 
-	// Return the number of hits remaining until the event is destroyed
 	return hitsToKill - ge->hits;
 
 }
 
 
+/**
+ * Set the time of the event from the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param time Time
+ */
 void Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int time) {
 
 	grid[gridY][gridX].time = time;
@@ -354,6 +463,13 @@ void Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int
 }
 
 
+/**
+ * Get the bullet data for the given bullet type.
+ *
+ * @param bullet Bullet type
+ *
+ * @return Bullet data
+ */
 signed char* Level::getBullet (unsigned char bullet) {
 
 	return bulletSet[bullet];
@@ -361,6 +477,13 @@ signed char* Level::getBullet (unsigned char bullet) {
 }
 
 
+/**
+ * Get a sprite.
+ *
+ * @param sprite Sprite number
+ *
+ * @return Sprite
+ */
 Sprite* Level::getSprite (unsigned char sprite) {
 
 	return spriteSet + sprite;
@@ -368,6 +491,13 @@ Sprite* Level::getSprite (unsigned char sprite) {
 }
 
 
+/**
+ * Get an animation.
+ *
+ * @param anim Animation number
+ *
+ * @return Animation
+ */
 Anim* Level::getAnim (unsigned char anim) {
 
 	return animSet + anim;
@@ -375,6 +505,13 @@ Anim* Level::getAnim (unsigned char anim) {
 }
 
 
+/**
+ * Get a "miscellaneous" animation.
+ *
+ * @param anim Animation number
+ *
+ * @return Animation
+ */
 Anim* Level::getMiscAnim (unsigned char anim) {
 
 	return animSet + miscAnims[anim];
@@ -382,6 +519,11 @@ Anim* Level::getMiscAnim (unsigned char anim) {
 }
 
 
+/**
+ * Set the water level.
+ *
+ * @param gridY New water level y-coordinate
+ */
 void Level::setWaterLevel (unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -405,6 +547,11 @@ void Level::setWaterLevel (unsigned char gridY) {
 }
 
 
+/**
+ * Determine the water level.
+ *
+ * @return The y-coordinate of the water level
+ */
 fixed Level::getWaterLevel () {
 
 	return waterLevel;
@@ -412,6 +559,11 @@ fixed Level::getWaterLevel () {
 }
 
 
+/**
+ * Play a sound.
+ *
+ * @param sound Number of the sound to play
+ */
 void Level::playSound (int sound) {
 
 	if (sound > 0) ::playSound(soundMap[sound - 1]);
@@ -421,6 +573,14 @@ void Level::playSound (int sound) {
 }
 
 
+/**
+ * Start a flash palette effect.
+ *
+ * @param red Red component of flash colour
+ * @param green Green component of flash colour
+ * @param blue Blue component of flash colour
+ * @param duration Duration of the flash effect
+ */
 void Level::flash (unsigned char red, unsigned char green, unsigned char blue, int duration) {
 
 	paletteEffects = new FlashPaletteEffect(red, green, blue, duration, paletteEffects);
@@ -430,6 +590,11 @@ void Level::flash (unsigned char red, unsigned char green, unsigned char blue, i
 }
 
 
+/**
+ * Play the bonus level.
+ *
+ * @return Error code
+ */
 int Level::playBonus () {
 
 	Bonus *bonus;
@@ -519,6 +684,11 @@ void Level::receive (unsigned char* buffer) {
 }
 
 
+/**
+ * Play the level.
+ *
+ * @return Error code
+ */
 int Level::play () {
 
 	LevelPlayer* levelPlayer;

@@ -36,17 +36,13 @@
 #include <stdlib.h>
 
 
-Guardian::Guardian(unsigned char gX, unsigned char gY) {
-
-	x = TTOF(gX);
-	y = TTOF(gY + 1);
-	dx = 0;
-	dy = 0;
-
-	next = level->getEvents();
-	gridX = gX;
-	gridY = gY;
-	flashTime = 0;
+/**
+ * Create guardian.
+ *
+ * @param gX X-coordinate
+ * @param gY Y-coordinate
+ */
+Guardian::Guardian(unsigned char gX, unsigned char gY) : Event(gX, gY) {
 
 	stage = 0;
 
@@ -55,6 +51,12 @@ Guardian::Guardian(unsigned char gX, unsigned char gY) {
 }
 
 
+/**
+ * Create episode B guardian.
+ *
+ * @param gX X-coordinate
+ * @param gY Y-coordinate
+ */
 DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) : Guardian(gX, gY) {
 
 	return;
@@ -62,6 +64,16 @@ DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) : Guardian(gX, g
 }
 
 
+/**
+ * Determine whether or not the guardian overlaps the given area.
+ *
+ * @param left The x-coordinate of the left of the area
+ * @param top The y-coordinate of the top of the area
+ * @param width The width of the area
+ * @param height The height of the area
+ *
+ * @return Whether or not there is an overlap
+ */
 bool DeckGuardian::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	if (stage == 0)
@@ -81,9 +93,16 @@ bool DeckGuardian::overlap (fixed left, fixed top, fixed width, fixed height) {
 }
 
 
+/**
+ * Episode B guardian iteration.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Remaining event
+ */
 Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
-	signed char* set;
 	int count;
 
 
@@ -91,8 +110,6 @@ Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
 	if (!set) return remove();
 
-
-	// Handle behaviour
 
 	count = level->getEventHits(gridX, gridY);
 
@@ -104,9 +121,9 @@ Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
 	// If the event has been destroyed, play its finishing animation and set its
 	// reaction time
-	if (set[E_HITSTOKILL] &&
-		(level->getEventHits(gridX, gridY) >= set[E_HITSTOKILL]) &&
-		(animType != E_LFINISHANIM) && (animType != E_RFINISHANIM)) {
+	if (set->strength &&
+		(level->getEventHits(gridX, gridY) >= set->strength) &&
+		((animType & ~1) != E_LFINISHANIM)) {
 
 		destroy(ticks);
 
@@ -117,7 +134,7 @@ Event* DeckGuardian::step (unsigned int ticks, int msps) {
 	if (level->getEventTime(gridX, gridY) &&
 		(ticks > level->getEventTime(gridX, gridY))) {
 
-		if ((animType == E_LFINISHANIM) || (animType == E_RFINISHANIM)) {
+		if ((animType & ~1) == E_LFINISHANIM) {
 
 			// The event has been destroyed, so remove it
 			level->clearEvent(gridX, gridY);
@@ -138,17 +155,19 @@ Event* DeckGuardian::step (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Draw episode B guardian.
+ *
+ * @param ticks Time
+ * @param change Time since last iteration
+ */
 void DeckGuardian::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
-	signed char* set;
 
 
 	if (next) next->draw(ticks, change);
 
-
-	// Get the event properties
-	set = level->getEvent(gridX, gridY);
 
 	// If the event has been removed from the grid, do not show it
 	if (!set) return;
@@ -178,10 +197,14 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 }
 
 
+/**
+ * Create episode 1 guardian.
+ *
+ * @param gX X-coordinate
+ * @param gY Y-coordinate
+ */
 MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) {
 
-	animType = E_LEFTANIM;
-	stage = 0;
 	direction = 1;
 	shoot = false;
 
@@ -190,23 +213,29 @@ MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) 
 }
 
 
-/*bool MedGuardian::overlap(fixed left, fixed top, fixed width, fixed height) {
-
-	return false;
-
-}*/
-
-
+/**
+ * Episode 1 guardian iteration.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Remaining event
+ */
 Event* MedGuardian::step(unsigned int ticks, int msps) {
 
-	Anim *anim = getAnim(animType);
+	Anim *anim = getAnim();
 
 	fixed sin = fSin(ticks / 2);
 	fixed cos = fCos(ticks / 2);
 
-	if (level->getEventHits(gridX, gridY) >= getProperty(E_HITSTOKILL) / 2)
+	set = prepareStep(ticks, msps);
+
+	if (!set) return remove();
+
+
+	if (level->getEventHits(gridX, gridY) >= set->strength / 2)
  		stage = 1;
-	if (level->getEventHits(gridX, gridY) >= getProperty(E_HITSTOKILL))
+	if (level->getEventHits(gridX, gridY) >= set->strength)
 		stage = 2;
 
 	// Stage 0: Move in an eight shape and fire the occasional shot
@@ -262,10 +291,10 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 		}
 
 		// Decide if there should be a shot
-		if ((ticks % (getProperty(E_BULLETSP) * 25) >
-				(unsigned int)(getProperty(E_BULLETSP) * 25) - T_SHOOT)) {
+		if ((ticks % (set->bulletPeriod * 25) >
+				(unsigned int)(set->bulletPeriod * 25) - 300)) {
 
-			level->setEventTime(gridX, gridY, ticks + T_SHOOT);
+			level->setEventTime(gridX, gridY, ticks + 300);
 			shoot = true;
 
 		}
@@ -275,12 +304,12 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 				(ticks > level->getEventTime(gridX, gridY)) &&
 				shoot) {
 
-			if ((getProperty(E_BULLET) < 32) &&
-					(level->getBullet(getProperty(E_BULLET))[B_SPRITE] != 0))
+			if ((set->bullet < 32) &&
+					(level->getBullet(set->bullet)[B_SPRITE] != 0))
 				level->bullets = new Bullet(
 						x + anim->getAccessoryShootX(),
 						y + anim->getAccessoryShootY(),
-						getProperty(E_BULLET), (animType != E_LEFTANIM), ticks);
+						set->bullet, (animType != E_LEFTANIM), ticks);
 
 			shoot = false;
 
@@ -368,7 +397,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 				level->setTile(
 						FTOT(x + ITOF((anim->getWidth() / 2))),
 						FTOT(y) + 1,
-						getProperty(E_MAGNITUDE));
+						set->magnitude);
 
 				direction = 8;
 
@@ -397,10 +426,17 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Draw episode 1 guardian.
+ *
+ * @param ticks Time
+ * @param change Time since last iteration
+ */
 void MedGuardian::draw(unsigned int ticks, int change) {
 
 	Anim *anim;
 	Anim *accessory;
+	unsigned char frame;
 
 	if (next) next->draw(ticks, change);
 
@@ -408,20 +444,22 @@ void MedGuardian::draw(unsigned int ticks, int change) {
 	fixed yChange = getDrawY(change);
 
 
-	if (getProperty(E_ANIMSP))
-		frame = ticks / (getProperty(E_ANIMSP) * 40);
-	else
-		frame = ticks / 20;
+	frame = ticks / (set->animSpeed << 5);
 
 
 	if (stage == 0)
-		anim = getAnim(animType);
+		anim = getAnim();
 	else
-		anim = getAnim(animType == E_LEFTANIM ? E_LFINISHANIM : E_RFINISHANIM);
+		anim = level->getAnim(set->anims[E_LFINISHANIM | (animType & 1)] & 0x7F);
 
 
 	anim->setFrame(frame + gridX + gridY, true);
+
+	if (ticks < flashTime) anim->flashPalette(0);
+
 	anim->draw(xChange, yChange);
+
+	if (ticks < flashTime) anim->restorePalette();
 
 	accessory = anim->getAccessory();
 	accessory->setFrame(frame + gridX + gridY, true);

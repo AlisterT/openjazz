@@ -33,6 +33,13 @@
 #include "player/levelplayer.h"
 
 
+/**
+ * Create a bullet fired by a player.
+ *
+ * @param sourcePlayer The player that fired the bullet
+ * @param lower Indicates if this the second of two bullets to be created
+ * @param ticks Time
+ */
 Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
 
 	Anim* anim;
@@ -89,33 +96,16 @@ Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
 }
 
 
-Bullet::Bullet (Event* sourceEvent, bool facing, unsigned int ticks) {
-
-	Anim* anim;
-
-	// Properties based on the event
-
-	next = level->bullets;
-	source = NULL;
-	type = sourceEvent->getProperty(E_BULLET);
-	direction = facing? 1: 0;
-	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
-
-	anim = level->getAnim(sourceEvent->getProperty(facing? E_LSHOOTANIM: E_RSHOOTANIM));
-	x = sourceEvent->getX() + anim->getShootX();
-	y = sourceEvent->getY() + anim->getShootY() - ITOF((sprite->getHeight() / 2) - 2);
-	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
-	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
-	time = ticks + T_BULLET;
-
-	level->playSound(level->getBullet(type)[B_STARTSOUND]);
-
-	return;
-
-}
-
-
-Bullet::Bullet (fixed xStart, fixed yStart, int bullet, bool facing, unsigned int ticks) {
+/**
+ * Create a bullet fired by an event.
+ *
+ * @param xStart The x-coordinate of the bullet
+ * @param yStart The y-coordinate of the bullet
+ * @param bullet Type
+ * @param facing The direction of the bullet
+ * @param ticks Time
+ */
+Bullet::Bullet (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks) {
 
 	// Properties based on a given bullet type and starting position
 
@@ -138,6 +128,13 @@ Bullet::Bullet (fixed xStart, fixed yStart, int bullet, bool facing, unsigned in
 }
 
 
+/**
+ * Create a bullet fired by a bird.
+ *
+ * @param sourceBird The bird that fired the bullet
+ * @param lower Indicates if this the second of two bullets to be created
+ * @param ticks Time
+ */
 Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 
 	// Properties based on the bird and its player
@@ -172,6 +169,9 @@ Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 }
 
 
+/**
+ * Delete all bullets.
+ */
 Bullet::~Bullet () {
 
 	if (next) delete next;
@@ -181,6 +181,11 @@ Bullet::~Bullet () {
 }
 
 
+/**
+ * Delete this bullet.
+ *
+ * @return The next bullet
+ */
 Bullet* Bullet::remove () {
 
 	Bullet* oldNext;
@@ -194,6 +199,11 @@ Bullet* Bullet::remove () {
 }
 
 
+/**
+ * Get the player responsible for this bullet.
+ *
+ * @return The player (NULL if fired by an event)
+ */
 LevelPlayer* Bullet::getSource () {
 
 	return source;
@@ -201,6 +211,14 @@ LevelPlayer* Bullet::getSource () {
 }
 
 
+/**
+ * Bullet iteration.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Remaining bullet
+ */
 Bullet* Bullet::step (unsigned int ticks, int msps) {
 
 	signed char* set;
@@ -325,6 +343,11 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Draw the bullet.
+ *
+ * @param change Time since last iteration
+ */
 void Bullet::draw (int change) {
 
 	if (next) next->draw(change);

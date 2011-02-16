@@ -39,14 +39,14 @@ class Anim {
 
 	private:
 		Sprite**       sprites;   ///< Sprite images
-		signed char*   xOffsets;
-		signed char*   yOffsets;
+		signed char*   xOffsets;  ///< Horizontal offsets for each frame
+		signed char*   yOffsets;  ///< Vertical offsets for each frame
 		bool           ignoreDefaultYOffset;
-		signed char    shootX;
-		signed char    shootY;
-		signed char    accessoryX;
-		signed char    accessoryY;
-		signed char    yOffset;
+		signed char    shootX;     ///< Bullet generation x-coordinate
+		signed char    shootY;     ///< Bullet generation y-coordinate
+		signed char    accessoryX; ///< Accessory animation x-coordinate
+		signed char    accessoryY; ///< Accessory animation y-coordinate
+		signed char    yOffset;    ///< Vertical offset
 		unsigned char  frames;    ///< Number of frames
 		unsigned char  frame;     ///< Current frame
 		unsigned char  accessory; ///< Number of an animation that is an accessory to this animation
@@ -56,11 +56,12 @@ class Anim {
 		Anim                        ();
 		~Anim                       ();
 
-		void  setData               (int amount, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y);
+		void  setData               (int length, signed char sX, signed char sY, signed char aX, signed char aY, unsigned char a, signed char y);
 		void  setFrame              (int nextFrame, bool looping);
 		void  setFrameData          (Sprite *frameSprite, signed char x, signed char y);
 		int   getWidth              ();
 		int   getHeight             ();
+		int   getLength             ();
 		fixed getShootX             ();
 		fixed getShootY             ();
 		fixed getAccessoryX         ();

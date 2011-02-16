@@ -59,7 +59,7 @@ class Sprite;
 class Bullet : public Movable {
 
 	private:
-		Bullet*      next;
+		Bullet*      next; ///< The next bullet
 		LevelPlayer* source; ///< Source player. If NULL, was fired by an event
 		Sprite*      sprite; ///< Sprite
 		int          type; ///< -1 is TNT, otherwise indexes the bullet set
@@ -70,9 +70,8 @@ class Bullet : public Movable {
 
 	public:
 		Bullet  (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
-		Bullet  (Event* sourceEvent, bool facing, unsigned int ticks);
 		Bullet  (Bird* sourceBird, bool lower, unsigned int ticks);
-		Bullet  (fixed xStart, fixed yStart, int bullet, bool facing, unsigned int ticks);
+		Bullet  (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks);
 		~Bullet ();
 
 		LevelPlayer* getSource  ();

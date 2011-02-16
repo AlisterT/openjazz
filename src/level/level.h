@@ -75,13 +75,35 @@ typedef struct {
 
 } GridElement;
 
+/// JJ1 level event type
+typedef struct {
+
+	unsigned char anims[6]; ///< Indices of animations
+	signed char   reflection; ///< Whether or not to show a reflection
+	signed char   movement; ///< Movement type
+	signed char   magnitude; ///< Usage depends on event type
+	signed char   strength; ///< Number of hits required to destroy the event
+	signed char   modifier; ///< Modifier
+	unsigned char points; ///< Points obtained by getting/destroying the event
+	unsigned char bullet; ///< Type of bullet the event fires
+	unsigned char bulletPeriod; ///< The time between successive bullet shots
+	unsigned char speed; ///< The speed at which the event moves
+	unsigned char animSpeed; ///< The speed of the event's animation
+	unsigned char sound; ///< The sound played on the appropriate trigger
+	signed char   multiA; ///< Usage depends on event type
+	signed char   multiB; ///< Usage depends on event type
+	signed char   pieceSize; ///< Size of pieces in bridges, swinging balls chains, etc.
+	signed char   pieces; ///< Number of pieces in bridges, swinging ball chains, etc.
+	signed char   angle; ///< Initial angle of swinging balls, etc.
+
+} EventType;
+
 /// Pre-defined JJ1 event movement path
 typedef struct {
 
 	short int*    x; ///< X-coordinates for each node
 	short int*    y; ///< Y-coordinates for each node
 	unsigned char length; ///< Number of nodes
-	unsigned char node; ///< Current node
 
 } EventPath;
 
@@ -108,17 +130,17 @@ class Level : public BaseLevel {
 		Anim          animSet[ANIMS]; ///< Animations
 		char          miscAnims[4]; ///< Further animations
 		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
-		signed char   eventSet[EVENTS][ELENGTH]; ///< Event types
+		EventType     eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
 		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
 		int           soundMap[32]; ///< Maps event sound effect numbers to actual sound effect indices
 		SDL_Color     skyPalette[256]; ///< Full palette for sky background
 		bool          sky; ///< Whether or not to use sky background
 		unsigned char skyOrb; ///< The tile to use as the background sun/moon/etc.
-		int           levelNum; ///<
-		int           worldNum; ///<
-		int           nextLevelNum; ///<
-		int           nextWorldNum; ///<
+		int           levelNum; ///< Number of current level
+		int           worldNum; ///< Number of current world
+		int           nextLevelNum; ///< Number of next level
+		int           nextWorldNum; ///< Number of next world
 		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo)
 		int           enemies; ///< Number of enemies to kill
 		fixed         waterLevel; ///< Height of water
@@ -136,6 +158,8 @@ class Level : public BaseLevel {
 	protected:
 		Font* font; ///< On-screen message font
 
+		Level ();
+
 		int  load (char* fileName, unsigned char diff, bool checkpoint);
 		int  step ();
 		void draw ();
@@ -144,7 +168,6 @@ class Level : public BaseLevel {
 		Bullet*   bullets; ///< Active bullets
 		EventPath path[PATHS]; ///< Pre-defined event movement paths
 
-		Level          ();
 		Level          (char* fileName, unsigned char diff, bool checkpoint, bool multi);
 		virtual ~Level ();
 
@@ -155,7 +178,7 @@ class Level : public BaseLevel {
 		void          setNext       (int nextLevel, int nextWorld);
 		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
 		Event*        getEvents     ();
-		signed char*  getEvent      (unsigned char gridX, unsigned char gridY);
+		EventType*    getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);

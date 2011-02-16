@@ -41,6 +41,11 @@
 #include "util.h"
 
 
+/**
+ * Level iteration.
+ *
+ * @return Error code
+ */
 int Level::step () {
 
 	Event *event;
@@ -75,7 +80,7 @@ int Level::step () {
 				// If the event wasn't found, create it
 				if (!event) {
 
-					switch (getEvent(x, y)[E_BEHAVIOUR]) {
+					switch (getEvent(x, y)->movement) {
 
 						case 28:
 
@@ -97,7 +102,7 @@ int Level::step () {
 
 						default:
 
-							events = new Event(x, y);
+							events = new StandardEvent(x, y);
 
 							break;
 
@@ -117,8 +122,6 @@ int Level::step () {
 
 
 	// Process active events
-
-	for (x = 0; x < PATHS; x++) path[x].node = (ticks >> 5) % path[x].length;
 
 	if (events) events = events->step(ticks, msps);
 
@@ -179,6 +182,9 @@ int Level::step () {
 
 
 
+/**
+ * Draw the level.
+ */
 void Level::draw () {
 
 	GridElement *ge;
@@ -260,7 +266,7 @@ void Level::draw () {
 
 
 			// If this is not a foreground tile, draw it
-			if ((eventSet[ge->event][E_BEHAVIOUR] != 38) &&
+			if ((eventSet[ge->event].movement != 38) &&
 			    ((ge->event < 124) || (ge->event > 125))  ) {
 
 				dst.x = TTOI(x) - (vX & 31);
@@ -306,15 +312,15 @@ void Level::draw () {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
-				if (ticks & 64) src.y = TTOI(eventSet[ge->event][E_YAXIS]);
-				else src.y = TTOI(eventSet[ge->event][E_MULTIPURPOSE]);
+				if (ticks & 64) src.y = TTOI(eventSet[ge->event].multiB);
+				else src.y = TTOI(eventSet[ge->event].multiA);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 			}
 
 			// If this is a foreground tile, draw it
 			if ((ge->event == 124) || (ge->event == 125) ||
-				(eventSet[ge->event][E_BEHAVIOUR] == 38)   ) {
+				(eventSet[ge->event].movement == 38)   ) {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);

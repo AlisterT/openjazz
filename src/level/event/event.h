@@ -29,6 +29,7 @@
 #define _EVENT_H
 
 
+#include "../level.h"
 #include "../movable.h"
 
 #include "OpenJazz.h"
@@ -37,39 +38,17 @@
 
 // Constants
 
-// Indexes for elements of the event set
-/* Names taken from J1CS/JCS94 and J1E
- * ...Except of course it carries on the fine JCF tradition of changing the
- * spelling of words such as "behavior" */
-#define E_DIFFICULTY   0
-#define E_REFLECTION   2
-#define E_BEHAVIOR     4
-#define E_BEHAVIOUR    4
-#define E_LEFTANIM     5
-#define E_RIGHTANIM    6
-#define E_MAGNITUDE    8
-#define E_HITSTOKILL   9
-#define E_MODIFIER     10
-#define E_ADDEDSCORE   11
-#define E_BULLET       12
-#define E_BULLETSP     13
-#define E_MOVEMENTSP   15
-#define E_ANIMSP       17
-#define E_SOUND        21
-#define E_MULTIPURPOSE 22
-#define E_YAXIS        23
-#define E_BRIDGELENGTH 24
-#define E_CHAINLENGTH  25
-#define E_CHAINANGLE   26
-#define E_LFINISHANIM  28
-#define E_RFINISHANIM  29
-#define E_LSHOOTANIM   30
-#define E_RSHOOTANIM   31
+// Animations
+#define E_LEFTANIM     0
+#define E_RIGHTANIM    1
+#define E_LFINISHANIM  2
+#define E_RFINISHANIM  3
+#define E_LSHOOTANIM   4
+#define E_RSHOOTANIM   5
+#define E_NOANIM       6
 
 // Delays
 #define T_FLASH  100
-#define T_FINISH 200
-#define T_SHOOT  300
 
 // Speed factors
 #define ES_SLOW ITOF(80)
@@ -84,28 +63,25 @@ class LevelPlayer;
 class Event : public Movable {
 
 	protected:
-		Event*        next;
+		Event*        next; ///< Next event
+		EventType*    set; ///< Type
 		unsigned char gridX, gridY; ///< Grid position of the event
-		unsigned char animType; ///< E_LEFTANIM, etc, or 0
-		unsigned char frame; ///< Current animation frame
-		unsigned int  flashTime;///< Time flash will end
+		unsigned char animType; ///< Animation type (E_LEFTANIM, etc.)
+		unsigned int  flashTime; ///< Time flash will end
 		bool          noAnimOffset;
-		bool          onlyLAnimOffset;
-		bool          onlyRAnimOffset;
 
-		Event ();
+		Event (unsigned char gX, unsigned char gY);
 
-		Event*       remove              ();
-		void         destroy             (unsigned int ticks);
-		fixed        getWidth            ();
-		fixed        getHeight           ();
-		signed char* prepareStep         (unsigned int ticks, int msps);
-		void         useLeftAnimOffset   ();
-		void         useRightAnimOffset  ();
-		void         dontUseAnimOffset   ();
+		Event* remove  ();
+		void   destroy (unsigned int ticks);
+
+		Anim* getAnim   ();
+		fixed getHeight ();
+		fixed getWidth  ();
+
+		EventType* prepareStep (unsigned int ticks, int msps);
 
 	public:
-		Event  (unsigned char gX, unsigned char gY);
 		virtual ~Event ();
 
 		Event*         getNext        ();
@@ -113,11 +89,28 @@ class Event : public Movable {
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
 		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);
-		signed char    getProperty    (unsigned char property);
-		Anim*		   getAnim	      (unsigned char property);
-		virtual Event* step        	  (unsigned int ticks, int msps);
-		virtual void   draw           (unsigned int ticks, int change);
-		void           drawEnergy 	  (unsigned int ticks);
+
+		virtual Event* step           (unsigned int ticks, int msps) = 0;
+		virtual void   draw           (unsigned int ticks, int change) = 0;
+		void           drawEnergy     (unsigned int ticks);
+
+};
+
+/// Standard JJ1 level event
+class StandardEvent : public Event {
+
+	private:
+		fixed node; ///< Current event path node
+		bool  onlyLAnimOffset;
+		bool  onlyRAnimOffset;
+
+		void move (unsigned int ticks, int msps);
+
+	public:
+		StandardEvent (unsigned char gX, unsigned char gY);
+
+		Event* step (unsigned int ticks, int msps);
+		void   draw (unsigned int ticks, int change);
 
 };
 

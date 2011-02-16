@@ -36,7 +36,6 @@ class Guardian : public Event {
 	protected:
 		int stage;
 
-	public:
 		Guardian (unsigned char gX, unsigned char gY);
 
 };

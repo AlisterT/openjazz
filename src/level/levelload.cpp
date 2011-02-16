@@ -50,6 +50,11 @@
 #define SKEY 254 /* Sprite colour key */
 
 
+/**
+ * Load the HUD graphical data.
+ *
+ * @return Error code
+ */
 int Level::loadPanel () {
 
 	File* file;
@@ -139,6 +144,12 @@ int Level::loadPanel () {
 }
 
 
+/**
+ * Load a sprite.
+ *
+ * @param file File from which to load the sprite data
+ * @param sprite Sprite that will receive the loaded data
+ */
 void Level::loadSprite (File* file, Sprite* sprite) {
 
 	unsigned char* pixels;
@@ -194,6 +205,13 @@ void Level::loadSprite (File* file, Sprite* sprite) {
 }
 
 
+/**
+ * Load sprites.
+ *
+ * @param fileName Name of the file containing the level-specific sprites
+ *
+ * @return Error code
+ */
 int Level::loadSprites (char * fileName) {
 
 	File* mainFile = NULL;
@@ -318,6 +336,13 @@ int Level::loadSprites (char * fileName) {
 }
 
 
+/**
+ * Load the tileset.
+ *
+ * @param fileName Name of the file containing the tileset
+ *
+ * @return The number of tiles loaded
+ */
 int Level::loadTiles (char* fileName) {
 
 	File* file;
@@ -409,13 +434,22 @@ int Level::loadTiles (char* fileName) {
 }
 
 
+/**
+ * Load the level.
+ *
+ * @param fileName Name of the file containing the level data
+ * @param diff Difficulty level
+ * @param checkpoint Whether or not the player(s) will start at a checkpoint
+ *
+ * @return Error code
+ */
 int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
 	Anim* pAnims[PANIMS];
 	File* file;
 	unsigned char* buffer;
 	const char* ext;
-	char* string;
+	char* string = NULL;
 	int tiles;
 	int count, x, y, type;
 	unsigned char startX, startY;
@@ -705,7 +739,6 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 	for (type = 0; type < PATHS; type++) {
 
 		path[type].length = buffer[type << 9] + (buffer[(type << 9) + 1] << 8);
-		path[type].node = 0;
 		if (path[type].length < 1) path[type].length = 1;
 		path[type].x = new short int[path[type].length];
 		path[type].y = new short int[path[type].length];
@@ -729,13 +762,30 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 	// Fill event set with data
 	for (count = 0; count < EVENTS; count++) {
 
-		memcpy(eventSet[count], buffer + (count * ELENGTH), ELENGTH);
-		eventSet[count][E_MOVEMENTSP]++;
+		eventSet[count].anims[0]     = buffer[(count * ELENGTH) + 5];
+		eventSet[count].anims[1]     = buffer[(count * ELENGTH) + 6];
+		eventSet[count].anims[2]     = buffer[(count * ELENGTH) + 28];
+		eventSet[count].anims[3]     = buffer[(count * ELENGTH) + 29];
+		eventSet[count].anims[4]     = buffer[(count * ELENGTH) + 30];
+		eventSet[count].anims[5]     = buffer[(count * ELENGTH) + 31];
+		eventSet[count].reflection   = buffer[(count * ELENGTH) + 2];
+		eventSet[count].movement     = buffer[(count * ELENGTH) + 4];
+		eventSet[count].magnitude    = buffer[(count * ELENGTH) + 8];
+		eventSet[count].strength     = buffer[(count * ELENGTH) + 9];
+		eventSet[count].modifier     = buffer[(count * ELENGTH) + 10];
+		eventSet[count].points       = buffer[(count * ELENGTH) + 11];
+		eventSet[count].bullet       = buffer[(count * ELENGTH) + 12];
+		eventSet[count].bulletPeriod = buffer[(count * ELENGTH) + 13];
+		eventSet[count].speed        = buffer[(count * ELENGTH) + 15] + 1;
+		eventSet[count].animSpeed    = buffer[(count * ELENGTH) + 17] + 1;
+		eventSet[count].sound        = buffer[(count * ELENGTH) + 21];
+		eventSet[count].multiA       = buffer[(count * ELENGTH) + 22];
+		eventSet[count].multiB       = buffer[(count * ELENGTH) + 23];
+		eventSet[count].pieceSize    = buffer[(count * ELENGTH) + 24];
+		eventSet[count].pieces       = buffer[(count * ELENGTH) + 25];
+		eventSet[count].angle        = buffer[(count * ELENGTH) + 26];
 
 	}
-
-	delete[] buffer;
-
 
 	// Process grid
 
@@ -750,18 +800,20 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 			if (type) {
 
 				// Eliminate event references for events of too high a difficulty
-				if (eventSet[type][E_DIFFICULTY] > difficulty) grid[y][x].event = 0;
+				if (buffer[type * ELENGTH] > difficulty) grid[y][x].event = 0;
 
 				// If the event hurts and can be killed, it is an enemy
 				// Anything else that scores is an item
-				if ((eventSet[type][E_MODIFIER] == 0) && eventSet[type][E_HITSTOKILL]) enemies++;
-				else if (eventSet[type][E_ADDEDSCORE]) items++;
+				if ((eventSet[type].modifier == 0) && eventSet[type].strength) enemies++;
+				else if (eventSet[type].points) items++;
 
 			}
 
 		}
 
 	}
+
+	delete[] buffer;
 
 
 	// Yet more doubtless essential data
