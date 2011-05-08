@@ -36,6 +36,10 @@
 #define SW 320
 #define SH 200
 
+// Maximum screen dimensions
+#define MAX_SW 3840
+#define MAX_SH 2400
+
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X)
@@ -65,25 +69,31 @@ class Video {
 		SDL_Color    logicalPalette[256]; ///< Logical palette (greyscale)
 		bool         fakePalette; ///< Whether or not the palette mode is being emulated
 
+		int          maxW; ///< Largest possible width
+		int          maxH; ///< Largest possible height
 		int          screenW; ///< Real width
 		int          screenH; ///< Real height
 #ifdef SCALE
 		int          scaleFactor; ///< Scaling factor
 #endif
-#ifndef FULLSCREEN_ONLY
 		bool         fullscreen; ///< Full-screen mode
-#endif
+
+		void findMaxResolution();
 
 	public:
 		Video ();
 
-		bool       create                (int width, int height);
+		bool       init                  (int width, int height, bool startFullscreen);
+
+		bool       resize                (int width, int height);
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();
 		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
 		void       restoreSurfacePalette (SDL_Surface *surface);
 
+		int        getMaxWidth           ();
+		int        getMaxHeight          ();
 		int        getWidth              ();
 		int        getHeight             ();
 #ifdef SCALE

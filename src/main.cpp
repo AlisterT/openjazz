@@ -81,9 +81,7 @@ int loadMain (int argc, char *argv[]) {
 	int count;
 	int screenW, screenH;
 	int scaleFactor;
-#ifndef FULLSCREEN_ONLY
 	bool fullscreen;
-#endif
 
 
 	// Determine paths
@@ -180,7 +178,9 @@ int loadMain (int argc, char *argv[]) {
 #ifdef SCALE
 	scaleFactor = 1;
 #endif
-#ifndef FULLSCREEN_ONLY
+#ifdef FULLSCREEN_ONLY
+	fullscreen = true;
+#else
 	fullscreen = false;
 #endif
 
@@ -293,15 +293,7 @@ int loadMain (int argc, char *argv[]) {
 	video.setScaleFactor(scaleFactor);
 #endif
 
-#ifdef FULLSCREEN_ONLY
-	SDL_ShowCursor(SDL_DISABLE);
-#else
-	if (fullscreen) video.flipFullscreen();
-#endif
-
-	if (!video.create(screenW, screenH)) {
-
-		logError("Could not set video mode", SDL_GetError());
+	if (!video.init(screenW, screenH, fullscreen)) {
 
 		delete[] characterName;
 
@@ -310,8 +302,6 @@ int loadMain (int argc, char *argv[]) {
 		return E_VIDEO;
 
 	}
-
-	SDL_WM_SetCaption("OpenJazz", NULL);
 
 
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
@@ -591,7 +581,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 #ifndef FULLSCREEN_ONLY
 			case SDL_VIDEORESIZE:
 
-				video.create(event.resize.w, event.resize.h);
+				video.resize(event.resize.w, event.resize.h);
 
 				break;
 

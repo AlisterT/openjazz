@@ -35,6 +35,11 @@
 #include "loop.h"
 
 
+/**
+ * Run the keyboard setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setupKeyboard () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
@@ -114,6 +119,11 @@ int SetupMenu::setupKeyboard () {
 }
 
 
+/**
+ * Run the joystick setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
@@ -253,14 +263,19 @@ int SetupMenu::setupJoystick () {
 }
 
 
+/**
+ * Run the resolution setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setupResolution () {
 
-	int widthOptions[] = {320, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
-		1280, 1440, 1600, 1920};
-	int heightOptions[] = {200, 240, 300, 384, 400, 480, 576, 600, 720, 768,
-		800, 864, 900, 960, 1024, 1080, 1200};
-	SDL_Rect **resolutions;
-	int count, screenW, screenH, maxW, maxH;
+	int widthOptions[] = {SW, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
+		1280, 1440, 1600, 1680, 1920, 2048, 2560, 3200, MAX_SW};
+	int heightOptions[] = {SH, 240, 300, 384, 400, 480, 576, 600, 720, 768,
+		800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1536, 1600, 2048,
+		MAX_SH};
+	int count, screenW, screenH;
 	bool dimension;
 
 	screenW = video.getWidth();
@@ -268,36 +283,6 @@ int SetupMenu::setupResolution () {
 
 	dimension = false;
 
-#ifndef FULLSCREEN_ONLY
-	if (!video.isFullscreen())
-		resolutions = SDL_ListModes(NULL, WINDOWED_FLAGS);
-	else
-#endif
-		resolutions = SDL_ListModes(NULL, FULLSCREEN_FLAGS);
-
-
-#if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
-	maxW = 320;
-	maxH = 240;
-#else
-	if (resolutions == (SDL_Rect **)(-1)) {
-
-		maxW = 1920;
-		maxH = 1200;
-
-	} else {
-
-		maxW = SW;
-		maxH = SH;
-
-		for (count = 0; resolutions[count] != NULL; count++) {
-
-			if (resolutions[count]->w > maxW) maxW = resolutions[count]->w;
-			if (resolutions[count]->h > maxH) maxH = resolutions[count]->h;
-
-		}
-	}
-#endif
 
 	while (true) {
 
@@ -344,7 +329,7 @@ int SetupMenu::setupResolution () {
 
 		if (controls.release(C_UP)) {
 
-			if ((!dimension) && (screenW < maxW)) {
+			if ((!dimension) && (screenW < video.getMaxWidth())) {
 
 				while (screenW >= widthOptions[count]) count++;
 
@@ -352,7 +337,7 @@ int SetupMenu::setupResolution () {
 
 			}
 
-			if (dimension && (screenH < maxH)) {
+			if (dimension && (screenH < video.getMaxHeight())) {
 
 				while (screenH >= heightOptions[count]) count++;
 
@@ -366,7 +351,7 @@ int SetupMenu::setupResolution () {
 
 			if ((!dimension) && (screenW > SW)) {
 
-				count = 13;
+				count = 18;
 
 				while (screenW <= widthOptions[count]) count--;
 
@@ -377,7 +362,7 @@ int SetupMenu::setupResolution () {
 
 			if (dimension && (screenH > SH)) {
 
-				count = 16;
+				count = 22;
 
 				while (screenH <= heightOptions[count]) count--;
 
@@ -392,7 +377,7 @@ int SetupMenu::setupResolution () {
 		if (count) {
 
 			playSound(S_ORB);
-			video.create(screenW, screenH);
+			video.resize(screenW, screenH);
 
 		}
 
@@ -404,6 +389,11 @@ int SetupMenu::setupResolution () {
 
 
 #ifdef SCALE
+/**
+ * Run the scaling setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setupScaling () {
 
 	int scaleFactor;
@@ -465,6 +455,11 @@ int SetupMenu::setupScaling () {
 #endif
 
 
+/**
+ * Run the audio setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setupSound () {
 
 	while (true) {
@@ -500,6 +495,11 @@ int SetupMenu::setupSound () {
 }
 
 
+/**
+ * Run the setup menu.
+ *
+ * @return Error code
+ */
 int SetupMenu::setup () {
 
 	const char *setupOptions[6] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound"};

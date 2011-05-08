@@ -32,9 +32,20 @@
 	#include "io/gfx/scale2x/scalebit.h"
 #endif
 
+#include "util.h"
+
 #include <string.h>
 
 
+/**
+ * Creates a surface.
+ *
+ * @param pixels Pixel data to copy into the surface. Can be NULL.
+ * @param width Width of the pixel data and of the surface to be created
+ * @param height Height of the pixel data and of the surface to be created
+ *
+ * @return The completed surface
+ */
 SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 
 	SDL_Surface *ret;
@@ -64,19 +75,17 @@ SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 }
 
 
+/**
+ * Create the video output object.
+ */
 Video::Video () {
 
 	int count;
 
 	screen = NULL;
 
-	screenW = SW;
-	screenH = SH;
 #ifdef SCALE
 	scaleFactor = 1;
-#endif
-#ifndef FULLSCREEN_ONLY
-	fullscreen = false;
 #endif
 
 	// Generate the logical palette
@@ -91,7 +100,87 @@ Video::Video () {
 }
 
 
-bool Video::create (int width, int height) {
+/**
+ * Find the maximum horizontal and vertical resolutions.
+ */
+void Video::findMaxResolution () {
+
+#if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
+	maxW = 320;
+	maxH = 240;
+#else
+	SDL_Rect **resolutions;
+	int count;
+
+	resolutions = SDL_ListModes(NULL, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
+
+	if (resolutions == (SDL_Rect **)(-1)) {
+
+		maxW = MAX_SW;
+		maxH = MAX_SH;
+
+	} else {
+
+		maxW = SW;
+		maxH = SH;
+
+		for (count = 0; resolutions[count] != NULL; count++) {
+
+			if (resolutions[count]->w > maxW) maxW = resolutions[count]->w;
+			if (resolutions[count]->h > maxH) maxH = resolutions[count]->h;
+
+		}
+
+		if (maxW > MAX_SW) maxW = MAX_SW;
+		if (maxH > MAX_SH) maxH = MAX_SH;
+	}
+#endif
+
+	return;
+}
+
+
+/**
+ * Initialise video output.
+ *
+ * @param width Width of the window or screen
+ * @param height Height of the window or screen
+ * @param startFullscreen Whether or not to start in full-screen mode
+ *
+ * @return Success
+ */
+bool Video::init (int width, int height, bool startFullscreen) {
+
+	fullscreen = startFullscreen;
+
+	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
+
+	if (!resize(width, height)) {
+
+		logError("Could not set video mode", SDL_GetError());
+
+		return false;
+
+	}
+
+	SDL_WM_SetCaption("OpenJazz", NULL);
+
+	findMaxResolution();
+
+	return true;
+
+}
+
+
+/**
+ * Sets the size of the video window or the resolution of the screen.
+ *
+ * @param width New width of the window or screen
+ * @param height New height of the window or screen
+ *
+ * @return Success
+ */
+bool Video::resize (int width, int height) {
 
 	screenW = width;
 	screenH = height;
@@ -103,11 +192,7 @@ bool Video::create (int width, int height) {
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
 #else
-	#ifdef FULLSCREEN_ONLY
-	screen = SDL_SetVideoMode(screenW, screenH, 8, FULLSCREEN_FLAGS);
-	#else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
-	#endif
 #endif
 
 	if (!screen) return false;
@@ -138,7 +223,7 @@ bool Video::create (int width, int height) {
 	}
 #endif
 
-#if !defined(WIZ) && (defined(CAANOO) || defined(GP2X))
+#if !defined(WIZ) && !defined(GP2X)
 	expose();
 #endif
 
@@ -159,6 +244,11 @@ bool Video::create (int width, int height) {
 }
 
 
+/**
+ * Sets the display palette.
+ *
+ * @param palette The new palette
+ */
 void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
@@ -175,6 +265,11 @@ void Video::setPalette (SDL_Color *palette) {
 }
 
 
+/**
+ * Returns the current display palette.
+ *
+ * @return The current display palette
+ */
 SDL_Color* Video::getPalette () {
 
 	return currentPalette;
@@ -182,6 +277,13 @@ SDL_Color* Video::getPalette () {
 }
 
 
+/**
+ * Sets some colours of the display palette.
+ *
+ * @param palette The palette containing the new colours
+ * @param first The index of the first colour in both the display palette and the specified palette
+ * @param amount The number of colours
+ */
 void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int amount) {
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
@@ -191,6 +293,11 @@ void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int
 }
 
 
+/**
+ * Restores a surface's palette.
+ *
+ * @param surface Surface with a modified palette
+ */
 void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
 	SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
@@ -200,6 +307,35 @@ void Video::restoreSurfacePalette (SDL_Surface* surface) {
 }
 
 
+/**
+ * Returns the maximum possible screen width.
+ *
+ * @return The maximum width
+ */
+int Video::getMaxWidth () {
+
+	return maxW;
+
+}
+
+
+/**
+ * Returns the maximum possible screen height.
+ *
+ * @return The maximum height
+ */
+int Video::getMaxHeight () {
+
+	return maxH;
+
+}
+
+
+/**
+ * Returns the current width of the window or screen.
+ *
+ * @return The width
+ */
 int Video::getWidth () {
 
 	return screenW;
@@ -207,13 +343,24 @@ int Video::getWidth () {
 }
 
 
+/**
+ * Returns the current height of the window or screen.
+ *
+ * @return The height
+ */
 int Video::getHeight () {
 
 	return screenH;
 
 }
 
+
 #ifdef SCALE
+/**
+ * Returns the current scaling factor.
+ *
+ * @return The scaling factor
+ */
 int Video::getScaleFactor () {
 
 	return scaleFactor;
@@ -221,11 +368,16 @@ int Video::getScaleFactor () {
 }
 
 
+/**
+ * Sets the scaling factor.
+ *
+ * @param newScaleFactor The new scaling factor
+ */
 void Video::setScaleFactor (int newScaleFactor) {
 
 	scaleFactor = newScaleFactor;
 
-	if (screen) create(screenW, screenH);
+	if (screen) resize(screenW, screenH);
 
 	return;
 
@@ -233,6 +385,11 @@ void Video::setScaleFactor (int newScaleFactor) {
 #endif
 
 #ifndef FULLSCREEN_ONLY
+/**
+ * Determines whether or not full-screen mode is being used.
+ *
+ * @return Whether or not full-screen mode is being used
+ */
 bool Video::isFullscreen () {
 
 	return fullscreen;
@@ -242,13 +399,20 @@ bool Video::isFullscreen () {
 
 
 #ifndef FULLSCREEN_ONLY
+/**
+ * Switch between windowed and full-screen mode.
+ */
 void Video::flipFullscreen () {
 
 	fullscreen = !fullscreen;
 
-	SDL_ShowCursor(fullscreen? SDL_DISABLE: SDL_ENABLE);
+	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
-	if (screen) create(screenW, screenH);
+	resize(screenW, screenH);
+
+	if (!fullscreen) SDL_ShowCursor(SDL_ENABLE);
+
+	findMaxResolution();
 
 	return;
 
@@ -256,6 +420,9 @@ void Video::flipFullscreen () {
 #endif
 
 
+/**
+ * Refresh display palette.
+ */
 void Video::expose () {
 
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
@@ -266,6 +433,12 @@ void Video::expose () {
 }
 
 
+/**
+ * Draw graphics to screen.
+ *
+ * @param mspf Ticks per frame
+ * @param paletteEffects Palette effects to use
+ */
 void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 
 	SDL_Color shownPalette[256];
@@ -314,6 +487,11 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 }
 
 
+/**
+ * Fill the screen with a colour.
+ *
+ * @param index Index of the colour to use
+ */
 void Video::clearScreen (int index) {
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X)
@@ -328,6 +506,15 @@ void Video::clearScreen (int index) {
 }
 
 
+/**
+ * Fill a specified rectangle of the screen with a colour.
+ *
+ * @param x X-coordinate of the left side of the rectangle
+ * @param y Y-coordinate of the top of the rectangle
+ * @param width Width of the rectangle
+ * @param height Height of the rectangle
+ * @param index Index of the colour to use
+ */
 void drawRect (int x, int y, int width, int height, int index) {
 
 	SDL_Rect dst;
