@@ -304,7 +304,7 @@ int GameMenu::newGameLevel (GameModeType mode) {
 	char* fileName;
 	int ret;
 
-	fileName = createString("castle1.j2l");
+	fileName = createString("level0.000");
 
 	ret = E_NONE;
 
