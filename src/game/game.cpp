@@ -244,7 +244,7 @@ int Game::play () {
 			if (!multiplayer) {
 
 				Planet *planet;
-				char *fileName;
+				char *fileName = NULL;
 
 				fileName = createFileName(F_PLANET, level->getWorld());
 

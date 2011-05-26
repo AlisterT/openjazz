@@ -62,7 +62,7 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels
 
 	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
 
-		LOG("PL FF frame offset", nextData - frameStart);
+		LOG("PL FF frame offset", nextData - frameData);
 		header = *nextData;
 		nextData++;
 
@@ -259,10 +259,8 @@ void Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char*
 
 void Scene::loadAni (File *f, int dataIndex) {
 
-	unsigned short int aniType = f->loadShort();// should be 0x02
-	LOG("ParseAni DataLen", aniType);
-	unsigned short int aniOffset = f->loadShort();// unknown, number of frames?
-	LOG("ParseAni Frames?", aniOffset);
+	LOGRESULT("ParseAni DataLen", f->loadShort()); // should be 0x02
+	LOGRESULT("ParseAni Frames?", f->loadShort()); // unknown, number of frames?
 	unsigned short int type = 0;//
 	int loop;
 
@@ -288,7 +286,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 			int pos = f->tell();
 			int nextPos = f->tell();
 			LOG("PL Read position", pos);
-			unsigned short int len = f->loadShort();
+			f->loadShort(); // Length
 
 			palettes = new ScenePalette(palettes);
 
@@ -384,12 +382,10 @@ void Scene::loadAni (File *f, int dataIndex) {
 
 						{
 							unsigned char soundIndex = f->loadChar();
-							unsigned char soundNote = f->loadChar();
-							unsigned char soundOffset = f->loadChar();
 							animations->lastFrame->soundId = soundIndex;
 							LOG("PL Audio tag with index", soundIndex);
-							LOG("PL Audio tag play at ", soundNote);
-							LOG("PL Audio tag play offset ", soundOffset);
+							LOGRESULT("PL Audio tag play at ", f->loadChar());
+							LOGRESULT("PL Audio tag play offset ", f->loadChar());
 						}
 
 						break;
@@ -533,8 +529,7 @@ void Scene::loadScripts (File *f) {
 
 		if (f->loadChar() == 0x50) { // Script tag
 
-			unsigned short int scriptid = f->loadShort();
-			LOG("Script id", scriptid);
+			LOGRESULT("Script id", f->loadShort());
 			int palette = f->loadShort();
 			LOG("Script default palette", palette);
 			pages[loop].paletteIndex = palette;
@@ -582,8 +577,7 @@ void Scene::loadScripts (File *f) {
 					case ESceneFadeType:
 
 						{
-							unsigned char fadein = f->loadChar();
-							LOG("ESceneFadeType", fadein);
+							LOGRESULT("ESceneFadeType", f->loadChar());
 
 						}
 
@@ -615,8 +609,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned char value = 0;//f->loadChar();
-							LOG("ESceneSomethingElse", value);
+							LOG("ESceneSomethingElse", 0);
 
 						}
 
@@ -679,8 +672,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned short value = f->loadShort();
-							LOG("ESceneTextColour", value);
+							LOGRESULT("ESceneTextColour", f->loadShort());
 
 						}
 
@@ -690,8 +682,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned short len = f->loadShort();
-							LOG("ESceneFontFun len", len);
+							LOGRESULT("ESceneFontFun len", f->loadShort());
 
 							/*while (len) {
 
@@ -722,8 +713,7 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned short value = f->loadShort();
-							LOG("ESceneTextSetting", value);
+							LOGRESULT("ESceneTextSetting", f->loadShort());
 
 						}
 
@@ -758,10 +748,8 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned char a = f->loadChar();
-							unsigned short b = f->loadShort();
-							LOG("ESceneTextAlign2 a", a);
-							LOG("ESceneTextAlign2 b", b);
+							LOGRESULT("ESceneTextAlign2 a", f->loadChar());
+							LOGRESULT("ESceneTextAlign2 b", f->loadShort());
 
 						}
 
@@ -771,10 +759,8 @@ void Scene::loadScripts (File *f) {
 
 						{
 
-							unsigned char a = f->loadChar();
-							unsigned short b = f->loadShort();
-							LOG("ESceneTextSomething a", a);
-							LOG("ESceneTextSomething b", b);
+							LOGRESULT("ESceneTextSomething a", f->loadChar());
+							LOGRESULT("ESceneTextSomething b", f->loadShort());
 
 						}
 

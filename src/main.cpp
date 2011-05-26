@@ -77,11 +77,16 @@ extern float sinf (float);
 int loadMain (int argc, char *argv[]) {
 
 	File* file;
-	unsigned char* pixels;
+	unsigned char* pixels = NULL;
 	int count;
-	int screenW, screenH;
-	int scaleFactor;
-	bool fullscreen;
+	int screenW = SW;
+	int screenH = SH;
+	int scaleFactor = 1;
+#ifdef FULLSCREEN_ONLY
+	bool fullscreen = true;
+#else
+	bool fullscreen = false;
+#endif
 
 
 	// Determine paths
@@ -171,18 +176,6 @@ int loadMain (int argc, char *argv[]) {
 
 
 	// Default settings
-
-	// Video settings
-	screenW = SW;
-	screenH = SH;
-#ifdef SCALE
-	scaleFactor = 1;
-#endif
-#ifdef FULLSCREEN_ONLY
-	fullscreen = true;
-#else
-	fullscreen = false;
-#endif
 
 	// Sound settings
 #if defined(WIZ) || defined(GP2X)

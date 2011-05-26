@@ -146,12 +146,6 @@
 #define MUL(x, y) (((x) * (y)) >> 10)
 #define DIV(x, y) (((x) << 10) / (y))
 
-#ifdef VERBOSE
-	#define LOG(x, y) log(x, y)
-#else
-	#define LOG(x, y)
-#endif
-
 
 // Datatype
 

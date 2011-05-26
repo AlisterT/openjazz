@@ -28,6 +28,17 @@
 #include "OpenJazz.h"
 
 
+// Macros
+
+#ifdef VERBOSE
+	#define LOG(message, detail) log(message, detail)
+	#define LOGRESULT(message, expression) log(message, expression)
+#else
+	#define LOG(message, detail)
+	#define LOGRESULT(message, expression) expression
+#endif
+
+
 // Variable
 
 /// Trigonometric function look-up table

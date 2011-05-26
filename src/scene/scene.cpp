@@ -35,6 +35,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "loop.h"
+#include "util.h"
 
 #include <string.h>
 
