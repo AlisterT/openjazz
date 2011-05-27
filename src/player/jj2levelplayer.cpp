@@ -36,6 +36,15 @@
 #include <string.h>
 
 
+/**
+ * Create a JJ2 level player.
+ *
+ * @param parent The game player corresponding to this level player.
+ * @param newAnims Animations
+ * @param startX Starting position x-coordinate
+ * @param startY Starting position y-coordinate
+ * @param hasBird Whether or not the player is being accompanied by a bird
+ */
 JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
 
 	int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
@@ -112,6 +121,9 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 }
 
 
+/**
+ * Delete the JJ2 level player.
+ */
 JJ2LevelPlayer::~JJ2LevelPlayer () {
 
 	return;
@@ -119,17 +131,23 @@ JJ2LevelPlayer::~JJ2LevelPlayer () {
 }
 
 
+/**
+ * Reset the player's position, energy etc.
+ *
+ * @param startX New x-coordinate
+ * @param startY New y-coordinate
+ */
 void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
 	mod = NULL;
 	energy = 5;
 	floating = false;
 	facing = true;
-	animType = PA_STAND;
+	animType = JJ2PA_STAND;
 	event = LPE_NONE;
 	reaction = JJ2PR_NONE;
 	reactionTime = 0;
-	jumpHeight = ITOF(92);
+	jumpHeight = JJ2PYO_JUMP;
 	throwY = TTOF(256);
 	fastFeetTime = 0;
 	stopTime = 0;
@@ -145,6 +163,11 @@ void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 }
 
 
+/**
+ * Add to the player's tally of gems of a certain colour.
+ *
+ * @param colour The colour of the gem
+ */
 void JJ2LevelPlayer::addGem (int colour) {
 
 	gems[colour]++;
@@ -154,24 +177,35 @@ void JJ2LevelPlayer::addGem (int colour) {
 }
 
 
+/**
+ * Centre the player horizontally on the nearest tile.
+ */
 void JJ2LevelPlayer::centreX () {
 
-	x = ((x + PXO_MID) & ~32767) + F16 - PXO_MID;
+	x = ((x + JJ2PXO_MID) & ~32767) + F16 - JJ2PXO_MID;
 
 	return;
 
 }
 
 
+/**
+ * Centre the player vertically on the nearest tile.
+ */
 void JJ2LevelPlayer::centreY () {
 
-	y = ((y + PYO_MID) & ~32767) + F16 - PYO_MID;
+	y = ((y + JJ2PYO_MID) & ~32767) + F16 - JJ2PYO_MID;
 
 	return;
 
 }
 
 
+/**
+ * Determine the player's current animation.
+ *
+ * @return The current animation
+ */
 Anim* JJ2LevelPlayer::getAnim () {
 
 	return (facing? anims: flippedAnims) + animType;
@@ -179,6 +213,11 @@ Anim* JJ2LevelPlayer::getAnim () {
 }
 
 
+/**
+ * Determine the player's current energy level.
+ *
+ * @return Energy level
+ */
 int JJ2LevelPlayer::getEnergy () {
 
 	return energy;
@@ -186,6 +225,11 @@ int JJ2LevelPlayer::getEnergy () {
 }
 
 
+/**
+ * Determine the direction the player is facing.
+ *
+ * @return True if the player is facing right
+ */
 bool JJ2LevelPlayer::getFacing () {
 
 	return facing;
@@ -193,6 +237,13 @@ bool JJ2LevelPlayer::getFacing () {
 }
 
 
+/**
+ * Determine the number of gems, of a certain colour, the player has collected.
+ *
+ * @param colour The colour of the gems
+ *
+ * @return Number of gems collected
+ */
 int JJ2LevelPlayer::getGems (int colour) {
 
 	return gems[colour];
@@ -200,6 +251,11 @@ int JJ2LevelPlayer::getGems (int colour) {
 }
 
 
+/**
+ * Determine whether or not the player is being accompanied by a bird.
+ *
+ * @return Whether or not the player is being accompanied by a bird
+ */
 bool JJ2LevelPlayer::hasBird () {
 
 	return bird;
@@ -207,6 +263,14 @@ bool JJ2LevelPlayer::hasBird () {
 }
 
 
+/**
+ * Deal with bullet collisions.
+ *
+ * @param source Player that fired the bullet (NULL if an event)
+ * @param ticks Time
+ *
+ * @return Whether or not the hit was successful
+ */
 bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
@@ -229,17 +293,17 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 	if (energy) {
 
 		reaction = JJ2PR_HURT;
-		reactionTime = ticks + PRT_HURT;
+		reactionTime = ticks + JJ2PRT_HURT;
 
 		if (dx < 0) {
 
-			dx = PXS_RUN;
-			dy = PYS_JUMP;
+			dx = JJ2PXS_RUN;
+			dy = JJ2PYS_JUMP;
 
 		} else {
 
-			dx = -PXS_RUN;
-			dy = PYS_JUMP;
+			dx = -JJ2PXS_RUN;
+			dy = JJ2PYS_JUMP;
 
 		}
 
@@ -254,6 +318,12 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 }
 
 
+/**
+ * Kill the player.
+ *
+ * @param source Player responsible for the kill (NULL if due to an event or time)
+ * @param ticks time
+ */
 void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != JJ2PR_NONE) return;
@@ -264,7 +334,7 @@ void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 		player->lives--;
 
 		reaction = JJ2PR_KILLED;
-		reactionTime = ticks + PRT_KILLED;
+		reactionTime = ticks + JJ2PRT_KILLED;
 
 	}
 
@@ -273,14 +343,31 @@ void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 }
 
 
+/**
+ * Determine whether or not the player is overlapping the given area.
+ *
+ * @param left The x-coordinate of the left of the area
+ * @param top The y-coordinate of the top of the area
+ * @param width The width of the area
+ * @param height The height of the area
+ *
+ * @return Whether or not there is an overlap
+ */
 bool JJ2LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
 
-	return (x + PXO_R >= left) && (x + PXO_L < left + width) &&
-		(y >= top) && (y + PYO_TOP < top + height);
+	return (x + JJ2PXO_R >= left) && (x + JJ2PXO_L < left + width) &&
+		(y >= top) && (y + JJ2PYO_TOP < top + height);
 
 }
 
 
+/**
+ * Handle the player's reaction.
+ *
+ * @param ticks Time
+ *
+ * @return The reaction the player has just finished
+ */
 JJ2PlayerReaction JJ2LevelPlayer::reacted (unsigned int ticks) {
 
 	JJ2PlayerReaction oldReaction;
@@ -299,6 +386,12 @@ JJ2PlayerReaction JJ2LevelPlayer::reacted (unsigned int ticks) {
 }
 
 
+/**
+ * Set the player's position.
+ *
+ * @param newX New x-coordinate
+ * @param newY New y-coordinate
+ */
 void JJ2LevelPlayer::setPosition (fixed newX, fixed newY) {
 
 	x = newX;
@@ -309,6 +402,12 @@ void JJ2LevelPlayer::setPosition (fixed newX, fixed newY) {
 }
 
 
+/**
+ * Set the player's speed.
+ *
+ * @param newDx New x-speed
+ * @param newDy New y-speed
+ */
 void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
@@ -319,6 +418,15 @@ void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 }
 
 
+/**
+ * Called when the player has touched an event.
+ *
+ * @param touched The event that was touched
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Whether or not the event should be destroyed.
+ */
 bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps) {
 
 	unsigned char type;
@@ -460,7 +568,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 		case 83: // Checkpoint
 
-			game->setCheckpoint(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+			game->setCheckpoint(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID));
 
 			break;
 
@@ -491,7 +599,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 		case 88: //Invincibility
 
 			reaction = JJ2PR_INVINCIBLE;
-			reactionTime = ticks + PRT_INVINCIBLE;
+			reactionTime = ticks + JJ2PRT_INVINCIBLE;
 
 			return true;
 
@@ -555,7 +663,9 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 
 /**
- * Copy data to be sent to clients/server
+ * Fill a buffer with player data.
+ *
+ * @param buffer The buffer
  */
 void JJ2LevelPlayer::send (unsigned char *buffer) {
 
@@ -587,7 +697,9 @@ void JJ2LevelPlayer::send (unsigned char *buffer) {
 
 
 /**
- * Interpret data received from client/server
+ * Adjust player data based on the contents of a given buffer.
+ *
+ * @param buffer The buffer
  */
 void JJ2LevelPlayer::receive (unsigned char *buffer) {
 

@@ -111,12 +111,13 @@
 
 // Player offsets
 #define PXO_MID F16
-#define PXO_L   (PXO_MID - F10)
-#define PXO_ML  (PXO_MID - F4)
-#define PXO_MR  (PXO_MID + F4)
-#define PXO_R   (PXO_MID + F10)
-#define PYO_TOP (-F20)
-#define PYO_MID (-F10)
+#define PXO_L    (PXO_MID - F10)
+#define PXO_ML   (PXO_MID - F4)
+#define PXO_MR   (PXO_MID + F4)
+#define PXO_R    (PXO_MID + F10)
+#define PYO_TOP  (-F20)
+#define PYO_MID  (-F10)
+#define PYO_JUMP ITOF(84)
 
 // Player speeds
 #define PXS_WALK  ITOF(300)
@@ -126,9 +127,9 @@
 #define PYS_JUMP  ITOF(-350)
 
 // Player accelerations
-#define PXA_REVERSE 900
+#define PXA_REVERSE 1800
 #define PXA_STOP    1000
-#define PXA_WALK    500
+#define PXA_WALK    700
 #define PXA_RUN     200
 #define PYA_GRAVITY 2750
 #define PYA_SINK    1000

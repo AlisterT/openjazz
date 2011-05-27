@@ -38,13 +38,19 @@
 #include "util.h"
 
 
+/**
+ * Respond to tile modifier events.
+ *
+ * @param nextMod The modifier event
+ * @param ticks Time
+ */
 void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 	switch (nextMod->type) {
 
 		case 2: // Spikes
 
-			if (jj2Level->checkMaskDown(x + PXO_MID, y + F1, false))
+			if (jj2Level->checkMaskDown(x + JJ2PXO_MID, y + F1, false))
 				hit(NULL, ticks);
 
 			break;
@@ -70,7 +76,7 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 			} else if (ticks > stopTime) {
 
-				dx = (dx > 0) ? PXS_POLE: -PXS_POLE;
+				dx = (dx > 0) ? JJ2PXS_POLE: -JJ2PXS_POLE;
 				stopTime = 0;
 
 			}
@@ -95,11 +101,11 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 				if (dy < 0) {
 
 					throwY = y - TTOF(16);
-					dy = -PYS_POLE;
+					dy = -JJ2PYS_POLE;
 
 				} else {
 
-					dy = PYS_POLE;
+					dy = JJ2PYS_POLE;
 
 				}
 
@@ -120,7 +126,7 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 			if (!energy) return;
 
-			if (!game->getMode()->endOfLevel(player, FTOT(x + PXO_MID), FTOT(y + PYO_MID))) return;
+			if (!game->getMode()->endOfLevel(player, FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID))) return;
 
 			break;
 
@@ -179,6 +185,9 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 /**
  * Respond to controls, unless the player has been killed
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
  */
 void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
@@ -192,7 +201,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		dx = 0;
 		dy = 0;
 
-		animType = PA_DIE;
+		animType = JJ2PA_DIE;
 
 		return;
 
@@ -200,7 +209,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 
 	// Get overlapping modifier
-	nextMod = jj2Level->getModifier(FTOT(x + PXO_MID), FTOT(y + PYO_MID));
+	nextMod = jj2Level->getModifier(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID));
 
 
 	if (stopTime) {
@@ -218,9 +227,9 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		// Walk/run right
 
-		if (dx < 0) dx += PXA_REVERSE * msps;
-		else if (dx < PXS_WALK) dx += PXA_WALK * msps;
-		else if (dx < PXS_RUN) dx += PXA_RUN * msps;
+		if (dx < 0) dx += JJ2PXA_REVERSE * msps;
+		else if (dx < JJ2PXS_WALK) dx += JJ2PXA_WALK * msps;
+		else if (dx < JJ2PXS_RUN) dx += JJ2PXA_RUN * msps;
 
 		facing = true;
 
@@ -228,9 +237,9 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		// Walk/run left
 
-		if (dx > 0) dx -= PXA_REVERSE * msps;
-		else if (dx > -PXS_WALK) dx -= PXA_WALK * msps;
-		else if (dx > -PXS_RUN) dx -= PXA_RUN * msps;
+		if (dx > 0) dx -= JJ2PXA_REVERSE * msps;
+		else if (dx > -JJ2PXS_WALK) dx -= JJ2PXA_WALK * msps;
+		else if (dx > -JJ2PXS_RUN) dx -= JJ2PXA_RUN * msps;
 
 		facing = false;
 
@@ -240,15 +249,15 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (dx > 0) {
 
-			if (dx < PXA_STOP * msps) dx = 0;
-			else dx -= PXA_STOP * msps;
+			if (dx < JJ2PXA_STOP * msps) dx = 0;
+			else dx -= JJ2PXA_STOP * msps;
 
 		}
 
 		if (dx < 0) {
 
-			if (dx > -PXA_STOP * msps) dx = 0;
-			else dx += PXA_STOP * msps;
+			if (dx > -JJ2PXA_STOP * msps) dx = 0;
+			else dx += JJ2PXA_STOP * msps;
 
 		}
 
@@ -259,11 +268,11 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Check for platform event, bridge or level mask below player
 	platform = (event == LPE_PLATFORM) ||
-		jj2Level->checkMaskDown(x + PXO_ML, y + 1, drop) ||
-		jj2Level->checkMaskDown(x + PXO_MID, y + 1, drop) ||
-		jj2Level->checkMaskDown(x + PXO_MR, y + 1, drop) ||
-		((dx > 0) && jj2Level->checkMaskDown(x + PXO_ML, y + F8, drop)) ||
-		((dx < 0) && jj2Level->checkMaskDown(x + PXO_MR, y + F8, drop));
+		jj2Level->checkMaskDown(x + JJ2PXO_ML, y + 1, drop) ||
+		jj2Level->checkMaskDown(x + JJ2PXO_MID, y + 1, drop) ||
+		jj2Level->checkMaskDown(x + JJ2PXO_MR, y + 1, drop) ||
+		((dx > 0) && jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F8, drop)) ||
+		((dx < 0) && jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F8, drop));
 
 	if (floating) {
 
@@ -271,17 +280,17 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Fly upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * msps;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
+			if (dy > 0) dy -= JJ2PXA_REVERSE * msps;
+			else if (dy > -JJ2PXS_WALK) dy -= JJ2PXA_WALK * msps;
+			else if (dy > -JJ2PXS_RUN) dy -= JJ2PXA_RUN * msps;
 
 		} else if (player->pcontrols[C_DOWN]) {
 
 			// Fly downwards
 
-			if (dy < 0) dy += PXA_REVERSE * msps;
-			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
-			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
+			if (dy < 0) dy += JJ2PXA_REVERSE * msps;
+			else if (dy < JJ2PXS_WALK) dy += JJ2PXA_WALK * msps;
+			else if (dy < JJ2PXS_RUN) dy += JJ2PXA_RUN * msps;
 
 		} else if ((nextMod->type >> 1) != 3) {
 
@@ -289,15 +298,15 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			if (dy > 0) {
 
-				if (dy < PXA_STOP * msps) dy = 0;
-				else dy -= PXA_STOP * msps;
+				if (dy < JJ2PXA_STOP * msps) dy = 0;
+				else dy -= JJ2PXA_STOP * msps;
 
 			}
 
 			if (dy < 0) {
 
-				if (dy > -PXA_STOP * msps) dy = 0;
-				else dy += PXA_STOP * msps;
+				if (dy > -JJ2PXA_STOP * msps) dy = 0;
+				else dy += JJ2PXA_STOP * msps;
 
 			}
 
@@ -305,24 +314,24 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (event != LPE_NONE) {
 
-			if (event == LPE_SPRING) dy = PYS_SPRING;
-			else if (event == LPE_FLOAT) dy = PYS_JUMP;
+			if (event == LPE_SPRING) dy = JJ2PYS_SPRING;
+			else if (event == LPE_FLOAT) dy = JJ2PYS_JUMP;
 
 		}
 
-	} else if (y + PYO_MID > jj2Level->getWaterLevel()) {
+	} else if (y + JJ2PYO_MID > jj2Level->getWaterLevel()) {
 
 		if (player->pcontrols[C_SWIM]) {
 
 			// Swim upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * msps;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
+			if (dy > 0) dy -= JJ2PXA_REVERSE * msps;
+			else if (dy > -JJ2PXS_WALK) dy -= JJ2PXA_WALK * msps;
+			else if (dy > -JJ2PXS_RUN) dy -= JJ2PXA_RUN * msps;
 
 			// Prepare to jump upon leaving the water
 
-			if (!jj2Level->checkMaskUp(x + PXO_MID, y - F36)) {
+			if (!jj2Level->checkMaskUp(x + JJ2PXO_MID, y - F36)) {
 
 				throwY = y - jumpHeight;
 
@@ -337,23 +346,23 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Swim downwards
 
-			if (dy < 0) dy += PXA_REVERSE * msps;
-			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
-			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
+			if (dy < 0) dy += JJ2PXA_REVERSE * msps;
+			else if (dy < JJ2PXS_WALK) dy += JJ2PXA_WALK * msps;
+			else if (dy < JJ2PXS_RUN) dy += JJ2PXA_RUN * msps;
 
 		} else {
 
 			// Sink
 
-			dy += PYA_SINK * msps;
-			if (dy > PYS_SINK) dy = PYS_SINK;
+			dy += JJ2PYA_SINK * msps;
+			if (dy > JJ2PYS_SINK) dy = JJ2PYS_SINK;
 
 		}
 
 	} else {
 
 		if (platform && player->pcontrols[C_JUMP] &&
-			!jj2Level->checkMaskUp(x + PXO_MID, y - F36)) {
+			!jj2Level->checkMaskUp(x + JJ2PXO_MID, y - F36)) {
 
 			// Jump
 
@@ -379,13 +388,13 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			dy = (throwY - y - F64) * 4;
 
 			// Avoid jumping too fast, unless caused by an event
-			if ((event == LPE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if ((event == LPE_NONE) && (dy < JJ2PYS_JUMP)) dy = JJ2PYS_JUMP;
 
 		} else if (!platform) {
 
 			// Fall under gravity
-			dy += PYA_GRAVITY * msps;
-			if (dy > PYS_FALL) dy = PYS_FALL;
+			dy += JJ2PYA_GRAVITY * msps;
+			if (dy > JJ2PYS_FALL) dy = JJ2PYS_FALL;
 
 		}
 
@@ -409,7 +418,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1) && (throwY < y) && (event != LPE_FLOAT)) {
+	if (jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1) && (throwY < y) && (event != LPE_FLOAT)) {
 
 		throwY = TTOF(256);
 		if (dy < 0) dy = 0;
@@ -434,11 +443,11 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Limit speed
 
-	if (dx < -PXS_LIMIT) dx = -PXS_LIMIT;
-	else if (dx > PXS_LIMIT) dx = PXS_LIMIT;
+	if (dx < -JJ2PXS_LIMIT) dx = -JJ2PXS_LIMIT;
+	else if (dx > JJ2PXS_LIMIT) dx = JJ2PXS_LIMIT;
 
-	if (dy < -PYS_LIMIT) dy = -PYS_LIMIT;
-	else if (dy > PYS_LIMIT) dy = PYS_LIMIT;
+	if (dy < -JJ2PYS_LIMIT) dy = -JJ2PYS_LIMIT;
+	else if (dy > JJ2PYS_LIMIT) dy = JJ2PYS_LIMIT;
 
 
 	// Handle firing
@@ -447,7 +456,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		if (ticks > fireTime) {
 
 			// Make sure bullet position is taken from correct animation
-			if (platform) animType = PA_STANDSHOOT;
+			if (platform) animType = JJ2PA_STANDSHOOT;
 
 			/// @todo Create new bullet when firing
 
@@ -497,54 +506,54 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Choose animation
 
-	if ((reaction == JJ2PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
-		animType = PA_HURT1;
+	if ((reaction == JJ2PR_HURT) && (reactionTime - ticks > JJ2PRT_HURT - JJ2PRT_HURTANIM))
+		animType = JJ2PA_HURT1;
 
-	else if (y + PYO_MID > jj2Level->getWaterLevel())
-		animType = PA_SWIM;
+	else if (y + JJ2PYO_MID > jj2Level->getWaterLevel())
+		animType = JJ2PA_SWIM;
 
-	else if (floating) animType = PA_BOARD;
+	else if (floating) animType = JJ2PA_BOARD;
 
 	else if (dy < 0) {
 
-		if (event == LPE_SPRING) animType = PA_FLOAT1;
-		else animType = PA_JUMP2;
+		if (event == LPE_SPRING) animType = JJ2PA_FLOAT1;
+		else animType = JJ2PA_JUMP2;
 
 	} else if (platform) {
 
 		if (dx) {
 
-			if (dx <= -PXS_RUN) animType = PA_RUN;
-			else if (dx >= PXS_RUN) animType = PA_RUN;
-			else if ((dx < 0) && facing) animType = PA_STOP1;
-			else if ((dx > 0) && !facing) animType = PA_STOP1;
-			else animType = PA_WALK2;
+			if (dx <= -JJ2PXS_RUN) animType = JJ2PA_RUN;
+			else if (dx >= JJ2PXS_RUN) animType = JJ2PA_RUN;
+			else if ((dx < 0) && facing) animType = JJ2PA_STOP1;
+			else if ((dx > 0) && !facing) animType = JJ2PA_STOP1;
+			else animType = JJ2PA_WALK2;
 
-		} else if (!jj2Level->checkMaskDown(x + PXO_ML, y + F12, drop) &&
-			!jj2Level->checkMaskDown(x + PXO_L, y + F2, drop) &&
+		} else if (!jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F12, drop) &&
+			!jj2Level->checkMaskDown(x + JJ2PXO_L, y + F2, drop) &&
 			(event != LPE_PLATFORM))
-			animType = PA_EDGE;
+			animType = JJ2PA_EDGE;
 
-		else if (!jj2Level->checkMaskDown(x + PXO_MR, y + F12, drop) &&
-			!jj2Level->checkMaskDown(x + PXO_R, y + F2, drop) &&
+		else if (!jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F12, drop) &&
+			!jj2Level->checkMaskDown(x + JJ2PXO_R, y + F2, drop) &&
 			(event != LPE_PLATFORM))
-			animType = PA_EDGE;
+			animType = JJ2PA_EDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-			animType = PA_LOOKUP1;
+			animType = JJ2PA_LOOKUP1;
 
 		else if (lookTime > 0) {
 
-			if ((int)ticks < 1000 + lookTime) animType = PA_CROUCHED;
-			else animType = PA_CROUCH1;
+			if ((int)ticks < 1000 + lookTime) animType = JJ2PA_CROUCHED;
+			else animType = JJ2PA_CROUCH1;
 
 		}
 
-		else if (player->pcontrols[C_FIRE]) animType = PA_STANDSHOOT;
+		else if (player->pcontrols[C_FIRE]) animType = JJ2PA_STANDSHOOT;
 
-		else animType = PA_STAND;
+		else animType = JJ2PA_STAND;
 
-	} else animType = PA_FALL;
+	} else animType = JJ2PA_FALL;
 
 
 	return;
@@ -552,6 +561,12 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 }
 
 
+/**
+ * Move the player.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ */
 void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
@@ -590,7 +605,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1)) {
+			if (jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1)) {
 
 				y &= ~1023;
 				dy = 0;
@@ -606,7 +621,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 1023;
 
-		if (!jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
+		if (!jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - pdy))
 			y -= pdy;
 		else {
 
@@ -623,9 +638,9 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (jj2Level->checkMaskDown(x + PXO_ML, y + F1, drop) ||
-				jj2Level->checkMaskDown(x + PXO_MID, y + F1, drop) ||
-				jj2Level->checkMaskDown(x + PXO_MR, y + F1, drop)) {
+			if (jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F1, drop) ||
+				jj2Level->checkMaskDown(x + JJ2PXO_MID, y + F1, drop) ||
+				jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F1, drop)) {
 
 				y |= 1023;
 				dy = 0;
@@ -641,9 +656,9 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy &= 1023;
 
-		if (!(jj2Level->checkMaskDown(x + PXO_ML, y + pdy, drop) ||
-			jj2Level->checkMaskDown(x + PXO_MID, y + pdy, drop) ||
-			jj2Level->checkMaskDown(x + PXO_MR, y + pdy, drop)))
+		if (!(jj2Level->checkMaskDown(x + JJ2PXO_ML, y + pdy, drop) ||
+			jj2Level->checkMaskDown(x + JJ2PXO_MID, y + pdy, drop) ||
+			jj2Level->checkMaskDown(x + JJ2PXO_MR, y + pdy, drop)))
 			y += pdy;
 		else {
 
@@ -667,7 +682,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (jj2Level->checkMaskUp(x + PXO_L - F1, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + JJ2PXO_L - F1, y + JJ2PYO_MID)) {
 
 				x &= ~1023;
 
@@ -679,19 +694,19 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (jj2Level->checkMaskUp(x + PXO_ML, y) &&
-				!jj2Level->checkMaskUp(x + PXO_ML, y - F1)) y -= F1;
+			if (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
+				!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
 
 		}
 
 		pdx = (-pdx) & 1023;
 
-		if (!jj2Level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
+		if (!jj2Level->checkMaskUp(x + JJ2PXO_L - pdx, y + JJ2PYO_MID)) x -= pdx;
 		else x &= ~1023;
 
 		// If on an uphill slope, push the player upwards
-		while (jj2Level->checkMaskUp(x + PXO_ML, y) &&
-			!jj2Level->checkMaskUp(x + PXO_ML, y - F1)) y -= F1;
+		while (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
+			!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
 
 	} else if (pdx > 0) {
 
@@ -702,7 +717,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 		while (count > 0) {
 
 			// If there is an obstacle, stop
-			if (jj2Level->checkMaskUp(x + PXO_R + F1, y + PYO_MID)) {
+			if (jj2Level->checkMaskUp(x + JJ2PXO_R + F1, y + JJ2PYO_MID)) {
 
 				x |= 1023;
 
@@ -714,25 +729,25 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			count--;
 
 			// If on an uphill slope, push the player upwards
-			if (jj2Level->checkMaskUp(x + PXO_MR, y) &&
-				!jj2Level->checkMaskUp(x + PXO_MR, y - F1)) y -= F1;
+			if (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
+				!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
 
 		}
 
 		pdx &= 1023;
 
-		if (!jj2Level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
+		if (!jj2Level->checkMaskUp(x + JJ2PXO_R + pdx, y + JJ2PYO_MID)) x += pdx;
 		else x |= 1023;
 
 		// If on an uphill slope, push the player upwards
-		while (jj2Level->checkMaskUp(x + PXO_MR, y) &&
-			!jj2Level->checkMaskUp(x + PXO_MR, y - F1)) y -= F1;
+		while (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
+			!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
 
 	}
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == LPE_FLOAT) && jj2Level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F1)) {
+	if ((event == LPE_FLOAT) && jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1)) {
 
 		throwY = TTOF(256);
 		event = LPE_NONE;
@@ -749,7 +764,10 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 /**
- * Calculate viewport
+ * Calculate viewport.
+ *
+ * @param ticks Time
+ * @param mspf Ticks per frame
  */
 void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 
@@ -795,6 +813,12 @@ void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 
 }
 
+/**
+ * Draw the player.
+ *
+ * @param ticks Time
+ * @param change Time since last step
+ */
 void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	Anim *an;
@@ -802,7 +826,7 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 	fixed drawX, drawY;
 
 	// The current frame for animations
-	if (reaction == JJ2PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
+	if (reaction == JJ2PR_KILLED) frame = (ticks + JJ2PRT_KILLED - reactionTime) / 75;
 	else frame = ticks / 75;
 
 
@@ -836,14 +860,14 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Uncomment the following to see the area of the player
-	/*drawRect(FTOI(drawX + PXO_L - viewX),
-		FTOI(drawY + PYO_TOP - viewY),
-		FTOI(PXO_R - PXO_L),
-		FTOI(-PYO_TOP), 89);
-	drawRect(FTOI(drawX + PXO_ML - viewX),
-		FTOI(drawY + PYO_TOP - viewY),
-		FTOI(PXO_MR - PXO_ML),
-		FTOI(-PYO_TOP), 88);*/
+	/*drawRect(FTOI(drawX + JJ2PXO_L - viewX),
+		FTOI(drawY + JJ2PYO_TOP - viewY),
+		FTOI(JJ2PXO_R - JJ2PXO_L),
+		FTOI(-JJ2PYO_TOP), 89);
+	drawRect(FTOI(drawX + JJ2PXO_ML - viewX),
+		FTOI(drawY + JJ2PYO_TOP - viewY),
+		FTOI(JJ2PXO_MR - JJ2PXO_ML),
+		FTOI(-JJ2PYO_TOP), 88);*/
 
 
 	if (reaction == JJ2PR_INVINCIBLE) {
@@ -894,7 +918,7 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 	// Show the player's name
 	if (nPlayers > 1)
 		panelBigFont->showString(player->name,
-			FTOI(drawX + PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
+			FTOI(drawX + JJ2PXO_MID) - (panelBigFont->getStringWidth(player->name) >> 1),
 			FTOI(drawY - F32 - F16));
 
 	//panelBigFont->showNumber(mod->properties, FTOI(drawX) + 24, FTOI(drawY) + 12);

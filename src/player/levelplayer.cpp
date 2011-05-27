@@ -147,7 +147,7 @@ void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 	animType = PA_RSTAND;
 	reaction = PR_NONE;
 	reactionTime = 0;
-	jumpHeight = ITOF(92);
+	jumpHeight = PYO_JUMP;
 	jumpY = TTOF(LH);
 	fastFeetTime = 0;
 	warpTime = 0;
