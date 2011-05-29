@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed graphics.h to video.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -78,7 +78,8 @@ class Video {
 #endif
 		bool         fullscreen; ///< Full-screen mode
 
-		void findMaxResolution();
+		void findMaxResolution ();
+		void expose            ();
 
 	public:
 		Video ();
@@ -98,14 +99,13 @@ class Video {
 		int        getHeight             ();
 #ifdef SCALE
 		int        getScaleFactor        ();
-		void       setScaleFactor        (int newScaleFactor);
+		int        setScaleFactor        (int newScaleFactor);
 #endif
 #ifndef FULLSCREEN_ONLY
 		bool       isFullscreen          ();
-		void       flipFullscreen        ();
 #endif
 
-		void       expose                ();
+		void       update                (SDL_Event *event);
 		void       flip                  (int mspf, PaletteEffect* paletteEffects);
 
 		void       clearScreen           (int index);

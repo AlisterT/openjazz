@@ -13,7 +13,7 @@
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -282,10 +282,6 @@ int loadMain (int argc, char *argv[]) {
 
 	canvas = NULL;
 
-#ifdef SCALE
-	video.setScaleFactor(scaleFactor);
-#endif
-
 	if (!video.init(screenW, screenH, fullscreen)) {
 
 		delete[] characterName;
@@ -295,6 +291,10 @@ int loadMain (int argc, char *argv[]) {
 		return E_VIDEO;
 
 	}
+
+#ifdef SCALE
+	video.setScaleFactor(scaleFactor);
+#endif
 
 
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
@@ -528,34 +528,18 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 	// Process system events
 	while (SDL_PollEvent(&event)) {
 
-		switch (event.type) {
+		if (event.type == SDL_QUIT) return E_QUIT;
 
-			case SDL_KEYDOWN:
+		ret = controls.update(&event, type);
 
-#ifndef FULLSCREEN_ONLY
-				// If Alt + Enter has been pressed, go to full screen
-				if ((event.key.keysym.sym == SDLK_RETURN) &&
-					(event.key.keysym.mod & KMOD_ALT)) {
+		if (ret != E_NONE) return ret;
 
-					video.flipFullscreen();
-
-				}
-#endif
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
-				SDL_ShowCursor(SDL_DISABLE);
-#endif
-				// Break statement intentionally omitted
-
-			case SDL_KEYUP:
-			case SDL_JOYBUTTONDOWN:
-			case SDL_JOYBUTTONUP:
-			case SDL_JOYAXISMOTION:
-
-				ret = controls.update(&event, type);
-
-				if (ret != E_NONE) return ret;
+		video.update(&event);
 
 #if defined(WIZ) || defined(GP2X)
+		if ((event.type == SDL_JOYBUTTONDOWN) ||
+			(event.type == SDL_JOYBUTTONUP)) {
+
 				if (event.jbutton.button ==  GP2X_BUTTON_VOLUP ) {
 					if( event.type == SDL_JOYBUTTONDOWN )
 						volume_direction = VOLUME_UP;
@@ -568,28 +552,9 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 					else
 						volume_direction = VOLUME_NOCHG;
 				}
-#endif
-				break;
-
-#ifndef FULLSCREEN_ONLY
-			case SDL_VIDEORESIZE:
-
-				video.resize(event.resize.w, event.resize.h);
-
-				break;
-
-			case SDL_VIDEOEXPOSE:
-
-				video.expose();
-
-				break;
-#endif
-
-			case SDL_QUIT:
-
-				return E_QUIT;
 
 		}
+#endif
 
 	}
 
@@ -677,7 +642,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Run the main menu
-	if (mainMenu->main() == E_NONE) {
+	if (mainMenu->main() != E_QUIT) {
 
 		// Show the ending cutscene
 

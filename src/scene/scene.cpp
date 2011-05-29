@@ -12,7 +12,7 @@
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -271,6 +271,10 @@ int Scene::play () {
 
 	while (true) {
 
+		bool upOrLeft = false;
+		bool downOrRight = false;
+		int x, y;
+
 		if (loop(NORMAL_LOOP, paletteEffect) == E_QUIT) {
 
 			if (paletteEffect) delete paletteEffect;
@@ -279,7 +283,14 @@ int Scene::play () {
 
 		}
 
-		if (controls.release(C_ESCAPE) || (controls.release(C_NO) && pages[sceneIndex].askForYesNo)) {
+		downOrRight = controls.releaseCursor(x, y);
+
+		x -= (canvasW - SW) >> 1;
+		y -= (canvasH - SH) >> 1;
+
+		if (controls.release(C_ESCAPE) ||
+			(controls.release(C_NO) && pages[sceneIndex].askForYesNo) ||
+			(downOrRight && (x >= 0) && (x < 100) && (y >= SH - 12) && (y < SH))) {
 
 			if (paletteEffect) delete paletteEffect;
 
@@ -289,16 +300,12 @@ int Scene::play () {
 
 		SDL_Delay(T_FRAME);
 
-		int upOrLeft = 0;
-		int downOrRight = 0;
-
 
 		if(pages[sceneIndex].askForYesNo) {
-			// Should check for Y also
-			downOrRight = controls.release(C_ENTER) || controls.release(C_YES);;
+			downOrRight |= controls.release(C_ENTER) || controls.release(C_YES);
 		} else {
 			upOrLeft = (controls.release(C_UP) || controls.release(C_LEFT));
-			downOrRight = (controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER));
+			downOrRight |= (controls.release(C_RIGHT) || controls.release(C_DOWN) || controls.release(C_ENTER));
 		}
 
 		if ((sceneIndex > 0 && upOrLeft) ||
@@ -477,8 +484,8 @@ int Scene::play () {
 
 
 		// Draw the texts associated with this page
-		int x = 0;
-		int y = 0;
+		x = 0;
+		y = 0;
 		int extraLineHeight = 0;
 
 		for (int count = 0; count < pages[sceneIndex].nTexts; count++) {

@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed graphics.cpp to video.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -252,10 +252,8 @@ bool Video::resize (int width, int height) {
 void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
-	video.clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
-#ifndef SCALE
-	SDL_Flip(screen);
-#endif
+	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
+	flip(0, NULL);
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
 	currentPalette = palette;
@@ -373,13 +371,17 @@ int Video::getScaleFactor () {
  *
  * @param newScaleFactor The new scaling factor
  */
-void Video::setScaleFactor (int newScaleFactor) {
+int Video::setScaleFactor (int newScaleFactor) {
 
-	scaleFactor = newScaleFactor;
+	if ((SW * newScaleFactor <= screenW) && (SH * newScaleFactor <= screenH)) {
 
-	if (screen) resize(screenW, screenH);
+		scaleFactor = newScaleFactor;
 
-	return;
+		if (screen) resize(screenW, screenH);
+
+	}
+
+	return scaleFactor;
 
 }
 #endif
@@ -398,28 +400,6 @@ bool Video::isFullscreen () {
 #endif
 
 
-#ifndef FULLSCREEN_ONLY
-/**
- * Switch between windowed and full-screen mode.
- */
-void Video::flipFullscreen () {
-
-	fullscreen = !fullscreen;
-
-	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
-
-	resize(screenW, screenH);
-
-	if (!fullscreen) SDL_ShowCursor(SDL_ENABLE);
-
-	findMaxResolution();
-
-	return;
-
-}
-#endif
-
-
 /**
  * Refresh display palette.
  */
@@ -427,6 +407,56 @@ void Video::expose () {
 
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+
+	return;
+
+}
+
+
+/**
+ * Update video based on a system event.
+ *
+ * @param event The system event. Events not affecting video will be ignored
+ */
+void Video::update (SDL_Event *event) {
+
+#ifndef FULLSCREEN_ONLY
+	switch (event->type) {
+
+		case SDL_KEYDOWN:
+
+			// If Alt + Enter has been pressed, switch between windowed and full-screen mode.
+			if ((event->key.keysym.sym == SDLK_RETURN) &&
+				(event->key.keysym.mod & KMOD_ALT)) {
+
+				fullscreen = !fullscreen;
+
+				if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
+
+				resize(screenW, screenH);
+
+				if (!fullscreen) SDL_ShowCursor(SDL_ENABLE);
+
+				findMaxResolution();
+
+			}
+
+			break;
+
+		case SDL_VIDEORESIZE:
+
+			resize(event->resize.w, event->resize.h);
+
+			break;
+
+		case SDL_VIDEOEXPOSE:
+
+			expose();
+
+			break;
+
+	}
+#endif
 
 	return;
 

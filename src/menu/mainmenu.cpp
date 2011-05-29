@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menumain.cpp to mainmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -37,10 +37,14 @@
 #include "player/player.h"
 #include "scene/scene.h"
 #include "loop.h"
+#include "util.h"
 
 #include <time.h>
 
 
+/**
+ * Create the main menu.
+ */
 MainMenu::MainMenu () {
 
 	File *file;
@@ -127,6 +131,9 @@ MainMenu::MainMenu () {
 }
 
 
+/**
+ * Delete the main menu.
+ */
 MainMenu::~MainMenu () {
 
 	SDL_FreeSurface(background);
@@ -140,13 +147,126 @@ MainMenu::~MainMenu () {
 }
 
 
-int MainMenu::main () {
+/**
+ * Process a main menu selection.
+ *
+ * @param option Chosen menu option
+ *
+ * @return Error code
+ */
+int MainMenu::select (int option) {
 
 	Scene *scene;
-	Plasma plasma;
 	SetupMenu setupMenu;
-	SDL_Rect src, dst;
-	int option;
+
+	playSound(S_ORB);
+
+	switch (option) {
+
+		case 0: // New game
+
+			if (gameMenu->newGame() == E_QUIT) return E_QUIT;
+
+			break;
+
+		case 1: // Load game
+
+			if (gameMenu->loadGame() == E_QUIT) return E_QUIT;
+
+			break;
+
+		case 2: // Instructions
+
+			try {
+
+				scene = new Scene(F_INSTRUCT_0SC);
+
+			} catch (int e) {
+
+				message("COULD NOT LOAD INSTRUCTIONS");
+
+				break;
+
+			}
+
+			if (scene->play() == E_QUIT) {
+
+				delete scene;
+
+				return E_QUIT;
+
+			}
+
+			delete scene;
+
+			break;
+
+		case 3: // Setup options
+
+			if (setupMenu.setup() == E_QUIT) return E_QUIT;
+
+			break;
+
+		case 4: // Order info
+
+			try {
+
+				scene = new Scene(F_ORDER_0SC);
+
+			} catch (int e) {
+
+				message("COULD NOT LOAD ORDER INFO");
+
+				break;
+
+			}
+
+			if (scene->play() == E_QUIT) {
+
+				delete scene;
+
+				return E_QUIT;
+
+			}
+
+			delete scene;
+
+			break;
+
+		case 5: // Exit
+
+			return E_RETURN;
+
+	}
+
+	// Restore the main menu palette
+	video.setPalette(palette);
+
+	return E_NONE;
+
+}
+
+
+/**
+ * Run the main menu.
+ *
+ * @return Error code
+ */
+int MainMenu::main () {
+
+	SDL_Rect options[6] = {
+		{92, 35, 136, 22},
+		{92, 57, 140, 22},
+		{88, 83, 144, 22},
+		{86, 109, 150, 23},
+		{82, 137, 156, 26},
+		{78, 166, 166, 29}};
+	int macroType[4];
+	File* file;
+	char* fileName;
+	Plasma plasma;
+	SDL_Rect dst;
+	int option, macro, x, y, ret;
 	unsigned int idleTime;
 
 	option = 0;
@@ -155,8 +275,37 @@ int MainMenu::main () {
 
 	playMusic("menusng.psm");
 
+
 	// Demo timeout
 	idleTime = globalTicks + T_DEMO;
+
+	// Check for demo macros
+
+	fileName = createString(F_MACRO);
+
+	for (macro = 0; macro < 4; macro++)
+	{
+
+		try {
+
+			file = new File(fileName, false);
+			macroType[macro] = file->loadChar();
+			delete file;
+
+		} catch (int e) {
+
+			macroType[macro] = -1;
+
+		}
+
+		fileName[6]++;
+
+	}
+
+	macro = 3;
+
+	delete[] fileName;
+
 
 	while (true) {
 
@@ -170,136 +319,103 @@ int MainMenu::main () {
 
 		if (controls.release(C_ENTER)) {
 
-			playSound(S_ORB);
+			ret = select(option);
 
-			switch (option) {
-
-				case 0: // New game
-
-					if (gameMenu->newGame() == E_QUIT) return E_QUIT;
-
-					break;
-
-				case 1: // Load game
-
-					if (gameMenu->loadGame() == E_QUIT) return E_QUIT;
-
-					break;
-
-				case 2: // Instructions
-
-					try {
-
-						scene = new Scene(F_INSTRUCT_0SC);
-
-					} catch (int e) {
-
-						message("COULD NOT LOAD INSTRUCTIONS");
-
-						break;
-
-					}
-
-					if (scene->play() == E_QUIT) {
-
-						delete scene;
-
-						return E_QUIT;
-
-					}
-
-					delete scene;
-
-					break;
-
-				case 3: // Setup options
-
-					if (setupMenu.setup() == E_QUIT) return E_QUIT;
-
-					break;
-
-				case 4: // Order info
-
-					try {
-
-						scene = new Scene(F_ORDER_0SC);
-
-					} catch (int e) {
-
-						message("COULD NOT LOAD ORDER INFO");
-
-						break;
-
-					}
-
-					if (scene->play() == E_QUIT) {
-
-						delete scene;
-
-						return E_QUIT;
-
-					}
-
-					delete scene;
-
-					break;
-
-				case 5: // Exit
-
-					return E_NONE;
-
-			}
-
-			// Restore the main menu palette
-			video.setPalette(palette);
+			if (ret < 0) return ret;
 
 			// New demo timeout
 			idleTime = globalTicks + T_DEMO;
 
 		}
 
+		if (controls.releaseCursor(x, y)) {
+
+			int count;
+
+			x -= (canvasW - SW) >> 1;
+			y -= (canvasH - SH) >> 1;
+
+			for (count = 0; count < 6; count++) {
+
+				if ((x >= options[count].x) &&
+					(x < options[count].x + options[count].w) &&
+					(y >= options[count].y) &&
+					(y < options[count].y + options[count].h)) {
+
+					ret = select(count);
+
+					if (ret < 0) return ret;
+
+					// New demo timeout
+					idleTime = globalTicks + T_DEMO;
+
+					option = count;
+
+					break;
+
+				}
+			}
+
+		}
+
 
 		if (idleTime <= globalTicks) {
 
-			game = NULL;
-
-
-			// Create the player
-			nPlayers = 1;
-			localPlayer = players = new Player[1];
-			localPlayer->init(characterName, NULL, 0);
-
+			game = new LocalGame("", 0);
 
 			// Load the macro
 
-			try {
+			x = macro;
+			macro = (macro + 1) & 3;
 
-				baseLevel = level = new DemoLevel(F_MACRO);
+			while ((macroType[macro] != 0xFF) && (macro != x))
+				macro = (macro + 1) & 3;
 
-			} catch (int e) {
+			if (macro != x) {
 
-				delete[] players;
-				localPlayer = NULL;
+				fileName = createString(F_MACRO);
+				fileName[6] += macro;
 
-				break;
+				try {
+
+					level = new DemoLevel(fileName);
+
+				} catch (int e) {
+
+					level = NULL;
+
+				}
+
+				delete[] fileName;
+
+			} else {
+
+				level = NULL;
 
 			}
 
-			// Play the level
-			if (level->play() == E_QUIT) {
+
+			if (level) {
+
+				baseLevel = level;
+
+				// Play the level
+				if (level->play() == E_QUIT) {
+
+					delete level;
+					delete game;
+
+					return E_QUIT;
+
+				}
 
 				delete level;
-				delete[] players;
-
-				return E_QUIT;
+				baseLevel = level = NULL;
 
 			}
 
-			delete level;
-			baseLevel = level = NULL;
 
-			delete[] players;
-			localPlayer = NULL;
+			delete game;
 
 			playMusic("menusng.psm");
 
@@ -327,67 +443,9 @@ int MainMenu::main () {
 		dst.y = (canvasH - SH) >> 1;
 		SDL_BlitSurface(background, NULL, canvas, &dst);
 
-		switch (option) {
-
-			case 0:
-
-				src.x = 92;
-				src.y = 35;
-				src.w = 136;
-				src.h = 22;
-
-				break;
-
-			case 1:
-
-				src.x = 92;
-				src.y = 57;
-				src.w = 140;
-				src.h = 22;
-
-				break;
-
-			case 2:
-
-				src.x = 88;
-				src.y = 83;
-				src.w = 144;
-				src.h = 22;
-
-				break;
-
-			case 3:
-
-				src.x = 86;
-				src.y = 109;
-				src.w = 150;
-				src.h = 23;
-
-				break;
-
-			case 4:
-
-				src.x = 82;
-				src.y = 137;
-				src.w = 156;
-				src.h = 26;
-
-				break;
-
-			case 5:
-
-				src.x = 78;
-				src.y = 166;
-				src.w = 166;
-				src.h = 29;
-
-				break;
-
-		}
-
-		dst.x = ((canvasW - SW) >> 1) + src.x;
-		dst.y = ((canvasH - SH) >> 1) + src.y;
-		SDL_BlitSurface(highlight, &src, canvas, &dst);
+		dst.x = ((canvasW - SW) >> 1) + options[option].x;
+		dst.y = ((canvasH - SH) >> 1) + options[option].y;
+		SDL_BlitSurface(highlight, options + option, canvas, &dst);
 
 	}
 

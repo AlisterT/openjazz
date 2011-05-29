@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed bonus.c to bonus.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -41,6 +41,11 @@
 #include <string.h>
 
 
+/**
+ * Load sprites.
+ *
+ * @return Error code
+ */
 int Bonus::loadSprites () {
 
 	File *file;
@@ -120,6 +125,13 @@ int Bonus::loadSprites () {
 }
 
 
+/**
+ * Load the tileset.
+ *
+ * @param fileName Name of the file containing the tileset
+ *
+ * @return Error code
+ */
 int Bonus::loadTiles (char *fileName) {
 
 	File *file;
@@ -182,6 +194,13 @@ int Bonus::loadTiles (char *fileName) {
 }
 
 
+/**
+ * Create a JJ1 bonus level.
+ *
+ * @param fileName Name of the file containing the level data.
+ * @param diff Difficulty level
+ * @param multi Whether or not the level will be multi-player
+ */
 Bonus::Bonus (char * fileName, unsigned char diff, bool multi) {
 
 	Anim* pAnims[BPANIMS];
@@ -376,6 +395,9 @@ Bonus::Bonus (char * fileName, unsigned char diff, bool multi) {
 }
 
 
+/**
+ * Delete the JJ1 bonus level.
+ */
 Bonus::~Bonus () {
 
 	// Restore panelBigFont palette
@@ -392,6 +414,14 @@ Bonus::~Bonus () {
 }
 
 
+/**
+ * Determine whether or not the given point is in the event area of its tile.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return True if in the event area
+ */
 bool Bonus::isEvent (fixed x, fixed y) {
 
 	return ((x & 32767) > F12) && ((x & 32767) < F20) &&
@@ -400,6 +430,14 @@ bool Bonus::isEvent (fixed x, fixed y) {
 }
 
 
+/**
+ * Determine whether or not the given point is solid.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Solidity
+ */
 bool Bonus::checkMask (fixed x, fixed y) {
 
 	BonusGridElement *ge;
@@ -456,6 +494,11 @@ void Bonus::receive (unsigned char* buffer) {
 }
 
 
+/**
+ * Level iteration.
+ *
+ * @return Error code
+ */
 int Bonus::step () {
 
 	BonusPlayer* bonusPlayer;
@@ -539,6 +582,9 @@ int Bonus::step () {
 }
 
 
+/**
+ * Draw the level.
+ */
 void Bonus::draw () {
 
 	BonusPlayer *bonusPlayer;
@@ -704,6 +750,11 @@ void Bonus::draw () {
 }
 
 
+/**
+ * Play the level.
+ *
+ * @return Error code
+ */
 int Bonus::play () {
 
 	const char* options[5] =

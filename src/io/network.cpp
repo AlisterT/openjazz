@@ -9,7 +9,7 @@
  * 3rd June 2009: Created network.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -55,6 +55,9 @@
 #endif
 
 
+/**
+ * Initialise networking.
+ */
 Network::Network () {
 
 #ifdef USE_SOCKETS
@@ -73,6 +76,9 @@ Network::Network () {
 }
 
 
+/**
+ * De-initialise networking.
+ */
 Network::~Network () {
 
 #ifdef USE_SOCKETS
@@ -89,6 +95,11 @@ Network::~Network () {
 }
 
 
+/**
+ * Open a host connection.
+ *
+ * @return Connection socket or error code
+ */
 int Network::host () {
 
 #ifdef USE_SOCKETS
@@ -143,6 +154,13 @@ int Network::host () {
 }
 
 
+/**
+ * Open a client connection to the specified server.
+ *
+ * @param address Address of the server
+ *
+ * @return Connection socket or error code
+ */
 int Network::join (char *address) {
 
 #ifdef USE_SOCKETS
@@ -201,7 +219,7 @@ int Network::join (char *address) {
 
 			close(sock);
 
-			return E_UNUSED;
+			return E_RETURN;
 
 		}
 
@@ -253,6 +271,13 @@ int Network::join (char *address) {
 }
 
 
+/**
+ * Accept a connection to a client
+ *
+ * @param sock The host connection socket
+ *
+ * @return Client connection socket, or -1 for no connection
+ */
 int Network::accept (int sock) {
 
 #ifdef USE_SOCKETS
@@ -285,6 +310,11 @@ int Network::accept (int sock) {
 }
 
 
+/**
+ * Close a connection.
+ *
+ * @param sock The connection socket
+ */
 void Network::close (int sock) {
 
 #ifdef USE_SOCKETS
@@ -302,6 +332,14 @@ void Network::close (int sock) {
 }
 
 
+/**
+ * Send data over the specified connection.
+ *
+ * @param sock Connection socket
+ * @param buffer Data to be sent
+ *
+ * @return Number of bytes sent, or -1 for failure
+ */
 int Network::send (int sock, unsigned char *buffer) {
 
 #ifdef USE_SOCKETS
@@ -315,6 +353,15 @@ int Network::send (int sock, unsigned char *buffer) {
 }
 
 
+/**
+ * Receive data from the specified connection.
+ *
+ * @param sock Connection socket
+ * @param buffer Buffer to receive data
+ * @param length The size of the buffer, in bytes
+ *
+ * @return Number of bytes received, or -1 for failure
+ */
 int Network::recv (int sock, unsigned char *buffer, int length) {
 
 #ifdef USE_SOCKETS
@@ -328,6 +375,13 @@ int Network::recv (int sock, unsigned char *buffer, int length) {
 }
 
 
+/**
+ * Check if a given socket is connected.
+ *
+ * @param sock The socket
+ *
+ * @return True if connected
+ */
 bool Network::isConnected (int sock) {
 
 #ifdef USE_SOCKETS
@@ -348,6 +402,11 @@ bool Network::isConnected (int sock) {
 }
 
 
+/**
+ * Get the last error code.
+ *
+ * @return Network library error code
+ */
 int Network::getError () {
 
 #ifdef USE_SOCKETS

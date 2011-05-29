@@ -9,7 +9,7 @@
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -25,6 +25,8 @@
 
 
 #include "controls.h"
+#include "gfx/video.h"
+
 #include "loop.h"
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X)
@@ -32,6 +34,9 @@
 #endif
 
 
+/**
+ * Set up the default controls.
+ */
 Controls::Controls () {
 
 	int count;
@@ -121,52 +126,80 @@ Controls::Controls () {
 
 	for (count = 0; count < CONTROLS; count++) {
 
-		keys[count].state = false;
-		buttons[count].state = false;
-		axes[count].state = false;
+		keys[count].pressed = false;
+		buttons[count].pressed = false;
+		axes[count].pressed = false;
 
 		controls[count].time = 0;
 		controls[count].state = false;
 
 	}
 
+	cursorTime = 0;
+	cursorState = false;
 
 	return;
 
 }
 
 
+/**
+ * Set the key to use for the specified control.
+ *
+ * @param control The control
+ * @param key The key to use
+ */
 void Controls::setKey (int control, int key) {
 
 	keys[control].key = key;
-	keys[control].state = false;
+	keys[control].pressed = false;
 
 	return;
 
 }
 
 
+/**
+ * Set the button to use for the specified control.
+ *
+ * @param control The control
+ * @param button The button to use
+ */
 void Controls::setButton (int control, int button) {
 
 	buttons[control].button = button;
-	buttons[control].state = false;
+	buttons[control].pressed = false;
 
 	return;
 
 }
 
 
+/**
+ * Set the axis and direction to use for the specified control.
+ *
+ * @param control The control
+ * @param axis The axis to use
+ * @param direction Whether or not to use positive axis values
+ */
 void Controls::setAxis (int control, int axis, bool direction) {
 
 	axes[control].axis = axis;
 	axes[control].direction = direction;
-	axes[control].state = false;
+	axes[control].pressed = false;
 
 	return;
 
 }
 
 
+/**
+ * Get the key being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return The key being used
+ */
 int Controls::getKey (int control) {
 
 	return keys[control].key;
@@ -174,6 +207,13 @@ int Controls::getKey (int control) {
 }
 
 
+/**
+ * Get the button being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return The button being used
+ */
 int Controls::getButton (int control) {
 
 	return buttons[control].button;
@@ -181,6 +221,13 @@ int Controls::getButton (int control) {
 }
 
 
+/**
+ * Get the axis being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return The axis being used
+ */
 int Controls::getAxis (int control) {
 
 	return axes[control].axis;
@@ -188,6 +235,13 @@ int Controls::getAxis (int control) {
 }
 
 
+/**
+ * Get the direction of the axis being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return True if positive values of the axis are being used
+ */
 int Controls::getAxisDirection (int control) {
 
 	return axes[control].direction;
@@ -195,7 +249,15 @@ int Controls::getAxisDirection (int control) {
 }
 
 
-int Controls::update (SDL_Event *event, int type) {
+/**
+ * Update controls based on a system event.
+ *
+ * @param event The system event. Non-input events will be ignored
+ * @param type Type of loop. Normal, typing, or input configuration
+ *
+ * @return Error code
+ */
+int Controls::update (SDL_Event *event, LoopType type) {
 
 	int count;
 
@@ -209,7 +271,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->key.keysym.sym == keys[count].key)
-					keys[count].state = true;
+					keys[count].pressed = true;
 
 			if (type == TYPING_LOOP) return event->key.keysym.sym;
 
@@ -219,7 +281,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->key.keysym.sym == keys[count].key)
-					keys[count].state = false;
+					keys[count].pressed = false;
 
 			break;
 
@@ -229,7 +291,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->jbutton.button == buttons[count].button)
-					buttons[count].state = true;
+					buttons[count].pressed = true;
 
 			break;
 
@@ -237,7 +299,7 @@ int Controls::update (SDL_Event *event, int type) {
 
 			for (count = 0; count < CONTROLS; count++)
 				if (event->jbutton.button == buttons[count].button)
-					buttons[count].state = false;
+					buttons[count].pressed = false;
 
 			break;
 
@@ -256,26 +318,35 @@ int Controls::update (SDL_Event *event, int type) {
 				if (event->jaxis.axis == axes[count].axis) {
 
 					if (!axes[count].direction && (event->jaxis.value < -16384))
-						axes[count].state = true;
+						axes[count].pressed = true;
 					else if (axes[count].direction && (event->jaxis.value > 16384))
-						axes[count].state = true;
+						axes[count].pressed = true;
 					else
-						axes[count].state = false;
+						axes[count].pressed = false;
 
 				}
 
 			break;
 
-	}
+		case SDL_MOUSEMOTION:
 
-	if (count < CONTROLS) {
+			cursorX = event->motion.x;
+			cursorY = event->motion.y;
+			cursorState = (((event->motion.state & SDL_BUTTON(1)) != 0) && (globalTicks > cursorTime));
 
-		if (!(keys[count].state || buttons[count].state || axes[count].state)) {
+			break;
 
-			controls[count].time = 0;
-			controls[count].state = false;
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
 
-		}
+			if (event->button.button == SDL_BUTTON_LEFT)
+			{
+				cursorX = event->button.x;
+				cursorY = event->button.y;
+				cursorState = ((event->button.state == SDL_PRESSED) && (globalTicks > cursorTime));
+			}
+
+			break;
 
 	}
 
@@ -284,6 +355,11 @@ int Controls::update (SDL_Event *event, int type) {
 }
 
 
+/**
+ * Process input iteration.
+ *
+ * Called once per game iteration. Updates input.
+ */
 void Controls::loop () {
 
 	int count;
@@ -291,13 +367,20 @@ void Controls::loop () {
 	// Apply controls to universal control tracking
 	for (count = 0; count < CONTROLS; count++)
 		controls[count].state = (controls[count].time < globalTicks) &&
-			(keys[count].state || buttons[count].state || axes[count].state);
+			(keys[count].pressed || buttons[count].pressed || axes[count].pressed);
 
 	return;
 
 }
 
 
+/**
+ * Determine whether or not the specified control is being used.
+ *
+ * @param control The control
+ *
+ * @return True if the control is being used
+ */
 bool Controls::getState (int control) {
 
 	return controls[control].state;
@@ -305,6 +388,13 @@ bool Controls::getState (int control) {
 }
 
 
+/**
+ * If it's being used, release the specified control.
+ *
+ * @param control The control
+ *
+ * @return True if the control was being used
+ */
 bool Controls::release (int control) {
 
 	if (!controls[control].state) return false;
@@ -316,4 +406,33 @@ bool Controls::release (int control) {
 
 }
 
+
+/**
+ * If it's being used, release cursor.
+ *
+ * @param x Is set to the x-coordinate of the cursor
+ * @param y Is set to the y-coordinate of the cursor
+ *
+ * @return True if the cursor was being used
+ */
+bool Controls::releaseCursor (int& x, int& y) {
+
+#ifdef SCALE
+	int scaleFactor = video.getScaleFactor();
+
+	x = cursorX / scaleFactor;
+	y = cursorY / scaleFactor;
+#else
+	x = cursorX;
+	y = cursorY;
+#endif
+
+	if (!cursorState) return false;
+
+	cursorTime = globalTicks + T_KEY;
+	cursorState = false;
+
+	return true;
+
+}
 

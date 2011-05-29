@@ -16,7 +16,7 @@
  * 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -44,9 +44,27 @@
 
 
 /**
- * Display a message to the user
+ * Show the "(esc) quits" string.
+ */
+void Menu::showEscString () {
+
+	fontbig->showString(ESCAPE_STRING, 3, canvasH - 12);
+
+	return;
+
+}
+
+
+/**
+ * Display a message to the user.
+ *
+ * @param text The message to display
+ *
+ * @return Error code
  */
 int Menu::message (const char* text) {
+
+	int coord;
 
 	video.setPalette(menuPalette);
 
@@ -54,7 +72,7 @@ int Menu::message (const char* text) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ENTER) || controls.release(C_ESCAPE))
+		if (controls.release(C_ENTER) || controls.release(C_ESCAPE) || controls.releaseCursor(coord, coord))
 			return E_NONE;
 
 		SDL_Delay(T_FRAME);
@@ -72,11 +90,17 @@ int Menu::message (const char* text) {
 
 
 /**
- * Let the user select from a menu of the given options
+ * Let the user select from a menu of the given options.
+ *
+ * @param optionNames Array of option names
+ * @param options The number of options (and size of the names array)
+ * @param chosen Which option is selected
+ *
+ * @return Error code
  */
 int Menu::generic (const char** optionNames, int options, int& chosen) {
 
-	int count;
+	int x, y, count;
 
 	video.setPalette(menuPalette);
 
@@ -86,7 +110,38 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_UNUSED;
+		if (controls.release(C_ESCAPE)) return E_RETURN;
+
+		if (controls.release(C_UP)) chosen = (chosen + options - 1) % options;
+
+		if (controls.release(C_DOWN)) chosen = (chosen + 1) % options;
+
+		if (controls.release(C_ENTER)) {
+
+			playSound(S_ORB);
+
+			return E_NONE;
+
+		}
+
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x < 100) && (y >= canvasH - 12)) return E_RETURN;
+
+			x -= canvasW >> 2;
+			y -= (canvasH >> 1) - (options << 3);
+
+			if ((x >= 0) && (x < 256) && (y >= 0) && (y < (options << 4))) {
+
+				chosen = y >> 4;
+
+				playSound(S_ORB);
+
+				return E_NONE;
+
+			}
+
+		}
 
 		SDL_Delay(T_FRAME);
 
@@ -103,17 +158,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		}
 
-		if (controls.release(C_UP)) chosen = (chosen + options - 1) % options;
-
-		if (controls.release(C_DOWN)) chosen = (chosen + 1) % options;
-
-		if (controls.release(C_ENTER)) {
-
-			playSound(S_ORB);
-
-			return E_NONE;
-
-		}
+		showEscString();
 
 	}
 
@@ -124,11 +169,16 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 /**
  * Let the user edit a text string
+ *
+ * @param request Description of the text string
+ * @param text The text string to be edited
+ *
+ * @return Error code
  */
 int Menu::textInput (const char* request, char*& text) {
 
 	char *input;
-	int count, terminate, character, x;
+	int count, terminate, character, x, y;
 	unsigned int cursor;
 
 	video.setPalette(menuPalette);
@@ -192,13 +242,15 @@ int Menu::textInput (const char* request, char*& text) {
 		}
 
 
-		if (controls.release(C_ESCAPE)) {
+		if (controls.release(C_ESCAPE) ||
+			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12))) {
 
 			delete[] input;
 
-			return E_UNUSED;
+			return E_RETURN;
 
 		}
+
 
 		SDL_Delay(T_FRAME);
 
@@ -221,6 +273,8 @@ int Menu::textInput (const char* request, char*& text) {
 		fontmn2->showString(input + cursor, x, canvasH >> 1);
 		fontmn2->restorePalette();
 
+		showEscString();
+
 
 		if (controls.release(C_LEFT) && (cursor > 0)) cursor--;
 
@@ -242,7 +296,7 @@ int Menu::textInput (const char* request, char*& text) {
 
 	delete[] input;
 
-	return E_UNUSED;
+	return E_RETURN;
 
 }
 

@@ -10,7 +10,7 @@
  *                 levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -38,6 +38,11 @@
 #include "util.h"
 
 
+/**
+ * Create a JJ1 demo level.
+ *
+ * @param fileName Name of the file containing the macro data.
+ */
 DemoLevel::DemoLevel (const char* fileName) {
 
 	File* file;
@@ -82,6 +87,9 @@ DemoLevel::DemoLevel (const char* fileName) {
 }
 
 
+/**
+ * Delete the JJ1 demo level.
+ */
 DemoLevel::~DemoLevel () {
 
 	delete[] macro;
@@ -91,6 +99,11 @@ DemoLevel::~DemoLevel () {
 }
 
 
+/**
+ * Play the demo.
+ *
+ * @return Error code
+ */
 int DemoLevel::play () {
 
 	unsigned char macroPoint;
@@ -108,7 +121,7 @@ int DemoLevel::play () {
 		// Do general processing
 		if (::loop(NORMAL_LOOP, paletteEffects) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE) || controls.release(C_ENTER)) return E_NONE;
 
 		if (controls.release(C_STATS)) stats ^= S_SCREEN;
 
@@ -119,7 +132,7 @@ int DemoLevel::play () {
 
 		// Use macro
 
-		macroPoint = macro[(ticks / 90) % 1024];
+		macroPoint = macro[(ticks / 76) & 1023];
 
 		if (macroPoint & 128) return E_NONE;
 

@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -37,6 +37,11 @@
 #include "util.h"
 
 
+/**
+ * Create the game menu.
+ *
+ * @param file File containing menu graphics
+ */
 GameMenu::GameMenu (File *file) {
 
 	unsigned char pixel;
@@ -94,6 +99,9 @@ GameMenu::GameMenu (File *file) {
 }
 
 
+/**
+ * Delete the game menu.
+ */
 GameMenu::~GameMenu () {
 
 	int count;
@@ -107,11 +115,87 @@ GameMenu::~GameMenu () {
 }
 
 
+/**
+ * Create and play a new game.
+ *
+ * @param mode Game mode
+ * @param firstLevel First level's file name
+ *
+ * @return Error code
+ */
+int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
+
+	playSound(S_ORB);
+
+	if (mode == M_SINGLE) {
+
+		try {
+
+			game = new LocalGame(firstLevel, difficulty);
+
+		} catch (int e) {
+
+			message("COULD NOT START GAME");
+
+			return e;
+
+		}
+
+	} else {
+
+		try {
+
+			game = new ServerGame(mode, firstLevel, difficulty);
+
+		} catch (int e) {
+
+			message("COULD NOT CREATE SERVER");
+
+			return e;
+
+		}
+
+	}
+
+
+	// Play the level(s)
+
+	switch (game->play()) {
+
+		case E_QUIT:
+
+			delete game;
+
+			return E_QUIT;
+
+		case E_FILE:
+
+			message("FILE NOT FOUND");
+
+			break;
+
+	}
+
+	delete game;
+
+	return E_NONE;
+
+}
+
+
+/**
+ * Run the new game difficulty menu.
+ *
+ * @param mode Game mode
+ * @param firstLevel First level's file name
+ *
+ * @return Error code
+ */
 int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 	const char *options[4] = {"easy", "medium", "hard", "turbo"};
 	SDL_Rect src, dst;
-	int count;
+	int x, y, count;
 
 	video.setPalette(menuPalette);
 
@@ -120,6 +204,29 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
+
+		if (controls.release(C_UP)) difficulty = (difficulty + 3) % 4;
+
+		if (controls.release(C_DOWN)) difficulty = (difficulty + 1) % 4;
+
+		if (controls.release(C_ENTER)) return playNewGame(mode, firstLevel);
+
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+
+			x -= canvasW >> 2;
+			y -= (canvasH >> 1) - 32;
+
+			if ((x >= 0) && (x < 256) && (y >= 0) && (y < 64)) {
+
+				difficulty = y >> 4;
+
+				return playNewGame(mode, firstLevel);
+
+			}
+
+		}
 
 		SDL_Delay(T_FRAME);
 
@@ -144,68 +251,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 		dst.y = (canvasH >> 1) - 50;
 		SDL_BlitSurface(difficultyScreen, &src, canvas, &dst);
 
-		if (controls.release(C_UP)) difficulty = (difficulty + 3) % 4;
-
-		if (controls.release(C_DOWN)) difficulty = (difficulty + 1) % 4;
-
-		if (controls.release(C_ENTER)) {
-
-			playSound(S_ORB);
-
-			if (mode == M_SINGLE) {
-
-				try {
-
-					game = new LocalGame(firstLevel, difficulty);
-
-				} catch (int e) {
-
-					message("COULD NOT START GAME");
-
-					return e;
-
-				}
-
-			} else {
-
-				try {
-
-					game = new ServerGame(mode, firstLevel, difficulty);
-
-				} catch (int e) {
-
-					message("COULD NOT CREATE SERVER");
-
-					return e;
-
-				}
-
-			}
-
-
-			// Play the level(s)
-
-			switch (game->play()) {
-
-				case E_QUIT:
-
-					delete game;
-
-					return E_QUIT;
-
-				case E_FILE:
-
-					message("FILE NOT FOUND");
-
-					break;
-
-			}
-
-			delete game;
-
-			return E_NONE;
-
-		}
+		showEscString();
 
 	}
 
@@ -214,6 +260,15 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 }
 
 
+/**
+ * Run the new game difficulty menu.
+ *
+ * @param mode Game mode
+ * @param levelNum First level's number
+ * @param levelNum First level's world number
+ *
+ * @return Error code
+ */
 int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) {
 
 	char* firstLevel;
@@ -231,11 +286,16 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 }
 
 
+/**
+ * Run the game loading menu.
+ *
+ * @return Error code
+ */
 int GameMenu::loadGame () {
 
 	/// @todo Actual loading of saved games
 
-	int option, worldNum, levelNum;
+	int option, worldNum, levelNum, x, y;
 
 	worldNum = levelNum = option = 0;
 
@@ -246,23 +306,6 @@ int GameMenu::loadGame () {
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
-
-		SDL_Delay(T_FRAME);
-
-		video.clearScreen(15);
-
-		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("choose world:", 32, canvasH / 3);
-		fontmn2->showNumber(worldNum, 208, canvasH / 3);
-
-		if (option == 0) fontmn2->restorePalette();
-		else fontmn2->mapPalette(240, 8, 114, 16);
-
-		fontmn2->showString("choose level:", 32, (canvasH << 1) / 3);
-		if (levelNum >= 0) fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
-		else fontmn2->showString("bonus", 172, (canvasH << 1) / 3);
-
-		if (option != 0) fontmn2->restorePalette();
 
 		if (controls.release(C_UP)) option ^= 1;
 
@@ -292,6 +335,35 @@ int GameMenu::loadGame () {
 
 		}
 
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+
+			if (y < (canvasH >> 1)) option = 0;
+			else option = 1;
+
+		}
+
+
+		SDL_Delay(T_FRAME);
+
+		video.clearScreen(15);
+
+		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("choose world:", 32, canvasH / 3);
+		fontmn2->showNumber(worldNum, 208, canvasH / 3);
+
+		if (option == 0) fontmn2->restorePalette();
+		else fontmn2->mapPalette(240, 8, 114, 16);
+
+		fontmn2->showString("choose level:", 32, (canvasH << 1) / 3);
+		if (levelNum >= 0) fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
+		else fontmn2->showString("bonus", 172, (canvasH << 1) / 3);
+
+		if (option != 0) fontmn2->restorePalette();
+
+		showEscString();
+
 	}
 
 	return E_NONE;
@@ -299,6 +371,13 @@ int GameMenu::loadGame () {
 }
 
 
+/**
+ * Run the new game level selection menu.
+ *
+ * @param mode Game mode
+ *
+ * @return Error code
+ */
 int GameMenu::newGameLevel (GameModeType mode) {
 
 	char* fileName;
@@ -327,6 +406,52 @@ int GameMenu::newGameLevel (GameModeType mode) {
 }
 
 
+/**
+ * Run the appropriate menu for the given episode selection.
+ *
+ * @param mode Game mode
+ * @param episode Episode number
+ *
+ * @return Error code
+ */
+int GameMenu::selectEpisode (GameModeType mode, int episode) {
+
+	int worldNum;
+
+	playSound(S_ORB);
+
+	if (episode < 10) {
+
+		if (episode < 6) worldNum = episode * 3;
+		else if ((episode >= 6) && (episode < 9)) worldNum = (episode + 4) * 3;
+		else worldNum = 50;
+
+		if (newGameDifficulty(mode, 0, worldNum) == E_QUIT) return E_QUIT;
+
+	} else if (episode == 10) {
+
+		if (newGameDifficulty(mode, -1, 0) == E_QUIT) return E_QUIT;
+
+	} else {
+
+		if (newGameLevel(mode) == E_QUIT) return E_QUIT;
+
+	}
+
+	video.setPalette(palette);
+
+	return E_NONE;
+
+}
+
+
+/**
+ * Run the new game episode menu.
+ *
+ * @param mode Game mode
+ *
+ * @return Error code
+ */
 int GameMenu::newGameEpisode (GameModeType mode) {
 
 	const char *options[12] = {"episode 1", "episode 2", "episode 3",
@@ -335,17 +460,17 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 	bool exists[12];
 	char *check;
 	SDL_Rect dst;
-	int episode, count, worldNum;
+	int episode, count, x, y;
 
 	video.setPalette(palette);
 
 	for (count = 0; count < 10; count++) {
 
-		if (count < 6) worldNum = count * 3;
-		else if ((count >= 6) && (count < 9)) worldNum = (count + 4) * 3;
-		else worldNum = 50;
+		if (count < 6) x = count * 3;
+		else if ((count >= 6) && (count < 9)) x = (count + 4) * 3;
+		else x = 50;
 
-		check = createFileName(F_LEVEL, 0, worldNum);
+		check = createFileName(F_LEVEL, 0, x);
 		exists[count] = fileExists(check);
 		delete[] check;
 
@@ -371,6 +496,42 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
+
+		if (controls.release(C_UP)) episode = (episode + 11) % 12;
+
+		if (controls.release(C_DOWN)) episode = (episode + 1) % 12;
+
+		if (controls.release(C_ENTER) && exists[episode]) {
+
+			count = selectEpisode(mode, episode);
+
+			if (count < 0) return count;
+
+		}
+
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x >= canvasW - 100) && (y >= canvasH - 12)) return E_NONE;
+
+			x -= canvasW >> 3;
+			y -= (canvasH >> 1) - 92;
+
+			if ((x >= 0) && (x < 256) && (y >= 0) && (y < 192)) {
+
+				episode = y >> 4;
+
+				if (exists[episode]) {
+
+					count = selectEpisode(mode, episode);
+
+					if (count < 0) return count;
+
+				}
+
+			}
+
+		}
+
 
 		SDL_Delay(T_FRAME);
 
@@ -408,39 +569,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		}
 
-		if (controls.release(C_UP)) episode = (episode + 11) % 12;
-
-		if (controls.release(C_DOWN)) episode = (episode + 1) % 12;
-
-		if (controls.release(C_ENTER)) {
-
-			playSound(S_ORB);
-
-			if (exists[episode]) {
-
-				if (episode < 10) {
-
-					if (episode < 6) worldNum = episode * 3;
-					else if ((episode >= 6) && (episode < 9)) worldNum = (episode + 4) * 3;
-					else worldNum = 50;
-
-					if (newGameDifficulty(mode, 0, worldNum) == E_QUIT) return E_QUIT;
-
-				} else if (episode == 10) {
-
-					if (newGameDifficulty(mode, -1, 0) == E_QUIT) return E_QUIT;
-
-				} else {
-
-					if (newGameLevel(mode) == E_QUIT) return E_QUIT;
-
-				}
-
-				video.setPalette(palette);
-
-			}
-
-		}
+		fontbig->showString(ESCAPE_STRING, canvasW - 100, canvasH - 12);
 
 	}
 
@@ -449,6 +578,11 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 }
 
 
+/**
+ * Run the game joining menu.
+ *
+ * @return Error code
+ */
 int GameMenu::joinGame () {
 
 	int ret;
@@ -501,7 +635,7 @@ int GameMenu::joinGame () {
 
 				break;
 
-			case E_UNUSED:
+			case E_RETURN:
 			case E_QUIT:
 
 				break;
@@ -544,6 +678,11 @@ int GameMenu::joinGame () {
 }
 
 
+/**
+ * Run the new game menu.
+ *
+ * @return Error code
+ */
 int GameMenu::newGame () {
 
 #if (defined USE_SOCKETS) || (defined USE_SDL_NET)

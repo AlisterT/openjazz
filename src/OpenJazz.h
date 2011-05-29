@@ -22,7 +22,7 @@
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -93,7 +93,7 @@
 #define F_ORDER_0SC    "ORDER.0SC"
 #define F_STARTUP_0SC  "STARTUP.0SC"
 
-#define F_MACRO        "MACRO.2"
+#define F_MACRO        "MACRO.1"
 
 #define F_FONT2_0FN    "FONT2.0FN"
 #define F_FONTBIG_0FN  "FONTBIG.0FN"
@@ -125,7 +125,7 @@
 #define E_DEMOTYPE  -5
 #define E_FILE      -4
 #define E_VIDEO     -3
-#define E_UNUSED    -2
+#define E_RETURN    -2
 #define E_QUIT      -1
 #define E_NONE       0
 #define WON          1

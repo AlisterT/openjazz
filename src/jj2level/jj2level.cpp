@@ -11,7 +11,7 @@
  * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -45,6 +45,14 @@
 #include <string.h>
 
 
+/**
+ * Create a JJ2 level.
+ *
+ * @param fileName Name of the file containing the level data.
+ * @param diff Difficulty level
+ * @param checkpoint Whether or not the player(s) will start at a checkpoint
+ * @param multi Whether or not the level will be multi-player
+ */
 JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
 
 	int ret;
@@ -62,6 +70,9 @@ JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint, bool mu
 }
 
 
+/**
+ * Delete the JJ2 level.
+ */
 JJ2Level::~JJ2Level () {
 
 	int count;
@@ -101,6 +112,14 @@ JJ2Level::~JJ2Level () {
 }
 
 
+/**
+ * Determine whether or not the given point is solid when travelling upwards.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Solidity
+ */
 bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 
 	int tX, tY;
@@ -123,6 +142,14 @@ bool JJ2Level::checkMaskUp (fixed x, fixed y) {
 }
 
 
+/**
+ * Determine whether or not the given point is solid when travelling downwards.
+ *
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ *
+ * @return Solidity
+ */
 bool JJ2Level::checkMaskDown (fixed x, fixed y, bool drop) {
 
 	int tX, tY;
@@ -144,6 +171,11 @@ bool JJ2Level::checkMaskDown (fixed x, fixed y, bool drop) {
 }
 
 
+/**
+ * Set which level will come next.
+ *
+ * @param fileName Next level's file name
+ */
 void JJ2Level::setNext (char* fileName) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -168,6 +200,13 @@ void JJ2Level::setNext (char* fileName) {
 }
 
 
+/**
+ * Set the frame of the animated tile at the given location.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ * @param frame The new frame
+ */
 void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char frame) {
 
 	unsigned char buffer[MTL_L_GRID];
@@ -192,6 +231,14 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
 }
 
 
+/**
+ * Get the modifier event for the given tile.
+ *
+ * @param gridX X-coordinate of the tile
+ * @param gridY Y-coordinate of the tile
+ *
+ * @return Modifier event
+ */
 JJ2Modifier* JJ2Level::getModifier (unsigned char gridX, unsigned char gridY) {
 
 	return mods[gridY] + gridX;
@@ -199,6 +246,13 @@ JJ2Modifier* JJ2Level::getModifier (unsigned char gridX, unsigned char gridY) {
 }
 
 
+/**
+ * Get a sprite.
+ *
+ * @param sprite Sprite number
+ *
+ * @return Sprite
+ */
 Sprite* JJ2Level::getSprite (unsigned char sprite) {
 
 	return spriteSet + sprite;
@@ -206,6 +260,15 @@ Sprite* JJ2Level::getSprite (unsigned char sprite) {
 }
 
 
+/**
+ * Get an animation.
+ *
+ * @param set Animation set number
+ * @param anim Animation number
+ * @param flipped Whether or not the animation should be flipped horizontally
+ *
+ * @return Animation
+ */
 Anim* JJ2Level::getAnim (int set, int anim, bool flipped) {
 
 	return (flipped? flippedAnimSets: animSets)[set] + anim;
@@ -213,6 +276,11 @@ Anim* JJ2Level::getAnim (int set, int anim, bool flipped) {
 }
 
 
+/**
+ * Set the water level.
+ *
+ * @param gridY New water level y-coordinate
+ */
 void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 
 	unsigned char buffer[MTL_L_PROP];
@@ -238,6 +306,11 @@ void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 }
 
 
+/**
+ * Determine the water level.
+ *
+ * @return The y-coordinate of the water level
+ */
 fixed JJ2Level::getWaterLevel () {
 
 	return waterLevel;
@@ -245,6 +318,12 @@ fixed JJ2Level::getWaterLevel () {
 }
 
 
+/**
+ * Move a player to a warp target.
+ *
+ * @param player The player to move
+ * @param id The warp target ID
+ */
 void JJ2Level::warp (JJ2LevelPlayer *player, int id) {
 
 	int x, y;
@@ -311,6 +390,11 @@ void JJ2Level::receive (unsigned char* buffer) {
 }
 
 
+/**
+ * Play the level.
+ *
+ * @return Error code
+ */
 int JJ2Level::play () {
 
 	JJ2LevelPlayer* jj2LevelPlayer;

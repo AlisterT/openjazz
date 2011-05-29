@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menusetup.cpp to setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -43,7 +43,7 @@
 int SetupMenu::setupKeyboard () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, count, character;
+	int progress, character, x, y, count;
 
 	progress = 0;
 
@@ -53,7 +53,9 @@ int SetupMenu::setupKeyboard () {
 
 		if (character == E_QUIT) return E_QUIT;
 
-		if (character == controls.getKey(C_ESCAPE)) return E_NONE;
+		if ((character == controls.getKey(C_ESCAPE)) ||
+			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12)))
+			return E_NONE;
 
 		if (character > 0) {
 
@@ -112,6 +114,8 @@ int SetupMenu::setupKeyboard () {
 
 		}
 
+		showEscString();
+
 	}
 
 	return E_NONE;
@@ -127,7 +131,7 @@ int SetupMenu::setupKeyboard () {
 int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, count, control;
+	int progress, control, x, y, count;
 
 	progress = 0;
 
@@ -231,7 +235,10 @@ int SetupMenu::setupJoystick () {
 
 		}
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE) ||
+			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12)))
+			return E_NONE;
+
 
 		SDL_Delay(T_FRAME);
 
@@ -256,6 +263,8 @@ int SetupMenu::setupJoystick () {
 
 		}
 
+		showEscString();
+
 	}
 
 	return E_NONE;
@@ -275,7 +284,7 @@ int SetupMenu::setupResolution () {
 	int heightOptions[] = {SH, 240, 300, 384, 400, 480, 576, 600, 720, 768,
 		800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1536, 1600, 2048,
 		MAX_SH};
-	int count, screenW, screenH;
+	int screenW, screenH, x, y, count;
 	bool dimension;
 
 	screenW = video.getWidth();
@@ -291,6 +300,14 @@ int SetupMenu::setupResolution () {
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
 		if (controls.release(C_ENTER)) return E_NONE;
+
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x >= 32) && (x < 132) && (y >= canvasH - 12)) return E_NONE;
+
+			dimension = (x >= (canvasW >> 2) + 44);
+
+		}
 
 		SDL_Delay(T_FRAME);
 
@@ -381,6 +398,8 @@ int SetupMenu::setupResolution () {
 
 		}
 
+		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
+
 	}
 
 	return E_NONE;
@@ -396,7 +415,7 @@ int SetupMenu::setupResolution () {
  */
 int SetupMenu::setupScaling () {
 
-	int scaleFactor;
+	int scaleFactor, x, y;
 
 	scaleFactor = video.getScaleFactor();
 
@@ -407,7 +426,9 @@ int SetupMenu::setupScaling () {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE) ||
+			(controls.releaseCursor(x, y) && (x >= 32) && (x < 132) && (y >= canvasH - 12)))
+			return E_NONE;
 
 		if (controls.release(C_ENTER)) return E_NONE;
 
@@ -443,9 +464,11 @@ int SetupMenu::setupScaling () {
 		if (scaleFactor != video.getScaleFactor()) {
 
 			playSound(S_ORB);
-			video.setScaleFactor(scaleFactor);
+			scaleFactor = video.setScaleFactor(scaleFactor);
 
 		}
+
+		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
 
 	}
 
@@ -462,6 +485,8 @@ int SetupMenu::setupScaling () {
  */
 int SetupMenu::setupSound () {
 
+	int x, y;
+
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
@@ -469,6 +494,26 @@ int SetupMenu::setupSound () {
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
 		if (controls.release(C_ENTER)) return E_NONE;
+
+		if (controls.releaseCursor(x, y)) {
+
+			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+
+			x -= (canvasW >> 2) + 128;
+			y -= canvasH >> 1;
+
+			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11) &&
+				(soundsVolume != (x << 1)))
+			{
+
+				soundsVolume = x << 1;
+
+				playSound(S_ORB);
+
+			}
+
+		}
+
 
 		SDL_Delay(T_FRAME);
 
@@ -480,13 +525,27 @@ int SetupMenu::setupSound () {
 		fontmn2->showString("effect volume", canvasW >> 2, canvasH >> 1);
 		fontmn2->restorePalette();
 
-		drawRect((canvasW >> 2) + 120, canvasH >> 1, soundsVolume >> 1, 11, 175);
+		drawRect((canvasW >> 2) + 128, canvasH >> 1, soundsVolume >> 1, 11, 175);
 
-		if (controls.release(C_LEFT)) soundsVolume -= 4;
-		if (soundsVolume < 0) soundsVolume = 0;
+		if (controls.release(C_LEFT)) {
 
-		if (controls.release(C_RIGHT)) soundsVolume += 4;
-		if (soundsVolume > MAX_VOLUME) soundsVolume = MAX_VOLUME;
+			if (soundsVolume - 4 < 0) soundsVolume = 0;
+			else soundsVolume -= 4;
+
+			playSound(S_ORB);
+
+		}
+
+		if (controls.release(C_RIGHT)) {
+
+			if (soundsVolume + 4 > MAX_VOLUME) soundsVolume = MAX_VOLUME;
+			else soundsVolume += 4;
+
+			playSound(S_ORB);
+
+		}
+
+		showEscString();
 
 	}
 
@@ -515,7 +574,7 @@ int SetupMenu::setup () {
 
 		ret = generic(setupOptions, 6, option);
 
-		if (ret == E_UNUSED) return E_NONE;
+		if (ret == E_RETURN) return E_NONE;
 		if (ret < 0) return ret;
 
 		switch (option) {
@@ -535,7 +594,7 @@ int SetupMenu::setup () {
 
 						case 0: // Character name
 
-							textInput("character name:", characterName);
+							if (textInput("character name:", characterName) == E_QUIT) return E_QUIT;
 
 							break;
 
@@ -560,7 +619,7 @@ int SetupMenu::setup () {
 			case 1:
 
 #if !defined(CAANOO) && !defined(WIZ) && !defined(GP2X)
-				setupKeyboard();
+				if (setupKeyboard() == E_QUIT) return E_QUIT;
 #else
 				message("FEATURE NOT AVAILABLE");
 #endif
@@ -570,7 +629,7 @@ int SetupMenu::setup () {
 			case 2:
 
 #if !defined(DINGOO)
-				setupJoystick();
+				if (setupJoystick() == E_QUIT) return E_QUIT;
 
 #else
 				message("FEATURE NOT AVAILABLE");
@@ -580,14 +639,14 @@ int SetupMenu::setup () {
 
 			case 3:
 
-				setupResolution();
+				if (setupResolution() == E_QUIT) return E_QUIT;
 
 				break;
 
 			case 4:
 
 #ifdef SCALE
-				setupScaling();
+				if (setupScaling() == E_QUIT) return E_QUIT;
 #else
 				message("FEATURE NOT AVAILABLE");
 #endif
@@ -596,7 +655,7 @@ int SetupMenu::setup () {
 
 			case 5:
 
-				setupSound();
+				if (setupSound() == E_QUIT) return E_QUIT;
 
 				break;
 

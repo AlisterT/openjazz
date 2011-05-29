@@ -9,7 +9,7 @@
  * 18th July 2009: Created clientgame.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -76,7 +76,7 @@ ClientGame::ClientGame (char* address) {
 
 			net->close(sock);
 
-			throw E_UNUSED;
+			throw E_RETURN;
 
 		}
 
@@ -207,7 +207,7 @@ ClientGame::ClientGame (char* address) {
 
 			delete mode;
 
-			throw E_UNUSED;
+			throw E_RETURN;
 
 		}
 
@@ -269,7 +269,7 @@ int ClientGame::setLevel (char* fileName) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_UNUSED;
+		if (controls.release(C_ESCAPE)) return E_RETURN;
 
 		SDL_Delay(T_FRAME);
 
@@ -287,7 +287,7 @@ int ClientGame::setLevel (char* fileName) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_UNUSED;
+		if (controls.release(C_ESCAPE)) return E_RETURN;
 
 		SDL_Delay(T_FRAME);
 

@@ -9,7 +9,7 @@
  * 3rd February 2009: Created menu.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -33,7 +33,9 @@
 #include <SDL/SDL.h>
 
 
-// Constant
+// Constants
+
+#define ESCAPE_STRING "(esc) quits"
 
 // Demo timeout
 #define T_DEMO 20000
@@ -45,9 +47,10 @@
 class Menu {
 
 	protected:
-		int message   (const char* text);
-		int generic   (const char** optionNames, int options, int& chosen);
-		int textInput (const char* request, char*& text);
+		void showEscString ();
+		int  message       (const char* text);
+		int  generic       (const char** optionNames, int options, int& chosen);
+		int  textInput     (const char* request, char*& text);
 
 };
 
@@ -62,9 +65,11 @@ class GameMenu : public Menu {
 		int           episodes; ///< Number of episodes
 		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 
+		int playNewGame       (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, int levelNum, int worldNum);
 		int newGameLevel      (GameModeType mode);
+		int selectEpisode     (GameModeType mode, int episode);
 		int newGameEpisode    (GameModeType mode);
 		int joinGame          ();
 
@@ -103,6 +108,8 @@ class MainMenu : public Menu {
 		SDL_Surface* logo; ///< OJ logo image
 		GameMenu*    gameMenu; ///< New game menu
 		SDL_Color    palette[256]; ///< Menu palette
+
+		int select (int option);
 
 	public:
 		MainMenu  ();

@@ -10,7 +10,7 @@
  *                  levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -245,7 +245,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 		switch (ret) {
 
-			case E_UNUSED:
+			case E_RETURN:
 
 				return E_NONE;
 

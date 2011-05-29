@@ -21,7 +21,7 @@
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -70,7 +70,7 @@ Level::Level () {
 
 
 /**
- * Create a level.
+ * Create a JJ1 level.
  *
  * @param fileName Name of the file containing the level data.
  * @param diff Difficulty level
@@ -112,7 +112,7 @@ void Level::deletePanel () {
 
 
 /**
- * Delete the level.
+ * Delete the JJ1 level.
  */
 Level::~Level () {
 
@@ -236,7 +236,7 @@ int Level::getWorld() {
 /**
  * Set which level will come next.
  *
- * @param nextLevel Next level number
+ * @param nextLevel Next level's number
  * @param nextWorld Next level's world number
  */
 void Level::setNext (int nextLevel, int nextWorld) {
