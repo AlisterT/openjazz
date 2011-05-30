@@ -226,6 +226,52 @@ void BaseLevel::drawStats (unsigned char bg) {
 
 
 /**
+ * Process in-game menu selection.
+ *
+ * @param option Chosen menu option
+ *
+ * @return Error code
+ */
+int BaseLevel::select (bool& menu, int option) {
+
+	switch (option) {
+
+		case 0: // Continue
+
+			menu = false;
+
+		case 1: // Save
+
+			break;
+
+		case 2: // Load
+
+			break;
+
+		case 3: // Setup
+
+			if (!multiplayer) {
+
+				if (setupMenu.setup() == E_QUIT) return E_QUIT;
+
+				// Restore level palette
+				video.setPalette(palette);
+
+			}
+
+			break;
+
+		case 4: // Quit game
+
+			return E_NONE;
+
+	}
+
+	return 1;
+
+}
+
+/**
  * Process iteration.
  *
  * @param menu Whether or not the level menu should be displayed
@@ -236,7 +282,7 @@ void BaseLevel::drawStats (unsigned char bg) {
  */
 int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
-	int ret;
+	int ret, x, y;
 
 	// Networking
 	if (multiplayer) {
@@ -292,42 +338,32 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 		if (controls.release(C_ENTER)) {
 
-			switch (option) {
+			ret = select(menu, option);
 
-				case 0: // Continue
+			if (ret <= 0) return ret;
 
-					menu = false;
+		}
 
-					break;
+		if (controls.releaseCursor(x, y)) {
 
-				case 1: // Save
+			x -= canvasW >> 2;
+			y -= (canvasH >> 1) - 38;
 
-					break;
+			if ((x >= 0) && (x < 128) && (y >= 0) && (y < 80)) {
 
-				case 2: // Load
+				option = y >> 4;
 
-					break;
+				ret = select(menu, option);
 
-				case 3: // Setup
-
-					if (!multiplayer) {
-
-						if (setupMenu.setup() == E_QUIT) return E_QUIT;
-
-						// Restore level palette
-						video.setPalette(palette);
-
-					}
-
-					break;
-
-				case 4: // Quit game
-
-					return E_NONE;
+				if (ret <= 0) return ret;
 
 			}
 
 		}
+
+	} else {
+
+		if (controls.releaseCursor(x, y)) menu = true;
 
 	}
 

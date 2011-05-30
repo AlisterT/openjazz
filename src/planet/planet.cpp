@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed planet.c to planet.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2009 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -112,6 +112,7 @@ int Planet::getId () {
 int Planet::play () {
 
 	unsigned int tickOffset;
+	int coord;
 
 	tickOffset = globalTicks;
 
@@ -123,7 +124,7 @@ int Planet::play () {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) return E_NONE;
+		if (controls.release(C_ESCAPE) || controls.releaseCursor(coord, coord)) return E_NONE;
 
 		SDL_Delay(T_FRAME);
 

@@ -9,7 +9,7 @@
  * 30th March 2010: Created baselevel.h from parts of level.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -72,6 +72,8 @@ class BaseLevel {
 
 	private:
 		SetupMenu setupMenu; ///< Setup menu to run on the player's command
+
+		int select (bool& menu, int option);
 
 	protected:
 		PaletteEffect* paletteEffects; ///< Palette effects in use while playing the level
