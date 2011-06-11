@@ -93,6 +93,8 @@ class Controls {
 		int          cursorX; ///< X-coordinate of the cursor
 		int          cursorY; ///< Y-coordinate of the cursor
 		bool         cursorState; ///< Whether or not the cursor is being used
+		int          wheelUp; ///< How many times the wheel has been scrolled upwards
+		int          wheelDown; ///< How many times the wheel has been scrolled downwards
 
 	public:
 		Controls ();

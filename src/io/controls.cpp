@@ -339,11 +339,20 @@ int Controls::update (SDL_Event *event, LoopType type) {
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
 
-			if (event->button.button == SDL_BUTTON_LEFT)
-			{
+			if (event->button.button == SDL_BUTTON_LEFT) {
+
 				cursorX = event->button.x;
 				cursorY = event->button.y;
 				cursorState = ((event->button.state == SDL_PRESSED) && (globalTicks > cursorTime));
+
+			} else if (event->button.button == 4) {
+
+				if (event->button.state == SDL_PRESSED) wheelUp++;
+
+			} else if (event->button.button == 5) {
+
+				if (event->button.state == SDL_PRESSED) wheelDown++;
+
 			}
 
 			break;
@@ -368,6 +377,20 @@ void Controls::loop () {
 	for (count = 0; count < CONTROLS; count++)
 		controls[count].state = (controls[count].time < globalTicks) &&
 			(keys[count].pressed || buttons[count].pressed || axes[count].pressed);
+
+	if (wheelUp) {
+
+		controls[C_UP].state = true;
+		wheelUp--;
+
+	}
+
+	if (wheelDown) {
+
+		controls[C_DOWN].state = true;
+		wheelDown--;
+
+	}
 
 	return;
 
