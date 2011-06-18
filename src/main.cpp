@@ -184,16 +184,6 @@ int loadMain (int argc, char *argv[]) {
 	soundsVolume = MAX_VOLUME >> 2;
 
 
-	// Create the player's name
-	characterName = createEditableString(CHAR_NAME);
-
-	// Assign the player's colour
-	characterCols[0] = CHAR_FUR;
-	characterCols[1] = CHAR_BAND;
-	characterCols[2] = CHAR_GUN;
-	characterCols[3] = CHAR_WBAND;
-
-
 	// Create the network address
 	netAddress = createString(NET_ADDRESS);
 
@@ -239,19 +229,25 @@ int loadMain (int argc, char *argv[]) {
 
 		// Read the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			characterName[count] = file->loadChar();
+			setup.characterName[count] = file->loadChar();
 
-		characterName[STRING_LENGTH] = 0;
+		setup.characterName[STRING_LENGTH] = 0;
 
 		// Read the player's colours
-		characterCols[0] = file->loadChar();
-		characterCols[1] = file->loadChar();
-		characterCols[2] = file->loadChar();
-		characterCols[3] = file->loadChar();
+		setup.characterCols[0] = file->loadChar();
+		setup.characterCols[1] = file->loadChar();
+		setup.characterCols[2] = file->loadChar();
+		setup.characterCols[3] = file->loadChar();
 
 		// Read the sound effect volume
 		soundsVolume = file->loadChar();
 		if (soundsVolume > MAX_VOLUME) soundsVolume = MAX_VOLUME;
+
+		// Read gameplay options
+		count = file->loadChar();
+		setup.manyBirds = ((count & 1) != 0);
+		setup.leaveUnneeded = ((count & 2) != 0);
+
 
 		delete file;
 
@@ -284,8 +280,6 @@ int loadMain (int argc, char *argv[]) {
 
 	if (!video.init(screenW, screenH, fullscreen)) {
 
-		delete[] characterName;
-
 		delete firstPath;
 
 		return E_VIDEO;
@@ -316,8 +310,6 @@ int loadMain (int argc, char *argv[]) {
 	} catch (int e) {
 
 		closeAudio();
-
-		delete[] characterName;
 
 		delete firstPath;
 
@@ -358,8 +350,6 @@ int loadMain (int argc, char *argv[]) {
 		delete[] pixels;
 
 		closeAudio();
-
-		delete[] characterName;
 
 		delete firstPath;
 
@@ -468,16 +458,26 @@ void freeMain () {
 
 		// Write the player's name
 		for (count = 0; count < STRING_LENGTH; count++)
-			file->storeChar(characterName[count]);
+			file->storeChar(setup.characterName[count]);
 
 		// Write the player's colour
-		file->storeChar(characterCols[0]);
-		file->storeChar(characterCols[1]);
-		file->storeChar(characterCols[2]);
-		file->storeChar(characterCols[3]);
+		file->storeChar(setup.characterCols[0]);
+		file->storeChar(setup.characterCols[1]);
+		file->storeChar(setup.characterCols[2]);
+		file->storeChar(setup.characterCols[3]);
 
 		// Write the sound effect volume
 		file->storeChar(soundsVolume);
+
+		// Write gameplay options
+
+		count = 0;
+
+		if (setup.manyBirds) count |= 1;
+		if (setup.leaveUnneeded) count |= 2;
+
+		file->storeChar(count);
+
 
 		delete file;
 
@@ -487,8 +487,6 @@ void freeMain () {
 			"File could not be opened.");
 
 	}
-
-	delete[] characterName;
 
 	delete firstPath;
 

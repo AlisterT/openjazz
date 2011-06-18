@@ -10,7 +10,7 @@
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -154,7 +154,7 @@ class Bird;
 class LevelPlayer : public Movable {
 
 	private:
-		Bird*            bird; ///< Bird companion
+		Bird*            birds; ///< Bird companion(s)
 		SDL_Color        palette[256]; ///< Palette (for custom colours)
 		Anim*            anims[PANIMS]; ///< Animations
 		int              energy; ///< 0 = dead, 4 = maximum
@@ -182,19 +182,19 @@ class LevelPlayer : public Movable {
 	public:
 		Player* player; ///< Corresponding game player
 
-		LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
+		LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~LevelPlayer ();
 
 		void           reset       (unsigned char startX, unsigned char startY);
 
 		void           addItem     ();
 		void           clearEvent  (unsigned char gridX, unsigned char gridY);
+		int            countBirds  ();
 		Anim*          getAnim     ();
 		int            getEnemies  ();
 		int            getEnergy   ();
 		bool           getFacing   ();
 		int            getItems    ();
-		bool           hasBird     ();
 		bool           hasGem      ();
 		bool           hit         (Player* source, unsigned int ticks);
 		void           kill        (Player* source, unsigned int ticks);

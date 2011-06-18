@@ -252,7 +252,7 @@ int BaseLevel::select (bool& menu, int option) {
 
 			if (!multiplayer) {
 
-				if (setupMenu.setup() == E_QUIT) return E_QUIT;
+				if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
 
 				// Restore level palette
 				video.setPalette(palette);
@@ -385,7 +385,10 @@ void BaseLevel::addTimer () {
 
 	if (stage != LS_NORMAL) return;
 
-	endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+	endTime += 2 * 60 * 1000;
+
+	if (endTime >= ticks + (10 * 60 * 1000))
+		endTime = ticks + (10 * 60 * 1000) - 1;
 
 	if (multiplayer) {
 

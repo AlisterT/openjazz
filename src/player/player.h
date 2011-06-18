@@ -11,7 +11,7 @@
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -46,7 +46,6 @@
 
 // General
 #define PCONTROLS   8 /* Number of player controls. */
-#define PCOLOURS    4 /* Number of configurable colour ranges */
 
 
 // Enums
@@ -101,7 +100,7 @@ class Player {
 		int             score; ///< Total score
 		int             lives; ///< Remaining lives
 		int             fireSpeed; ///< Rapid-fire rate
-		bool            bird; ///< Accompanied by a bird
+		int             flockSize; ///< Number of accompanying birds
 		unsigned char   team; ///< Team ID
 
 		void addAmmo (int type, int amount);
@@ -145,10 +144,6 @@ class Player {
 EXTERN Player* players;
 EXTERN Player* localPlayer;
 EXTERN int     nPlayers;
-
-// Configuration data
-EXTERN char*         characterName;
-EXTERN unsigned char characterCols[PCOLOURS];
 
 #endif
 

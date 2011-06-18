@@ -10,7 +10,7 @@
  *                 levelplayerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -492,16 +492,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Deal with the bird
 
-	/*if (bird) {
-
-		if (bird->step(ticks, msps)) {
-
-			delete bird;
-			bird = NULL;
-
-		}
-
-	}*/
+	//if (birds) birds = birds->step(ticks, msps);
 
 
 	// Choose animation
@@ -912,7 +903,7 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Show the bird
-	//if (bird) bird->draw(ticks, change);
+	//if (birds) birds->draw(ticks, change);
 
 
 	// Show the player's name

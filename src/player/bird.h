@@ -9,7 +9,7 @@
  * 1st March 2009: Created bird.h from parts of events.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -47,18 +47,23 @@ class LevelPlayer;
 class Bird : public Movable {
 
 	private:
+		Bird*        next;
 		LevelPlayer* player; ///< Player that rescued the bird
 		bool         fleeing; ///< Flying away, player having been shot
 		unsigned int fireTime; ///< Next time the bird will fire
 
+		Bird* remove ();
+
 	public:
-		Bird  (LevelPlayer* player, unsigned char gX, unsigned char gY);
+		Bird  (Bird* birds, LevelPlayer* player, unsigned char gX, unsigned char gY);
 		~Bird ();
 
-		LevelPlayer* getPlayer ();
-		void         hit       ();
+		int          getFlockSize ();
+		LevelPlayer* getPlayer    ();
+		void         hit          ();
+		Bird*        setFlockSize (int size);
 
-		bool         step      (unsigned int ticks, int msps);
+		Bird*        step      (unsigned int ticks, int msps);
 		void         draw      (unsigned int ticks, int change);
 
 };

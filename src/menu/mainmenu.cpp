@@ -203,7 +203,7 @@ int MainMenu::select (int option) {
 
 		case 3: // Setup options
 
-			if (setupMenu.setup() == E_QUIT) return E_QUIT;
+			if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
 
 			break;
 

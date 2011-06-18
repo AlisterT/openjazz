@@ -40,6 +40,9 @@
 // Demo timeout
 #define T_DEMO 20000
 
+// Number of configurable player colour ranges
+#define PCOLOURS 4
+
 
 // Classes
 
@@ -95,7 +98,21 @@ class SetupMenu : public Menu {
 		int setupSound      ();
 
 	public:
-		int setup ();
+		int setupMain ();
+
+};
+
+/// Configuration
+class Setup {
+
+	public:
+		char*         characterName;
+		unsigned char characterCols[PCOLOURS];
+		bool          manyBirds;
+		bool          leaveUnneeded;
+
+		Setup  ();
+		~Setup ();
 
 };
 
@@ -120,8 +137,9 @@ class MainMenu : public Menu {
 };
 
 
-// Variable
+// Variables
 
+EXTERN Setup setup;
 EXTERN SDL_Color menuPalette[256]; /// Palette used by most menu screens
 
 #endif

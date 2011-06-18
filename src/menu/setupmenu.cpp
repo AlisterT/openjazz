@@ -33,6 +33,7 @@
 #include "io/sound.h"
 #include "player/player.h"
 #include "loop.h"
+#include "util.h"
 
 
 /**
@@ -559,20 +560,28 @@ int SetupMenu::setupSound () {
  *
  * @return Error code
  */
-int SetupMenu::setup () {
+int SetupMenu::setupMain () {
 
-	const char *setupOptions[6] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound"};
-	const char *setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
-	const char *setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
+	const char* setupOptions[7] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound", "gameplay"};
+	const char* setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
+	const char* setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_GREY, PC_RED, PC_ORANGE, PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
+	const char* setupModsOff[2] = {"take extra items", "one-bird limit"};
+	const char* setupModsOn[2] = {"leave extra items", "unlimited birds"};
+	const char* setupMods[2];
 	int ret;
 	int option, suboption, subsuboption;
 
 	option = 0;
 
+	setupMods[0] = (setup.manyBirds? setupModsOn[0]: setupModsOff[0]);
+	setupMods[1] = (setup.leaveUnneeded? setupModsOn[1]: setupModsOff[1]);
+
+	video.setPalette(menuPalette);
+
 	while (true) {
 
-		ret = generic(setupOptions, 6, option);
+		ret = generic(setupOptions, 7, option);
 
 		if (ret == E_RETURN) return E_NONE;
 		if (ret < 0) return ret;
@@ -594,7 +603,7 @@ int SetupMenu::setup () {
 
 						case 0: // Character name
 
-							if (textInput("character name:", characterName) == E_QUIT) return E_QUIT;
+							if (textInput("character name:", setup.characterName) == E_QUIT) return E_QUIT;
 
 							break;
 
@@ -606,7 +615,7 @@ int SetupMenu::setup () {
 							if (ret == E_QUIT) return E_QUIT;
 
 							if (ret == E_NONE)
-								characterCols[suboption - 1] = setupCharacterCols[subsuboption];
+								setup.characterCols[suboption - 1] = setupCharacterCols[subsuboption];
 
 							break;
 
@@ -659,6 +668,29 @@ int SetupMenu::setup () {
 
 				break;
 
+			case 6:
+
+				suboption = 0;
+
+				while (true) {
+
+					ret = generic(setupMods, 2, suboption);
+
+					if (ret == E_QUIT) return E_QUIT;
+					if (ret < 0) break;
+
+					if (setupMods[suboption] == setupModsOff[suboption])
+						setupMods[suboption] = setupModsOn[suboption];
+					else
+						setupMods[suboption] = setupModsOff[suboption];
+
+					setup.manyBirds = (setupMods[0] == setupModsOn[0]);
+					setup.leaveUnneeded = (setupMods[1] == setupModsOn[1]);
+
+				}
+
+				break;
+
 		}
 
 	}
@@ -667,5 +699,33 @@ int SetupMenu::setup () {
 
 }
 
+
+/**
+ * Create default setup
+ */
+Setup::Setup () {
+
+	// Create the player's name
+	characterName = createEditableString(CHAR_NAME);
+
+	// Assign the player's colour
+	characterCols[0] = CHAR_FUR;
+	characterCols[1] = CHAR_BAND;
+	characterCols[2] = CHAR_GUN;
+	characterCols[3] = CHAR_WBAND;
+
+	return;
+
+}
+
+
+/**
+ * Delete the setup data
+ */
+Setup::~Setup () {
+
+	delete[] characterName;
+
+}
 
 

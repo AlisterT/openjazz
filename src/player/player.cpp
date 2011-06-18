@@ -12,7 +12,7 @@
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -44,6 +44,9 @@
 #include <string.h>
 
 
+/**
+ * Create the player.
+ */
 Player::Player () {
 
 	levelPlayer = NULL;
@@ -57,6 +60,9 @@ Player::Player () {
 }
 
 
+/**
+ * Delete the player.
+ */
 Player::~Player () {
 
 	deinit();
@@ -66,6 +72,15 @@ Player::~Player () {
 }
 
 
+/**
+ * Initialise player data.
+ *
+ * Deinitialise any existing player data, assign properties and initial values.
+ *
+ * @param playerName Name (displayed in multiplayer games)
+ * @param playerCols Colours (only used in multiplayer games)
+ * @param newTeam Team (in multiplayer games)
+ */
 void Player::init (char *playerName, unsigned char *playerCols, unsigned char newTeam) {
 
 	// Clear existing player
@@ -83,7 +98,7 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 	ammo[2] = 0;
 	ammo[3] = 0;
 	fireSpeed = 0;
-	bird = false;
+	flockSize = 0;
 	team = newTeam;
 	teamScore = 0;
 
@@ -105,6 +120,9 @@ void Player::init (char *playerName, unsigned char *playerCols, unsigned char ne
 }
 
 
+/**
+ * Deinitialise player data.
+ */
 void Player::deinit () {
 
 	if (levelPlayer) delete levelPlayer;
@@ -122,6 +140,12 @@ void Player::deinit () {
 }
 
 
+/**
+ * Reset the player's current level player.
+ *
+ * @param x The level player's new grid x-coordinate
+ * @param y The level player's new grid y-coordinate
+ */
 void Player::reset (unsigned char x, unsigned char y) {
 
 	if (levelPlayer) levelPlayer->reset(x, y);
@@ -132,13 +156,21 @@ void Player::reset (unsigned char x, unsigned char y) {
 }
 
 
+/**
+ * Create a new level player for the player (and delete any existing one).
+ *
+ * @param levelType The type of level for which to create a level player
+ * @param anims New level player animations
+ * @param x The level player's new grid x-coordinate
+ * @param y The level player's new grid y-coordinate
+ */
 void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned char y) {
 
 	int count;
 
 	if (levelPlayer) {
 
-		bird = levelPlayer->hasBird();
+		flockSize = levelPlayer->countBirds();
 		delete levelPlayer;
 		levelPlayer = NULL;
 
@@ -153,7 +185,7 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 	if (jj2LevelPlayer) {
 
-		bird = jj2LevelPlayer->hasBird();
+		flockSize = jj2LevelPlayer->countBirds();
 		delete jj2LevelPlayer;
 		jj2LevelPlayer = NULL;
 
@@ -163,7 +195,7 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 		case LT_LEVEL:
 
-			levelPlayer = new LevelPlayer(this, anims, x, y, bird);
+			levelPlayer = new LevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
@@ -175,7 +207,7 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 		case LT_JJ2LEVEL:
 
-			jj2LevelPlayer = new JJ2LevelPlayer(this, anims, x, y, bird);
+			jj2LevelPlayer = new JJ2LevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
@@ -188,6 +220,11 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 }
 
 
+/**
+ * Get the player's JJ1 bonus level player.
+ *
+ * @return The JJ1 bonus level player
+ */
 BonusPlayer* Player::getBonusPlayer () {
 
 	return bonusPlayer;
@@ -195,6 +232,11 @@ BonusPlayer* Player::getBonusPlayer () {
 }
 
 
+/**
+ * Get the player's colours.
+ *
+ * @return The player's colours
+ */
 unsigned char * Player::getCols () {
 
 	return cols;
@@ -202,6 +244,11 @@ unsigned char * Player::getCols () {
 }
 
 
+/**
+ * Get the player's name.
+ *
+ * @return The player's name
+ */
 char * Player::getName () {
 
 	return name;
@@ -209,6 +256,11 @@ char * Player::getName () {
 }
 
 
+/**
+ * Get the player's JJ2 level player.
+ *
+ * @return The JJ2 level player
+ */
 JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
 
 	return jj2LevelPlayer;
@@ -216,6 +268,11 @@ JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
 }
 
 
+/**
+ * Get the player's JJ1 level player.
+ *
+ * @return The JJ1 level player
+ */
 LevelPlayer* Player::getLevelPlayer () {
 
 	return levelPlayer;
@@ -223,6 +280,12 @@ LevelPlayer* Player::getLevelPlayer () {
 }
 
 
+/**
+ * Set the state of the specified control.
+ *
+ * @param control Affected control
+ * @param state New state
+ */
 void Player::setControl (int control, bool state) {
 
 	pcontrols[control] = state;
@@ -232,6 +295,13 @@ void Player::setControl (int control, bool state) {
 }
 
 
+/**
+ * Get the state of the specified control.
+ *
+ * @param control The control
+ *
+ * @return State
+ */
 bool Player::getControl (int control) {
 
 	return pcontrols[control];
@@ -239,6 +309,11 @@ bool Player::getControl (int control) {
 }
 
 
+/**
+ * Add to the player's total score.
+ *
+ * @param addedScore The amount to be added
+ */
 void Player::addScore (int addedScore) {
 
 	score += addedScore;
@@ -247,6 +322,10 @@ void Player::addScore (int addedScore) {
 
 }
 
+
+/**
+ * Get the player's score.
+ */
 int Player::getScore () {
 
 	return score;
@@ -254,6 +333,9 @@ int Player::getScore () {
 }
 
 
+/**
+ * Add an extra life to the player.
+ */
 void Player::addLife () {
 
 	if (lives < 99) lives++;
@@ -263,6 +345,11 @@ void Player::addLife () {
 }
 
 
+/**
+ * Get the number of extra lives.
+ *
+ * @return Number of extra lives
+ */
 int Player::getLives () {
 
 	return lives;
@@ -270,6 +357,12 @@ int Player::getLives () {
 }
 
 
+/**
+ * Add ammo to the player's arsenal.
+ *
+ * @param type Type of ammo
+ * @param amount Amount of ammo to add
+ */
 void Player::addAmmo (int type, int amount) {
 
 	if (!ammo[type]) ammoType = type;
@@ -280,6 +373,13 @@ void Player::addAmmo (int type, int amount) {
 }
 
 
+/**
+ * Get the type of ammo or the total amount of ammo of the current type.
+ *
+ * @param amount False for type, true for amount
+ *
+ * @param The requested value
+ */
 int Player::getAmmo (bool amount) {
 
 	return amount? ammo[ammoType]: ammoType;
@@ -287,6 +387,11 @@ int Player::getAmmo (bool amount) {
 }
 
 
+/**
+ * Get the player's team
+ *
+ * @return Team number
+ */
 unsigned char Player::getTeam () {
 
 	return team;
@@ -305,7 +410,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[6] = pcontrols[C_RIGHT];
 	buffer[7] = pcontrols[C_JUMP];
 	buffer[8] = pcontrols[C_FIRE];
-	if (!levelPlayer) buffer[9] = bird? 1: 0;
+	if (!levelPlayer) buffer[9] = flockSize;
 	buffer[10] = ammo[0] >> 8;
 	buffer[11] = ammo[0] & 255;
 	buffer[12] = ammo[1] >> 8;
@@ -346,7 +451,7 @@ void Player::receive (unsigned char *buffer) {
 		pcontrols[C_SWIM] = buffer[45];
 		pcontrols[C_FIRE] = buffer[8];
 		pcontrols[C_CHANGE] = false;
-		if (!levelPlayer) bird = buffer[9] & 1;
+		if (!levelPlayer) flockSize = buffer[9];
 		ammo[0] = (buffer[10] << 8) + buffer[11];
 		ammo[1] = (buffer[12] << 8) + buffer[13];
 		ammo[2] = (buffer[14] << 8) + buffer[15];

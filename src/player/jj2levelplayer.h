@@ -9,7 +9,7 @@
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -252,7 +252,7 @@ class JJ2Event;
 class JJ2LevelPlayer : public Movable {
 
 	private:
-		bool              bird; ///< Placeholder for eventual JJ2Bird object
+		int               birds; ///< Placeholder for eventual JJ2Bird objects
 		Anim*             anims; ///< Animations
 		Anim*             flippedAnims; ///< Animations (flipped)
 		JJ2Modifier*      mod; ///< Modifier currently affecting player
@@ -282,18 +282,18 @@ class JJ2LevelPlayer : public Movable {
 	public:
 		Player* player; ///< Corresponding game player
 
-		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird);
+		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ2LevelPlayer ();
 
 		void              reset       (unsigned char startX, unsigned char startY);
 
 		void              addGem      (int colour);
+		int               countBirds  ();
 		Anim*             getAnim     ();
 		int               getEnemies  ();
 		int               getEnergy   ();
 		bool              getFacing   ();
 		int               getGems     (int colour);
-		bool              hasBird     ();
 		bool              hit         (Player* source, unsigned int ticks);
 		void              kill        (Player* source, unsigned int ticks);
 		bool              overlap     (fixed left, fixed top, fixed width, fixed height);

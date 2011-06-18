@@ -10,7 +10,7 @@
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -45,9 +45,9 @@
  * @param newAnims Animations
  * @param startX Starting position x-coordinate
  * @param startY Starting position y-coordinate
- * @param hasBird Whether or not the player is being accompanied by a bird
+ * @param flockSize The number of birds accompanying the player
  */
-LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
+LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
 	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
 		PCO_LEVEL1, PCO_YELLOW, PCO_LEVEL2, PCO_ORANGE, PCO_LEVEL3, PCO_LEVEL4,
@@ -59,8 +59,10 @@ LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX,
 
 	memcpy(anims, newAnims, PANIMS * sizeof(Anim*));
 
-	if (hasBird) bird = new Bird(this, startX, startY - 2);
-	else bird = NULL;
+	birds = NULL;
+
+	for (count = 0; count < flockSize; count++)
+		birds = new Bird(birds, this, startX, startY - 2);
 
 	shield = 0;
 	enemies = items = 0;
@@ -125,7 +127,7 @@ LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX,
  */
 LevelPlayer::~LevelPlayer () {
 
-	if (bird) delete bird;
+	if (birds) delete birds;
 
 	return;
 
@@ -255,9 +257,11 @@ int LevelPlayer::getItems () {
  *
  * @return Whether or not the player is being accompanied by a bird
  */
-bool LevelPlayer::hasBird () {
+int LevelPlayer::countBirds () {
 
-	return bird;
+	if (birds) return birds->getFlockSize();
+
+	return 0;
 
 }
 
@@ -297,7 +301,7 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 		energy--;
 
-		if (bird) bird->hit();
+		if (birds) birds->hit();
 
 		playSound(S_OW);
 
@@ -511,6 +515,8 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 		case 2:
 		case 3: // Health
 
+			if ((energy == 4) && setup.leaveUnneeded) return false;
+
 			if (energy < 4) energy++;
 
 			break;
@@ -609,17 +615,23 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 33: // 2-hit shield
 
+			if ((shield >= 2) && setup.leaveUnneeded) return false;
+
 			if (shield < 2) shield = 2;
 
 			break;
 
 		case 34: // Bird
 
-			if (!bird) bird = new Bird(this, gridX, gridY);
+			if (birds && !setup.manyBirds) return false;
+
+			birds = new Bird(birds, this, gridX, gridY);
 
 			break;
 
 		case 35: // Airboard, etc.
+
+			if (floating && setup.leaveUnneeded) return false;
 
 			floating = true;
 
@@ -627,11 +639,15 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 36: // 4-hit shield
 
+			if ((shield == 6) && setup.leaveUnneeded) return false;
+
 			shield = 6;
 
 			break;
 
 		case 37: // Diamond
+
+			if (gem && setup.leaveUnneeded) return false;
 
 			gem = true;
 
@@ -778,7 +794,7 @@ void LevelPlayer::send (unsigned char *buffer) {
 
 	// Copy data to be sent to clients/server
 
-	buffer[9] = bird? 1: 0;
+	buffer[9] = countBirds();
 	buffer[23] = energy;
 	buffer[25] = shield;
 	buffer[26] = floating;
@@ -827,12 +843,15 @@ void LevelPlayer::receive (unsigned char *buffer) {
 
 		case MT_P_TEMP:
 
-			if ((buffer[9] & 1) && !bird) bird = new Bird(this, FTOT(x), FTOT(y) - 2);
+			if ((buffer[9] > 0) && (birds == NULL)) {
 
-			if (!(buffer[9] & 1) && bird) {
+				birds = new Bird(birds, this, FTOT(x), FTOT(y) - 2);
 
-				delete bird;
-				bird = NULL;
+			}
+
+			if (birds) {
+
+				birds = birds->setFlockSize(buffer[9]);
 
 			}
 

@@ -102,8 +102,6 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 	int x, y, count;
 
-	video.setPalette(menuPalette);
-
 	if (chosen >= options) chosen = 0;
 
 	while (true) {

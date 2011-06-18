@@ -171,13 +171,13 @@ ClientGame::ClientGame (char* address) {
 
 	// Add a new player to the game
 
-	buffer[0] = MTL_G_PJOIN + strlen(characterName);
+	buffer[0] = MTL_G_PJOIN + strlen(setup.characterName);
 	buffer[1] = MT_G_PJOIN;
 	buffer[2] = clientID;
 	buffer[3] = 0; // Player's number, assigned by the server
 	buffer[4] = 0; // Player's team, assigned by the server
-	memcpy(buffer + 5, characterCols, 4);
-	memcpy(buffer + 9, characterName, strlen(characterName) + 1);
+	memcpy(buffer + 5, setup.characterCols, 4);
+	memcpy(buffer + 9, setup.characterName, strlen(setup.characterName) + 1);
 	send(buffer);
 
 

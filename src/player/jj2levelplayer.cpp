@@ -9,7 +9,7 @@
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -45,7 +45,7 @@
  * @param startY Starting position y-coordinate
  * @param hasBird Whether or not the player is being accompanied by a bird
  */
-JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, bool hasBird) {
+JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
 	int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
 		JJ2PCO_LGREEN, JJ2PCO_LEVEL1, JJ2PCO_YELLOW, JJ2PCO_LEVEL2,
@@ -63,7 +63,7 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 	anims = newAnims[0];
 	flippedAnims = newAnims[1];
 
-	bird = hasBird;
+	birds = flockSize;
 
 	shield = JJ2S_NONE;
 
@@ -256,9 +256,9 @@ int JJ2LevelPlayer::getGems (int colour) {
  *
  * @return Whether or not the player is being accompanied by a bird
  */
-bool JJ2LevelPlayer::hasBird () {
+int JJ2LevelPlayer::countBirds () {
 
-	return bird;
+	return birds;
 
 }
 
@@ -669,7 +669,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
  */
 void JJ2LevelPlayer::send (unsigned char *buffer) {
 
-	buffer[9] = bird? 1: 0;
+	buffer[9] = birds;
 	buffer[23] = energy;
 	buffer[25] = shield;
 	buffer[26] = floating;
@@ -714,14 +714,7 @@ void JJ2LevelPlayer::receive (unsigned char *buffer) {
 
 		case MT_P_TEMP:
 
-			if ((buffer[9] & 1) && !bird) bird = true;
-
-			if (!(buffer[9] & 1) && bird) {
-
-				bird = false;
-
-			}
-
+			birds = buffer[9];
 			energy = buffer[23];
 			shield = (JJ2Shield)buffer[25];
 			floating = buffer[26];

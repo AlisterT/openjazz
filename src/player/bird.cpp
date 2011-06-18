@@ -9,7 +9,7 @@
  * 1st March 2009: Created bird.cpp from parts of events.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,8 +30,17 @@
 #include "level/level.h"
 
 
-Bird::Bird (LevelPlayer *rescuer, unsigned char gX, unsigned char gY) {
+/**
+ * Create a bird for the specified player.
+ *
+ * @param birds The player's existing birds (NULL if none)
+ * @param rescuer The player that freed the bird
+ * @param gX The new bird's grid x-coordinate
+ * @param gY The new bird's grid y-coordinate
+ */
+Bird::Bird (Bird* birds, LevelPlayer *rescuer, unsigned char gX, unsigned char gY) {
 
+	next = birds;
 	player = rescuer;
 	x = TTOF(gX);
 	y = TTOF(gY);
@@ -45,13 +54,41 @@ Bird::Bird (LevelPlayer *rescuer, unsigned char gX, unsigned char gY) {
 }
 
 
+/**
+ * Delete all birds.
+ */
 Bird::~Bird () {
+
+	if (next) delete next;
 
 	return;
 
 }
 
 
+/**
+ * Delete this bird.
+ *
+ * @return The next bird
+ */
+Bird* Bird::remove () {
+
+	Bird* oldNext;
+
+	oldNext = next;
+	next = NULL;
+	delete this;
+
+	return oldNext;
+
+}
+
+
+/**
+ * Get the player that freed the bird.
+ *
+ * @return The player
+ */
 LevelPlayer * Bird::getPlayer () {
 
 	return player;
@@ -59,6 +96,9 @@ LevelPlayer * Bird::getPlayer () {
 }
 
 
+/**
+ * Notify the bird that the player has been hit.
+ */
 void Bird::hit () {
 
 	fleeing = true;
@@ -68,10 +108,68 @@ void Bird::hit () {
 }
 
 
-bool Bird::step (unsigned int ticks, int msps) {
+/**
+ * Recursively count the number of birds.
+ *
+ * @return The number of birds ahead of this bird, plus one
+ */
+int Bird::getFlockSize () {
 
+	if (next) return next->getFlockSize() + 1;
+
+	return 1;
+
+}
+
+
+/**
+ * Recursively set the number of birds.
+ *
+ * @param size The number of birds not already counted
+ *
+ * @return Remaining bird (NULL if none)
+ */
+Bird* Bird::setFlockSize (int size) {
+
+	if (size <= 0) {
+
+		delete this;
+		return NULL;
+
+	}
+
+	if (size > 1) {
+
+		if (!next) next = new Bird(NULL, player, FTOT(x), FTOT(y));
+
+		next = next->setFlockSize(size - 1);
+
+	}
+
+	return this;
+
+}
+
+
+/**
+ * Bird iteration.
+ *
+ * @param ticks Time
+ * @param msps Ticks per step
+ *
+ * @return Remaining bird (NULL if none)
+ */
+Bird* Bird::step (unsigned int ticks, int msps) {
+
+	Movable* leader;
 	Event* event;
 	bool target;
+
+	// Process the next bird
+	if (next) next = next->step(ticks, msps);
+
+	if (next) leader = next;
+	else leader = player;
 
 	if (fleeing) {
 
@@ -80,28 +178,28 @@ bool Bird::step (unsigned int ticks, int msps) {
 		dy = -F80;
 
 		// If the bird has flown off-screen, remove it
-		if (y < viewY - F160) return true;
+		if (y < viewY - F160) return remove();
 
 	} else {
 
-		// Trajectory for flying towards the player
+		// Trajectory for flying towards the leader
 
-		if ((x < player->getX() - F160) || (x > player->getX() + F160)) {
+		if ((x < leader->getX() - F160) || (x > leader->getX() + F160)) {
 
-			// Far away from the player
-			// Approach the player at a speed proportional to the distance
+			// Far away from the leader
+			// Approach the leader at a speed proportional to the distance
 
-			dx = player->getX() - x;
+			dx = leader->getX() - x;
 
-		} else if (x < player->getX()) {
+		} else if (x < leader->getX()) {
 
-			// To the left of the player, so move right
+			// To the left of the leader, so move right
 
 			if (dx < F80) dx += 400 * msps;
 
 		} else {
 
-			// To the right of the player, so move left
+			// To the right of the leader, so move left
 
 			if (dx > -F80) dx -= 400 * msps;
 
@@ -116,22 +214,22 @@ bool Bird::step (unsigned int ticks, int msps) {
 
 		} else {
 
-			if ((y < player->getY() - F100) || (y > player->getY() + F100)) {
+			if ((y < leader->getY() - F100) || (y > leader->getY() + F100)) {
 
-				// Far away from the player
-				// Approach the player at a speed proportional to the distance
+				// Far away from the leader
+				// Approach the leader at a speed proportional to the distance
 
-				dy = (player->getY() - F64) - y;
+				dy = (leader->getY() - F64) - y;
 
-			} else if (y < player->getY() - F64) {
+			} else if (y < leader->getY() - F64) {
 
-				// Above the player, so move downwards
+				// Above the leader, so move downwards
 
 				if (dy < F80) dy += 400 * msps;
 
 			} else {
 
-				// Below the player, so move upwards
+				// Below the leader, so move upwards
 
 				if (dy > -F80) dy -= 400 * msps;
 
@@ -187,14 +285,22 @@ bool Bird::step (unsigned int ticks, int msps) {
 	x += (dx * msps) >> 10;
 	y += (dy * msps) >> 10;
 
-	return false;
+	return this;
 
 }
 
 
+/**
+ * Draw the bird.
+ *
+ * @param ticks Time
+ * @param change Time since last step
+ */
 void Bird::draw (unsigned int ticks, int change) {
 
 	Anim *anim;
+
+	if (next) next->draw(ticks, change);
 
 	anim = level->getAnim((player->getFacing() || fleeing)? BIRD_RIGHTANIM: BIRD_LEFTANIM);
 	anim->setFrame(ticks / 80, true);

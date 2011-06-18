@@ -9,7 +9,7 @@
  * 3rd October 2010: Created localgame.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2011 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -45,7 +45,7 @@ LocalGame::LocalGame (char *firstLevel, int gameDifficulty) {
 	// Create the player
 	nPlayers = 1;
 	localPlayer = players = new Player[1];
-	localPlayer->init(characterName, NULL, 0);
+	localPlayer->init(setup.characterName, NULL, 0);
 
 	return;
 
