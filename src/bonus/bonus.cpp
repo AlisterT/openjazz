@@ -504,13 +504,7 @@ int Bonus::step () {
 	BonusPlayer* bonusPlayer;
 	fixed playerX, playerY;
 	int gridX, gridY;
-	int msps;
 	int count;
-
-	// Milliseconds per step
-	msps = ticks - prevStepTicks;
-	prevStepTicks = ticks;
-
 
 	// Check if time has run out
 	if (ticks > endTime) return LOST;
@@ -528,7 +522,7 @@ int Bonus::step () {
 		playerX = bonusPlayer->getX();
 		playerY = bonusPlayer->getY();
 
-		bonusPlayer->step(ticks, msps, this);
+		bonusPlayer->step(ticks, 16, this);
 
 		if (isEvent(playerX, playerY)) {
 
@@ -766,8 +760,8 @@ int Bonus::play () {
 
 
 	tickOffset = globalTicks;
-	ticks = 16;
-	prevStepTicks = 0;
+	ticks = 17;
+	steps = 0;
 
 	pmessage = pmenu = false;
 	option = 0;
@@ -801,9 +795,10 @@ int Bonus::play () {
 
 		// Process frame-by-frame activity
 
-		if (!paused && (ticks >= prevStepTicks + 16) && (stage == LS_NORMAL)) {
+		while ((getTimeChange() >= 17) && (stage == LS_NORMAL)) {
 
 			count = step();
+			steps++;
 
 			if (count < 0) return count;
 			else if (count) {

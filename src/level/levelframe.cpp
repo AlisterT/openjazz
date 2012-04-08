@@ -54,8 +54,7 @@ int Level::step () {
 
 
 	// Milliseconds per step
-	msps = ticks - prevStepTicks;
-	prevStepTicks = ticks;
+	msps = 16;
 
 
 	// Search for active events
@@ -282,7 +281,7 @@ void Level::draw () {
 
 
 	// Calculate change since last step
-	change = paused? 0: ticks - prevStepTicks;
+	change = getTimeChange();
 
 
 	// Show active events

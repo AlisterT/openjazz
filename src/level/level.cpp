@@ -706,8 +706,8 @@ int Level::play () {
 	levelPlayer = localPlayer->getLevelPlayer();
 
 	tickOffset = globalTicks;
-	ticks = 16;
-	prevStepTicks = 0;
+	ticks = 17;
+	steps = 0;
 
 	pmessage = pmenu = false;
 	option = 0;
@@ -760,13 +760,14 @@ int Level::play () {
 
 		// Process frame-by-frame activity
 
-		if (!paused && (ticks >= prevStepTicks + 16)) {
+		while (getTimeChange() >= 17) {
 
 			// Apply controls to local player
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
 
 			count = step();
+			steps++;
 
 			if (count) return count;
 

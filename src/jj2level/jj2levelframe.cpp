@@ -44,8 +44,7 @@ int JJ2Level::step () {
 
 
 	// Milliseconds per step
-	msps = ticks - prevStepTicks;
-	prevStepTicks = ticks;
+	msps = 16;
 
 
 	// Determine the players' trajectories
@@ -117,7 +116,7 @@ void JJ2Level::draw () {
 
 
 	// Calculate change since last step
-	change = paused? 0: ticks - prevStepTicks;
+	change = getTimeChange();
 
 
 	// Show the events

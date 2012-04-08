@@ -158,6 +158,18 @@ void BaseLevel::timeCalcs () {
 
 
 /**
+ * Calculate the amount of time since the last completed step.
+ *
+ * @return Time since last step
+ */
+int BaseLevel::getTimeChange () {
+
+	return paused? 0: ticks - ((steps * 50) / 3);
+
+}
+
+
+/**
  * Display on-screen statistics.
  *
  * @param bg Palette index of the statistics box(es)

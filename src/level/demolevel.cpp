@@ -111,8 +111,8 @@ int DemoLevel::play () {
 
 
 	tickOffset = globalTicks;
-	ticks = 16;
-	prevStepTicks = 0;
+	ticks = 17;
+	steps = 0;
 
 	video.setPalette(palette);
 
@@ -165,9 +165,10 @@ int DemoLevel::play () {
 		// Process frame-by-frame activity
 
 		// Process step
-		if (ticks >= prevStepTicks + 16) {
+		while (getTimeChange() >= 17) {
 
 			ret = step();
+			steps++;
 
 			if (ret < 0) return ret;
 

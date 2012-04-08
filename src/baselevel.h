@@ -80,7 +80,7 @@ class BaseLevel {
 		SDL_Color      palette[256]; ///< Palette in use while playing the level
 		int            sprites; ///< The number of sprite that have been loaded
 		unsigned int   tickOffset; ///< Level time offset from system time
-		unsigned int   prevStepTicks; ///< Time the last step started
+		unsigned int   steps; ///< Number of steps taken
 		unsigned int   prevTicks; ///< Time the last visual update started
 		unsigned int   ticks; ///< Current time
 		unsigned int   endTime; ///< Tick at which the level will end
@@ -91,10 +91,11 @@ class BaseLevel {
 		LevelStage     stage; ///< Level stage
 		int            stats; ///< Which statistics to display on-screen, see #LevelStats
 
-		int  playScene (char* file);
-		void timeCalcs ();
-		void drawStats (unsigned char bg);
-		int  loop      (bool& menu, int& option, bool& message);
+		int  playScene     (char* file);
+		void timeCalcs     ();
+		int  getTimeChange ();
+		void drawStats     (unsigned char bg);
+		int  loop          (bool& menu, int& option, bool& message);
 
 	public:
 		BaseLevel          ();
