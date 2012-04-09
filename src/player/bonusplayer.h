@@ -45,14 +45,23 @@
 #define BPANIMS  7
 
 // Player speeds
-#define PRS_REVERSE ITOF(-32)
-#define PRS_RUN     ITOF(64)
-#define PRS_ROLL    ITOF(96)
+#define PRS_CRASH   ITOF(-60)
+#define PRS_REVERSE ITOF(-30)
+#define PRS_JUMP    ITOF(40)
+#define PRS_WALK    ITOF(40)
+#define PRS_RUN     ITOF(80)
+#define PAS_TURN    384
+#define PZS_FALL    ITOF(-2)
+#define PZS_JUMP    ITOF(3)
 
 // Player accelerations
+#define PRA_REBOUND 150
 #define PRA_REVERSE 450
-#define PRA_STOP    500
-#define PRA_RUN     100
+#define PRA_STOP    200
+#define PRA_WALK    100
+#define PAA_STOP    6
+#define PAA_TURN    1
+#define PZA_GRAVITY -6
 
 
 // Classes
@@ -68,8 +77,12 @@ class BonusPlayer {
 		Anim*         anims[BPANIMS]; ///< Animations
 		fixed         x; ///< X-coordinate
 		fixed         y; ///< Y-coordinate
+		fixed         z; ///< Z-coordinate (altitude)
 		fixed         direction; ///< Direction
 		fixed         dr; ///< Forward speed
+		fixed         da; ///< Angular speed
+		fixed         dz; ///< Vertical speed
+		bool          running; ///< Rolling/running
 		unsigned char animType; ///< Current animation
 		int           gems; ///< Number of gems collected
 
@@ -84,6 +97,7 @@ class BonusPlayer {
 		int           getGems      ();
 		fixed         getX         ();
 		fixed         getY         ();
+		fixed         getZ         ();
 
 		void          step         (unsigned int ticks, int msps, Bonus* bonus);
 		void          draw         (unsigned int ticks);

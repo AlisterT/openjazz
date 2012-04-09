@@ -524,7 +524,7 @@ int Bonus::step () {
 
 		bonusPlayer->step(ticks, 16, this);
 
-		if (isEvent(playerX, playerY)) {
+		if ((bonusPlayer->getZ() < FH) && isEvent(playerX, playerY)) {
 
 			gridX = FTOT(playerX) & 255;
 			gridY = FTOT(playerY) & 255;
