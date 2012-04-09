@@ -365,7 +365,7 @@ void JJ2Level::receive (unsigned char* buffer) {
 			} else if (buffer[2] == 2) {
 
 				if (stage == LS_NORMAL)
-					endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+					endTime += buffer[3] * 1000;
 
 			}
 

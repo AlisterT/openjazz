@@ -539,7 +539,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 9: // Sand timer
 
-			level->addTimer();
+			level->addTimer(2 * 60);
 
 			break;
 

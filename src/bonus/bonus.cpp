@@ -467,7 +467,7 @@ void Bonus::receive (unsigned char* buffer) {
 			if (buffer[2] == 2) {
 
 				if (stage == LS_NORMAL)
-					endTime += 2 * 60 * 1000; // 2 minutes. Is this right?
+					endTime += buffer[3] * 1000;
 
 			}
 
@@ -533,7 +533,7 @@ int Bonus::step () {
 
 				case 1: // Extra time
 
-					addTimer();
+					addTimer(60);
 					grid[gridY][gridX].event = 0;
 
 					break;
@@ -694,6 +694,12 @@ void Bonus::draw () {
 
 						break;
 
+					case 5: // Bounce
+
+						sprite = spriteSet + 50;
+
+						break;
+
 					default:
 
 						sprite = spriteSet + 14;
@@ -707,7 +713,7 @@ void Bonus::draw () {
 					nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
 					dst.x = FTOI(nX * canvasW) + (canvasW >> 1);
 					dst.y = canvasH >> 1;
-					sprite->drawScaled(dst.x, dst.y, DIV(F32, divisor));
+					sprite->drawScaled(dst.x, dst.y, DIV(F64 * canvasW / SW, divisor));
 
 				}
 

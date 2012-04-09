@@ -390,14 +390,16 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 /**
  * Add extra time.
+ *
+ * @param seconds Number of seconds to add
  */
-void BaseLevel::addTimer () {
+void BaseLevel::addTimer (int seconds) {
 
 	unsigned char buffer[MTL_L_PROP];
 
 	if (stage != LS_NORMAL) return;
 
-	endTime += 2 * 60 * 1000;
+	endTime += seconds * 1000;
 
 	if (endTime >= ticks + (10 * 60 * 1000))
 		endTime = ticks + (10 * 60 * 1000) - 1;
@@ -407,8 +409,8 @@ void BaseLevel::addTimer () {
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 2; // add timer
-		buffer[3] = 0;
-		buffer[4] = 0; // Don't really matter
+		buffer[3] = seconds;
+		buffer[4] = 0; // not used
 
 		game->send(buffer);
 

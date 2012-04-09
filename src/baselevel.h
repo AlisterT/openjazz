@@ -101,7 +101,7 @@ class BaseLevel {
 		BaseLevel          ();
 		virtual ~BaseLevel ();
 
-		void         addTimer ();
+		void         addTimer (int seconds);
 		LevelStage   getStage ();
 		void         setStage (LevelStage stage);
 		virtual void receive  (unsigned char* buffer) = 0;
