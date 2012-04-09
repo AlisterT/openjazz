@@ -245,6 +245,7 @@ int loadMain (int argc, char *argv[]) {
 
 		// Read gameplay options
 		count = file->loadChar();
+		setup.slowMotion = ((count & 4) != 0);
 		setup.manyBirds = ((count & 1) != 0);
 		setup.leaveUnneeded = ((count & 2) != 0);
 
@@ -473,6 +474,7 @@ void freeMain () {
 
 		count = 0;
 
+		if (setup.slowMotion) count |= 4;
 		if (setup.manyBirds) count |= 1;
 		if (setup.leaveUnneeded) count |= 2;
 

@@ -164,7 +164,7 @@ void BaseLevel::timeCalcs () {
  */
 int BaseLevel::getTimeChange () {
 
-	return paused? 0: ticks - ((steps * 50) / 3);
+	return paused? 0: ticks - ((steps * (setup.slowMotion? 100: 50)) / 3);
 
 }
 
@@ -246,6 +246,8 @@ void BaseLevel::drawStats (unsigned char bg) {
  */
 int BaseLevel::select (bool& menu, int option) {
 
+	bool wasSlow;
+
 	switch (option) {
 
 		case 0: // Continue
@@ -264,7 +266,12 @@ int BaseLevel::select (bool& menu, int option) {
 
 			if (!multiplayer) {
 
+				wasSlow = setup.slowMotion;
+
 				if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
+
+				if (wasSlow && !setup.slowMotion) steps <<= 1;
+				else if (!wasSlow && setup.slowMotion) steps >>= 1;
 
 				// Restore level palette
 				video.setPalette(palette);
@@ -369,7 +376,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 				if (ret <= 0) return ret;
 
-			}
+			} else menu = false;
 
 		}
 

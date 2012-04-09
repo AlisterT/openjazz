@@ -108,6 +108,7 @@ class Setup {
 	public:
 		char*         characterName;
 		unsigned char characterCols[PCOLOURS];
+		bool          slowMotion;
 		bool          manyBirds;
 		bool          leaveUnneeded;
 
