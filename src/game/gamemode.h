@@ -9,7 +9,7 @@
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -46,6 +46,7 @@ enum GameModeType {
 // Classes
 
 class Font;
+class Game;
 class Player;
 
 /// Game mode base class
@@ -56,8 +57,8 @@ class GameMode {
 		virtual unsigned char chooseTeam () = 0;
 		virtual void          drawScore  (Font* font) = 0;
 		virtual bool          hit        (Player *source, Player *victim);
-		virtual bool          kill       (Player *source, Player *victim);
-		virtual bool          endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
+		virtual bool          kill       (Game* game, Player *source, Player *victim);
+		virtual bool          endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY);
 		virtual void          outOfTime  ();
 
 };
@@ -138,7 +139,7 @@ class RaceGameMode : public FreeForAllGameMode {
 	public:
 		GameModeType getMode    ();
 		bool         hit        (Player *source, Player *victim);
-		bool         endOfLevel (Player *player, unsigned char gridX, unsigned char gridY);
+		bool         endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY);
 
 };
 

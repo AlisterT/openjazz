@@ -43,7 +43,7 @@
  *
  * @param fileName Name of the file containing the macro data.
  */
-DemoLevel::DemoLevel (const char* fileName) {
+DemoLevel::DemoLevel (Game* owner, const char* fileName) : Level(owner) {
 
 	File* file;
 	char* levelFile;
@@ -76,7 +76,7 @@ DemoLevel::DemoLevel (const char* fileName) {
 
 	// Load level data
 
-	ret = load(levelFile, diff, false);
+	ret = load(levelFile, false);
 
 	delete[] levelFile;
 

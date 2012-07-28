@@ -10,7 +10,7 @@
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -297,7 +297,7 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	if (shield == 3) shield = 0;
 	else if (shield) shield--;
-	else if (game->getMode()->hit(source, player)) {
+	else if (player->hit(source)) {
 
 		energy--;
 
@@ -345,15 +345,13 @@ void LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
-	if (game->getMode()->kill(source, player)) {
+	if (player->kill(source)) {
 
 		energy = 0;
 		player->lives--;
 
 		reaction = PR_KILLED;
 		reactionTime = ticks + PRT_KILLED;
-
-		if (game->getMode()->getMode() == M_SINGLE) level->flash(0, 0, 0, T_END << 1);
 
 	}
 
@@ -495,7 +493,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 			if (!energy) return false;
 
-			if (!game->getMode()->endOfLevel(player, gridX, gridY)) return false;
+			if (!player->endOfLevel(gridX, gridY)) return false;
 
 			break;
 
@@ -545,7 +543,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 		case 10: // Checkpoint
 
-			if (game) game->setCheckpoint(gridX, gridY);
+			player->setCheckpoint(gridX, gridY);
 
 			break;
 

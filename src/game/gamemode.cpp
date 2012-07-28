@@ -9,7 +9,7 @@
  * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -52,7 +52,7 @@ bool GameMode::hit (Player *source, Player *victim) {
  *
  * @return Whether or not the player should be be killed (true)
  */
-bool GameMode::kill (Player *source, Player *victim) {
+bool GameMode::kill (Game* game, Player *source, Player *victim) {
 
 	if (source && (victim == localPlayer)) game->score(source->getTeam());
 
@@ -70,7 +70,7 @@ bool GameMode::kill (Player *source, Player *victim) {
  *
  * @return Whether or not the end-of-level signpost should be destroyed (true)
  */
-bool GameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gridY) {
+bool GameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -313,7 +313,7 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
  *
  * @return Whether or not the end-of-level signpost should be destroyed (false)
  */
-bool RaceGameMode::endOfLevel (Player *player, unsigned char gridX, unsigned char gridY) {
+bool RaceGameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
 
 	if (player == localPlayer) game->score(localPlayer->getTeam());
 

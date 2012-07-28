@@ -175,7 +175,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = bonus = new Bonus(levelFile, difficulty, multiplayer);
+				baseLevel = bonus = new Bonus(this, levelFile, multiplayer);
 
 			} catch (int e) {
 
@@ -212,7 +212,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = jj2Level = new JJ2Level(levelFile, difficulty, checkpoint, multiplayer);
+				baseLevel = jj2Level = new JJ2Level(this, levelFile, checkpoint, multiplayer);
 
 			} catch (int e) {
 
@@ -257,7 +257,7 @@ int Game::play () {
 
 			try {
 
-				baseLevel = level = new Level(levelFile, difficulty, checkpoint, multiplayer);
+				baseLevel = level = new Level(this, levelFile, checkpoint, multiplayer);
 
 			} catch (int e) {
 

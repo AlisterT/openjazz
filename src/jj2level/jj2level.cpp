@@ -53,13 +53,14 @@
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  * @param multi Whether or not the level will be multi-player
  */
-JJ2Level::JJ2Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
+JJ2Level::JJ2Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
+	BaseLevel(owner) {
 
 	int ret;
 
 	// Load level data
 
-	ret = load(fileName, diff, checkpoint);
+	ret = load(fileName, checkpoint);
 
 	if (ret < 0) throw ret;
 

@@ -443,7 +443,7 @@ int Level::loadTiles (char* fileName) {
  *
  * @return Error code
  */
-int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
+int Level::load (char* fileName, bool checkpoint) {
 
 	Anim* pAnims[PANIMS];
 	File* file;
@@ -1089,7 +1089,7 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
 
 	// Set the tick at which the level will end
-	endTime = (5 - diff) * 2 * 60 * 1000;
+	endTime = (5 - game->getDifficulty()) * 2 * 60 * 1000;
 
 
 	events = NULL;

@@ -158,9 +158,9 @@ class Level : public BaseLevel {
 	protected:
 		Font* font; ///< On-screen message font
 
-		Level ();
+		Level (Game* owner);
 
-		int  load (char* fileName, unsigned char diff, bool checkpoint);
+		int  load (char* fileName, bool checkpoint);
 		int  step ();
 		void draw ();
 
@@ -168,7 +168,7 @@ class Level : public BaseLevel {
 		Bullet*   bullets; ///< Active bullets
 		EventPath path[PATHS]; ///< Pre-defined event movement paths
 
-		Level          (char* fileName, unsigned char diff, bool checkpoint, bool multi);
+		Level          (Game* owner, char* fileName, bool checkpoint, bool multi);
 		virtual ~Level ();
 
 		bool          checkMaskUp   (fixed x, fixed y);
@@ -204,7 +204,7 @@ class DemoLevel : public Level {
 		unsigned char* macro; ///< Sequence of player control codes
 
 	public:
-		DemoLevel  (const char* fileName);
+		DemoLevel  (Game* owner, const char* fileName);
 		~DemoLevel ();
 
 		int play   ();

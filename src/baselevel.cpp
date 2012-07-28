@@ -42,7 +42,9 @@
 /**
  * Create a new base level
  */
-BaseLevel::BaseLevel () {
+BaseLevel::BaseLevel (Game* owner) {
+
+	game = owner;
 
 	menuOptions[0] = "continue game";
 	menuOptions[2] = "save game";

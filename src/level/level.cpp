@@ -60,7 +60,7 @@
 /**
  * Base constructor for DemoLevel sub-class.
  */
-Level::Level () {
+Level::Level (Game* owner) : BaseLevel(owner) {
 
 	// Do nothing
 
@@ -77,13 +77,14 @@ Level::Level () {
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  * @param multi Whether or not the level will be multi-player
  */
-Level::Level (char* fileName, unsigned char diff, bool checkpoint, bool multi) {
+Level::Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
+	BaseLevel (owner) {
 
 	int ret;
 
 	// Load level data
 
-	ret = load(fileName, diff, checkpoint);
+	ret = load(fileName, checkpoint);
 
 	if (ret < 0) throw ret;
 
@@ -610,7 +611,7 @@ int Level::playBonus () {
 
 	try {
 
-		baseLevel = bonus = new Bonus(bonusFile, game->getDifficulty(), multiplayer);
+		baseLevel = bonus = new Bonus(game, bonusFile, multiplayer);
 
 	} catch (int e) {
 
@@ -760,6 +761,8 @@ int Level::play () {
 
 		while (getTimeChange() >= 17) {
 
+			bool playerWasAlive = (localPlayer->getLevelPlayer()->getEnergy() != 0);
+
 			// Apply controls to local player
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
@@ -768,6 +771,9 @@ int Level::play () {
 			steps++;
 
 			if (count) return count;
+
+			if (!multiplayer && playerWasAlive && (localPlayer->getLevelPlayer()->getEnergy() == 0))
+				flash(0, 0, 0, T_END << 1);
 
 		}
 

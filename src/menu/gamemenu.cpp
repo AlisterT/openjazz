@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -124,6 +124,8 @@ GameMenu::~GameMenu () {
  * @return Error code
  */
 int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
+
+	Game* game;
 
 	playSound(S_ORB);
 
@@ -585,6 +587,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
  */
 int GameMenu::joinGame () {
 
+	Game* game;
 	int ret;
 
 	ret = textInput("ip address:", netAddress);

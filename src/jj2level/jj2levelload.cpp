@@ -510,7 +510,7 @@ void JJ2Level::createEvent (int x, int y, unsigned char* data) {
 }
 
 
-int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
+int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	Anim* pAnims[2];
 	File *file;
@@ -786,7 +786,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 
 	// Set the tick at which the level will end, though this is not used
-	endTime = (5 - diff) * 2 * 60 * 1000;
+	endTime = (5 - game->getDifficulty()) * 2 * 60 * 1000;
 
 
 	// Adjust panel fonts to use bonus level palette

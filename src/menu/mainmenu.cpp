@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menumain.cpp to mainmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -361,66 +361,80 @@ int MainMenu::main () {
 
 		if (idleTime <= globalTicks) {
 
-			game = new LocalGame("", 0);
+			Game* game = NULL;
 
-			// Load the macro
+			try {
 
-			x = macro;
-			macro = (macro + 1) & 3;
+				game = new LocalGame("", 0);
 
-			while ((macroType[macro] != 0xFF) && (macro != x))
+			} catch (int e) {
+
+				// Do nothing
+
+			}
+
+			if (game) {
+
+				// Load the macro
+
+				x = macro;
 				macro = (macro + 1) & 3;
 
-			if (macro != x) {
+				while ((macroType[macro] != 0xFF) && (macro != x))
+					macro = (macro + 1) & 3;
 
-				fileName = createString(F_MACRO);
-				fileName[6] += macro;
+				if (macro != x) {
 
-				try {
+					fileName = createString(F_MACRO);
+					fileName[6] += macro;
 
-					level = new DemoLevel(fileName);
+					try {
 
-				} catch (int e) {
+						level = new DemoLevel(game, fileName);
+
+					} catch (int e) {
+
+						level = NULL;
+
+					}
+
+					delete[] fileName;
+
+				} else {
 
 					level = NULL;
 
 				}
 
-				delete[] fileName;
 
-			} else {
+				if (level) {
 
-				level = NULL;
+					baseLevel = level;
 
-			}
+					// Play the level
+					if (level->play() == E_QUIT) {
 
+						delete level;
+						delete game;
 
-			if (level) {
+						return E_QUIT;
 
-				baseLevel = level;
-
-				// Play the level
-				if (level->play() == E_QUIT) {
+					}
 
 					delete level;
-					delete game;
-
-					return E_QUIT;
+					baseLevel = level = NULL;
 
 				}
 
-				delete level;
-				baseLevel = level = NULL;
+
+				delete game;
+
+				playMusic("menusng.psm");
+
+				// Restore the main menu palette
+				video.setPalette(palette);
 
 			}
-
-
-			delete game;
-
-			playMusic("menusng.psm");
-
-			// Restore the main menu palette
-			video.setPalette(palette);
 
 			idleTime = globalTicks + T_DEMO;
 

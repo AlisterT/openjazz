@@ -9,7 +9,7 @@
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -280,7 +280,7 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 	if (source && (source->getTeam() == player->team)) return false;
 
 
-	if (game->getMode()->hit(source, player)) {
+	if (player->hit(source)) {
 
 		energy--;
 
@@ -328,7 +328,7 @@ void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != JJ2PR_NONE) return;
 
-	if (game->getMode()->kill(source, player)) {
+	if (player->kill(source)) {
 
 		energy = 0;
 		player->lives--;
@@ -568,7 +568,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 		case 83: // Checkpoint
 
-			game->setCheckpoint(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID));
+			player->setCheckpoint(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID));
 
 			break;
 

@@ -128,7 +128,7 @@ class JJ2Level : public BaseLevel {
 		fixed         waterLevelSpeed; ///< Rate of water level change
 
 		void createEvent (int x, int y, unsigned char* data);
-		int  load        (char* fileName, unsigned char diff, bool checkpoint);
+		int  load        (char* fileName, bool checkpoint);
 		void loadSprite  (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite);
 		int  loadSprites ();
 		int  loadTiles   (char* fileName);
@@ -137,7 +137,7 @@ class JJ2Level : public BaseLevel {
 		void draw        ();
 
 	public:
-		JJ2Level  (char* fileName, unsigned char diff, bool checkpoint, bool multi);
+		JJ2Level  (Game* owner, char* fileName, bool checkpoint, bool multi);
 		~JJ2Level ();
 
 		bool         checkMaskDown (fixed x, fixed y, bool drop);

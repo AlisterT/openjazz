@@ -422,7 +422,7 @@ int ClientGame::step (unsigned int ticks) {
 
 						for (count = nPlayers; count <= recvBuffer[3]; count++) {
 
-							players[count].init((char *)recvBuffer + 9,
+							players[count].init(this, (char *)recvBuffer + 9,
 								recvBuffer + 5, recvBuffer[4]);
 							resetPlayer(players + count, LT_LEVEL, NULL);
 

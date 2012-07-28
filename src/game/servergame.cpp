@@ -10,7 +10,7 @@
  * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -60,7 +60,7 @@ ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficu
 
 	nPlayers = 1;
 	localPlayer = players = new Player[MAX_PLAYERS];
-	localPlayer->init(setup.characterName, setup.characterCols, 0);
+	localPlayer->init(this, setup.characterName, setup.characterCols, 0);
 
 	for (count = 0; count < MAX_CLIENTS; count++)
 		clientPlayer[count] = clientStatus[count] = -1;
@@ -285,7 +285,8 @@ int ServerGame::step (unsigned int ticks) {
 
 							recvBuffers[count][4] = mode->chooseTeam();
 
-							players[nPlayers].init((char *)(recvBuffers[count]) + 9,
+							players[nPlayers].init(this,
+								(char *)(recvBuffers[count]) + 9,
 								recvBuffers[count] + 5, recvBuffers[count][4]);
 							resetPlayer(players + nPlayers, LT_LEVEL, NULL);
 

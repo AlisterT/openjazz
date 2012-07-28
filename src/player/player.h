@@ -11,7 +11,7 @@
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -89,6 +89,7 @@ class JJ2LevelPlayer;
 class Player {
 
 	private:
+		Game*           game;
 		LevelPlayer*    levelPlayer; ///< JJ1 level player
 		BonusPlayer*    bonusPlayer; ///< JJ1 bonus level player
 		JJ2LevelPlayer* jj2LevelPlayer; ///< JJ2 level player
@@ -111,13 +112,14 @@ class Player {
 		Player  ();
 		~Player ();
 
-		void            init              (char* playerName, unsigned char* cols, unsigned char newTeam);
+		void            init              (Game* owner, char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit            ();
 		void            reset             (unsigned char x, unsigned char y);
 		void            reset             (LevelType levelType, Anim** anims, unsigned char x, unsigned char y);
 
 		void            addLife           ();
 		void            addScore          (int addedScore);
+		bool            endOfLevel        (unsigned char gridX, unsigned char gridY);
 		int             getAmmo           (bool amount);
 		BonusPlayer*    getBonusPlayer    ();
 		unsigned char*  getCols           ();
@@ -128,6 +130,9 @@ class Player {
 		char*           getName           ();
 		int             getScore          ();
 		unsigned char   getTeam           ();
+		bool            hit               (Player* source);
+		bool            kill              (Player* source);
+		void            setCheckpoint     (unsigned char gridX, unsigned char gridY);
 		void            setControl        (int control, bool state);
 
 		void            send              (unsigned char* buffer);

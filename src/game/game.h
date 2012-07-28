@@ -187,10 +187,5 @@ class ClientGame : public Game {
 
 };
 
-
-// Variable
-
-EXTERN Game *game; ///< Current game
-
 #endif
 

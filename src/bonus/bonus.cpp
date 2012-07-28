@@ -201,7 +201,7 @@ int Bonus::loadTiles (char *fileName) {
  * @param diff Difficulty level
  * @param multi Whether or not the level will be multi-player
  */
-Bonus::Bonus (char * fileName, unsigned char diff, bool multi) {
+Bonus::Bonus (Game* owner, char * fileName, bool multi) : BaseLevel(owner) {
 
 	Anim* pAnims[BPANIMS];
 	File *file;

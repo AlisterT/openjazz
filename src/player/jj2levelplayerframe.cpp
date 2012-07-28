@@ -10,7 +10,7 @@
  *                 levelplayerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -126,7 +126,7 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 
 			if (!energy) return;
 
-			if (!game->getMode()->endOfLevel(player, FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID))) return;
+			if (!player->endOfLevel(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID))) return;
 
 			break;
 

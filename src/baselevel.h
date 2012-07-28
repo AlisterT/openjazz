@@ -65,6 +65,7 @@ enum LevelStage {
 // Classes
 
 class File;
+class Game;
 class Sprite;
 
 /// Base class for all level classes
@@ -77,6 +78,7 @@ class BaseLevel {
 		int select (bool& menu, int option);
 
 	protected:
+		Game*          game;
 		PaletteEffect* paletteEffects; ///< Palette effects in use while playing the level
 		SDL_Color      palette[256]; ///< Palette in use while playing the level
 		int            sprites; ///< The number of sprite that have been loaded
@@ -101,7 +103,7 @@ class BaseLevel {
 		int  loop          (bool& menu, int& option, bool& message);
 
 	public:
-		BaseLevel          ();
+		BaseLevel          (Game* owner);
 		virtual ~BaseLevel ();
 
 		void         addTimer (int seconds);

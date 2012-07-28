@@ -12,7 +12,7 @@
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -81,10 +81,13 @@ Player::~Player () {
  * @param playerCols Colours (only used in multiplayer games)
  * @param newTeam Team (in multiplayer games)
  */
-void Player::init (char *playerName, unsigned char *playerCols, unsigned char newTeam) {
+void Player::init (Game* owner, char *playerName, unsigned char *playerCols, unsigned char newTeam) {
 
 	// Clear existing player
 	deinit();
+
+	// Assign owner
+	game = owner;
 
 	// Assign name
 	name = createString(playerName);
@@ -395,6 +398,64 @@ int Player::getAmmo (bool amount) {
 unsigned char Player::getTeam () {
 
 	return team;
+
+}
+
+
+/**
+ * Deal with bullet collisions.
+ *
+ * @param source Player that fired the bullet (NULL if an event)
+ *
+ * @return Whether or not the hit was successful
+ */
+bool Player::hit (Player *source) {
+
+	return game->getMode()->hit(source, this);
+
+}
+
+
+/**
+ * Kill the player.
+ *
+ * @param source Player responsible for the kill (NULL if due to an event or time)
+ *
+ * @return Whether or not the kill was successful
+ */
+bool Player::kill (Player *source) {
+
+	return game->getMode()->kill(game, source, this);
+
+}
+
+
+/**
+ * Set the checkpoint
+ *
+ * @param gridX X-coordinate (in tiles) of the checkpoint
+ * @param gridY Y-coordinate (in tiles) of the checkpoint
+ */
+void Player::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+
+	game->setCheckpoint(gridX, gridY);
+
+	return;
+
+}
+
+
+/**
+ * Outcome of level being completed
+ *
+ * @param gridX X-coordinate (in tiles) of finishing position
+ * @param gridY Y-coordinate (in tiles) of finishing position
+ *
+ * @return Whether or not the end-of-level signpost should be destroyed
+ */
+bool Player::endOfLevel (unsigned char gridX, unsigned char gridY) {
+
+	return game->getMode()->endOfLevel(game, this, gridX, gridY);
 
 }
 
