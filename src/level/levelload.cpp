@@ -14,7 +14,7 @@
  * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -455,9 +455,6 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 	unsigned char startX, startY;
 
 
-	difficulty = diff;
-
-
 	// Load font
 
 	try {
@@ -762,28 +759,29 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 	// Fill event set with data
 	for (count = 0; count < EVENTS; count++) {
 
-		eventSet[count].anims[0]     = buffer[(count * ELENGTH) + 5];
-		eventSet[count].anims[1]     = buffer[(count * ELENGTH) + 6];
-		eventSet[count].anims[2]     = buffer[(count * ELENGTH) + 28];
-		eventSet[count].anims[3]     = buffer[(count * ELENGTH) + 29];
-		eventSet[count].anims[4]     = buffer[(count * ELENGTH) + 30];
-		eventSet[count].anims[5]     = buffer[(count * ELENGTH) + 31];
-		eventSet[count].reflection   = buffer[(count * ELENGTH) + 2];
-		eventSet[count].movement     = buffer[(count * ELENGTH) + 4];
-		eventSet[count].magnitude    = buffer[(count * ELENGTH) + 8];
-		eventSet[count].strength     = buffer[(count * ELENGTH) + 9];
-		eventSet[count].modifier     = buffer[(count * ELENGTH) + 10];
-		eventSet[count].points       = buffer[(count * ELENGTH) + 11];
-		eventSet[count].bullet       = buffer[(count * ELENGTH) + 12];
-		eventSet[count].bulletPeriod = buffer[(count * ELENGTH) + 13];
-		eventSet[count].speed        = buffer[(count * ELENGTH) + 15] + 1;
-		eventSet[count].animSpeed    = buffer[(count * ELENGTH) + 17] + 1;
-		eventSet[count].sound        = buffer[(count * ELENGTH) + 21];
-		eventSet[count].multiA       = buffer[(count * ELENGTH) + 22];
-		eventSet[count].multiB       = buffer[(count * ELENGTH) + 23];
-		eventSet[count].pieceSize    = buffer[(count * ELENGTH) + 24];
-		eventSet[count].pieces       = buffer[(count * ELENGTH) + 25];
-		eventSet[count].angle        = buffer[(count * ELENGTH) + 26];
+		eventSet[count].difficulty           = buffer[count * ELENGTH];
+		eventSet[count].reflection           = buffer[(count * ELENGTH) + 2];
+		eventSet[count].movement             = buffer[(count * ELENGTH) + 4];
+		eventSet[count].anims[E_LEFTANIM]    = buffer[(count * ELENGTH) + 5];
+		eventSet[count].anims[E_RIGHTANIM]   = buffer[(count * ELENGTH) + 6];
+		eventSet[count].magnitude            = buffer[(count * ELENGTH) + 8];
+		eventSet[count].strength             = buffer[(count * ELENGTH) + 9];
+		eventSet[count].modifier             = buffer[(count * ELENGTH) + 10];
+		eventSet[count].points               = buffer[(count * ELENGTH) + 11];
+		eventSet[count].bullet               = buffer[(count * ELENGTH) + 12];
+		eventSet[count].bulletPeriod         = buffer[(count * ELENGTH) + 13];
+		eventSet[count].speed                = buffer[(count * ELENGTH) + 15] + 1;
+		eventSet[count].animSpeed            = buffer[(count * ELENGTH) + 17] + 1;
+		eventSet[count].sound                = buffer[(count * ELENGTH) + 21];
+		eventSet[count].multiA               = buffer[(count * ELENGTH) + 22];
+		eventSet[count].multiB               = buffer[(count * ELENGTH) + 23];
+		eventSet[count].pieceSize            = buffer[(count * ELENGTH) + 24];
+		eventSet[count].pieces               = buffer[(count * ELENGTH) + 25];
+		eventSet[count].angle                = buffer[(count * ELENGTH) + 26];
+		eventSet[count].anims[E_LFINISHANIM] = buffer[(count * ELENGTH) + 28];
+		eventSet[count].anims[E_RFINISHANIM] = buffer[(count * ELENGTH) + 29];
+		eventSet[count].anims[E_LSHOOTANIM]  = buffer[(count * ELENGTH) + 30];
+		eventSet[count].anims[E_RSHOOTANIM]  = buffer[(count * ELENGTH) + 31];
 
 	}
 
@@ -798,9 +796,6 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 			type = grid[y][x].event;
 
 			if (type) {
-
-				// Eliminate event references for events of too high a difficulty
-				if (buffer[type * ELENGTH] > difficulty) grid[y][x].event = 0;
 
 				// If the event hurts and can be killed, it is an enemy
 				// Anything else that scores is an item
@@ -1094,7 +1089,7 @@ int Level::load (char* fileName, unsigned char diff, bool checkpoint) {
 
 
 	// Set the tick at which the level will end
-	endTime = (5 - difficulty) * 2 * 60 * 1000;
+	endTime = (5 - diff) * 2 * 60 * 1000;
 
 
 	events = NULL;

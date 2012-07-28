@@ -21,7 +21,7 @@
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -610,7 +610,7 @@ int Level::playBonus () {
 
 	try {
 
-		baseLevel = bonus = new Bonus(bonusFile, difficulty, multiplayer);
+		baseLevel = bonus = new Bonus(bonusFile, game->getDifficulty(), multiplayer);
 
 	} catch (int e) {
 
@@ -692,8 +692,6 @@ void Level::receive (unsigned char* buffer) {
 int Level::play () {
 
 	LevelPlayer* levelPlayer;
-	const char* options[5] =
-		{"continue game", "save game", "load game", "setup options", "quit game"};
 	char *string;
 	bool pmessage, pmenu;
 	int option;
@@ -784,10 +782,6 @@ int Level::play () {
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 
-		// Draw statistics
-		drawStats(LEVEL_BLACK);
-
-
 		if (stage == LS_END) {
 
 			// The level is over, so draw play statistics & bonuses
@@ -859,24 +853,8 @@ int Level::play () {
 		}
 
 
-		if (pmenu) {
-
-			// Draw the menu
-
-			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, LEVEL_BLACK);
-
-			for (count = 0; count < 5; count++) {
-
-				if (count == option) fontmn2->mapPalette(240, 8, 47, -16);
-				else fontmn2->mapPalette(240, 8, 15, -16);
-
-				fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 38);
-
-			}
-
-			fontmn2->restorePalette();
-
-		}
+		// Draw statistics, menu etc.
+		drawOverlay(LEVEL_BLACK, pmenu, option, 15, 47, -16);
 
 	}
 

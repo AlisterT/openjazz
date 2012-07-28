@@ -11,7 +11,7 @@
  * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -398,8 +398,6 @@ void JJ2Level::receive (unsigned char* buffer) {
 int JJ2Level::play () {
 
 	JJ2LevelPlayer* jj2LevelPlayer;
-	const char* options[5] =
-		{"continue game", "save game", "load game", "setup options", "quit game"};
 	bool pmessage, pmenu;
 	int option;
 	unsigned int returnTime;
@@ -466,10 +464,6 @@ int JJ2Level::play () {
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
 
-		// Draw statistics
-		drawStats(JJ2_BLACK);
-
-
 		if (stage == LS_END) {
 
 			// The level is over, so draw gem counts
@@ -495,24 +489,8 @@ int JJ2Level::play () {
 		}
 
 
-		if (pmenu) {
-
-			// Draw the menu
-
-			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, JJ2_BLACK);
-
-			for (count = 0; count < 5; count++) {
-
-				if (count == option) fontmn2->mapPalette(240, 8, 31, -8);
-				else fontmn2->mapPalette(240, 8, 71, -8);
-
-				fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 38);
-
-			}
-
-			fontmn2->restorePalette();
-
-		}
+		// Draw statistics, menu etc.
+		drawOverlay(JJ2_BLACK, pmenu, option, 71, 31, -8);
 
 	}
 

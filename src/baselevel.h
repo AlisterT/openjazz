@@ -9,7 +9,7 @@
  * 30th March 2010: Created baselevel.h from parts of level.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -71,6 +71,7 @@ class Sprite;
 class BaseLevel {
 
 	private:
+		char*     menuOptions[6];
 		SetupMenu setupMenu; ///< Setup menu to run on the player's command
 
 		int select (bool& menu, int option);
@@ -94,7 +95,9 @@ class BaseLevel {
 		int  playScene     (char* file);
 		void timeCalcs     ();
 		int  getTimeChange ();
-		void drawStats     (unsigned char bg);
+		void drawOverlay   (unsigned char bg, bool menu, int option,
+			unsigned char textPalIndex, unsigned char selectedTextPalIndex,
+			int textPalSpan);
 		int  loop          (bool& menu, int& option, bool& message);
 
 	public:

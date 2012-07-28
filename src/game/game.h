@@ -11,7 +11,7 @@
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -104,6 +104,8 @@ class Game {
 		virtual ~Game ();
 
 		GameMode*    getMode       ();
+		int          getDifficulty ();
+		void         setDifficulty (int diff);
 		virtual int  setLevel      (char *fileName) = 0;
 		int          play          ();
 		void         view          (int change);

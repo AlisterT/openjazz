@@ -12,7 +12,7 @@
  * 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -63,7 +63,8 @@ int Level::step () {
 		for (x = FTOT(viewX) - 5; x < ITOT(FTOI(viewX) + viewW) + 5; x++) {
 
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
-				grid[y][x].event && (grid[y][x].event < 121)) {
+				grid[y][x].event && (grid[y][x].event < 121) &&
+				(eventSet[grid[y][x].event].difficulty <= game->getDifficulty())) {
 
 				event = events;
 
@@ -145,7 +146,7 @@ int Level::step () {
 
 		} else {
 
-			if ((difficulty >= 2) && (stage == LS_NORMAL))
+			if ((game->getDifficulty() >= 2) && (stage == LS_NORMAL))
 				localPlayer->getLevelPlayer()->kill(NULL, endTime);
 
 		}

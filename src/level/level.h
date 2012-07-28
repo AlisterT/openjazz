@@ -13,7 +13,7 @@
  * 29th June 2010: Created jj2level.h from parts of level.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -79,6 +79,7 @@ typedef struct {
 typedef struct {
 
 	unsigned char anims[6]; ///< Indices of animations
+	signed char   difficulty; ///< The minimum difficulty level at which the event is used
 	signed char   reflection; ///< Whether or not to show a reflection
 	signed char   movement; ///< Movement type
 	signed char   magnitude; ///< Usage depends on event type
@@ -141,7 +142,6 @@ class Level : public BaseLevel {
 		int           worldNum; ///< Number of current world
 		int           nextLevelNum; ///< Number of next level
 		int           nextWorldNum; ///< Number of next world
-		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo)
 		int           enemies; ///< Number of enemies to kill
 		fixed         waterLevel; ///< Height of water
 		fixed         waterLevelTarget; ///< Future height of water

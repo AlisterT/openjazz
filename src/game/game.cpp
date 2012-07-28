@@ -13,7 +13,7 @@
  * 3rd October 2010: Created localgame.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -115,6 +115,30 @@ GameMode* Game::createMode (GameModeType modeType) {
 GameMode* Game::getMode () {
 
 	return mode;
+
+}
+
+
+/**
+ * Get the game's difficulty
+ *
+ * @return The game's difficulty
+ */
+int Game::getDifficulty () {
+
+	return difficulty;
+
+}
+
+
+/**
+ * Set the game's difficulty
+ */
+void Game::setDifficulty (int diff) {
+
+	difficulty = diff;
+
+	return;
 
 }
 

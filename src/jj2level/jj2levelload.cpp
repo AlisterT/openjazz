@@ -10,7 +10,7 @@
  * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -542,9 +542,6 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 	}
 
 
-	difficulty = diff;
-
-
 	// Open JJ2 level file
 
 	try {
@@ -789,7 +786,7 @@ int JJ2Level::load (char *fileName, unsigned char diff, bool checkpoint) {
 
 
 	// Set the tick at which the level will end, though this is not used
-	endTime = (5 - difficulty) * 2 * 60 * 1000;
+	endTime = (5 - diff) * 2 * 60 * 1000;
 
 
 	// Adjust panel fonts to use bonus level palette

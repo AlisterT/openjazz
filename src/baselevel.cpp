@@ -10,7 +10,7 @@
  *                  levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -43,6 +43,12 @@
  * Create a new base level
  */
 BaseLevel::BaseLevel () {
+
+	menuOptions[0] = "continue game";
+	menuOptions[2] = "save game";
+	menuOptions[3] = "load game";
+	menuOptions[4] = "setup options";
+	menuOptions[5] = "quit game";
 
 	// Arbitrary initial value
 	smoothfps = 50.0f;
@@ -170,12 +176,17 @@ int BaseLevel::getTimeChange () {
 
 
 /**
- * Display on-screen statistics.
+ * Display menu (if visible) and statistics.
  *
- * @param bg Palette index of the statistics box(es)
+ * @param bg Palette index of the box(es)
+ * @param menu Whether or not the level menu should be displayed
+ * @param option Selected menu uption
  */
-void BaseLevel::drawStats (unsigned char bg) {
+void BaseLevel::drawOverlay (unsigned char bg, bool menu, int option,
+	unsigned char textPalIndex, unsigned char selectedTextPalIndex,
+	int textPalSpan) {
 
+	char* difficultyOptions[4] = {"easy", "medium", "hard", "turbo"};
 	int count, width;
 
 	// Draw graphics statistics
@@ -232,6 +243,28 @@ void BaseLevel::drawStats (unsigned char bg) {
 
 	}
 
+
+	if (menu) {
+
+		// Draw the menu
+
+		drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 54, 144, 108, bg);
+
+		menuOptions[1] = difficultyOptions[game->getDifficulty()];
+
+		for (count = 0; count < 6; count++) {
+
+			if (count == option) fontmn2->mapPalette(240, 8, selectedTextPalIndex, textPalSpan);
+			else fontmn2->mapPalette(240, 8, textPalIndex, textPalSpan);
+
+			fontmn2->showString(menuOptions[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 46);
+
+		}
+
+		fontmn2->restorePalette();
+
+	}
+
 	return;
 
 }
@@ -254,15 +287,21 @@ int BaseLevel::select (bool& menu, int option) {
 
 			menu = false;
 
-		case 1: // Save
+		case 1: // Change difficulty
+
+			game->setDifficulty((game->getDifficulty() + 1) & 3);
 
 			break;
 
-		case 2: // Load
+		case 2: // Save
 
 			break;
 
-		case 3: // Setup
+		case 3: // Load
+
+			break;
+
+		case 4: // Setup
 
 			if (!multiplayer) {
 
@@ -280,7 +319,7 @@ int BaseLevel::select (bool& menu, int option) {
 
 			break;
 
-		case 4: // Quit game
+		case 5: // Quit game
 
 			return E_NONE;
 
@@ -351,9 +390,9 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
 
 		// Deal with menu controls
 
-		if (controls.release(C_UP)) option = (option + 4) % 5;
+		if (controls.release(C_UP)) option = (option + 5) % 6;
 
-		if (controls.release(C_DOWN)) option = (option + 1) % 5;
+		if (controls.release(C_DOWN)) option = (option + 1) % 6;
 
 		if (controls.release(C_ENTER)) {
 

@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed bonus.c to bonus.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -757,8 +757,6 @@ void Bonus::draw () {
  */
 int Bonus::play () {
 
-	const char* options[5] =
-		{"continue game", "save game", "load game", "setup options", "quit game"};
 	bool pmenu, pmessage;
 	int option;
 	unsigned int returnTime;
@@ -829,28 +827,9 @@ int Bonus::play () {
 		if (pmessage && !pmenu)
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
-		// Draw statistics
-		drawStats(0);
 
-		// Draw the menu
-		if (pmenu) {
-
-			// Draw the menu
-
-			drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 46, 144, 92, 0);
-
-			for (count = 0; count < 5; count++) {
-
-				if (count == option) fontmn2->mapPalette(240, 8, 31, 16);
-				else fontmn2->mapPalette(240, 8, 0, 16);
-
-				fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 38);
-
-			}
-
-			fontmn2->restorePalette();
-
-		}
+		// Draw statistics, menu etc.
+		drawOverlay(0, pmenu, option, 0, 31, 16);
 
 	}
 

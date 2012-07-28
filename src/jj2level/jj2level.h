@@ -10,7 +10,7 @@
  * 2nd July 2010: Created jj2event.h from parts of jj2level.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -123,7 +123,6 @@ class JJ2Level : public BaseLevel {
 		JJ2Modifier** mods; ///< Modifier events for each tile in layer 4
 		int           nAnimSets; ///< Number of animation sets
 		bool          TSF; ///< 1.24 level
-		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 or 3 = hard)
 		fixed         waterLevel; ///< Height of water
 		fixed         waterLevelTarget; ///< Future height of water
 		fixed         waterLevelSpeed; ///< Rate of water level change

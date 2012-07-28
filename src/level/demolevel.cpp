@@ -10,7 +10,7 @@
  *                 levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -182,7 +182,7 @@ int DemoLevel::play () {
 		// Draw the graphics
 
 		draw();
-		drawStats(LEVEL_BLACK);
+		drawOverlay(LEVEL_BLACK, false, 0, 0, 0, 0);
 
 
 		font->showString("demo", (canvasW >> 1) - 36, 32);
