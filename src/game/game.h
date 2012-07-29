@@ -87,8 +87,12 @@ class File;
 /// Base class for game handling classes
 class Game {
 
+	private:
+		int planetId; ///< ID of last planet approach sequence
+
 	protected:
 		GameMode*      mode; ///< Mode-specific management
+		BaseLevel*     baseLevel; ///< Current level
 		char*          levelFile; ///< Current level's file name
 		int            difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 		unsigned int   sendTime; ///< The next time data will be sent
@@ -106,6 +110,7 @@ class Game {
 		GameMode*    getMode       ();
 		int          getDifficulty ();
 		void         setDifficulty (int diff);
+		int          playLevel     (char *fileName, bool intro, bool checkpoint);
 		virtual int  setLevel      (char *fileName) = 0;
 		int          play          ();
 		void         view          (int change);

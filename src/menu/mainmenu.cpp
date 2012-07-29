@@ -29,12 +29,9 @@
 #include "plasma.h"
 
 #include "game/game.h"
-#include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "level/level.h"
-#include "player/player.h"
 #include "scene/scene.h"
 #include "loop.h"
 #include "util.h"
@@ -388,41 +385,16 @@ int MainMenu::main () {
 					fileName = createString(F_MACRO);
 					fileName[6] += macro;
 
-					try {
+					if (game->playLevel(fileName, false, false) == E_QUIT) {
 
-						level = new DemoLevel(game, fileName);
-
-					} catch (int e) {
-
-						level = NULL;
-
-					}
-
-					delete[] fileName;
-
-				} else {
-
-					level = NULL;
-
-				}
-
-
-				if (level) {
-
-					baseLevel = level;
-
-					// Play the level
-					if (level->play() == E_QUIT) {
-
-						delete level;
+						delete[] fileName;
 						delete game;
 
 						return E_QUIT;
 
 					}
 
-					delete level;
-					baseLevel = level = NULL;
+					delete[] fileName;
 
 				}
 

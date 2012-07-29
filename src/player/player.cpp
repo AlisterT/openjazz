@@ -451,7 +451,7 @@ void Player::setCheckpoint (unsigned char gridX, unsigned char gridY) {
  * @param gridX X-coordinate (in tiles) of finishing position
  * @param gridY Y-coordinate (in tiles) of finishing position
  *
- * @return Whether or not the end-of-level signpost should be destroyed
+ * @return Whether or not the level should end
  */
 bool Player::endOfLevel (unsigned char gridX, unsigned char gridY) {
 

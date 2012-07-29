@@ -25,7 +25,6 @@
 #define _BASELEVEL_H
 
 
-#include "io/gfx/paletteeffects.h"
 #include "menu/menu.h"
 
 
@@ -66,6 +65,7 @@ enum LevelStage {
 
 class File;
 class Game;
+class PaletteEffect;
 class Sprite;
 
 /// Base class for all level classes
@@ -116,7 +116,6 @@ class BaseLevel {
 
 // Variables
 
-EXTERN BaseLevel* baseLevel; ///< Current level
 EXTERN fixed      viewX, viewY; ///< Level viewing co-ordinates
 
 #endif

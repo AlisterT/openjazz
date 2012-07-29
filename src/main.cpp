@@ -13,7 +13,7 @@
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -31,7 +31,6 @@
 #define EXTERN
 
 #include "game/game.h"
-#include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/file.h"
 #include "io/gfx/font.h"
@@ -374,7 +373,6 @@ int loadMain (int argc, char *argv[]) {
 	net = new Network();
 
 
-	baseLevel = NULL;
 	level = NULL;
 	jj2Level = NULL;
 

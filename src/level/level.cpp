@@ -40,7 +40,6 @@
 #include "event/event.h"
 #include "level.h"
 
-#include "bonus/bonus.h"
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
@@ -598,7 +597,6 @@ void Level::flash (unsigned char red, unsigned char green, unsigned char blue, i
  */
 int Level::playBonus () {
 
-	Bonus *bonus;
 	char *bonusFile;
 	int ret;
 
@@ -609,22 +607,10 @@ int Level::playBonus () {
 
 	bonusFile = createFileName(F_BONUSMAP, 0);
 
-	try {
-
-		baseLevel = bonus = new Bonus(game, bonusFile, multiplayer);
-
-	} catch (int e) {
-
-		return e;
-
-	}
+	// If the gem has been collected, play the bonus level
+	ret = game->playLevel(bonusFile, false, false);
 
 	delete[] bonusFile;
-
-	ret = bonus->play();
-
-	delete bonus;
-	baseLevel = NULL;
 
 	if (ret == E_NONE) playMusic("menusng.psm");
 

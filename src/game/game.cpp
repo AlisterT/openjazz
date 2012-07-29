@@ -48,6 +48,7 @@ Game::Game () {
 	levelFile = NULL;
 
 	players = NULL;
+	baseLevel = NULL;
 
 	return;
 
@@ -144,6 +145,135 @@ void Game::setDifficulty (int diff) {
 
 
 /**
+ * Play a level.
+ *
+ * @return Error code
+ */
+int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
+
+	bool multiplayer;
+	int ret;
+
+	multiplayer = (mode->getMode() != M_SINGLE);
+
+	// Load and play the level
+
+	if (!strncasecmp(fileName, F_BONUSMAP, 8)) {
+
+		Bonus *bonus;
+
+		try {
+
+			baseLevel = bonus = new Bonus(this, fileName, multiplayer);
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		ret = bonus->play();
+
+		delete bonus;
+		baseLevel = NULL;
+
+	} else if (!strncasecmp(fileName, "MACRO", 5)) {
+
+		try {
+
+			baseLevel = level = new DemoLevel(this, fileName);
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		ret = level->play();
+
+		delete level;
+		baseLevel = level = NULL;
+
+	} else if (!strcasecmp(fileName + strlen(fileName) - 4, ".j2l")) {
+
+		try {
+
+			baseLevel = jj2Level = new JJ2Level(this, fileName, checkpoint, multiplayer);
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		ret = jj2Level->play();
+
+		delete jj2Level;
+		baseLevel = jj2Level = NULL;
+
+	} else {
+
+		try {
+
+			baseLevel = level = new Level(this, fileName, checkpoint, multiplayer);
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		if (intro) {
+
+			Planet *planet;
+			char *planetFileName = NULL;
+
+			planetFileName = createFileName(F_PLANET, level->getWorld());
+
+			try {
+
+				planet = new Planet(planetFileName, planetId);
+
+			} catch (int e) {
+
+				planet = NULL;
+
+			}
+
+			delete[] planetFileName;
+
+			if (planet) {
+
+				if (planet->play() == E_QUIT) {
+
+					delete planet;
+					delete level;
+
+					return E_QUIT;
+
+				}
+
+				planetId = planet->getId();
+
+				delete planet;
+
+			}
+
+		}
+
+		ret = level->play();
+
+		delete level;
+		baseLevel = level = NULL;
+
+	}
+
+	return ret;
+
+}
+
+
+/**
  * Play the game
  *
  * @return Error code
@@ -153,7 +283,6 @@ int Game::play () {
 	bool multiplayer;
 	bool checkpoint;
 	int ret;
-	int planetId;
 
 	multiplayer = (mode->getMode() != M_SINGLE);
 	checkpoint = false;
@@ -166,35 +295,21 @@ int Game::play () {
 
 		sendTime = checkTime = 0;
 
-
 		// Load and play the level
+
+		ret = playLevel(levelFile, !multiplayer, checkpoint);
+
+		if (ret <= 0) {
+
+			if (ret == E_NONE) playMusic("menusng.psm");
+
+			return ret;
+
+		}
 
 		if (!strncasecmp(levelFile, F_BONUSMAP, 8)) {
 
-			Bonus* bonus;
-
-			try {
-
-				baseLevel = bonus = new Bonus(this, levelFile, multiplayer);
-
-			} catch (int e) {
-
-				return e;
-
-			}
-
-			ret = bonus->play();
-
-			if (ret <= 0) {
-
-				delete bonus;
-				baseLevel = NULL;
-
-				if (ret == E_NONE) playMusic("menusng.psm");
-
-				return ret;
-
-			} else if (ret == WON) {
+			if (ret == WON) {
 
 				char *fileName;
 
@@ -205,116 +320,9 @@ int Game::play () {
 
 			}
 
-			delete bonus;
-			baseLevel = NULL;
-
-		} else if (!strcasecmp(levelFile + strlen(levelFile) - 4, ".j2l")) {
-
-			try {
-
-				baseLevel = jj2Level = new JJ2Level(this, levelFile, checkpoint, multiplayer);
-
-			} catch (int e) {
-
-				return e;
-
-			}
-
-			ret = jj2Level->play();
-
-			if (ret <= 0) {
-
-				delete jj2Level;
-				baseLevel = jj2Level = NULL;
-
-				if (ret == E_NONE) playMusic("menusng.psm");
-
-				return ret;
-
-			} else if (ret == WON) {
-
-				// Won the level
-
-				// Do not use old level's checkpoint coordinates
-				checkpoint = false;
-
-			} else {
-
-				// Lost the level
-
-				if (!localPlayer->getLives()) return E_NONE;
-
-				// Use checkpoint coordinates
-				checkpoint = true;
-
-
-			}
-
-			delete jj2Level;
-			baseLevel = jj2Level = NULL;
-
 		} else {
 
-			try {
-
-				baseLevel = level = new Level(this, levelFile, checkpoint, multiplayer);
-
-			} catch (int e) {
-
-				return e;
-
-			}
-
-			if (!multiplayer) {
-
-				Planet *planet;
-				char *fileName = NULL;
-
-				fileName = createFileName(F_PLANET, level->getWorld());
-
-				try {
-
-					planet = new Planet(fileName, planetId);
-
-				} catch (int e) {
-
-					planet = NULL;
-
-				}
-
-				delete[] fileName;
-
-				if (planet) {
-
-					if (planet->play() == E_QUIT) {
-
-						delete planet;
-						delete level;
-
-						return E_QUIT;
-
-					}
-
-					planetId = planet->getId();
-
-					delete planet;
-
-				}
-
-			}
-
-			ret = level->play();
-
-			if (ret <= 0) {
-
-				delete level;
-				baseLevel = level = NULL;
-
-				if (ret == E_NONE) playMusic("menusng.psm");
-
-				return ret;
-
-			} else if (ret == WON) {
+			if (ret == WON) {
 
 				// Won the level
 
@@ -330,11 +338,7 @@ int Game::play () {
 				// Use checkpoint coordinates
 				checkpoint = true;
 
-
 			}
-
-			delete level;
-			baseLevel = level = NULL;
 
 		}
 

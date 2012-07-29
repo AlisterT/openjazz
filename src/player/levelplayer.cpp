@@ -495,6 +495,8 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 			if (!player->endOfLevel(gridX, gridY)) return false;
 
+			level->setStage(LS_END);
+
 			break;
 
 		case 0: // Enemy

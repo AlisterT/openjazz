@@ -25,8 +25,7 @@
 #include "gamemode.h"
 
 #include "io/gfx/font.h"
-#include "level/level.h"
-#include "player/levelplayer.h"
+#include "player/player.h"
 
 
 /**
@@ -68,13 +67,11 @@ bool GameMode::kill (Game* game, Player *source, Player *victim) {
  * @param gridX X-coordinate (in tiles) of finishing position
  * @param gridY Y-coordinate (in tiles) of finishing position
  *
- * @return Whether or not the end-of-level signpost should be destroyed (true)
+ * @return Whether or not the level should end (true)
  */
 bool GameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
 
 	game->setCheckpoint(gridX, gridY);
-
-	baseLevel->setStage(LS_END);
 
 	return true;
 
@@ -311,7 +308,7 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
  * @param gridX X-coordinate (in tiles) of finishing position
  * @param gridY Y-coordinate (in tiles) of finishing position
  *
- * @return Whether or not the end-of-level signpost should be destroyed (false)
+ * @return Whether or not the level should end (false)
  */
 bool RaceGameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
 

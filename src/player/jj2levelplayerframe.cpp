@@ -27,8 +27,6 @@
 
 #include "jj2levelplayer.h"
 
-#include "game/game.h"
-#include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
@@ -127,6 +125,8 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 			if (!energy) return;
 
 			if (!player->endOfLevel(FTOT(x + JJ2PXO_MID), FTOT(y + JJ2PYO_MID))) return;
+
+			jj2Level->setStage(LS_END);
 
 			break;
 
