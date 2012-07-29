@@ -307,7 +307,7 @@ int Game::play () {
 
 		}
 
-		if (!strncasecmp(levelFile, F_BONUSMAP, 8)) {
+		if (levelFile && !strncasecmp(levelFile, F_BONUSMAP, 8)) {
 
 			if (ret == WON) {
 

@@ -291,7 +291,7 @@ int BaseLevel::select (bool& menu, int option) {
 
 		case 1: // Change difficulty
 
-			game->setDifficulty((game->getDifficulty() + 1) & 3);
+			if (!multiplayer) game->setDifficulty((game->getDifficulty() + 1) & 3);
 
 			break;
 

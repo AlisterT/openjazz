@@ -718,7 +718,9 @@ int Level::play () {
 			if (!multiplayer) {
 
 				// If the gem has been collected, play the bonus level
-				if (playBonus() == E_QUIT) return E_QUIT;
+				count = playBonus();
+
+				if (count <= 0) return count;
 
 			}
 
