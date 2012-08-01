@@ -160,11 +160,11 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 	if (!strncasecmp(fileName, F_BONUSMAP, 8)) {
 
-		Bonus *bonus;
+		JJ1BonusLevel *bonus;
 
 		try {
 
-			baseLevel = bonus = new Bonus(this, fileName, multiplayer);
+			baseLevel = bonus = new JJ1BonusLevel(this, fileName, multiplayer);
 
 		} catch (int e) {
 
@@ -181,7 +181,7 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 		try {
 
-			baseLevel = level = new DemoLevel(this, fileName);
+			baseLevel = level = new JJ1DemoLevel(this, fileName);
 
 		} catch (int e) {
 
@@ -215,7 +215,7 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 		try {
 
-			baseLevel = level = new Level(this, fileName, checkpoint, multiplayer);
+			baseLevel = level = new JJ1Level(this, fileName, checkpoint, multiplayer);
 
 		} catch (int e) {
 
@@ -225,14 +225,14 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 		if (intro) {
 
-			Planet *planet;
+			JJ1Planet *planet;
 			char *planetFileName = NULL;
 
 			planetFileName = createFileName(F_PLANET, level->getWorld());
 
 			try {
 
-				planet = new Planet(planetFileName, planetId);
+				planet = new JJ1Planet(planetFileName, planetId);
 
 			} catch (int e) {
 

@@ -9,7 +9,7 @@
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -67,10 +67,10 @@
 // Classes
 
 class Anim;
-class Bonus;
+class JJ1BonusLevel;
 
 /// JJ1 bonus level player
-class BonusPlayer {
+class JJ1BonusLevelPlayer {
 
 	private:
 		SDL_Color     palette[256]; ///< Palette (for custom colours)
@@ -89,8 +89,8 @@ class BonusPlayer {
 	public:
 		Player* player; ///< Corresponding game player
 
-		BonusPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY);
-		~BonusPlayer ();
+		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY);
+		~JJ1BonusLevelPlayer ();
 
 		void          addGem       ();
 		fixed         getDirection ();
@@ -99,7 +99,7 @@ class BonusPlayer {
 		fixed         getY         ();
 		fixed         getZ         ();
 
-		void          step         (unsigned int ticks, int msps, Bonus* bonus);
+		void          step         (unsigned int ticks, int msps, JJ1BonusLevel* bonus);
 		void          draw         (unsigned int ticks);
 
 };

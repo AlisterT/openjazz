@@ -54,7 +54,7 @@
  * @param multi Whether or not the level will be multi-player
  */
 JJ2Level::JJ2Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
-	BaseLevel(owner) {
+	Level(owner) {
 
 	int ret;
 

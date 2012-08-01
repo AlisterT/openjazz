@@ -43,7 +43,7 @@
  *
  * @param fileName Name of the file containing the macro data.
  */
-DemoLevel::DemoLevel (Game* owner, const char* fileName) : Level(owner) {
+JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner) {
 
 	File* file;
 	char* levelFile;
@@ -90,7 +90,7 @@ DemoLevel::DemoLevel (Game* owner, const char* fileName) : Level(owner) {
 /**
  * Delete the JJ1 demo level.
  */
-DemoLevel::~DemoLevel () {
+JJ1DemoLevel::~JJ1DemoLevel () {
 
 	delete[] macro;
 
@@ -104,7 +104,7 @@ DemoLevel::~DemoLevel () {
  *
  * @return Error code
  */
-int DemoLevel::play () {
+int JJ1DemoLevel::play () {
 
 	unsigned char macroPoint;
 	int ret;
@@ -176,7 +176,7 @@ int DemoLevel::play () {
 
 
 		// Handle player reactions
-		if (localPlayer->getLevelPlayer()->reacted(ticks) == PR_KILLED) return LOST;
+		if (localPlayer->getJJ1LevelPlayer()->reacted(ticks) == PR_KILLED) return LOST;
 
 
 		// Draw the graphics

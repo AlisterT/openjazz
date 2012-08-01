@@ -46,9 +46,9 @@
  *
  * @return Error code
  */
-int Level::step () {
+int JJ1Level::step () {
 
-	Event *event;
+	JJ1Event *event;
 	int x, y;
 	int msps;
 
@@ -84,7 +84,7 @@ int Level::step () {
 
 						case 28:
 
-							events = new Bridge(x, y);
+							events = new JJ1Bridge(x, y);
 
 							break;
 
@@ -102,7 +102,7 @@ int Level::step () {
 
 						default:
 
-							events = new StandardEvent(x, y);
+							events = new JJ1StandardEvent(x, y);
 
 							break;
 
@@ -118,7 +118,7 @@ int Level::step () {
 
 
 	// Determine the players' trajectories
-	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->control(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->control(ticks, msps);
 
 
 	// Process active events
@@ -133,7 +133,7 @@ int Level::step () {
 
 	// Apply as much of those trajectories as possible, without going into the
 	// scenery
-	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->move(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->move(ticks, msps);
 
 
 
@@ -147,7 +147,7 @@ int Level::step () {
 		} else {
 
 			if ((game->getDifficulty() >= 2) && (stage == LS_NORMAL))
-				localPlayer->getLevelPlayer()->kill(NULL, endTime);
+				localPlayer->getJJ1LevelPlayer()->kill(NULL, endTime);
 
 		}
 
@@ -165,7 +165,7 @@ int Level::step () {
 	// Handle player reactions
 	for (x = 0; x < nPlayers; x++) {
 
-		if (players[x].getLevelPlayer()->reacted(ticks) == PR_KILLED) {
+		if (players[x].getJJ1LevelPlayer()->reacted(ticks) == PR_KILLED) {
 
 			if (!multiplayer) return LOST;
 
@@ -185,7 +185,7 @@ int Level::step () {
 /**
  * Draw the level.
  */
-void Level::draw () {
+void JJ1Level::draw () {
 
 	GridElement *ge;
 	SDL_Rect src, dst;
@@ -196,7 +196,7 @@ void Level::draw () {
 
 	// Calculate viewport
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
-	else localPlayer->getLevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
+	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
 
 	// Ensure the new viewport is within the level
 	if (viewX < 0) viewX = 0;
@@ -290,7 +290,7 @@ void Level::draw () {
 
 
 	// Show the players
-	for (x = 0; x < nPlayers; x++) players[x].getLevelPlayer()->draw(ticks, change);
+	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->draw(ticks, change);
 
 
 	// Show bullets
@@ -406,7 +406,7 @@ void Level::draw () {
 	// Draw the health bar
 
 	dst.x = 20;
-	x = localPlayer->getLevelPlayer()->getEnergy();
+	x = localPlayer->getJJ1LevelPlayer()->getEnergy();
 	y = (ticks - prevTicks) * 40;
 
 	if (FTOI(energyBar) < (x << 4)) {

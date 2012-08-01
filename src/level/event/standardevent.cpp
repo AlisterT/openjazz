@@ -13,7 +13,7 @@
  * 5th February 2011: Renamed eventframe.cpp to standardevent.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -46,7 +46,7 @@
  * @param gX X-coordinate
  * @param gY Y-coordinate
  */
-StandardEvent::StandardEvent (unsigned char gX, unsigned char gY) : Event(gX, gY) {
+JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 
 	node = 0;
 	onlyLAnimOffset = false;
@@ -105,9 +105,9 @@ StandardEvent::StandardEvent (unsigned char gX, unsigned char gY) : Event(gX, gY
  * @param ticks Time
  * @param msps Ticks per step
  */
-void StandardEvent::move (unsigned int ticks, int msps) {
+void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
-	LevelPlayer* levelPlayer;
+	JJ1LevelPlayer* levelPlayer;
 	fixed width, height;
 	int count;
 	int length;
@@ -124,7 +124,7 @@ void StandardEvent::move (unsigned int ticks, int msps) {
 	}
 
 
-	levelPlayer = localPlayer->getLevelPlayer();
+	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
 	// Find dimensions
 	width = getWidth();
@@ -493,10 +493,10 @@ void StandardEvent::move (unsigned int ticks, int msps) {
 
 			for (count = 0; count < nPlayers; count++) {
 
-				if (players[count].getLevelPlayer()->overlap(x + F8, y + F4 - height, width - F16,
+				if (players[count].getJJ1LevelPlayer()->overlap(x + F8, y + F4 - height, width - F16,
 					height - F8)) {
 
-					players[count].getLevelPlayer()->setSpeed(
+					players[count].getJJ1LevelPlayer()->setSpeed(
 						set->multiB? set->magnitude * F4: set->magnitude * F40,
 						set->multiB? set->multiA * -F20: 0);
 
@@ -599,9 +599,9 @@ void StandardEvent::move (unsigned int ticks, int msps) {
  *
  * @return Remaining event
  */
-Event* StandardEvent::step (unsigned int ticks, int msps) {
+JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
-	LevelPlayer* levelPlayer;
+	JJ1LevelPlayer* levelPlayer;
 	fixed width, height;
 	int count;
 
@@ -611,7 +611,7 @@ Event* StandardEvent::step (unsigned int ticks, int msps) {
 	if (!set) return remove();
 
 
-	levelPlayer = localPlayer->getLevelPlayer();
+	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
 	// Find dimensions
 	width = getWidth();
@@ -923,7 +923,7 @@ Event* StandardEvent::step (unsigned int ticks, int msps) {
 
 			if ((set->bullet < 32) &&
 				(level->getBullet(set->bullet)[B_SPRITE | (animType & 1)] != 0))
-				level->bullets = new Bullet(
+				level->bullets = new JJ1Bullet(
 					x + getAnim()->getShootX(),
 					y + getAnim()->getShootY() - F4,
 					set->bullet, (animType & 1)? true: false, ticks);
@@ -948,7 +948,7 @@ Event* StandardEvent::step (unsigned int ticks, int msps) {
 
 	for (count = 0; count < nPlayers; count++) {
 
-		levelPlayer = players[count].getLevelPlayer();
+		levelPlayer = players[count].getJJ1LevelPlayer();
 
 		// Check if the player is touching the event
 
@@ -999,7 +999,7 @@ Event* StandardEvent::step (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param change Time since last iteration
  */
-void StandardEvent::draw (unsigned int ticks, int change) {
+void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
 	unsigned char frame;

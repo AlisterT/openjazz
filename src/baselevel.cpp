@@ -42,7 +42,7 @@
 /**
  * Create a new base level
  */
-BaseLevel::BaseLevel (Game* owner) {
+Level::Level (Game* owner) {
 
 	game = owner;
 
@@ -72,7 +72,7 @@ BaseLevel::BaseLevel (Game* owner) {
 /**
  * Destroy base level
  */
-BaseLevel::~BaseLevel () {
+Level::~Level () {
 
 	stopMusic();
 
@@ -90,9 +90,9 @@ BaseLevel::~BaseLevel () {
  *
  * @return Error code
  */
-int BaseLevel::playScene (char* file) {
+int Level::playScene (char* file) {
 
-	Scene* scene;
+	JJ1Scene* scene;
 	int ret;
 
 	delete paletteEffects;
@@ -100,7 +100,7 @@ int BaseLevel::playScene (char* file) {
 
 	try {
 
-		scene = new Scene(file);
+		scene = new JJ1Scene(file);
 
 	} catch (int e) {
 
@@ -120,7 +120,7 @@ int BaseLevel::playScene (char* file) {
 /**
  * Perform timing calculations.
  */
-void BaseLevel::timeCalcs () {
+void Level::timeCalcs () {
 
 	// Calculate smoothed fps
 	smoothfps = smoothfps + 1.0f -
@@ -170,7 +170,7 @@ void BaseLevel::timeCalcs () {
  *
  * @return Time since last step
  */
-int BaseLevel::getTimeChange () {
+int Level::getTimeChange () {
 
 	return paused? 0: ticks - ((steps * (setup.slowMotion? 100: 50)) / 3);
 
@@ -184,7 +184,7 @@ int BaseLevel::getTimeChange () {
  * @param menu Whether or not the level menu should be displayed
  * @param option Selected menu uption
  */
-void BaseLevel::drawOverlay (unsigned char bg, bool menu, int option,
+void Level::drawOverlay (unsigned char bg, bool menu, int option,
 	unsigned char textPalIndex, unsigned char selectedTextPalIndex,
 	int textPalSpan) {
 
@@ -279,7 +279,7 @@ void BaseLevel::drawOverlay (unsigned char bg, bool menu, int option,
  *
  * @return Error code
  */
-int BaseLevel::select (bool& menu, int option) {
+int Level::select (bool& menu, int option) {
 
 	bool wasSlow;
 
@@ -340,7 +340,7 @@ int BaseLevel::select (bool& menu, int option) {
  *
  * @return Error code
  */
-int BaseLevel::loop (bool& menu, int& option, bool& message) {
+int Level::loop (bool& menu, int& option, bool& message) {
 
 	int ret, x, y;
 
@@ -441,7 +441,7 @@ int BaseLevel::loop (bool& menu, int& option, bool& message) {
  *
  * @param seconds Number of seconds to add
  */
-void BaseLevel::addTimer (int seconds) {
+void Level::addTimer (int seconds) {
 
 	unsigned char buffer[MTL_L_PROP];
 
@@ -474,7 +474,7 @@ void BaseLevel::addTimer (int seconds) {
  *
  * @param newStage New level stage
  */
-void BaseLevel::setStage (LevelStage newStage) {
+void Level::setStage (LevelStage newStage) {
 
 	unsigned char buffer[MTL_L_STAGE];
 
@@ -501,7 +501,7 @@ void BaseLevel::setStage (LevelStage newStage) {
  *
  * @return The current level stage.
  */
-LevelStage BaseLevel::getStage () {
+LevelStage Level::getStage () {
 
 	return stage;
 

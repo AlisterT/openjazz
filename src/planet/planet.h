@@ -9,7 +9,7 @@
  * 3rd of February 2009: Created planet.h
  *
  * @section Licence
- * Copyright (c) 2009 Alister Thomson
+ * Copyright (c) 2009-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -33,7 +33,7 @@
 // Class
 
 /// Planet approach sequence
-class Planet {
+class JJ1Planet {
 
 	private:
 		SDL_Color palette[256]; /// Palette
@@ -42,8 +42,8 @@ class Planet {
 		int       id; /// World number
 
 	public:
-		Planet  (char * fileName, int previous);
-		~Planet ();
+		JJ1Planet  (char * fileName, int previous);
+		~JJ1Planet ();
 
 		int getId ();
 		int play  ();

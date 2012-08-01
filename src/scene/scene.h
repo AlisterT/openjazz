@@ -9,7 +9,7 @@
  * 3rd February 2009: Created scene.h from parts of scene.c
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -106,7 +106,7 @@ enum {
 class Font;
 
 /// Cutscene page text
-class SceneText {
+class JJ1SceneText {
 
 	public:
 		unsigned char* text;
@@ -117,13 +117,14 @@ class SceneText {
 		SDL_Rect       textRect;
 		int            extraLineHeight;
 		int			   shadowColour;
-		SceneText  ();
-		~SceneText ();
+
+		JJ1SceneText  ();
+		~JJ1SceneText ();
 
 };
 
 /// Cutscene page
-class ScenePage {
+class JJ1ScenePage {
 
 	public:
 		int                backgrounds;
@@ -138,45 +139,46 @@ class ScenePage {
 
 		/// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
 		int                pageTime;
-		SceneText          texts[100];
+		JJ1SceneText       texts[100];
 		int                nTexts;
 		char*              musicFile;
 		int                paletteIndex;
 		int				   askForYesNo;
 		int				   stopMusic;
-		ScenePage();
-		~ScenePage();
+
+		JJ1ScenePage  ();
+		~JJ1ScenePage ();
 
 };
 
 /// Cutscene background image
-class SceneImage {
+class JJ1SceneImage {
 
 	public:
-		SceneImage*  next;
+		JJ1SceneImage* next;
 		SDL_Surface* image;
 		int id;
 
-		SceneImage  (SceneImage* newNext);
-		~SceneImage ();
+		JJ1SceneImage  (JJ1SceneImage* newNext);
+		~JJ1SceneImage ();
 
 };
 
 /// Cutscene palette
-class ScenePalette {
+class JJ1ScenePalette {
 
 	public:
-		ScenePalette *next;
+		JJ1ScenePalette* next;
 		SDL_Color palette[256];
 		int id;
 
-		ScenePalette  (ScenePalette* newNext);
-		~ScenePalette ();
+		JJ1ScenePalette  (JJ1ScenePalette* newNext);
+		~JJ1ScenePalette ();
 
 };
 
 /// Cutscene font
-class SceneFont {
+class JJ1SceneFont {
 
 	public:
 		Font *font;
@@ -185,45 +187,51 @@ class SceneFont {
 };
 
 /// Cutscene animation frame
-class SceneFrame
-	{
-public:
-	SceneFrame(int frameType, unsigned char* frameData, int frameSize);
-	~SceneFrame();
-	int soundId;
-	unsigned int frameType;
-	unsigned char* frameData;
-	int frameSize;
-	SceneFrame*  next;
-	SceneFrame*  prev;
-	};
+class JJ1SceneFrame {
+
+	public:
+		JJ1SceneFrame* next;
+		JJ1SceneFrame* prev;
+		unsigned char* frameData;
+		int            frameSize;
+		unsigned int   frameType;
+		int            soundId;
+
+		JJ1SceneFrame  (int frameType, unsigned char* frameData, int frameSize);
+		~JJ1SceneFrame ();
+
+};
 
 /// Cutscene animation
-class SceneAnimation
-	{
-public:
-		SceneAnimation  (SceneAnimation* newNext);
-		~SceneAnimation ();
-		void addFrame(int frameType, unsigned char* frameData, int frameSize);
+class JJ1SceneAnimation {
+
+	public:
+		JJ1SceneAnimation*  next;
+		JJ1SceneFrame*      sceneFrames;
+		JJ1SceneFrame*      lastFrame;
+
 		SDL_Surface*       background;
-		SceneAnimation*  next;
 		int id;
 		int noSounds;
 		char soundNames[16][10];
-		SceneFrame* sceneFrames;
-		SceneFrame* lastFrame;
 		int frames;
 		int reverseAnimation;
-	};
+
+		JJ1SceneAnimation  (JJ1SceneAnimation* newNext);
+		~JJ1SceneAnimation ();
+
+		void addFrame (int frameType, unsigned char* frameData, int frameSize);
+
+};
 
 /// Cutscene
-class Scene {
+class JJ1Scene {
 
 	private:
-		SceneAnimation*    animations;
-		SceneImage*        images;
-		ScenePalette*      palettes;
-		SceneFont          fonts[5];
+		JJ1SceneAnimation* animations;
+		JJ1SceneImage*     images;
+		JJ1ScenePalette*   palettes;
+		JJ1SceneFont       fonts[5];
 		int                nFonts;
 		unsigned short int scriptItems;
 		unsigned short int dataItems;
@@ -231,7 +239,7 @@ class Scene {
 		signed long int*   dataOffsets;
 
 		/// Scripts all information needed to render script pages, text etc
-		ScenePage*         pages;
+		JJ1ScenePage*      pages;
 
 		void               loadScripts      (File* f);
 		void               loadData         (File* f);
@@ -241,8 +249,8 @@ class Scene {
 		unsigned short int loadShortMem     (unsigned char **data);
 
 	public:
-		Scene    (const char* fileName);
-		~Scene   ();
+		JJ1Scene  (const char* fileName);
+		~JJ1Scene ();
 
 		int play ();
 

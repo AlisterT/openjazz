@@ -9,7 +9,7 @@
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -36,7 +36,7 @@
  * @param gX X-coordinate
  * @param gY Y-coordinate
  */
-Bridge::Bridge (unsigned char gX, unsigned char gY) : Event(gX, gY) {
+JJ1Bridge::JJ1Bridge (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 
 	y = TTOF(gY) + ITOF(set->multiB);
 
@@ -61,9 +61,9 @@ Bridge::Bridge (unsigned char gX, unsigned char gY) : Event(gX, gY) {
  *
  * @return Remaining event
  */
-Event* Bridge::step (unsigned int ticks, int msps) {
+JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
 
-	LevelPlayer* levelPlayer;
+	JJ1LevelPlayer* levelPlayer;
 	int count;
 	fixed bridgeLength, playerDipX, playerDipY;
 
@@ -85,7 +85,7 @@ Event* Bridge::step (unsigned int ticks, int msps) {
 
 	for (count = 0; count < nPlayers; count++) {
 
-		levelPlayer = players[count].getLevelPlayer();
+		levelPlayer = players[count].getJJ1LevelPlayer();
 
 		playerDipX = levelPlayer->getX() + PXO_MID - x;
 
@@ -121,7 +121,7 @@ Event* Bridge::step (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param change Time since last iteration
  */
-void Bridge::draw (unsigned int ticks, int change) {
+void JJ1Bridge::draw (unsigned int ticks, int change) {
 
 	Anim* anim;
 	unsigned char frame;

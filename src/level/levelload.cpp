@@ -55,7 +55,7 @@
  *
  * @return Error code
  */
-int Level::loadPanel () {
+int JJ1Level::loadPanel () {
 
 	File* file;
 	unsigned char* pixels;
@@ -150,7 +150,7 @@ int Level::loadPanel () {
  * @param file File from which to load the sprite data
  * @param sprite Sprite that will receive the loaded data
  */
-void Level::loadSprite (File* file, Sprite* sprite) {
+void JJ1Level::loadSprite (File* file, Sprite* sprite) {
 
 	unsigned char* pixels;
 	int pos, maskOffset;
@@ -212,7 +212,7 @@ void Level::loadSprite (File* file, Sprite* sprite) {
  *
  * @return Error code
  */
-int Level::loadSprites (char * fileName) {
+int JJ1Level::loadSprites (char * fileName) {
 
 	File* mainFile = NULL;
 	File* specFile = NULL;
@@ -343,7 +343,7 @@ int Level::loadSprites (char * fileName) {
  *
  * @return The number of tiles loaded
  */
-int Level::loadTiles (char* fileName) {
+int JJ1Level::loadTiles (char* fileName) {
 
 	File* file;
 	unsigned char* buffer;
@@ -443,7 +443,7 @@ int Level::loadTiles (char* fileName) {
  *
  * @return Error code
  */
-int Level::load (char* fileName, bool checkpoint) {
+int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	Anim* pAnims[PANIMS];
 	File* file;

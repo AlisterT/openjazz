@@ -46,7 +46,7 @@
  *
  * @return Error code
  */
-int Bonus::loadSprites () {
+int JJ1BonusLevel::loadSprites () {
 
 	File *file;
 	unsigned char* pixels;
@@ -132,7 +132,7 @@ int Bonus::loadSprites () {
  *
  * @return Error code
  */
-int Bonus::loadTiles (char *fileName) {
+int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	File *file;
 	unsigned char *pixels;
@@ -201,7 +201,7 @@ int Bonus::loadTiles (char *fileName) {
  * @param diff Difficulty level
  * @param multi Whether or not the level will be multi-player
  */
-Bonus::Bonus (Game* owner, char * fileName, bool multi) : BaseLevel(owner) {
+JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(owner) {
 
 	Anim* pAnims[BPANIMS];
 	File *file;
@@ -398,7 +398,7 @@ Bonus::Bonus (Game* owner, char * fileName, bool multi) : BaseLevel(owner) {
 /**
  * Delete the JJ1 bonus level.
  */
-Bonus::~Bonus () {
+JJ1BonusLevel::~JJ1BonusLevel () {
 
 	// Restore panelBigFont palette
 	panelBigFont->restorePalette();
@@ -422,7 +422,7 @@ Bonus::~Bonus () {
  *
  * @return True if in the event area
  */
-bool Bonus::isEvent (fixed x, fixed y) {
+bool JJ1BonusLevel::isEvent (fixed x, fixed y) {
 
 	return ((x & 32767) > F12) && ((x & 32767) < F20) &&
 		((y & 32767) > F12) && ((y & 32767) < F20);
@@ -438,9 +438,9 @@ bool Bonus::isEvent (fixed x, fixed y) {
  *
  * @return Solidity
  */
-bool Bonus::checkMask (fixed x, fixed y) {
+bool JJ1BonusLevel::checkMask (fixed x, fixed y) {
 
-	BonusGridElement *ge;
+	JJ1BonusLevelGridElement *ge;
 
 	ge = grid[FTOT(y) & 255] + (FTOT(x) & 255);
 
@@ -458,7 +458,7 @@ bool Bonus::checkMask (fixed x, fixed y) {
  *
  * @param buffer Received data
  */
-void Bonus::receive (unsigned char* buffer) {
+void JJ1BonusLevel::receive (unsigned char* buffer) {
 
 	switch (buffer[1]) {
 
@@ -499,9 +499,9 @@ void Bonus::receive (unsigned char* buffer) {
  *
  * @return Error code
  */
-int Bonus::step () {
+int JJ1BonusLevel::step () {
 
-	BonusPlayer* bonusPlayer;
+	JJ1BonusLevelPlayer* bonusPlayer;
 	fixed playerX, playerY;
 	int gridX, gridY;
 	int count;
@@ -517,7 +517,7 @@ int Bonus::step () {
 	// Process players
 	for (count = 0; count < nPlayers; count++) {
 
-		bonusPlayer = players[count].getBonusPlayer();
+		bonusPlayer = players[count].getJJ1BonusLevelPlayer();
 
 		playerX = bonusPlayer->getX();
 		playerY = bonusPlayer->getY();
@@ -569,7 +569,7 @@ int Bonus::step () {
 
 	}
 
-	direction = localPlayer->getBonusPlayer()->getDirection();
+	direction = localPlayer->getJJ1BonusLevelPlayer()->getDirection();
 
 	return E_NONE;
 
@@ -579,9 +579,9 @@ int Bonus::step () {
 /**
  * Draw the level.
  */
-void Bonus::draw () {
+void JJ1BonusLevel::draw () {
 
-	BonusPlayer *bonusPlayer;
+	JJ1BonusLevelPlayer *bonusPlayer;
 	unsigned char* row;
 	Sprite* sprite;
 	SDL_Rect dst;
@@ -608,7 +608,7 @@ void Bonus::draw () {
 	if (y > 0) drawRect(0, 0, canvasW, y + 1, 128);
 
 
-	bonusPlayer = localPlayer->getBonusPlayer();
+	bonusPlayer = localPlayer->getJJ1BonusLevelPlayer();
 
 
 	// Draw the ground
@@ -755,7 +755,7 @@ void Bonus::draw () {
  *
  * @return Error code
  */
-int Bonus::play () {
+int JJ1BonusLevel::play () {
 
 	bool pmenu, pmessage;
 	int option;
@@ -784,7 +784,7 @@ int Bonus::play () {
 		// Check if level has been won
 		if (returnTime && (ticks > returnTime)) {
 
-			if (localPlayer->getBonusPlayer()->getGems() >= items) {
+			if (localPlayer->getJJ1BonusLevelPlayer()->getGems() >= items) {
 
 				//if (playScene(F_BONUS_0SC) == E_QUIT) return E_QUIT;
 

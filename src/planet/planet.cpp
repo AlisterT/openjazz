@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed planet.c to planet.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -39,7 +39,7 @@
 #include <string.h>
 
 
-Planet::Planet (char * fileName, int previous) {
+JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
 	File *file;
 	unsigned char *pixels;
@@ -93,7 +93,7 @@ Planet::Planet (char * fileName, int previous) {
 }
 
 
-Planet::~Planet () {
+JJ1Planet::~JJ1Planet () {
 
 	delete[] name;
 
@@ -102,14 +102,14 @@ Planet::~Planet () {
 }
 
 
-int Planet::getId () {
+int JJ1Planet::getId () {
 
 	return id;
 
 }
 
 
-int Planet::play () {
+int JJ1Planet::play () {
 
 	unsigned int tickOffset;
 	int coord;

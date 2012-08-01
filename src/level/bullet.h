@@ -9,7 +9,7 @@
  * 11th February 2009: Created bullet.h from parts of events.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -50,33 +50,33 @@
 
 // Classes
 
-class Bird;
-class Event;
-class LevelPlayer;
+class JJ1Bird;
+class JJ1Event;
+class JJ1LevelPlayer;
 class Sprite;
 
-/// Bullet
-class Bullet : public Movable {
+/// JJ1Bullet
+class JJ1Bullet : public Movable {
 
 	private:
-		Bullet*      next; ///< The next bullet
-		LevelPlayer* source; ///< Source player. If NULL, was fired by an event
-		Sprite*      sprite; ///< Sprite
-		int          type; ///< -1 is TNT, otherwise indexes the bullet set
-		int          direction; ///< 0: Left, 1: Right, 2: L (lower), 3: R (lower)
-		unsigned int time; ///< Time at which the bullet will self-destruct
+		JJ1Bullet*      next; ///< The next bullet
+		JJ1LevelPlayer* source; ///< Source player. If NULL, was fired by an event
+		Sprite*         sprite; ///< Sprite
+		int             type; ///< -1 is TNT, otherwise indexes the bullet set
+		int             direction; ///< 0: Left, 1: Right, 2: L (lower), 3: R (lower)
+		unsigned int    time; ///< Time at which the bullet will self-destruct
 
-		Bullet* remove ();
+		JJ1Bullet* remove ();
 
 	public:
-		Bullet  (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
-		Bullet  (Bird* sourceBird, bool lower, unsigned int ticks);
-		Bullet  (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks);
-		~Bullet ();
+		JJ1Bullet  (JJ1LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
+		JJ1Bullet  (JJ1Bird* sourceBird, bool lower, unsigned int ticks);
+		JJ1Bullet  (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks);
+		~JJ1Bullet ();
 
-		LevelPlayer* getSource  ();
-		Bullet*      step       (unsigned int ticks, int msps);
-		void         draw       (int change);
+		JJ1LevelPlayer* getSource ();
+		JJ1Bullet*      step      (unsigned int ticks, int msps);
+		void            draw      (int change);
 
 };
 

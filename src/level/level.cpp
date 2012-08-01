@@ -57,9 +57,9 @@
 
 
 /**
- * Base constructor for DemoLevel sub-class.
+ * Base constructor for JJ1DemoLevel sub-class.
  */
-Level::Level (Game* owner) : BaseLevel(owner) {
+JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 
 	// Do nothing
 
@@ -76,8 +76,8 @@ Level::Level (Game* owner) : BaseLevel(owner) {
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  * @param multi Whether or not the level will be multi-player
  */
-Level::Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
-	BaseLevel (owner) {
+JJ1Level::JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
+	Level (owner) {
 
 	int ret;
 
@@ -97,7 +97,7 @@ Level::Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
 /**
  * Delete HUD graphical data.
  */
-void Level::deletePanel () {
+void JJ1Level::deletePanel () {
 
 	SDL_FreeSurface(panel);
 	SDL_FreeSurface(panelAmmo[0]);
@@ -114,7 +114,7 @@ void Level::deletePanel () {
 /**
  * Delete the JJ1 level.
  */
-Level::~Level () {
+JJ1Level::~JJ1Level () {
 
 	int count;
 
@@ -155,7 +155,7 @@ Level::~Level () {
  *
  * @return Solidity
  */
-bool Level::checkMaskUp (fixed x, fixed y) {
+bool JJ1Level::checkMaskUp (fixed x, fixed y) {
 
 	GridElement *ge;
 
@@ -165,7 +165,7 @@ bool Level::checkMaskUp (fixed x, fixed y) {
 
 	ge = grid[FTOT(y)] + FTOT(x);
 
-	// Event 122 is one-way
+	// JJ1Event 122 is one-way
 	if (ge->event == 122) return false;
 
 	// Check the mask in the tile in question
@@ -182,7 +182,7 @@ bool Level::checkMaskUp (fixed x, fixed y) {
  *
  * @return Solidity
  */
-bool Level::checkMaskDown (fixed x, fixed y) {
+bool JJ1Level::checkMaskDown (fixed x, fixed y) {
 
 	// Anything off the edge of the map is solid
 	if ((x < 0) || (y < 0) || (x > TTOF(LW)) || (y > TTOF(LH)))
@@ -202,7 +202,7 @@ bool Level::checkMaskDown (fixed x, fixed y) {
  *
  * @return Painful solidity
  */
-bool Level::checkSpikes (fixed x, fixed y) {
+bool JJ1Level::checkSpikes (fixed x, fixed y) {
 
 	GridElement *ge;
 
@@ -212,7 +212,7 @@ bool Level::checkSpikes (fixed x, fixed y) {
 
 	ge = grid[FTOT(y)] + FTOT(x);
 
-	// Event 126 is spikes
+	// JJ1Event 126 is spikes
 	if (ge->event != 126) return false;
 
 	// Check the mask in the tile in question
@@ -226,7 +226,7 @@ bool Level::checkSpikes (fixed x, fixed y) {
  *
  * @return World number
  */
-int Level::getWorld() {
+int JJ1Level::getWorld() {
 
 	return worldNum;
 
@@ -239,7 +239,7 @@ int Level::getWorld() {
  * @param nextLevel Next level's number
  * @param nextWorld Next level's world number
  */
-void Level::setNext (int nextLevel, int nextWorld) {
+void JJ1Level::setNext (int nextLevel, int nextWorld) {
 
 	unsigned char buffer[MTL_L_PROP];
 
@@ -270,7 +270,7 @@ void Level::setNext (int nextLevel, int nextWorld) {
  * @param gridY Y-coordinate of the tile
  * @param tile The new tile
  */
-void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char tile) {
+void JJ1Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char tile) {
 
 	unsigned char buffer[MTL_L_GRID];
 
@@ -299,7 +299,7 @@ void Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char til
  *
  * @return The first active event
  */
-Event* Level::getEvents () {
+JJ1Event* JJ1Level::getEvents () {
 
 	return events;
 
@@ -312,9 +312,9 @@ Event* Level::getEvents () {
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  *
- * @return Event data
+ * @return JJ1Event data
  */
-EventType* Level::getEvent (unsigned char gridX, unsigned char gridY) {
+JJ1EventType* JJ1Level::getEvent (unsigned char gridX, unsigned char gridY) {
 
 	int event = grid[gridY][gridX].event;
 
@@ -333,7 +333,7 @@ EventType* Level::getEvent (unsigned char gridX, unsigned char gridY) {
  *
  * @return Number of hits
  */
-unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
+unsigned char JJ1Level::getEventHits (unsigned char gridX, unsigned char gridY) {
 
 	return grid[gridY][gridX].hits;
 
@@ -348,7 +348,7 @@ unsigned char Level::getEventHits (unsigned char gridX, unsigned char gridY) {
  *
  * @return Time
  */
-unsigned int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
+unsigned int JJ1Level::getEventTime (unsigned char gridX, unsigned char gridY) {
 
 	return grid[gridY][gridX].time;
 
@@ -361,7 +361,7 @@ unsigned int Level::getEventTime (unsigned char gridX, unsigned char gridY) {
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  */
-void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
+void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_GRID];
 
@@ -398,7 +398,7 @@ void Level::clearEvent (unsigned char gridX, unsigned char gridY) {
  *
  * @return The remaining number of hits until the event is destroyed
  */
-int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* source) {
+int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, JJ1LevelPlayer* source) {
 
 	GridElement* ge;
 	unsigned char buffer[MTL_L_GRID];
@@ -454,7 +454,7 @@ int Level::hitEvent (unsigned char gridX, unsigned char gridY, LevelPlayer* sour
  * @param gridY Y-coordinate of the tile
  * @param time Time
  */
-void Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int time) {
+void JJ1Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int time) {
 
 	grid[gridY][gridX].time = time;
 
@@ -466,11 +466,11 @@ void Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int
 /**
  * Get the bullet data for the given bullet type.
  *
- * @param bullet Bullet type
+ * @param bullet JJ1Bullet type
  *
- * @return Bullet data
+ * @return JJ1Bullet data
  */
-signed char* Level::getBullet (unsigned char bullet) {
+signed char* JJ1Level::getBullet (unsigned char bullet) {
 
 	return bulletSet[bullet];
 
@@ -484,7 +484,7 @@ signed char* Level::getBullet (unsigned char bullet) {
  *
  * @return Sprite
  */
-Sprite* Level::getSprite (unsigned char sprite) {
+Sprite* JJ1Level::getSprite (unsigned char sprite) {
 
 	return spriteSet + sprite;
 
@@ -498,7 +498,7 @@ Sprite* Level::getSprite (unsigned char sprite) {
  *
  * @return Animation
  */
-Anim* Level::getAnim (unsigned char anim) {
+Anim* JJ1Level::getAnim (unsigned char anim) {
 
 	return animSet + anim;
 
@@ -512,7 +512,7 @@ Anim* Level::getAnim (unsigned char anim) {
  *
  * @return Animation
  */
-Anim* Level::getMiscAnim (unsigned char anim) {
+Anim* JJ1Level::getMiscAnim (unsigned char anim) {
 
 	return animSet + miscAnims[anim];
 
@@ -524,7 +524,7 @@ Anim* Level::getMiscAnim (unsigned char anim) {
  *
  * @param gridY New water level y-coordinate
  */
-void Level::setWaterLevel (unsigned char gridY) {
+void JJ1Level::setWaterLevel (unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_PROP];
 
@@ -552,7 +552,7 @@ void Level::setWaterLevel (unsigned char gridY) {
  *
  * @return The y-coordinate of the water level
  */
-fixed Level::getWaterLevel () {
+fixed JJ1Level::getWaterLevel () {
 
 	return waterLevel;
 
@@ -564,7 +564,7 @@ fixed Level::getWaterLevel () {
  *
  * @param sound Number of the sound to play
  */
-void Level::playSound (int sound) {
+void JJ1Level::playSound (int sound) {
 
 	if (sound > 0) ::playSound(soundMap[sound - 1]);
 
@@ -581,7 +581,7 @@ void Level::playSound (int sound) {
  * @param blue Blue component of flash colour
  * @param duration Duration of the flash effect
  */
-void Level::flash (unsigned char red, unsigned char green, unsigned char blue, int duration) {
+void JJ1Level::flash (unsigned char red, unsigned char green, unsigned char blue, int duration) {
 
 	paletteEffects = new FlashPaletteEffect(red, green, blue, duration, paletteEffects);
 
@@ -595,12 +595,12 @@ void Level::flash (unsigned char red, unsigned char green, unsigned char blue, i
  *
  * @return Error code
  */
-int Level::playBonus () {
+int JJ1Level::playBonus () {
 
 	char *bonusFile;
 	int ret;
 
-	if (!localPlayer->getLevelPlayer()->hasGem()) return E_NONE;
+	if (!localPlayer->getJJ1LevelPlayer()->hasGem()) return E_NONE;
 
 	delete paletteEffects;
 	paletteEffects = NULL;
@@ -624,7 +624,7 @@ int Level::playBonus () {
  *
  * @param buffer Received data
  */
-void Level::receive (unsigned char* buffer) {
+void JJ1Level::receive (unsigned char* buffer) {
 
 	switch (buffer[1]) {
 
@@ -676,9 +676,9 @@ void Level::receive (unsigned char* buffer) {
  *
  * @return Error code
  */
-int Level::play () {
+int JJ1Level::play () {
 
-	LevelPlayer* levelPlayer;
+	JJ1LevelPlayer* levelPlayer;
 	char *string;
 	bool pmessage, pmenu;
 	int option;
@@ -688,7 +688,7 @@ int Level::play () {
  	int count;
 
 
-	levelPlayer = localPlayer->getLevelPlayer();
+	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
 	tickOffset = globalTicks;
 	ticks = 17;
@@ -749,7 +749,7 @@ int Level::play () {
 
 		while (getTimeChange() >= 17) {
 
-			bool playerWasAlive = (localPlayer->getLevelPlayer()->getEnergy() != 0);
+			bool playerWasAlive = (localPlayer->getJJ1LevelPlayer()->getEnergy() != 0);
 
 			// Apply controls to local player
 			for (count = 0; count < PCONTROLS; count++)
@@ -760,7 +760,7 @@ int Level::play () {
 
 			if (count) return count;
 
-			if (!multiplayer && playerWasAlive && (localPlayer->getLevelPlayer()->getEnergy() == 0))
+			if (!multiplayer && playerWasAlive && (localPlayer->getJJ1LevelPlayer()->getEnergy() == 0))
 				flash(0, 0, 0, T_END << 1);
 
 		}

@@ -198,13 +198,13 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 		case LT_LEVEL:
 
-			levelPlayer = new LevelPlayer(this, anims, x, y, flockSize);
+			levelPlayer = new JJ1LevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
 		case LT_BONUS:
 
-			bonusPlayer = new BonusPlayer(this, anims, x, y);
+			bonusPlayer = new JJ1BonusLevelPlayer(this, anims, x, y);
 
 			break;
 
@@ -228,7 +228,7 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
  *
  * @return The JJ1 bonus level player
  */
-BonusPlayer* Player::getBonusPlayer () {
+JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
 
 	return bonusPlayer;
 
@@ -276,7 +276,7 @@ JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
  *
  * @return The JJ1 level player
  */
-LevelPlayer* Player::getLevelPlayer () {
+JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
 
 	return levelPlayer;
 

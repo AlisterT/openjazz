@@ -10,7 +10,7 @@
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -138,7 +138,7 @@
 // Enum
 
 /// JJ1 player reaction type
-enum PlayerReaction {
+enum JJ1PlayerReaction {
 
 	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
 
@@ -148,63 +148,63 @@ enum PlayerReaction {
 // Classes
 
 class Anim;
-class Bird;
+class JJ1Bird;
 
 /// JJ1 level player
-class LevelPlayer : public Movable {
+class JJ1LevelPlayer : public Movable {
 
 	private:
-		Bird*            birds; ///< Bird companion(s)
-		SDL_Color        palette[256]; ///< Palette (for custom colours)
-		Anim*            anims[PANIMS]; ///< Animations
-		int              energy; ///< 0 = dead, 4 = maximum
-		int              shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
-		bool             floating; ///< false = normal, true = boarding/bird/etc.
-		bool             facing; ///< false = left, true = right
-		unsigned char    animType; ///< Current animation
-		unsigned char    eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
-		unsigned char    eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)
-		PlayerEvent      event; ///< Event type
-		int              lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
-		PlayerReaction   reaction; ///< Reaction type
-		unsigned int     reactionTime; ///< Time reaction will end
-		unsigned int     fireTime; ///< The next time the player can fire
-		fixed            jumpHeight; ///< The height the player can reach when jumping
-		fixed            jumpY; ///< Having started jumping, the y-coordinate the player can reach
-		unsigned int     fastFeetTime; ///< Time fast feet will expire
-		unsigned char    warpX; ///< X-coordinate (in tiles) player will warp to
-		unsigned char    warpY; ///< Y-coordinate (in tiles) player will warp to
-		unsigned int     warpTime; ///< Time the warp will happen
-		int              enemies; ///< Number of enemies killed
-		int              items; ///< Number of items collected
-		bool             gem; ///< Bonus level gem collected
+		JJ1Bird*          birds; ///< Bird companion(s)
+		SDL_Color         palette[256]; ///< Palette (for custom colours)
+		Anim*             anims[PANIMS]; ///< Animations
+		int               energy; ///< 0 = dead, 4 = maximum
+		int               shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
+		bool              floating; ///< false = normal, true = boarding/bird/etc.
+		bool              facing; ///< false = left, true = right
+		unsigned char     animType; ///< Current animation
+		unsigned char     eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
+		unsigned char     eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)
+		PlayerEvent       event; ///< Event type
+		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
+		JJ1PlayerReaction reaction; ///< Reaction type
+		unsigned int      reactionTime; ///< Time reaction will end
+		unsigned int      fireTime; ///< The next time the player can fire
+		fixed             jumpHeight; ///< The height the player can reach when jumping
+		fixed             jumpY; ///< Having started jumping, the y-coordinate the player can reach
+		unsigned int      fastFeetTime; ///< Time fast feet will expire
+		unsigned char     warpX; ///< X-coordinate (in tiles) player will warp to
+		unsigned char     warpY; ///< Y-coordinate (in tiles) player will warp to
+		unsigned int      warpTime; ///< Time the warp will happen
+		int               enemies; ///< Number of enemies killed
+		int               items; ///< Number of items collected
+		bool              gem; ///< Bonus level gem collected
 
 	public:
 		Player* player; ///< Corresponding game player
 
-		LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
-		~LevelPlayer ();
+		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
+		~JJ1LevelPlayer ();
 
 		void           reset       (unsigned char startX, unsigned char startY);
 
-		void           addItem     ();
-		void           clearEvent  (unsigned char gridX, unsigned char gridY);
-		int            countBirds  ();
-		Anim*          getAnim     ();
-		int            getEnemies  ();
-		int            getEnergy   ();
-		bool           getFacing   ();
-		int            getItems    ();
-		bool           hasGem      ();
-		bool           hit         (Player* source, unsigned int ticks);
-		void           kill        (Player* source, unsigned int ticks);
-		bool           overlap     (fixed left, fixed top, fixed width, fixed height);
-		PlayerReaction reacted     (unsigned int ticks);
-		void           setEvent    (unsigned char gridX, unsigned char gridY);
-		void           setPosition (fixed newX, fixed newY);
-		void           setSpeed    (fixed newDx, fixed newDy);
-		bool           takeEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks);
-		bool           touchEvent  (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
+		void              addItem     ();
+		void              clearEvent  (unsigned char gridX, unsigned char gridY);
+		int               countBirds  ();
+		Anim*             getAnim     ();
+		int               getEnemies  ();
+		int               getEnergy   ();
+		bool              getFacing   ();
+		int               getItems    ();
+		bool              hasGem      ();
+		bool              hit         (Player* source, unsigned int ticks);
+		void              kill        (Player* source, unsigned int ticks);
+		bool              overlap     (fixed left, fixed top, fixed width, fixed height);
+		JJ1PlayerReaction reacted     (unsigned int ticks);
+		void              setEvent    (unsigned char gridX, unsigned char gridY);
+		void              setPosition (fixed newX, fixed newY);
+		void              setSpeed    (fixed newDx, fixed newDy);
+		bool              takeEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks);
+		bool              touchEvent  (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
 
 		void           send        (unsigned char* buffer);
 		void           receive     (unsigned char* buffer);

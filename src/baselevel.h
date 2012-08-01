@@ -69,7 +69,7 @@ class PaletteEffect;
 class Sprite;
 
 /// Base class for all level classes
-class BaseLevel {
+class Level {
 
 	private:
 		char*     menuOptions[6];
@@ -103,8 +103,8 @@ class BaseLevel {
 		int  loop          (bool& menu, int& option, bool& message);
 
 	public:
-		BaseLevel          (Game* owner);
-		virtual ~BaseLevel ();
+		Level          (Game* owner);
+		virtual ~Level ();
 
 		void         addTimer (int seconds);
 		LevelStage   getStage ();

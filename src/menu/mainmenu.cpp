@@ -153,7 +153,7 @@ MainMenu::~MainMenu () {
  */
 int MainMenu::select (int option) {
 
-	Scene *scene;
+	JJ1Scene *scene;
 	SetupMenu setupMenu;
 
 	playSound(S_ORB);
@@ -176,7 +176,7 @@ int MainMenu::select (int option) {
 
 			try {
 
-				scene = new Scene(F_INSTRUCT_0SC);
+				scene = new JJ1Scene(F_INSTRUCT_0SC);
 
 			} catch (int e) {
 
@@ -208,7 +208,7 @@ int MainMenu::select (int option) {
 
 			try {
 
-				scene = new Scene(F_ORDER_0SC);
+				scene = new JJ1Scene(F_ORDER_0SC);
 
 			} catch (int e) {
 

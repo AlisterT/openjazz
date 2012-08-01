@@ -9,7 +9,7 @@
  * 1st March 2009: Created bird.cpp from parts of events.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -38,7 +38,7 @@
  * @param gX The new bird's grid x-coordinate
  * @param gY The new bird's grid y-coordinate
  */
-Bird::Bird (Bird* birds, LevelPlayer *rescuer, unsigned char gX, unsigned char gY) {
+JJ1Bird::JJ1Bird (JJ1Bird* birds, JJ1LevelPlayer *rescuer, unsigned char gX, unsigned char gY) {
 
 	next = birds;
 	player = rescuer;
@@ -57,7 +57,7 @@ Bird::Bird (Bird* birds, LevelPlayer *rescuer, unsigned char gX, unsigned char g
 /**
  * Delete all birds.
  */
-Bird::~Bird () {
+JJ1Bird::~JJ1Bird () {
 
 	if (next) delete next;
 
@@ -71,9 +71,9 @@ Bird::~Bird () {
  *
  * @return The next bird
  */
-Bird* Bird::remove () {
+JJ1Bird* JJ1Bird::remove () {
 
-	Bird* oldNext;
+	JJ1Bird* oldNext;
 
 	oldNext = next;
 	next = NULL;
@@ -89,7 +89,7 @@ Bird* Bird::remove () {
  *
  * @return The player
  */
-LevelPlayer * Bird::getPlayer () {
+JJ1LevelPlayer * JJ1Bird::getPlayer () {
 
 	return player;
 
@@ -99,7 +99,7 @@ LevelPlayer * Bird::getPlayer () {
 /**
  * Notify the bird that the player has been hit.
  */
-void Bird::hit () {
+void JJ1Bird::hit () {
 
 	fleeing = true;
 
@@ -113,7 +113,7 @@ void Bird::hit () {
  *
  * @return The number of birds ahead of this bird, plus one
  */
-int Bird::getFlockSize () {
+int JJ1Bird::getFlockSize () {
 
 	if (next) return next->getFlockSize() + 1;
 
@@ -129,7 +129,7 @@ int Bird::getFlockSize () {
  *
  * @return Remaining bird (NULL if none)
  */
-Bird* Bird::setFlockSize (int size) {
+JJ1Bird* JJ1Bird::setFlockSize (int size) {
 
 	if (size <= 0) {
 
@@ -140,7 +140,7 @@ Bird* Bird::setFlockSize (int size) {
 
 	if (size > 1) {
 
-		if (!next) next = new Bird(NULL, player, FTOT(x), FTOT(y));
+		if (!next) next = new JJ1Bird(NULL, player, FTOT(x), FTOT(y));
 
 		next = next->setFlockSize(size - 1);
 
@@ -152,17 +152,17 @@ Bird* Bird::setFlockSize (int size) {
 
 
 /**
- * Bird iteration.
+ * JJ1Bird iteration.
  *
  * @param ticks Time
  * @param msps Ticks per step
  *
  * @return Remaining bird (NULL if none)
  */
-Bird* Bird::step (unsigned int ticks, int msps) {
+JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
 
 	Movable* leader;
-	Event* event;
+	JJ1Event* event;
 	bool target;
 
 	// Process the next bird
@@ -271,7 +271,7 @@ Bird* Bird::step (unsigned int ticks, int msps) {
 			// If there is a target in the vicinity, generate bullets
 			if (target) {
 
-				level->bullets = new Bullet(this, false, ticks);
+				level->bullets = new JJ1Bullet(this, false, ticks);
 
 				fireTime = ticks + T_BIRD_FIRE;
 
@@ -296,7 +296,7 @@ Bird* Bird::step (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param change Time since last step
  */
-void Bird::draw (unsigned int ticks, int change) {
+void JJ1Bird::draw (unsigned int ticks, int change) {
 
 	Anim *anim;
 

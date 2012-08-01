@@ -12,7 +12,7 @@
  *                 levelplayerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -48,7 +48,7 @@
  * @param ticks Time
  * @param msps Ticks per step
  */
-void LevelPlayer::control (unsigned int ticks, int msps) {
+void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	int speed;
 	bool platform;
@@ -311,7 +311,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
 			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 			// Create new bullet
-			level->bullets = new Bullet(this, false, ticks);
+			level->bullets = new JJ1Bullet(this, false, ticks);
 
 			// Set when the next bullet can be fired
 			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
@@ -413,7 +413,7 @@ void LevelPlayer::control (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param msps Ticks per step
  */
-void LevelPlayer::move (unsigned int ticks, int msps) {
+void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
 	int count;
@@ -626,7 +626,7 @@ void LevelPlayer::move (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param mspf Ticks per frame
  */
-void LevelPlayer::view (unsigned int ticks, int mspf) {
+void JJ1LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	int oldViewX, oldViewY, speed;
 
@@ -679,7 +679,7 @@ void LevelPlayer::view (unsigned int ticks, int mspf) {
  * @param ticks Time
  * @param change Time since last step
  */
-void LevelPlayer::draw (unsigned int ticks, int change) {
+void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 	Anim *an;
 	int frame;

@@ -47,7 +47,7 @@
  * @param startY Starting position y-coordinate
  * @param flockSize The number of birds accompanying the player
  */
-LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
+JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
 	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
 		PCO_LEVEL1, PCO_YELLOW, PCO_LEVEL2, PCO_ORANGE, PCO_LEVEL3, PCO_LEVEL4,
@@ -62,7 +62,7 @@ LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX,
 	birds = NULL;
 
 	for (count = 0; count < flockSize; count++)
-		birds = new Bird(birds, this, startX, startY - 2);
+		birds = new JJ1Bird(birds, this, startX, startY - 2);
 
 	shield = 0;
 	enemies = items = 0;
@@ -125,7 +125,7 @@ LevelPlayer::LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX,
 /**
  * Delete the JJ1 level player.
  */
-LevelPlayer::~LevelPlayer () {
+JJ1LevelPlayer::~JJ1LevelPlayer () {
 
 	if (birds) delete birds;
 
@@ -140,7 +140,7 @@ LevelPlayer::~LevelPlayer () {
  * @param startX New x-coordinate
  * @param startY New y-coordinate
  */
-void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
+void JJ1LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 
 	event = LPE_NONE;
 	energy = 4;
@@ -166,7 +166,7 @@ void LevelPlayer::reset (unsigned char startX, unsigned char startY) {
 /**
  * Add to the player's item tally.
  */
-void LevelPlayer::addItem () {
+void JJ1LevelPlayer::addItem () {
 
 	items++;
 
@@ -181,7 +181,7 @@ void LevelPlayer::addItem () {
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  */
-void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
+void JJ1LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	// If the location matches, clear the event
 
@@ -197,7 +197,7 @@ void LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
  *
  * @return The current animation
  */
-Anim* LevelPlayer::getAnim () {
+Anim* JJ1LevelPlayer::getAnim () {
 
 	return anims[animType];
 
@@ -209,7 +209,7 @@ Anim* LevelPlayer::getAnim () {
  *
  * @return Number of enemies killed
  */
-int LevelPlayer::getEnemies () {
+int JJ1LevelPlayer::getEnemies () {
 
 	return enemies;
 
@@ -221,7 +221,7 @@ int LevelPlayer::getEnemies () {
  *
  * @return Energy level
  */
-int LevelPlayer::getEnergy () {
+int JJ1LevelPlayer::getEnergy () {
 
 	return energy;
 
@@ -233,7 +233,7 @@ int LevelPlayer::getEnergy () {
  *
  * @return True if the player is facing right
  */
-bool LevelPlayer::getFacing () {
+bool JJ1LevelPlayer::getFacing () {
 
 	return facing;
 
@@ -245,7 +245,7 @@ bool LevelPlayer::getFacing () {
  *
  * @return Number of items collected
  */
-int LevelPlayer::getItems () {
+int JJ1LevelPlayer::getItems () {
 
 	return items;
 
@@ -257,7 +257,7 @@ int LevelPlayer::getItems () {
  *
  * @return Whether or not the player is being accompanied by a bird
  */
-int LevelPlayer::countBirds () {
+int JJ1LevelPlayer::countBirds () {
 
 	if (birds) return birds->getFlockSize();
 
@@ -271,7 +271,7 @@ int LevelPlayer::countBirds () {
  *
  * @return Whether or not the player has collected a gem
  */
-bool LevelPlayer::hasGem () {
+bool JJ1LevelPlayer::hasGem () {
 
 	return gem;
 
@@ -286,7 +286,7 @@ bool LevelPlayer::hasGem () {
  *
  * @return Whether or not the hit was successful
  */
-bool LevelPlayer::hit (Player *source, unsigned int ticks) {
+bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	// Invulnerable if reacting to e.g. having been hit
 	if (reaction != PR_NONE) return false;
@@ -341,7 +341,7 @@ bool LevelPlayer::hit (Player *source, unsigned int ticks) {
  * @param source Player responsible for the kill (NULL if due to an event or time)
  * @param ticks time
  */
-void LevelPlayer::kill (Player *source, unsigned int ticks) {
+void JJ1LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	if (reaction != PR_NONE) return;
 
@@ -370,7 +370,7 @@ void LevelPlayer::kill (Player *source, unsigned int ticks) {
  *
  * @return Whether or not there is an overlap
  */
-bool LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
+bool JJ1LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	return (x + PXO_R >= left) && (x + PXO_L < left + width) &&
 		(y >= top) && (y + PYO_TOP < top + height);
@@ -385,9 +385,9 @@ bool LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) {
  *
  * @return The reaction the player has just finished
  */
-PlayerReaction LevelPlayer::reacted (unsigned int ticks) {
+JJ1PlayerReaction JJ1LevelPlayer::reacted (unsigned int ticks) {
 
-	PlayerReaction oldReaction;
+	JJ1PlayerReaction oldReaction;
 
 	if ((reaction != PR_NONE) && (reactionTime < ticks)) {
 
@@ -409,9 +409,9 @@ PlayerReaction LevelPlayer::reacted (unsigned int ticks) {
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  */
-void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
+void JJ1LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
 
-	EventType *set;
+	JJ1EventType *set;
 
 	set = level->getEvent(gridX, gridY);
 
@@ -439,7 +439,7 @@ void LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
  * @param newX New x-coordinate
  * @param newY New y-coordinate
  */
-void LevelPlayer::setPosition (fixed newX, fixed newY) {
+void JJ1LevelPlayer::setPosition (fixed newX, fixed newY) {
 
 	x = newX;
 	y = newY;
@@ -455,7 +455,7 @@ void LevelPlayer::setPosition (fixed newX, fixed newY) {
  * @param newDx New x-speed
  * @param newDy New y-speed
  */
-void LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
+void JJ1LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
 	if (newDy) dy = newDy;
@@ -474,9 +474,9 @@ void LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
  *
  * @return Whether or not the event should be destroyed.
  */
-bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
+bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
-	EventType* set;
+	JJ1EventType* set;
 
 	set = level->getEvent(gridX, gridY);
 
@@ -625,7 +625,7 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
 
 			if (birds && !setup.manyBirds) return false;
 
-			birds = new Bird(birds, this, gridX, gridY);
+			birds = new JJ1Bird(birds, this, gridX, gridY);
 
 			break;
 
@@ -685,9 +685,9 @@ bool LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned 
  *
  * @return Whether or not the event should be destroyed.
  */
-bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
+bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
 
-	EventType* set;
+	JJ1EventType* set;
 
 	set = level->getEvent(gridX, gridY);
 
@@ -790,7 +790,7 @@ bool LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned
  *
  * @param buffer The buffer
  */
-void LevelPlayer::send (unsigned char *buffer) {
+void JJ1LevelPlayer::send (unsigned char *buffer) {
 
 	// Copy data to be sent to clients/server
 
@@ -826,7 +826,7 @@ void LevelPlayer::send (unsigned char *buffer) {
  *
  * @param buffer The buffer
  */
-void LevelPlayer::receive (unsigned char *buffer) {
+void JJ1LevelPlayer::receive (unsigned char *buffer) {
 
 	int count;
 
@@ -845,7 +845,7 @@ void LevelPlayer::receive (unsigned char *buffer) {
 
 			if ((buffer[9] > 0) && (birds == NULL)) {
 
-				birds = new Bird(birds, this, FTOT(x), FTOT(y) - 2);
+				birds = new JJ1Bird(birds, this, FTOT(x), FTOT(y) - 2);
 
 			}
 

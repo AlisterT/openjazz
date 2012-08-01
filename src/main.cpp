@@ -576,7 +576,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 int main(int argc, char *argv[]) {
 
 	MainMenu *mainMenu = NULL;
-	Scene *scene = NULL;
+	JJ1Scene *scene = NULL;
 
 	// Initialise SDL
 
@@ -604,7 +604,7 @@ int main(int argc, char *argv[]) {
 
 	try {
 
-		scene = new Scene(F_STARTUP_0SC);
+		scene = new JJ1Scene(F_STARTUP_0SC);
 
 	} catch (int e) {
 
@@ -646,7 +646,7 @@ int main(int argc, char *argv[]) {
 
 		try {
 
-			scene = new Scene(F_END_0SC);
+			scene = new JJ1Scene(F_END_0SC);
 
 		} catch (int e) {
 

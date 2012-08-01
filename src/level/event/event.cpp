@@ -19,7 +19,7 @@
  * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -39,7 +39,7 @@
 
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "player/player.h"
+//#include "player/levelplayer.h"
 
 #include "util.h"
 
@@ -50,7 +50,7 @@
  * @param gX X-coordinate
  * @param gY Y-coordinate
  */
-Event::Event (unsigned char gX, unsigned char gY) {
+JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 
 	set = level->getEvent(gX, gY);
 
@@ -75,7 +75,7 @@ Event::Event (unsigned char gX, unsigned char gY) {
 /**
  * Delete all events
  */
-Event::~Event () {
+JJ1Event::~JJ1Event () {
 
 	if (next) delete next;
 
@@ -89,9 +89,9 @@ Event::~Event () {
  *
  * @return The next event
  */
-Event* Event::remove () {
+JJ1Event* JJ1Event::remove () {
 
-	Event *oldNext;
+	JJ1Event *oldNext;
 
 	oldNext = next;
 	next = NULL;
@@ -107,7 +107,7 @@ Event* Event::remove () {
  *
  * @return The next event
  */
-Event * Event::getNext () {
+JJ1Event * JJ1Event::getNext () {
 
 	return next;
 
@@ -119,7 +119,7 @@ Event * Event::getNext () {
  *
  * @param ticks Time
  */
-void Event::destroy (unsigned int ticks) {
+void JJ1Event::destroy (unsigned int ticks) {
 
 	animType = E_LFINISHANIM | (animType & 1);
 
@@ -140,7 +140,7 @@ void Event::destroy (unsigned int ticks) {
  *
  * @return Whether or not the hit was successful
  */
-bool Event::hit (LevelPlayer *source, unsigned int ticks) {
+bool JJ1Event::hit (JJ1LevelPlayer *source, unsigned int ticks) {
 
 	int hitsRemaining;
 
@@ -169,7 +169,7 @@ bool Event::hit (LevelPlayer *source, unsigned int ticks) {
  *
  * @return Whether or not the event is an enemy
  */
-bool Event::isEnemy () {
+bool JJ1Event::isEnemy () {
 
 	return set->strength && (set->modifier == 0);
 
@@ -181,7 +181,7 @@ bool Event::isEnemy () {
  *
  * @return Whether or not the event is from the given position
  */
-bool Event::isFrom (unsigned char gX, unsigned char gY) {
+bool JJ1Event::isFrom (unsigned char gX, unsigned char gY) {
 
 	return (gX == gridX) && (gY == gridY);
 
@@ -193,7 +193,7 @@ bool Event::isFrom (unsigned char gX, unsigned char gY) {
  *
  * @return The width of the event
  */
-fixed Event::getWidth () {
+fixed JJ1Event::getWidth () {
 
 	fixed width;
 
@@ -216,7 +216,7 @@ fixed Event::getWidth () {
  *
  * @return The height of the event
  */
-fixed Event::getHeight () {
+fixed JJ1Event::getHeight () {
 
 	if (animType == E_NOANIM) return F32;
 
@@ -237,7 +237,7 @@ fixed Event::getHeight () {
  *
  * @return Whether or not there is an overlap
  */
-bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
+bool JJ1Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	fixed offset = 0;
 	if (getAnim() && noAnimOffset)
@@ -256,7 +256,7 @@ bool Event::overlap (fixed left, fixed top, fixed width, fixed height) {
  *
  * @return Animation
  */
-Anim* Event::getAnim () {
+Anim* JJ1Event::getAnim () {
 
 	if (animType == E_NOANIM) return NULL;
 
@@ -277,7 +277,7 @@ Anim* Event::getAnim () {
  *
  * @return Animation
  */
-EventType* Event::prepareStep (unsigned int ticks, int msps) {
+JJ1EventType* JJ1Event::prepareStep (unsigned int ticks, int msps) {
 
 	// Process the next event
 	if (next) next = next->step(ticks, msps);
@@ -308,7 +308,7 @@ EventType* Event::prepareStep (unsigned int ticks, int msps) {
  *
  * @param ticks Time
  */
-void Event::drawEnergy (unsigned int ticks) {
+void JJ1Event::drawEnergy (unsigned int ticks) {
 
 	Anim* anim;
 	int hits;

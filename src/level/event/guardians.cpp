@@ -9,7 +9,7 @@
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -42,7 +42,7 @@
  * @param gX X-coordinate
  * @param gY Y-coordinate
  */
-Guardian::Guardian(unsigned char gX, unsigned char gY) : Event(gX, gY) {
+Guardian::Guardian(unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 
 	stage = 0;
 
@@ -101,7 +101,7 @@ bool DeckGuardian::overlap (fixed left, fixed top, fixed width, fixed height) {
  *
  * @return Remaining event
  */
-Event* DeckGuardian::step (unsigned int ticks, int msps) {
+JJ1Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
 	int count;
 
@@ -221,7 +221,7 @@ MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) 
  *
  * @return Remaining event
  */
-Event* MedGuardian::step(unsigned int ticks, int msps) {
+JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 	Anim *anim = getAnim();
 
@@ -306,7 +306,7 @@ Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 			if ((set->bullet < 32) &&
 					(level->getBullet(set->bullet)[B_SPRITE] != 0))
-				level->bullets = new Bullet(
+				level->bullets = new JJ1Bullet(
 						x + anim->getAccessoryShootX(),
 						y + anim->getAccessoryShootY(),
 						set->bullet, (animType != E_LEFTANIM), ticks);

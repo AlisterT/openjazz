@@ -9,7 +9,7 @@
  * 11th February 2009: Created bullet.cpp from parts of events.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -40,7 +40,7 @@
  * @param lower Indicates if this the second of two bullets to be created
  * @param ticks Time
  */
-Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
+JJ1Bullet::JJ1Bullet (JJ1LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
 
 	Anim* anim;
 
@@ -52,7 +52,7 @@ Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
 	if (!lower && (level->getBullet(type)[B_XSPEED | 2] != 0)) {
 
 		// Create the other bullet
-		next = new Bullet(source, true, ticks);
+		next = new JJ1Bullet(source, true, ticks);
 
 	} else {
 
@@ -105,7 +105,7 @@ Bullet::Bullet (LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
  * @param facing The direction of the bullet
  * @param ticks Time
  */
-Bullet::Bullet (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks) {
+JJ1Bullet::JJ1Bullet (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks) {
 
 	// Properties based on a given bullet type and starting position
 
@@ -135,7 +135,7 @@ Bullet::Bullet (fixed xStart, fixed yStart, unsigned char bullet, bool facing, u
  * @param lower Indicates if this the second of two bullets to be created
  * @param ticks Time
  */
-Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
+JJ1Bullet::JJ1Bullet (JJ1Bird* sourceBird, bool lower, unsigned int ticks) {
 
 	// Properties based on the bird and its player
 
@@ -144,7 +144,7 @@ Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 	if (!lower) {
 
 		// Create the other bullet
-		next = new Bullet(sourceBird, true, ticks);
+		next = new JJ1Bullet(sourceBird, true, ticks);
 
 	} else {
 
@@ -172,7 +172,7 @@ Bullet::Bullet (Bird* sourceBird, bool lower, unsigned int ticks) {
 /**
  * Delete all bullets.
  */
-Bullet::~Bullet () {
+JJ1Bullet::~JJ1Bullet () {
 
 	if (next) delete next;
 
@@ -186,9 +186,9 @@ Bullet::~Bullet () {
  *
  * @return The next bullet
  */
-Bullet* Bullet::remove () {
+JJ1Bullet* JJ1Bullet::remove () {
 
-	Bullet* oldNext;
+	JJ1Bullet* oldNext;
 
 	oldNext = next;
 	next = NULL;
@@ -204,7 +204,7 @@ Bullet* Bullet::remove () {
  *
  * @return The player (NULL if fired by an event)
  */
-LevelPlayer* Bullet::getSource () {
+JJ1LevelPlayer* JJ1Bullet::getSource () {
 
 	return source;
 
@@ -219,10 +219,10 @@ LevelPlayer* Bullet::getSource () {
  *
  * @return Remaining bullet
  */
-Bullet* Bullet::step (unsigned int ticks, int msps) {
+JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 
 	signed char* set;
-	Event* event;
+	JJ1Event* event;
 	int count;
 
 	// Process the next bullet
@@ -269,11 +269,11 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
 		// Check if a player has been hit
 		for (count = 0; count < nPlayers; count++) {
 
-			if (players[count].getLevelPlayer()->overlap(x, y,
+			if (players[count].getJJ1LevelPlayer()->overlap(x, y,
 				ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 				// If the hit was successful, destroy the bullet
-				if (players[count].getLevelPlayer()->hit(source? source->player: NULL, ticks)) return remove();
+				if (players[count].getJJ1LevelPlayer()->hit(source? source->player: NULL, ticks)) return remove();
 
 			}
 
@@ -348,7 +348,7 @@ Bullet* Bullet::step (unsigned int ticks, int msps) {
  *
  * @param change Time since last iteration
  */
-void Bullet::draw (int change) {
+void JJ1Bullet::draw (int change) {
 
 	if (next) next->draw(change);
 

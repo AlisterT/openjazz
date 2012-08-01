@@ -103,7 +103,7 @@ class JJ2Event;
 class JJ2LevelPlayer;
 
 /// JJ2 level
-class JJ2Level : public BaseLevel {
+class JJ2Level : public Level {
 
 	private:
 		SDL_Surface*  tileSet; ///< Tile images

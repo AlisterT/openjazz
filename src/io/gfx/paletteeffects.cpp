@@ -10,7 +10,7 @@
  * 1st August 2009: Renamed palette.cpp to paletteeffects.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -531,7 +531,7 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 
 	currentPalette = video.getPalette();
 
-	if (level) position = localPlayer->getLevelPlayer()->getY() - level->getWaterLevel();
+	if (level) position = localPlayer->getJJ1LevelPlayer()->getY() - level->getWaterLevel();
 	else if (jj2Level) position = localPlayer->getJJ2LevelPlayer()->getY() - jj2Level->getWaterLevel();
 	else return;
 

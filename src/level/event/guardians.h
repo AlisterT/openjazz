@@ -9,7 +9,7 @@
  * 2nd March 2010: Created guardians.h from parts of event.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -31,7 +31,7 @@
 // Class
 
 /// Guardian event base class
-class Guardian : public Event {
+class Guardian : public JJ1Event {
 
 	protected:
 		int stage;
@@ -46,9 +46,9 @@ class DeckGuardian : public Guardian {
 	public:
 		DeckGuardian (unsigned char gX, unsigned char gY);
 
-		bool   overlap (fixed left, fixed top, fixed width, fixed height);
-		Event* step    (unsigned int ticks, int msps);
-		void   draw    (unsigned int ticks, int change);
+		bool      overlap (fixed left, fixed top, fixed width, fixed height);
+		JJ1Event* step    (unsigned int ticks, int msps);
+		void      draw    (unsigned int ticks, int change);
 
 };
 
@@ -63,8 +63,8 @@ class MedGuardian : public Guardian {
 		MedGuardian (unsigned char gX, unsigned char gY);
 
 		//bool   overlap (fixed left, fixed top, fixed width, fixed height);
-		Event* step    (unsigned int ticks, int msps);
-		void   draw    (unsigned int ticks, int change);
+		JJ1Event* step    (unsigned int ticks, int msps);
+		void      draw    (unsigned int ticks, int change);
 
 };
 

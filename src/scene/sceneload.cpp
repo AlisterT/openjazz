@@ -9,7 +9,7 @@
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -34,7 +34,7 @@
 #include <string.h>
 
 
-unsigned short int Scene::loadShortMem (unsigned char** data) {
+unsigned short int JJ1Scene::loadShortMem (unsigned char** data) {
 
 	unsigned short int val;
 
@@ -48,7 +48,7 @@ unsigned short int Scene::loadShortMem (unsigned char** data) {
 }
 
 
-void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
+void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
 	unsigned char* nextPixel = pixels;
 	unsigned char* nextData = frameData;
@@ -161,7 +161,7 @@ void Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels
  * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
  * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
  */
-void Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixels) {
+void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
 	unsigned char* nextPixel = pixels;
 	unsigned char* endpixdata = pixels + (SW * SH);
@@ -257,7 +257,7 @@ void Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char*
 }
 
 
-void Scene::loadAni (File *f, int dataIndex) {
+void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 	LOGRESULT("ParseAni DataLen", f->loadShort()); // should be 0x02
 	LOGRESULT("ParseAni Frames?", f->loadShort()); // unknown, number of frames?
@@ -288,7 +288,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 			LOG("PL Read position", pos);
 			f->loadShort(); // Length
 
-			palettes = new ScenePalette(palettes);
+			palettes = new JJ1ScenePalette(palettes);
 
 			f->loadPalette(palettes->palette, false);
 
@@ -438,7 +438,7 @@ void Scene::loadAni (File *f, int dataIndex) {
 }
 
 
-void Scene::loadData (File *f) {
+void JJ1Scene::loadData (File *f) {
 
 	int loop;
 
@@ -452,7 +452,7 @@ void Scene::loadData (File *f) {
 		if (dataLen == 0x4e41) {
 
 			LOG("Data Type", "ANI");
-			animations = new SceneAnimation(animations);
+			animations = new JJ1SceneAnimation(animations);
 			animations->id = loop;
 			loadAni(f, loop);
 
@@ -479,7 +479,7 @@ void Scene::loadData (File *f) {
 						else height = f->loadShort(SH); // Get height
 
 						f->seek(-2, false);
-						images = new SceneImage(images);
+						images = new JJ1SceneImage(images);
 						images->image = f->loadSurface(width, height);
 						images->id = loop;
 
@@ -493,7 +493,7 @@ void Scene::loadData (File *f) {
 					LOG("Data Type Palette index", loop);
 					f->seek(-3, false);
 
-					palettes = new ScenePalette(palettes);
+					palettes = new JJ1ScenePalette(palettes);
 					f->loadPalette(palettes->palette);
 					palettes->id = loop;
 
@@ -508,7 +508,7 @@ void Scene::loadData (File *f) {
 }
 
 
-void Scene::loadScripts (File *f) {
+void JJ1Scene::loadScripts (File *f) {
 
 	int loop;
 	/*int bgIndex = 0;*/
@@ -773,7 +773,7 @@ void Scene::loadScripts (File *f) {
 							unsigned char datalen = f->loadChar();
 							LOG("Text len", datalen);
 
-							SceneText *text = pages[loop].texts + pages[loop].nTexts;
+							JJ1SceneText *text = pages[loop].texts + pages[loop].nTexts;
 
 							if (datalen > 0) {
 

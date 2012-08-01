@@ -13,7 +13,7 @@
  * 2nd March 2010: Created guardians.h from parts of event.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -57,47 +57,47 @@
 
 // Classes
 
-class LevelPlayer;
+class JJ1LevelPlayer;
 
 /// JJ1 level event
-class Event : public Movable {
+class JJ1Event : public Movable {
 
 	protected:
-		Event*        next; ///< Next event
-		EventType*    set; ///< Type
+		JJ1Event*     next; ///< Next event
+		JJ1EventType* set; ///< Type
 		unsigned char gridX, gridY; ///< Grid position of the event
 		unsigned char animType; ///< Animation type (E_LEFTANIM, etc.)
 		unsigned int  flashTime; ///< Time flash will end
 		bool          noAnimOffset;
 
-		Event (unsigned char gX, unsigned char gY);
+		JJ1Event (unsigned char gX, unsigned char gY);
 
-		Event* remove  ();
-		void   destroy (unsigned int ticks);
+		JJ1Event* remove  ();
+		void      destroy (unsigned int ticks);
 
 		Anim* getAnim   ();
 		fixed getHeight ();
 		fixed getWidth  ();
 
-		EventType* prepareStep (unsigned int ticks, int msps);
+		JJ1EventType* prepareStep (unsigned int ticks, int msps);
 
 	public:
-		virtual ~Event ();
+		virtual ~JJ1Event ();
 
-		Event*         getNext        ();
-		bool           hit            (LevelPlayer *source, unsigned int ticks);
+		JJ1Event*      getNext        ();
+		bool           hit            (JJ1LevelPlayer *source, unsigned int ticks);
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
 		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);
 
-		virtual Event* step           (unsigned int ticks, int msps) = 0;
-		virtual void   draw           (unsigned int ticks, int change) = 0;
-		void           drawEnergy     (unsigned int ticks);
+		virtual JJ1Event* step        (unsigned int ticks, int msps) = 0;
+		virtual void      draw        (unsigned int ticks, int change) = 0;
+		void              drawEnergy  (unsigned int ticks);
 
 };
 
 /// Standard JJ1 level event
-class StandardEvent : public Event {
+class JJ1StandardEvent : public JJ1Event {
 
 	private:
 		fixed node; ///< Current event path node
@@ -107,24 +107,24 @@ class StandardEvent : public Event {
 		void move (unsigned int ticks, int msps);
 
 	public:
-		StandardEvent (unsigned char gX, unsigned char gY);
+		JJ1StandardEvent (unsigned char gX, unsigned char gY);
 
-		Event* step (unsigned int ticks, int msps);
+		JJ1Event* step (unsigned int ticks, int msps);
 		void   draw (unsigned int ticks, int change);
 
 };
 
 /// JJ1 level bridge
-class Bridge : public Event {
+class JJ1Bridge : public JJ1Event {
 
 	private:
 		fixed leftDipX;
 		fixed rightDipX;
 
 	public:
-		Bridge (unsigned char gX, unsigned char gY);
+		JJ1Bridge (unsigned char gX, unsigned char gY);
 
-		Event* step (unsigned int ticks, int msps);
+		JJ1Event* step (unsigned int ticks, int msps);
 		void   draw (unsigned int ticks, int change);
 
 };

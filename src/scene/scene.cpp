@@ -12,7 +12,7 @@
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -40,7 +40,7 @@
 #include <string.h>
 
 
-SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
+JJ1SceneFrame::JJ1SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
 	soundId = -1;
 	this->frameData = frameData;
 	this->frameType = frameType;
@@ -49,12 +49,12 @@ SceneFrame::SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
 	next = NULL;
 	}
 
-SceneFrame::~SceneFrame() {
+JJ1SceneFrame::~JJ1SceneFrame() {
 	delete [] frameData;
 }
 
-void SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frameSize) {
-	SceneFrame* frame = new SceneFrame(frameType, frameData, frameSize);
+void JJ1SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frameSize) {
+	JJ1SceneFrame* frame = new JJ1SceneFrame(frameType, frameData, frameSize);
 	if(sceneFrames == NULL) {
 		sceneFrames = frame;
 	}
@@ -80,7 +80,7 @@ void SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frame
  *
  */
 
-SceneAnimation::SceneAnimation  (SceneAnimation* newNext)
+JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext)
 	{
 	next = newNext;
 	background = NULL;
@@ -90,13 +90,13 @@ SceneAnimation::SceneAnimation  (SceneAnimation* newNext)
 	reverseAnimation = 0;
 	}
 
-SceneAnimation::~SceneAnimation ()
+JJ1SceneAnimation::~JJ1SceneAnimation ()
 	{
 	if (next) delete next;
 
 	if(sceneFrames) {
-		SceneFrame* frame = sceneFrames;
-		SceneFrame* nextFrame = NULL;
+		JJ1SceneFrame* frame = sceneFrames;
+		JJ1SceneFrame* nextFrame = NULL;
 		while(frame)
 			{
 			nextFrame = frame->next;
@@ -109,7 +109,7 @@ SceneAnimation::~SceneAnimation ()
 	if (background) SDL_FreeSurface(background);
 	}
 
-SceneImage::SceneImage (SceneImage *newNext) {
+JJ1SceneImage::JJ1SceneImage (JJ1SceneImage *newNext) {
 
 	next = newNext;
 	image = NULL;
@@ -117,7 +117,7 @@ SceneImage::SceneImage (SceneImage *newNext) {
 }
 
 
-SceneImage::~SceneImage () {
+JJ1SceneImage::~JJ1SceneImage () {
 
 	if (next) delete next;
 
@@ -126,21 +126,21 @@ SceneImage::~SceneImage () {
 }
 
 
-ScenePalette::ScenePalette (ScenePalette *newNext) {
+JJ1ScenePalette::JJ1ScenePalette (JJ1ScenePalette *newNext) {
 
 	next = newNext;
 
 }
 
 
-ScenePalette::~ScenePalette () {
+JJ1ScenePalette::~JJ1ScenePalette () {
 
 	if (next) delete next;
 
 }
 
 
-SceneText::SceneText() {
+JJ1SceneText::JJ1SceneText() {
 
 		x = -1;
 		y = -1;
@@ -151,13 +151,13 @@ SceneText::SceneText() {
 		shadowColour = 0;
 }
 
-SceneText::~SceneText() {
+JJ1SceneText::~JJ1SceneText() {
 
 	if (text) delete[] text;
 
 }
 
-ScenePage::ScenePage() {
+JJ1ScenePage::JJ1ScenePage() {
 
 	pageTime = 0;
 	nTexts = 0;
@@ -169,14 +169,14 @@ ScenePage::ScenePage() {
 	animIndex = -1; // no anim
 }
 
-ScenePage::~ScenePage() {
+JJ1ScenePage::~JJ1ScenePage() {
 
 	if (musicFile) delete[] musicFile;
 
 }
 
 
-Scene::Scene (const char * fileName) {
+JJ1Scene::JJ1Scene (const char * fileName) {
 
 	File *file;
     int loop;
@@ -203,7 +203,7 @@ Scene::Scene (const char * fileName) {
 
 	scriptItems = file->loadShort(); // Get number of script items
 	scriptStarts = new signed long int[scriptItems];
-	pages = new ScenePage[scriptItems];
+	pages = new JJ1ScenePage[scriptItems];
 
 	LOG("Scene: Script items", scriptItems);
 
@@ -239,7 +239,7 @@ Scene::Scene (const char * fileName) {
 }
 
 
-Scene::~Scene () {
+JJ1Scene::~JJ1Scene () {
 
 	delete[] pages;
 
@@ -249,14 +249,14 @@ Scene::~Scene () {
 
 }
 
-int Scene::play () {
+int JJ1Scene::play () {
 
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
-	SceneImage *image;
-	SceneAnimation* animation = NULL;
-	SceneFrame* currentFrame = NULL;
-	SceneFrame* lastFrame = NULL;
+	JJ1SceneImage *image;
+	JJ1SceneAnimation* animation = NULL;
+	JJ1SceneFrame* currentFrame = NULL;
+	JJ1SceneFrame* lastFrame = NULL;
 	PaletteEffect* paletteEffect = NULL;
 	int	frameDelay = 0;
 	int prevFrame = 0;
@@ -344,7 +344,7 @@ int Scene::play () {
 			textRect.y = 0;
 			textRect.w = SW;
 			textRect.h = SH;
-			ScenePalette *palette = palettes;
+			JJ1ScenePalette *palette = palettes;
 
 			while (palette && (palette->id != pages[sceneIndex].paletteIndex)) palette = palette->next;
 
@@ -490,7 +490,7 @@ int Scene::play () {
 
 		for (int count = 0; count < pages[sceneIndex].nTexts; count++) {
 
-			SceneText *text = pages[sceneIndex].texts + count;
+			JJ1SceneText *text = pages[sceneIndex].texts + count;
 			Font *font = NULL;
 			int xOffset, yOffset;
 

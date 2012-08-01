@@ -49,7 +49,7 @@ typedef struct {
 	unsigned char tile;  ///< Indexes the tile set
 	unsigned char event; ///< Event type
 
-} BonusGridElement;
+} JJ1BonusLevelGridElement;
 
 
 // Classes
@@ -57,17 +57,17 @@ typedef struct {
 class Font;
 
 /// JJ1 bonus level
-class Bonus : public BaseLevel {
+class JJ1BonusLevel : public Level {
 
 	private:
-		SDL_Surface*     tileSet; ///< Tile images
-		SDL_Surface*     background; ///< Background image
-		Font*            font; ///< On-screen message font
-		Sprite*          spriteSet; ///< Sprite images
-		Anim             animSet[BANIMS]; ///< Animations
-		BonusGridElement grid[BLH][BLW]; ///< Level grid
-		char             mask[60][64]; ///< Tile masks (at most 60 tiles, all with 8 * 8 masks)
-		fixed            direction; ///< Player's direction
+		SDL_Surface*             tileSet; ///< Tile images
+		SDL_Surface*             background; ///< Background image
+		Font*                    font; ///< On-screen message font
+		Sprite*                  spriteSet; ///< Sprite images
+		Anim                     animSet[BANIMS]; ///< Animations
+		JJ1BonusLevelGridElement grid[BLH][BLW]; ///< Level grid
+		char                     mask[60][64]; ///< Tile masks (at most 60 tiles, all with 8 * 8 masks)
+		fixed                    direction; ///< Player's direction
 
 		int  loadSprites ();
 		int  loadTiles   (char* fileName);
@@ -76,8 +76,8 @@ class Bonus : public BaseLevel {
 		void draw        ();
 
 	public:
-		Bonus  (Game* owner, char* fileName, bool multi);
-		~Bonus ();
+		JJ1BonusLevel  (Game* owner, char* fileName, bool multi);
+		~JJ1BonusLevel ();
 
 		bool checkMask (fixed x, fixed y);
 		void receive   (unsigned char* buffer);

@@ -97,7 +97,7 @@ typedef struct {
 	signed char   pieces; ///< Number of pieces in bridges, swinging ball chains, etc.
 	signed char   angle; ///< Initial angle of swinging balls, etc.
 
-} EventType;
+} JJ1EventType;
 
 /// Pre-defined JJ1 event movement path
 typedef struct {
@@ -106,32 +106,31 @@ typedef struct {
 	short int*    y; ///< Y-coordinates for each node
 	unsigned char length; ///< Number of nodes
 
-} EventPath;
+} JJ1EventPath;
 
 
 // Classes
 
-class Bullet;
-class Event;
 class Font;
-class LevelPlayer;
-class Scene;
+class JJ1Bullet;
+class JJ1Event;
+class JJ1LevelPlayer;
 
 /// JJ1 level
-class Level : public BaseLevel {
+class JJ1Level : public Level {
 
 	private:
 		SDL_Surface*  tileSet; ///< Tile images
 		SDL_Surface*  panel; ///< HUD background image
 		SDL_Surface*  panelAmmo[5]; ///< HUD ammo type images
-		Event*        events; ///< Events
+		JJ1Event*     events; ///< JJ1Events
 		char*         musicFile; ///< Music file name
 		char*         sceneFile; ///< File name of cutscene to play when level has been completed
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
 		char          miscAnims[4]; ///< Further animations
 		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
-		EventType     eventSet[EVENTS]; ///< Event types
+		JJ1EventType  eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
 		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
 		int           soundMap[32]; ///< Maps event sound effect numbers to actual sound effect indices
@@ -158,18 +157,18 @@ class Level : public BaseLevel {
 	protected:
 		Font* font; ///< On-screen message font
 
-		Level (Game* owner);
+		JJ1Level (Game* owner);
 
 		int  load (char* fileName, bool checkpoint);
 		int  step ();
 		void draw ();
 
 	public:
-		Bullet*   bullets; ///< Active bullets
-		EventPath path[PATHS]; ///< Pre-defined event movement paths
+		JJ1Bullet*   bullets; ///< Active bullets
+		JJ1EventPath path[PATHS]; ///< Pre-defined event movement paths
 
-		Level          (Game* owner, char* fileName, bool checkpoint, bool multi);
-		virtual ~Level ();
+		JJ1Level          (Game* owner, char* fileName, bool checkpoint, bool multi);
+		virtual ~JJ1Level ();
 
 		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
@@ -177,12 +176,12 @@ class Level : public BaseLevel {
 		int           getWorld      ();
 		void          setNext       (int nextLevel, int nextWorld);
 		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
-		Event*        getEvents     ();
-		EventType*    getEvent      (unsigned char gridX, unsigned char gridY);
+		JJ1Event*     getEvents     ();
+		JJ1EventType* getEvent      (unsigned char gridX, unsigned char gridY);
 		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
 		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (unsigned char gridX, unsigned char gridY, LevelPlayer* source);
+		int           hitEvent      (unsigned char gridX, unsigned char gridY, JJ1LevelPlayer* source);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
 		signed char*  getBullet     (unsigned char bullet);
 		Sprite*       getSprite     (unsigned char sprite);
@@ -198,14 +197,14 @@ class Level : public BaseLevel {
 };
 
 /// JJ1 level played as a demo
-class DemoLevel : public Level {
+class JJ1DemoLevel : public JJ1Level {
 
 	private:
 		unsigned char* macro; ///< Sequence of player control codes
 
 	public:
-		DemoLevel  (Game* owner, const char* fileName);
-		~DemoLevel ();
+		JJ1DemoLevel  (Game* owner, const char* fileName);
+		~JJ1DemoLevel ();
 
 		int play   ();
 
@@ -214,7 +213,7 @@ class DemoLevel : public Level {
 
 // Variables
 
-EXTERN Level* level; ///< JJ1 level
+EXTERN JJ1Level* level; ///< JJ1 level
 
 EXTERN int viewH; ///< Canvas height, minus 33 if the panel obscures the whole of the bottom of the canvas
 #define viewW canvasW

@@ -10,7 +10,7 @@
  *                 playerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -44,7 +44,7 @@
  * @param startX Starting position x-coordinate
  * @param startY Starting position y-coordinate
  */
-BonusPlayer::BonusPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY) {
+JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY) {
 
 	int count;
 
@@ -80,7 +80,7 @@ BonusPlayer::BonusPlayer (Player* parent, Anim **newAnims, unsigned char startX,
 /**
  * Delete the JJ1 bonus level player.
  */
-BonusPlayer::~BonusPlayer () {
+JJ1BonusLevelPlayer::~JJ1BonusLevelPlayer () {
 
 	return;
 
@@ -90,7 +90,7 @@ BonusPlayer::~BonusPlayer () {
 /**
  * Add to the player's gem tally.
  */
-void BonusPlayer::addGem () {
+void JJ1BonusLevelPlayer::addGem () {
 
 	gems++;
 
@@ -104,7 +104,7 @@ void BonusPlayer::addGem () {
  *
  * @return The player's direction
  */
-fixed BonusPlayer::getDirection () {
+fixed JJ1BonusLevelPlayer::getDirection () {
 
 	return direction;
 
@@ -116,7 +116,7 @@ fixed BonusPlayer::getDirection () {
  *
  * @return Number of gems collected
  */
-int BonusPlayer::getGems () {
+int JJ1BonusLevelPlayer::getGems () {
 
 	return gems;
 
@@ -128,7 +128,7 @@ int BonusPlayer::getGems () {
  *
  * @return Player's X-coordinate
  */
-fixed BonusPlayer::getX () {
+fixed JJ1BonusLevelPlayer::getX () {
 
 	return x;
 
@@ -140,7 +140,7 @@ fixed BonusPlayer::getX () {
  *
  * @return Player's Y-coordinate
  */
-fixed BonusPlayer::getY () {
+fixed JJ1BonusLevelPlayer::getY () {
 
 	return y;
 
@@ -152,7 +152,7 @@ fixed BonusPlayer::getY () {
  *
  * @return Player's Z-coordinate
  */
-fixed BonusPlayer::getZ () {
+fixed JJ1BonusLevelPlayer::getZ () {
 
 	return z;
 
@@ -166,7 +166,7 @@ fixed BonusPlayer::getZ () {
  * @param msps Ticks per step
  * @param bonus Bonus level
  */
-void BonusPlayer::step (unsigned int ticks, int msps, Bonus* bonus) {
+void JJ1BonusLevelPlayer::step (unsigned int ticks, int msps, JJ1BonusLevel* bonus) {
 
 	fixed cdx, cdy;
 
@@ -323,7 +323,7 @@ void BonusPlayer::step (unsigned int ticks, int msps, Bonus* bonus) {
  *
  * @param ticks Time
  */
-void BonusPlayer::draw (unsigned int ticks) {
+void JJ1BonusLevelPlayer::draw (unsigned int ticks) {
 
 	Anim* anim;
 
