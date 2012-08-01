@@ -25,13 +25,13 @@
  */
 
 
+#include "../jj2event/jj2event.h"
+#include "../jj2level.h"
 #include "jj2levelplayer.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/sound.h"
-#include "jj2level/jj2event/jj2event.h"
-#include "jj2level/jj2level.h"
 
 #include <string.h>
 

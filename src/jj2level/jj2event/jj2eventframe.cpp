@@ -26,11 +26,11 @@
 
 #include "jj2event.h"
 #include "../jj2level.h"
+#include "../jj2levelplayer/jj2levelplayer.h"
 
 #include "io/gfx/anim.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
-#include "player/jj2levelplayer.h"
 
 
 /// Look-up table for ammo animations (in animSet 1)

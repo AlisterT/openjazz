@@ -32,7 +32,7 @@
 #define _PLAYER_H
 
 
-#include "baselevel.h"
+#include "level/level.h"
 
 
 // Constants

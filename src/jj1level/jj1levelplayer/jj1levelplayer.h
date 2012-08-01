@@ -1,13 +1,14 @@
 
 /**
  *
- * @file levelplayer.h
+ * @file jj1levelplayer.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 24th June 2010: Created levelplayer.h from parts of player.h
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
+ * 1st August 2012: Renamed levelplayer.h to jj1levelplayer.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -31,7 +32,7 @@
 #define _LEVELPLAYER_H
 
 
-#include "player.h"
+#include "player/player.h"
 
 #include "level/movable.h"
 #include "OpenJazz.h"

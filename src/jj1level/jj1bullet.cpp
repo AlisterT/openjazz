@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bullet.cpp
+ * @file jj1bullet.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 11th February 2009: Created bullet.cpp from parts of events.cpp
+ * 1st August 2012: Renamed bullet.cpp to jj1bullet.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -21,16 +22,15 @@
  */
 
 
-#include "bullet.h"
-#include "event/event.h"
-#include "level.h"
+#include "jj1bullet.h"
+#include "jj1event/jj1event.h"
+#include "jj1level.h"
+#include "jj1levelplayer/jj1bird.h"
+#include "jj1levelplayer/jj1levelplayer.h"
 
 #include "game/game.h"
-#include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
-#include "player/bird.h"
-#include "player/levelplayer.h"
 
 
 /**

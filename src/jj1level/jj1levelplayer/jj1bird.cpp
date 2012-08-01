@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bird.cpp
+ * @file jj1bird.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 1st March 2009: Created bird.cpp from parts of events.cpp
+ * 1st August 2012: Renamed bird.cpp to jj1bird.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -21,13 +22,13 @@
  */
 
 
-#include "bird.h"
-#include "levelplayer.h"
+#include "../jj1bullet.h"
+#include "../jj1event/jj1event.h"
+#include "../jj1level.h"
+#include "jj1bird.h"
+#include "jj1levelplayer.h"
 
 #include "io/gfx/video.h"
-#include "level/bullet.h"
-#include "level/event/event.h"
-#include "level/level.h"
 
 
 /**

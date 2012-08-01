@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bird.h
+ * @file jj1bird.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 1st March 2009: Created bird.h from parts of events.h
+ * 1st August 2012: Renamed bird.h to jj1bird.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson

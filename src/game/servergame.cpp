@@ -23,14 +23,11 @@
 
 
 #include "game.h"
-#include "gamemode.h"
 
-#include "io/controls.h"
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/network.h"
-#include "level/level.h"
 #include "player/player.h"
 #include "util.h"
 

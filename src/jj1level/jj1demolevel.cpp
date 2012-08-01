@@ -1,13 +1,14 @@
 
 /**
  *
- * @file demolevel.cpp
+ * @file jj1demolevel.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
  *                 levelload.cpp
+ * 1st August 2012: Renamed demolevel.cpp to jj1demolevel.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -25,7 +26,8 @@
  */
 
 
-#include "level.h"
+#include "jj1level.h"
+#include "jj1levelplayer/jj1levelplayer.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
@@ -33,7 +35,6 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
-#include "player/levelplayer.h"
 #include "loop.h"
 #include "util.h"
 

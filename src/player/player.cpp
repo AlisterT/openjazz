@@ -28,17 +28,12 @@
  */
 
 
-#include "bird.h"
-#include "bonusplayer.h"
-#include "jj2levelplayer.h"
-#include "levelplayer.h"
+#include "jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.h"
+#include "jj1level/jj1levelplayer/jj1levelplayer.h"
+#include "jj2level/jj2levelplayer/jj2levelplayer.h"
 
-#include "baselevel.h"
 #include "game/game.h"
 #include "io/controls.h"
-#include "io/gfx/font.h"
-#include "io/gfx/paletteeffects.h"
-#include "io/gfx/video.h"
 #include "util.h"
 
 #include <string.h>

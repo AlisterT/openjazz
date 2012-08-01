@@ -1,12 +1,13 @@
 
 /**
  *
- * @file guardians.cpp
+ * @file jj1guardians.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
+ * 1st August 2012: Renamed guardians.cpp to jj1guardians.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -24,13 +25,11 @@
  */
 
 
-#include "../level.h"
-#include "../bullet.h"
-#include "guardians.h"
+#include "../jj1bullet.h"
+#include "../jj1level.h"
+#include "jj1guardians.h"
 
 #include "io/gfx/video.h"
-#include "player/player.h"
-
 #include "util.h"
 
 #include <stdlib.h>

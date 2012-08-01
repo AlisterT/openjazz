@@ -1,12 +1,13 @@
 
 /**
  *
- * @file planet.h
+ * @file jj1planet.h
  *
  * Part of the OpenJazz project
  *
  * @section History
- * 3rd of February 2009: Created planet.h
+ * 3rd February 2009: Created planet.h
+ * 1st August 2012: Renamed planet.h to jj1planet.h
  *
  * @section Licence
  * Copyright (c) 2009-2012 Alister Thomson

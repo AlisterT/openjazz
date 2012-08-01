@@ -30,7 +30,7 @@
 #define _JJ2LEVELPLAYER_H
 
 
-#include "player.h"
+#include "player/player.h"
 
 #include "jj2level/jj2level.h"
 #include "level/movable.h"

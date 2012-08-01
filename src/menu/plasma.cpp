@@ -26,7 +26,7 @@
 
 #include "plasma.h"
 
-#include "baselevel.h"
+#include "level/level.h"
 #include "util.h"
 #include "io/gfx/video.h"
 #include <SDL/SDL.h>

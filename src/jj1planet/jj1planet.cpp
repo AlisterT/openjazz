@@ -1,13 +1,14 @@
 
 /**
  *
- * @file planet.cpp
+ * @file jj1planet.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 23rd August 2005: Created planet.c
  * 3rd February 2009: Renamed planet.c to planet.cpp
+ * 1st August 2012: Renamed planet.cpp to jj1planet.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -26,7 +27,7 @@
  */
 
 
-#include "planet.h"
+#include "jj1planet.h"
 
 #include "io/controls.h"
 #include "io/file.h"

@@ -8,6 +8,7 @@
  * @section History
  * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
+ * 1st August 2012: Renamed baselevel.cpp to level.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -25,17 +26,17 @@
  */
 
 
+#include "level.h"
+
 #include "game/game.h"
 #include "io/controls.h"
 #include "io/gfx/font.h"
-#include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "menu/menu.h"
 #include "player/player.h"
-#include "scene/scene.h"
-#include "baselevel.h"
+#include "jj1scene/jj1scene.h"
 #include "loop.h"
 
 

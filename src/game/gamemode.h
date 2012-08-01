@@ -25,9 +25,6 @@
 #define _GAMEMODE_H
 
 
-#include "io/network.h"
-
-
 // Constants
 
 #define MAX_PLAYERS (MAX_CLIENTS + 1)

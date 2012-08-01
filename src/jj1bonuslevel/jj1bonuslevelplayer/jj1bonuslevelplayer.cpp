@@ -1,13 +1,14 @@
 
 /**
  *
- * @file bonusplayer.cpp
+ * @file jj1bonuslevelplayer.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 24th June 2010: Created bonusplayer.cpp from parts of player.cpp and
  *                 playerframe.cpp
+ * 1st August 2012: Renamed bonusplayer.cpp to jj1bonuslevelplayer.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -25,9 +26,9 @@
  */
 
 
-#include "bonusplayer.h"
+#include "../jj1bonuslevel.h"
+#include "jj1bonuslevelplayer.h"
 
-#include "bonus/bonus.h"
 #include "io/controls.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"

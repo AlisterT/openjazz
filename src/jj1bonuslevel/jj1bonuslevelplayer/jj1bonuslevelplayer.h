@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bonusplayer.h
+ * @file jj1bonuslevelplayer.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 24th June 2010: Created bonusplayer.h from parts of player.h
+ * 1st August 2012: Renamed bonusplayer.h to jj1bonuslevelplayer.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -24,7 +25,7 @@
 #define _BONUSPLAYER_H
 
 
-#include "player.h"
+#include "player/player.h"
 
 #include "OpenJazz.h"
 

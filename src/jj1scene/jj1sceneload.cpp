@@ -1,12 +1,13 @@
 
 /**
  *
- * @file sceneload.cpp
+ * @file jj1sceneload.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
+ * 1st August 2012: Renamed jj1sceneload.cpp to jj1sceneload.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -24,7 +25,7 @@
  */
 
 
-#include "scene/scene.h"
+#include "jj1scene.h"
 
 #include "io/file.h"
 #include "io/gfx/font.h"

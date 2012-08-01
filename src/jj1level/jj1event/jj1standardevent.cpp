@@ -1,7 +1,7 @@
 
 /**
  *
- * @file standardevent.cpp
+ * @file jj1standardevent.cpp
  *
  * Part of the OpenJazz project
  *
@@ -11,6 +11,7 @@
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
  * 5th February 2011: Renamed eventframe.cpp to standardevent.cpp
+ * 1st August 2012: Renamed standardevent.cpp to jj1standardevent.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -28,13 +29,13 @@
  */
 
 
-#include "../bullet.h"
-#include "../level.h"
-#include "event.h"
+#include "../jj1bullet.h"
+#include "../jj1level.h"
+#include "../jj1levelplayer/jj1levelplayer.h"
+#include "jj1event.h"
 
 #include "io/gfx/sprite.h"
 #include "io/sound.h"
-#include "player/levelplayer.h"
 #include "util.h"
 
 #include <stdlib.h>

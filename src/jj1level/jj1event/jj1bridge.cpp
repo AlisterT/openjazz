@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bridge.cpp
+ * @file jj1bridge.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
+ * 1st August 2012: Renamed bridge.cpp to jj1bridge.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -24,10 +25,9 @@
  */
 
 
-#include "../level.h"
-#include "event.h"
-
-#include "player/levelplayer.h"
+#include "../jj1level.h"
+#include "../jj1levelplayer/jj1levelplayer.h"
+#include "jj1event.h"
 
 
 /**

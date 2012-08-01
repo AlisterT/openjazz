@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bullet.h
+ * @file jj1bullet.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 11th February 2009: Created bullet.h from parts of events.h
+ * 1st August 2012: Renamed bullet.h to jj1bullet.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -25,7 +26,7 @@
 #define _BULLET_H
 
 
-#include "movable.h"
+#include "level/movable.h"
 
 #include "OpenJazz.h"
 

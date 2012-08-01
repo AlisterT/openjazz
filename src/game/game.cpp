@@ -28,13 +28,13 @@
 #include "game.h"
 #include "gamemode.h"
 
-#include "bonus/bonus.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "jj1bonuslevel/jj1bonuslevel.h"
+#include "jj1level/jj1level.h"
+#include "jj1level/jj1levelplayer/jj1levelplayer.h"
+#include "jj1planet/jj1planet.h"
 #include "jj2level/jj2level.h"
-#include "level/level.h"
-#include "planet/planet.h"
-#include "player/levelplayer.h"
 #include "util.h"
 
 #include <string.h>

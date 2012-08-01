@@ -1,12 +1,13 @@
 
 /**
  *
- * @file bonus.h
+ * @file jj1bonuslevel.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 3rd February 2009: Created bonus.h
+ * 1st August 2012: Renamed bonus.h to jj1bonuslevel.h
  *
  * @section Licence
  * Copyright (c) 2009-2010 Alister Thomson
@@ -24,7 +25,7 @@
 #ifndef _BONUS_H
 #define _BONUS_H
 
-#include "baselevel.h"
+#include "level/level.h"
 
 #include "io/gfx/anim.h"
 

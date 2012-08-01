@@ -1,7 +1,7 @@
 
 /**
  *
- * @file scene.cpp
+ * @file jj1scene.cpp
  *
  * Part of the OpenJazz project
  *
@@ -10,6 +10,7 @@
  * 3rd February 2009: Created scene.h from parts of scene.c
  * 3rd February 2009: Renamed scene.c to scene.cpp
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
+ * 1st August 2012: Renamed scene.cpp to jj1scene.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -27,7 +28,7 @@
  */
 
 
-#include "scene/scene.h"
+#include "jj1scene.h"
 
 #include "io/controls.h"
 #include "io/gfx/font.h"

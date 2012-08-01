@@ -1,12 +1,13 @@
 
 /**
  *
- * @file guardians.h
+ * @file jj1guardians.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 2nd March 2010: Created guardians.h from parts of event.h
+ * 1st August 2012: Renamed guardians.h to jj1guardians.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -25,7 +26,7 @@
 #define _GUARDIANS_H
 
 
-#include "event.h"
+#include "jj1event.h"
 
 
 // Class

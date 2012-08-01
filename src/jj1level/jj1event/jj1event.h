@@ -1,7 +1,7 @@
 
 /**
  *
- * @file event.h
+ * @file jj1event.h
  *
  * Part of the OpenJazz project
  *
@@ -11,6 +11,7 @@
  * 1st March 2009: Created bird.h from parts of events.h
  * 19th July 2009: Renamed events.h to event.h
  * 2nd March 2010: Created guardians.h from parts of event.h
+ * 1st August 2012: Renamed event.h to jj1event.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -29,11 +30,11 @@
 #define _EVENT_H
 
 
-#include "../level.h"
-#include "../movable.h"
+#include "../jj1level.h"
 
+#include "io/gfx/anim.h"
+#include "level/movable.h"
 #include "OpenJazz.h"
-#include "../../io/gfx/anim.h"
 
 
 // Constants

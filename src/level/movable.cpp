@@ -24,9 +24,8 @@
  */
 
 
+#include "level.h"
 #include "movable.h"
-
-#include "level/level.h"
 
 
 fixed Movable::getDrawX (int change) {

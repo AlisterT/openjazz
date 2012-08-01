@@ -24,7 +24,7 @@
 #include "anim.h"
 #include "sprite.h"
 
-#include "level/level.h"
+#include "jj1level/jj1level.h"
 
 
 /**

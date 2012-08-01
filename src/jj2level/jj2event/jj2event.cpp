@@ -26,7 +26,7 @@
 
 #include "jj2event.h"
 
-#include "baselevel.h"
+#include "level/level.h"
 
 
 JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties) {

@@ -28,18 +28,16 @@
 
 #include "jj2event/jj2event.h"
 #include "jj2level.h"
+#include "jj2levelplayer/jj2levelplayer.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/file.h"
 #include "io/gfx/font.h"
-#include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "player/jj2levelplayer.h"
-#include "scene/scene.h"
 #include "util.h"
 
 #include <string.h>

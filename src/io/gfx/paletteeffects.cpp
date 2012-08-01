@@ -25,10 +25,10 @@
 #include "paletteeffects.h"
 #include "video.h"
 
+#include "jj1level/jj1level.h"
+#include "jj1level/jj1levelplayer/jj1levelplayer.h"
 #include "jj2level/jj2level.h"
-#include "level/level.h"
-#include "player/jj2levelplayer.h"
-#include "player/levelplayer.h"
+#include "jj2level/jj2levelplayer/jj2levelplayer.h"
 
 #include <string.h>
 

@@ -31,7 +31,7 @@
 #define _JJ2LEVEL_H
 
 
-#include "baselevel.h"
+#include "level/level.h"
 #include "io/gfx/anim.h"
 #include "OpenJazz.h"
 

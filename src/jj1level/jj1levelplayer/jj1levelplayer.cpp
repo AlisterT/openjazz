@@ -1,13 +1,14 @@
 
 /**
  *
- * @file levelplayer.cpp
+ * @file jj1levelplayer.cpp
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
+ * 1st August 2012: Renamed levelplayer.cpp to jj1levelplayer.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -26,14 +27,13 @@
  */
 
 
-#include "bird.h"
-#include "levelplayer.h"
+#include "../jj1event/jj1event.h"
+#include "../jj1level.h"
+#include "jj1bird.h"
+#include "jj1levelplayer.h"
 
 #include "game/game.h"
-#include "game/gamemode.h"
 #include "io/sound.h"
-#include "level/event/event.h"
-#include "level/level.h"
 
 #include <string.h>
 

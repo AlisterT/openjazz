@@ -1,7 +1,7 @@
 
 /**
  *
- * @file levelload.cpp
+ * @file jj1levelload.cpp
  *
  * Part of the OpenJazz project
  *
@@ -12,6 +12,7 @@
  *                 levelload.cpp
  * 19th July 2009: Added parts of levelload.cpp to level.cpp
  * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
+ * 1st August 2012: Renamed levelload.cpp to jj1levelload.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -29,9 +30,10 @@
  */
 
 
-#include "bullet.h"
-#include "event/event.h"
-#include "level.h"
+#include "jj1bullet.h"
+#include "jj1event/jj1event.h"
+#include "jj1level.h"
+#include "jj1levelplayer/jj1levelplayer.h"
 
 #include "game/game.h"
 #include "io/file.h"
@@ -39,8 +41,6 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "menu/menu.h"
-#include "player/levelplayer.h"
 #include "loop.h"
 #include "util.h"
 

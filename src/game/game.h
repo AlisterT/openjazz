@@ -29,8 +29,8 @@
 
 #include "gamemode.h"
 
-#include "baselevel.h"
 #include "io/network.h"
+#include "level/level.h"
 
 
 // Constants

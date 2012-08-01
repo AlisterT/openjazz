@@ -1,7 +1,7 @@
 
 /**
  *
- * @file event.cpp
+ * @file jj1event.cpp
  *
  * Part of the OpenJazz project
  *
@@ -17,6 +17,7 @@
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
+ * 1st August 2012: Renamed event.cpp to jj1event.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -34,13 +35,11 @@
  */
 
 
-#include "../level.h"
-#include "event.h"
+#include "../jj1level.h"
+#include "jj1event.h"
 
 #include "io/gfx/video.h"
 #include "io/sound.h"
-//#include "player/levelplayer.h"
-
 #include "util.h"
 
 

@@ -1,12 +1,13 @@
 
 /**
  *
- * @file scene.h
+ * @file jj1scene.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 3rd February 2009: Created scene.h from parts of scene.c
+ * 1st August 2012: Renamed scene.h to jj1scene.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson

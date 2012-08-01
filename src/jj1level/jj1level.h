@@ -1,7 +1,7 @@
 
 /**
  *
- * @file level.h
+ * @file jj1level.h
  *
  * Part of the OpenJazz project
  *
@@ -11,6 +11,7 @@
  * 19th March 2009: Created sprite.h from parts of level.h
  * 30th March 2010: Created baselevel.h from parts of level.h
  * 29th June 2010: Created jj2level.h from parts of level.h
+ * 1st August 2012: Renamed level.h to jj1level.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -34,7 +35,7 @@
 #define _LEVEL_H
 
 
-#include "baselevel.h"
+#include "level/level.h"
 #include "io/gfx/anim.h"
 #include "OpenJazz.h"
 
