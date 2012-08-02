@@ -1,6 +1,6 @@
 # OpenJazz makefile
 
-objects = src/bonus/bonus.o \
+objects = \
 	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
 	src/game/localgame.o src/game/servergame.o \
 	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
@@ -9,21 +9,29 @@ objects = src/bonus/bonus.o \
 	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
 	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o \
 	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
+	src/jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.o \
+	src/jj1bonuslevel/jj1bonuslevel.o \
+	src/jj1level/jj1event/jj1bridge.o src/jj1level/jj1event/jj1event.o \
+	src/jj1level/jj1event/jj1guardians.o \
+	src/jj1level/jj1event/jj1standardevent.o \
+	src/jj1level/jj1levelplayer/jj1bird.o \
+	src/jj1level/jj1levelplayer/jj1levelplayer.o \
+	src/jj1level/jj1levelplayer/jj1levelplayerframe.o \
+	src/jj1level/jj1bullet.o src/jj1level/jj1demolevel.o \
+	src/jj1level/jj1level.o src/jj1level/jj1levelframe.o \
+	src/jj1level/jj1levelload.o \
+	src/jj1planet/jj1planet.o \
+	src/jj1scene/jj1scene.o src/jj1scene/jj1sceneload.o \
 	src/jj2level/jj2event/jj2event.o src/jj2level/jj2event/jj2eventframe.o \
+	src/jj2level/jj2levelplayer/jj2levelplayer.o \
+	src/jj2level/jj2levelplayer/jj2levelplayerframe.o \
 	src/jj2level/jj2layer.o src/jj2level/jj2level.o \
 	src/jj2level/jj2levelframe.o src/jj2level/jj2levelload.o \
-	src/level/event/bridge.o src/level/event/guardians.o \
-	src/level/event/event.o src/level/event/standardevent.o \
-	src/level/bullet.o src/level/demolevel.o src/level/level.o \
-	src/level/levelframe.o src/level/levelload.o src/level/movable.o \
+	src/level/level.o src/level/movable.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/plasma.o src/menu/setupmenu.o \
-	src/planet/planet.o \
-	src/player/bird.o src/player/bonusplayer.o src/player/jj2levelplayer.o \
-	src/player/jj2levelplayerframe.o src/player/levelplayer.o \
-	src/player/levelplayerframe.o src/player/player.o \
-	src/scene/scene.o src/scene/sceneload.o \
-	src/baselevel.o src/main.o src/util.o
+	src/player/player.o \
+	src/main.o src/util.o
 
 
 OpenJazz: $(objects)
