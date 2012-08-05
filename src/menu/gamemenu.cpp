@@ -645,7 +645,7 @@ int GameMenu::joinGame () {
 
 			default:
 
-				message("COULD COMPLETE CONNECTION");
+				message("COULD NOT COMPLETE CONNECTION");
 
 				break;
 
@@ -669,6 +669,12 @@ int GameMenu::joinGame () {
 		case E_FILE:
 
 			message("FILE NOT FOUND");
+
+			break;
+
+		case E_N_DISCONNECT:
+
+			message("DISCONNECTED");
 
 			break;
 

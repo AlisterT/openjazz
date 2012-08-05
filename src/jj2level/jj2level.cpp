@@ -400,7 +400,7 @@ int JJ2Level::play () {
 	bool pmessage, pmenu;
 	int option;
 	unsigned int returnTime;
- 	int count;
+	int count, ret;
 
 
 	jj2LevelPlayer = localPlayer->getJJ2LevelPlayer();
@@ -420,17 +420,17 @@ int JJ2Level::play () {
 
 	while (true) {
 
-		count = loop(pmenu, option, pmessage);
+		ret = loop(pmenu, option, pmessage);
 
-		if (count <= 0) return count;
+		if (ret < 0) return ret;
 
 
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
-			count = game->setLevel(nextLevel);
+			ret = game->setLevel(nextLevel);
 
-			if (count < 0) return count;
+			if (ret < 0) return ret;
 
 			return WON;
 
@@ -445,10 +445,10 @@ int JJ2Level::play () {
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
 
-			count = step();
+			ret = step();
 			steps++;
 
-			if (count) return count;
+			if (ret) return ret;
 
 		}
 

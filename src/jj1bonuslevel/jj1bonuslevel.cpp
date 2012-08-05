@@ -762,7 +762,7 @@ int JJ1BonusLevel::play () {
 	bool pmenu, pmessage;
 	int option;
 	unsigned int returnTime;
-	int count;
+	int ret;
 
 
 	tickOffset = globalTicks;
@@ -778,9 +778,9 @@ int JJ1BonusLevel::play () {
 
 	while (true) {
 
-		count = loop(pmenu, option, pmessage);
+		ret = loop(pmenu, option, pmessage);
 
-		if (count <= 0) return count;
+		if (ret < 0) return ret;
 
 
 		// Check if level has been won
@@ -803,11 +803,11 @@ int JJ1BonusLevel::play () {
 
 		while ((getTimeChange() >= 17) && (stage == LS_NORMAL)) {
 
-			count = step();
+			ret = step();
 			steps++;
 
-			if (count < 0) return count;
-			else if (count) {
+			if (ret < 0) return ret;
+			else if (ret) {
 
 				stage = LS_END;
 				paletteEffects = new WhiteOutPaletteEffect(T_BONUS_END, paletteEffects);

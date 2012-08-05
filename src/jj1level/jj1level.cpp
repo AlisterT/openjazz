@@ -612,8 +612,6 @@ int JJ1Level::playBonus () {
 
 	delete[] bonusFile;
 
-	if (ret == E_NONE) playMusic("menusng.psm");
-
 	return ret;
 
 }
@@ -685,7 +683,7 @@ int JJ1Level::play () {
 	unsigned int returnTime;
  	int perfect;
  	int timeBonus;
- 	int count;
+ 	int count, ret;
 
 
 	levelPlayer = localPlayer->getJJ1LevelPlayer();
@@ -707,9 +705,9 @@ int JJ1Level::play () {
 
 	while (true) {
 
-		count = loop(pmenu, option, pmessage);
+		ret = loop(pmenu, option, pmessage);
 
-		if (count <= 0) return count;
+		if (ret < 0) return ret;
 
 
 		// Check if level has been won
@@ -718,9 +716,9 @@ int JJ1Level::play () {
 			if (!multiplayer) {
 
 				// If the gem has been collected, play the bonus level
-				count = playBonus();
+				ret = playBonus();
 
-				if (count <= 0) return count;
+				if (ret < 0) return ret;
 
 			}
 
@@ -728,17 +726,17 @@ int JJ1Level::play () {
 
 				if (playScene(sceneFile) == E_QUIT) return E_QUIT;
 
-				count = game->setLevel(NULL);
+				ret = game->setLevel(NULL);
 
 			} else {
 
 				string = createFileName(F_LEVEL, nextLevelNum, nextWorldNum);
-				count = game->setLevel(string);
+				ret = game->setLevel(string);
 				delete[] string;
 
 			}
 
-			if (count < 0) return count;
+			if (ret < 0) return ret;
 
 			return WON;
 
@@ -755,10 +753,10 @@ int JJ1Level::play () {
 			for (count = 0; count < PCONTROLS; count++)
 				localPlayer->setControl(count, controls.getState(count));
 
-			count = step();
+			ret = step();
 			steps++;
 
-			if (count) return count;
+			if (ret) return ret;
 
 			if (!multiplayer && playerWasAlive && (localPlayer->getJJ1LevelPlayer()->getEnergy() == 0))
 				flash(0, 0, 0, T_END << 1);

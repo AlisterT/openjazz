@@ -504,7 +504,7 @@ int ClientGame::step (unsigned int ticks) {
 			if (file) delete file;
 			file = NULL;
 
-			return E_N_OTHER;
+			return E_N_DISCONNECT;
 
 		}
 

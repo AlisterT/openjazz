@@ -22,7 +22,7 @@
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -113,21 +113,24 @@
 #define STRING_LENGTH 32
 
 // Return values
-#define E_DATA      -14
-#define E_VERSION   -13
-#define E_TIMEOUT   -12
-#define E_N_OTHER   -11
-#define E_N_CONNECT -10
-#define E_N_ADDRESS -9
-#define E_N_LISTEN  -8
-#define E_N_BIND    -7
-#define E_N_SOCKET  -6
-#define E_DEMOTYPE  -5
-#define E_FILE      -4
-#define E_VIDEO     -3
-#define E_RETURN    -2
-#define E_QUIT      -1
+#define E_N_OTHER      -(0x26)
+#define E_N_DISCONNECT -(0x25)
+#define E_N_CONNECT    -(0x24)
+#define E_N_ADDRESS    -(0x23)
+#define E_N_LISTEN     -(0x22)
+#define E_N_BIND       -(0x21)
+#define E_N_SOCKET     -(0x20)
+#define E_DATA         -(0x15)
+#define E_VERSION      -(0x14)
+#define E_TIMEOUT      -(0x13)
+#define E_DEMOTYPE     -(0x12)
+#define E_FILE         -(0x11)
+#define E_VIDEO        -(0x10)
+#define E_RETURN       -(0x02)
+#define E_QUIT         -(0x01)
+
 #define E_NONE       0
+
 #define WON          1
 #define LOST         2
 #define JOYSTICKB    0x100

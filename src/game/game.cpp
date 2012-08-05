@@ -301,7 +301,7 @@ int Game::play () {
 
 		if (ret <= 0) {
 
-			if (ret == E_NONE) playMusic("menusng.psm");
+			if (ret != E_QUIT) playMusic("menusng.psm");
 
 			return ret;
 

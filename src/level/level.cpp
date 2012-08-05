@@ -324,11 +324,11 @@ int Level::select (bool& menu, int option) {
 
 		case 5: // Quit game
 
-			return E_NONE;
+			return E_RETURN;
 
 	}
 
-	return 1;
+	return E_NONE;
 
 }
 
@@ -350,21 +350,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		ret = game->step(ticks);
 
-		switch (ret) {
-
-			case E_RETURN:
-
-				return E_NONE;
-
-			case E_NONE:
-
-				break;
-
-			default:
-
-				return ret;
-
-		}
+		if (ret < 0) return ret;
 
 	}
 
@@ -401,7 +387,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 			ret = select(menu, option);
 
-			if (ret <= 0) return ret;
+			if (ret < 0) return ret;
 
 		}
 
@@ -416,7 +402,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 				ret = select(menu, option);
 
-				if (ret <= 0) return ret;
+				if (ret < 0) return ret;
 
 			} else menu = false;
 
@@ -432,7 +418,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 	timeCalcs();
 
-	return 1;
+	return E_NONE;
 
 }
 
