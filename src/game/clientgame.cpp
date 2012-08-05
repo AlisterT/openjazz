@@ -422,7 +422,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							players[count].init(this, (char *)recvBuffer + 9,
 								recvBuffer + 5, recvBuffer[4]);
-							resetPlayer(players + count, LT_LEVEL, NULL);
+							addLevelPlayer(players + count, LT_JJ1);
 
 							printf("Player %d joined team %d.\n", count, recvBuffer[4]);
 

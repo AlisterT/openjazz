@@ -70,7 +70,7 @@ OBJS = \
 	src/jj2level/jj2levelplayer/jj2levelplayerframe.o \
 	src/jj2level/jj2layer.o src/jj2level/jj2level.o \
 	src/jj2level/jj2levelframe.o src/jj2level/jj2levelload.o \
-	src/level/level.o src/level/movable.o \
+	src/level/level.o src/level/movable.o src/level/levelplayer.o \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/plasma.o src/menu/setupmenu.o \
 	src/player/player.o \

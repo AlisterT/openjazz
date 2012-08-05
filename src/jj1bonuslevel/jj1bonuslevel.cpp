@@ -356,18 +356,8 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	for (count = 0; count < BPANIMS; count++) pAnims[count] = animSet + count;
 
-	// Set the players' initial values
-	if (game) {
 
-		game->setCheckpoint(x, y);
-
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_BONUS, pAnims);
-
-	} else {
-
-		localPlayer->reset(LT_BONUS, pAnims, x, y);
-
-	}
+	createLevelPlayers(LT_JJ1BONUS, pAnims, false, x, y);
 
 
 	delete file;

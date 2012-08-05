@@ -28,13 +28,13 @@
    "Tiles" in the context of level units are referred to as grid elements. */
 
 
-#ifndef _LEVELPLAYER_H
-#define _LEVELPLAYER_H
+#ifndef _JJ1LEVELPLAYER_H
+#define _JJ1LEVELPLAYER_H
 
 
 #include "player/player.h"
 
-#include "level/movable.h"
+#include "level/levelplayer.h"
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
@@ -152,11 +152,10 @@ class Anim;
 class JJ1Bird;
 
 /// JJ1 level player
-class JJ1LevelPlayer : public Movable {
+class JJ1LevelPlayer : public LevelPlayer {
 
 	private:
 		JJ1Bird*          birds; ///< Bird companion(s)
-		SDL_Color         palette[256]; ///< Palette (for custom colours)
 		Anim*             anims[PANIMS]; ///< Animations
 		int               energy; ///< 0 = dead, 4 = maximum
 		int               shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
@@ -181,8 +180,6 @@ class JJ1LevelPlayer : public Movable {
 		bool              gem; ///< Bonus level gem collected
 
 	public:
-		Player* player; ///< Corresponding game player
-
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1LevelPlayer ();
 

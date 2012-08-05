@@ -45,6 +45,14 @@
 #define SKEY 254 /* Sprite colour key */
 
 
+/**
+ * Load a sprite.
+ *
+ * @param parameters Sprite parameters
+ * @param compressedPixels Compressed data from which to obtain the sprite data
+ * @param sprite Sprite that will receive the loaded data
+ * @param flippedSprite Sprite that will receive the flipped loaded data
+ */
 void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite) {
 
 	unsigned char* pixels;
@@ -133,6 +141,11 @@ void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedP
 }
 
 
+/**
+ * Load sprites.
+ *
+ * @return Error code
+ */
 int JJ2Level::loadSprites () {
 
 	File* file;
@@ -267,6 +280,13 @@ int JJ2Level::loadSprites () {
 }
 
 
+/**
+ * Load the tileset.
+ *
+ * @param fileName Name of the file containing the tileset
+ *
+ * @return The number of tiles loaded and the maximum possible number of tiles
+ */
 int JJ2Level::loadTiles (char* fileName) {
 
 	File* file;
@@ -432,6 +452,13 @@ int JJ2Level::loadTiles (char* fileName) {
 }
 
 
+/**
+ * Create an event.
+ *
+ * @param x X-coordinate of the new event
+ * @param y Y-coordinate of the new event
+ * @param data Event parameters
+ */
 void JJ2Level::createEvent (int x, int y, unsigned char* data) {
 
 	unsigned char type;
@@ -510,6 +537,14 @@ void JJ2Level::createEvent (int x, int y, unsigned char* data) {
 }
 
 
+/**
+ * Load the level.
+ *
+ * @param fileName Name of the file containing the level data
+ * @param checkpoint Whether or not the player(s) will start at a checkpoint
+ *
+ * @return Error code
+ */
 int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	Anim* pAnims[2];
@@ -522,7 +557,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	int aCLength, bCLength, cCLength, dCLength;
 	int aLength, bLength, cLength, dLength;
 	int tiles;
-	int count, x, y;
+	int count, x, y, ret;
 	unsigned char tileQuad[8];
 	short int* quadRefs;
 	int flags, width, pitch, height;
@@ -597,9 +632,9 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Load tile set from given file
 
-	tiles = loadTiles((char *)aBuffer + 51);
+	ret = loadTiles((char *)aBuffer + 51);
 
-	if (tiles < 0) {
+	if (ret < 0) {
 
 		delete[] dBuffer;
 		delete[] cBuffer;
@@ -608,12 +643,12 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 		delete font;
 
-		return tiles;
+		return ret;
 
 	}
 
-	TSF = tiles >> 28;
-	tiles = tiles & 0xFFFF;
+	TSF = ret >> 28;
+	tiles = ret & 0xFFFF;
 
 
 	// Next level
@@ -715,7 +750,9 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Load anims from anims.j2a
 
-	if (loadSprites() < 0) {
+	ret = loadSprites();
+
+	if (ret < 0) {
 
 		delete file;
 
@@ -736,7 +773,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 		delete font;
 
-		return count;
+		return ret;
 
 	}
 
@@ -769,17 +806,8 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	pAnims[0] = animSets[54];
 	pAnims[1] = flippedAnimSets[54];
 
-	if (game) {
 
-		if (!checkpoint) game->setCheckpoint(startX, startY);
-
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_JJ2LEVEL, pAnims);
-
-	} else {
-
-		localPlayer->reset(LT_JJ2LEVEL, pAnims, startX, startY);
-
-	}
+	createLevelPlayers(LT_JJ2, pAnims, checkpoint, startX, startY);
 
 
 	// And that's us done!

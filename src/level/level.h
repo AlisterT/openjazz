@@ -1,12 +1,13 @@
 
 /**
  *
- * @file baselevel.h
+ * @file level.h
  *
  * Part of the OpenJazz project
  *
  * @section History
  * 30th March 2010: Created baselevel.h from parts of level.h
+ * 1st August 2012: Renamed baselevel.h to level.h
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -42,7 +43,7 @@
 /// Level type
 enum LevelType {
 
-	LT_LEVEL, LT_BONUS, LT_JJ2LEVEL
+	LT_JJ1, LT_JJ1BONUS, LT_JJ2
 
 };
 
@@ -63,6 +64,7 @@ enum LevelStage {
 
 // Classes
 
+class Anim;
 class File;
 class Game;
 class PaletteEffect;
@@ -93,6 +95,8 @@ class Level {
 		bool           paused; ///< Whether or not the level is paused
 		LevelStage     stage; ///< Level stage
 		int            stats; ///< Which statistics to display on-screen, see #LevelStats
+
+		void createLevelPlayers (LevelType levelType, Anim** anims, bool checkpoint, unsigned char x, unsigned char y);
 
 		int  playScene     (char* file);
 		void timeCalcs     ();

@@ -438,7 +438,6 @@ int JJ1Level::loadTiles (char* fileName) {
  * Load the level.
  *
  * @param fileName Name of the file containing the level data
- * @param diff Difficulty level
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  *
  * @return Error code
@@ -945,18 +944,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] string;
 
-	// Set the players' initial values
-	if (game) {
 
-		if (!checkpoint) game->setCheckpoint(startX, startY);
-
-		for (count = 0; count < nPlayers; count++) game->resetPlayer(players + count, LT_LEVEL, pAnims);
-
-	} else {
-
-		localPlayer->reset(LT_LEVEL, pAnims, startX, startY);
-
-	}
+	createLevelPlayers(LT_JJ1, pAnims, checkpoint, startX, startY);
 
 
 	// Load miscellaneous animations

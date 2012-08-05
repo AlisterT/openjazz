@@ -29,6 +29,7 @@
 #include "../jj1bonuslevel.h"
 #include "jj1bonuslevelplayer.h"
 
+#include "game/game.h"
 #include "io/controls.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
@@ -45,7 +46,7 @@
  * @param startX Starting position x-coordinate
  * @param startY Starting position y-coordinate
  */
-JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY) {
+JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
 	int count;
 
@@ -54,15 +55,9 @@ JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsig
 
 	memcpy(anims, newAnims, BPANIMS * sizeof(Anim*));
 
-	x = TTOF(startX) + F16;
-	y = TTOF(startY) + F16;
-	z = 0;
+	birds = flockSize;
 
-	direction = FQ;
-	dr = 0;
-	da = 0;
-	dz = 0;
-	gems = 0;
+	reset(startX, startY);
 
 
 	// Create the player's palette
@@ -82,6 +77,32 @@ JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsig
  * Delete the JJ1 bonus level player.
  */
 JJ1BonusLevelPlayer::~JJ1BonusLevelPlayer () {
+
+	return;
+
+}
+
+
+/**
+ * Reset the player's position, energy etc.
+ *
+ * @param startX New x-coordinate
+ * @param startY New y-coordinate
+ */
+void JJ1BonusLevelPlayer::reset (unsigned char startX, unsigned char startY) {
+
+	x = TTOF(startX) + F16;
+	y = TTOF(startY) + F16;
+	z = 0;
+	dx = 0;
+	dy = 0;
+	dz = 0;
+
+	direction = FQ;
+	dr = 0;
+	da = 0;
+
+	gems = 0;
 
 	return;
 
@@ -125,30 +146,6 @@ int JJ1BonusLevelPlayer::getGems () {
 
 
 /**
- * Determine the player's X-coordinate.
- *
- * @return Player's X-coordinate
- */
-fixed JJ1BonusLevelPlayer::getX () {
-
-	return x;
-
-}
-
-
-/**
- * Determine the player's Y-coordinate.
- *
- * @return Player's Y-coordinate
- */
-fixed JJ1BonusLevelPlayer::getY () {
-
-	return y;
-
-}
-
-
-/**
  * Determine the player's Z-coordinate (altitude).
  *
  * @return Player's Z-coordinate
@@ -156,6 +153,18 @@ fixed JJ1BonusLevelPlayer::getY () {
 fixed JJ1BonusLevelPlayer::getZ () {
 
 	return z;
+
+}
+
+
+/**
+ * Determine how many birds are accompanying the player.
+ *
+ * @return The number of birds accompanying the player
+ */
+int JJ1BonusLevelPlayer::countBirds () {
+
+	return birds;
 
 }
 
@@ -333,6 +342,70 @@ void JJ1BonusLevelPlayer::draw (unsigned int ticks) {
 	anim->setFrame(ticks / 75, true);
 	if (canvasW <= SW) anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 16 - FTOI(z * 80)));
 	else anim->drawScaled(ITOF(canvasW >> 1), ITOF(canvasH - ((((anim->getHeight() >> 1) + 16 + FTOI(z * 80)) * canvasW) / SW)), ITOF(canvasW) / SW);
+
+	return;
+
+}
+
+
+/**
+ * Fill a buffer with player data.
+ *
+ * @param buffer The buffer
+ */
+void JJ1BonusLevelPlayer::send (unsigned char *buffer) {
+
+	// Copy data to be sent to clients/server
+
+	buffer[9] = birds;
+	buffer[23] = 0;
+	buffer[25] = 0;
+	buffer[26] = 0;
+	buffer[27] = direction >> 2;
+	buffer[29] = 0;
+	buffer[30] = 0;
+	buffer[31] = 0;
+	buffer[32] = 0;
+	buffer[33] = z >> 24;
+	buffer[34] = (z >> 16) & 255;
+	buffer[35] = (z >> 8) & 255;
+	buffer[36] = z & 255;
+	buffer[37] = x >> 24;
+	buffer[38] = (x >> 16) & 255;
+	buffer[39] = (x >> 8) & 255;
+	buffer[40] = x & 255;
+	buffer[41] = y >> 24;
+	buffer[42] = (y >> 16) & 255;
+	buffer[43] = (y >> 8) & 255;
+	buffer[44] = y & 255;
+
+	return;
+
+}
+
+
+/**
+ * Adjust player data based on the contents of a given buffer.
+ *
+ * @param buffer The buffer
+ */
+void JJ1BonusLevelPlayer::receive (unsigned char *buffer) {
+
+	// Interpret data received from client/server
+
+	switch (buffer[1]) {
+
+		case MT_P_TEMP:
+
+			birds = buffer[9];
+			direction = buffer[27] << 2;
+			z = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];
+			x = (buffer[37] << 24) + (buffer[38] << 16) + (buffer[39] << 8) + buffer[40];
+			y = (buffer[41] << 24) + (buffer[42] << 16) + (buffer[43] << 8) + buffer[44];
+
+			break;
+
+	}
 
 	return;
 

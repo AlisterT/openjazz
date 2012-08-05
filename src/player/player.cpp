@@ -31,6 +31,7 @@
 #include "jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.h"
 #include "jj1level/jj1levelplayer/jj1levelplayer.h"
 #include "jj2level/jj2levelplayer/jj2levelplayer.h"
+#include "level/levelplayer.h"
 
 #include "game/game.h"
 #include "io/controls.h"
@@ -45,9 +46,6 @@
 Player::Player () {
 
 	levelPlayer = NULL;
-	bonusPlayer = NULL;
-	jj2LevelPlayer = NULL;
-
 	name = NULL;
 
 	return;
@@ -124,11 +122,7 @@ void Player::init (Game* owner, char *playerName, unsigned char *playerCols, uns
 void Player::deinit () {
 
 	if (levelPlayer) delete levelPlayer;
-	if (bonusPlayer) delete bonusPlayer;
-	if (jj2LevelPlayer) delete levelPlayer;
 	levelPlayer = NULL;
-	bonusPlayer = NULL;
-	jj2LevelPlayer = NULL;
 
 	if (name) delete[] name;
 	name = NULL;
@@ -146,8 +140,7 @@ void Player::deinit () {
  */
 void Player::reset (unsigned char x, unsigned char y) {
 
-	if (levelPlayer) levelPlayer->reset(x, y);
-	else if (jj2LevelPlayer) jj2LevelPlayer->reset(x, y);
+	levelPlayer->reset(x, y);
 
 	return;
 
@@ -162,7 +155,7 @@ void Player::reset (unsigned char x, unsigned char y) {
  * @param x The level player's new grid x-coordinate
  * @param y The level player's new grid y-coordinate
  */
-void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned char y) {
+void Player::createLevelPlayer (LevelType levelType, Anim** anims, unsigned char x, unsigned char y) {
 
 	int count;
 
@@ -170,42 +163,26 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 		flockSize = levelPlayer->countBirds();
 		delete levelPlayer;
-		levelPlayer = NULL;
-
-	}
-
-	if (bonusPlayer) {
-
-		delete bonusPlayer;
-		bonusPlayer = NULL;
-
-	}
-
-	if (jj2LevelPlayer) {
-
-		flockSize = jj2LevelPlayer->countBirds();
-		delete jj2LevelPlayer;
-		jj2LevelPlayer = NULL;
 
 	}
 
 	switch (levelType) {
 
-		case LT_LEVEL:
+		case LT_JJ1:
 
 			levelPlayer = new JJ1LevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
-		case LT_BONUS:
+		case LT_JJ1BONUS:
 
-			bonusPlayer = new JJ1BonusLevelPlayer(this, anims, x, y);
+			levelPlayer = new JJ1BonusLevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
-		case LT_JJ2LEVEL:
+		case LT_JJ2:
 
-			jj2LevelPlayer = new JJ2LevelPlayer(this, anims, x, y, flockSize);
+			levelPlayer = new JJ2LevelPlayer(this, anims, x, y, flockSize);
 
 			break;
 
@@ -219,13 +196,13 @@ void Player::reset (LevelType levelType, Anim** anims, unsigned char x, unsigned
 
 
 /**
- * Get the player's JJ1 bonus level player.
+ * Get the player's level player.
  *
- * @return The JJ1 bonus level player
+ * @return The level player
  */
-JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
+LevelPlayer* Player::getLevelPlayer () {
 
-	return bonusPlayer;
+	return levelPlayer;
 
 }
 
@@ -255,13 +232,13 @@ char * Player::getName () {
 
 
 /**
- * Get the player's JJ2 level player.
+ * Get the player's JJ1 bonus level player.
  *
- * @return The JJ2 level player
+ * @return The JJ1 bonus level player
  */
-JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
+JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
 
-	return jj2LevelPlayer;
+	return (JJ1BonusLevelPlayer*)levelPlayer;
 
 }
 
@@ -273,7 +250,19 @@ JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
  */
 JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
 
-	return levelPlayer;
+	return (JJ1LevelPlayer*)levelPlayer;
+
+}
+
+
+/**
+ * Get the player's JJ2 level player.
+ *
+ * @return The JJ2 level player
+ */
+JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
+
+	return (JJ2LevelPlayer*)levelPlayer;
 
 }
 
@@ -466,7 +455,6 @@ void Player::send (unsigned char *buffer) {
 	buffer[6] = pcontrols[C_RIGHT];
 	buffer[7] = pcontrols[C_JUMP];
 	buffer[8] = pcontrols[C_FIRE];
-	if (!levelPlayer) buffer[9] = flockSize;
 	buffer[10] = ammo[0] >> 8;
 	buffer[11] = ammo[0] & 255;
 	buffer[12] = ammo[1] >> 8;
@@ -484,8 +472,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[28] = fireSpeed;
 	buffer[45] = pcontrols[C_SWIM];
 
-	if (levelPlayer) levelPlayer->send(buffer);
-	if (jj2LevelPlayer) jj2LevelPlayer->send(buffer);
+	levelPlayer->send(buffer);
 
 	return;
 
@@ -507,7 +494,7 @@ void Player::receive (unsigned char *buffer) {
 		pcontrols[C_SWIM] = buffer[45];
 		pcontrols[C_FIRE] = buffer[8];
 		pcontrols[C_CHANGE] = false;
-		if (!levelPlayer) flockSize = buffer[9];
+		flockSize = buffer[9];
 		ammo[0] = (buffer[10] << 8) + buffer[11];
 		ammo[1] = (buffer[12] << 8) + buffer[13];
 		ammo[2] = (buffer[14] << 8) + buffer[15];
@@ -519,8 +506,7 @@ void Player::receive (unsigned char *buffer) {
 
 	}
 
-	if (levelPlayer) levelPlayer->receive(buffer);
-	if (jj2LevelPlayer) jj2LevelPlayer->receive(buffer);
+	levelPlayer->receive(buffer);
 
 	return;
 

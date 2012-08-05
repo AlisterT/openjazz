@@ -104,6 +104,8 @@ class Game {
 
 		GameMode* createMode (GameModeType modeType);
 
+		void addLevelPlayer (Player *player, LevelType levelType);
+
 	public:
 		virtual ~Game ();
 
@@ -119,7 +121,6 @@ class Game {
 		virtual void score         (unsigned char team) = 0;
 		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY) = 0;
 		void         resetPlayer   (Player *player);
-		void         resetPlayer   (Player *player, LevelType levelType, Anim** anims);
 
 };
 

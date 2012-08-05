@@ -388,26 +388,23 @@ void Game::resetPlayer (Player *player) {
  * @param levelType Type of level (and, consequently, type of level player)
  * @param anims New level player's animations
  */
-void Game::resetPlayer (Player *player, LevelType levelType, Anim** anims) {
+void Game::addLevelPlayer (Player *player, LevelType levelType) {
 
 	Anim* pAnims[PANIMS];
 	int count;
 
-	if (anims) {
-
-		player->reset(levelType, anims, checkX, checkY);
-
-	} else if (level) {
+	if (level) {
 
 		for (count = 0; count < PANIMS; count++) pAnims[count] = level->getAnim(0);
-		player->reset(levelType, pAnims, checkX, checkY);
+
+		player->createLevelPlayer(levelType, pAnims, checkX, checkY);
 
 	} else if (jj2Level) {
 
 		pAnims[0] = jj2Level->getAnim(54, 0, false);
 		pAnims[1] = jj2Level->getAnim(54, 0, true);
 
-		player->reset(levelType, pAnims, checkX, checkY);
+		player->createLevelPlayer(levelType, pAnims, checkX, checkY);
 
 	}
 

@@ -85,6 +85,33 @@ Level::~Level () {
 
 
 /**
+ * Set the players' initial values.
+ *
+ * @param levelType The type of level for which to create a level player
+ * @param anims New level player animations
+ * @param checkpoint Whether or not a checkpoint is in use
+ * @param x The level players' new grid x-coordinate
+ * @param y The level players' new grid y-coordinate
+ */
+void Level::createLevelPlayers (LevelType levelType, Anim** anims, bool checkpoint, unsigned char x, unsigned char y) {
+
+	int count;
+
+	if (!checkpoint) game->setCheckpoint(x, y);
+
+	for (count = 0; count < nPlayers; count++) {
+
+		players[count].createLevelPlayer(levelType, anims, x, y);
+		game->resetPlayer(players + count);
+
+	}
+
+	return;
+
+}
+
+
+/**
  * Play a cutscene.
  *
  * @param file File name of the cutscene to be played

@@ -33,7 +33,7 @@
 #include "player/player.h"
 
 #include "jj2level/jj2level.h"
-#include "level/movable.h"
+#include "level/levelplayer.h"
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
@@ -249,14 +249,13 @@ class Anim;
 class JJ2Event;
 
 /// JJ2 level player
-class JJ2LevelPlayer : public Movable {
+class JJ2LevelPlayer : public LevelPlayer {
 
 	private:
 		int               birds; ///< Placeholder for eventual JJ2Bird objects
 		Anim*             anims; ///< Animations
 		Anim*             flippedAnims; ///< Animations (flipped)
 		JJ2Modifier*      mod; ///< Modifier currently affecting player
-		SDL_Color         palette[256]; ///< Palette (for custom colours)
 		int               energy; ///< 0 = dead, 3 or 5 = maximum
 		JJ2Shield         shield; ///< Current shield
 		int               floating; ///< 0 = normal, 1 = helicopter ears, 2 = boarding
@@ -280,8 +279,6 @@ class JJ2LevelPlayer : public Movable {
 		void              modify  (JJ2Modifier* nextMod, unsigned int ticks);
 
 	public:
-		Player* player; ///< Corresponding game player
-
 		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ2LevelPlayer ();
 

@@ -25,6 +25,7 @@
 #define _BONUSPLAYER_H
 
 
+#include "level/levelplayer.h"
 #include "player/player.h"
 
 #include "OpenJazz.h"
@@ -71,13 +72,11 @@ class Anim;
 class JJ1BonusLevel;
 
 /// JJ1 bonus level player
-class JJ1BonusLevelPlayer {
+class JJ1BonusLevelPlayer : public LevelPlayer {
 
 	private:
-		SDL_Color     palette[256]; ///< Palette (for custom colours)
 		Anim*         anims[BPANIMS]; ///< Animations
-		fixed         x; ///< X-coordinate
-		fixed         y; ///< Y-coordinate
+		int           birds; ///< Number of birds (not present in bonus levels)
 		fixed         z; ///< Z-coordinate (altitude)
 		fixed         direction; ///< Direction
 		fixed         dr; ///< Forward speed
@@ -88,17 +87,19 @@ class JJ1BonusLevelPlayer {
 		int           gems; ///< Number of gems collected
 
 	public:
-		Player* player; ///< Corresponding game player
-
-		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY);
+		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1BonusLevelPlayer ();
 
+		void          reset        (unsigned char startX, unsigned char startY);
+
 		void          addGem       ();
+		int           countBirds   ();
 		fixed         getDirection ();
 		int           getGems      ();
-		fixed         getX         ();
-		fixed         getY         ();
 		fixed         getZ         ();
+
+		void          send         (unsigned char* buffer);
+		void          receive      (unsigned char* buffer);
 
 		void          step         (unsigned int ticks, int msps, JJ1BonusLevel* bonus);
 		void          draw         (unsigned int ticks);

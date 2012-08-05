@@ -84,15 +84,14 @@ class Anim;
 class JJ1LevelPlayer;
 class JJ1BonusLevelPlayer;
 class JJ2LevelPlayer;
+class LevelPlayer;
 
 /// Game player
 class Player {
 
 	private:
 		Game*                game;
-		JJ1LevelPlayer*      levelPlayer; ///< JJ1 level player
-		JJ1BonusLevelPlayer* bonusPlayer; ///< JJ1 bonus level player
-		JJ2LevelPlayer*      jj2LevelPlayer; ///< JJ2 level player
+		LevelPlayer*         levelPlayer; ///< Level player base class
 
 		char*           name; ///< Name
 		bool            pcontrols[PCONTROLS]; ///< Control status
@@ -116,11 +115,12 @@ class Player {
 		void            init              (Game* owner, char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit            ();
 		void            reset             (unsigned char x, unsigned char y);
-		void            reset             (LevelType levelType, Anim** anims, unsigned char x, unsigned char y);
 
-		JJ1BonusLevelPlayer* getJJ1BonusLevelPlayer    ();
-		JJ1LevelPlayer*      getJJ1LevelPlayer    ();
-		JJ2LevelPlayer*      getJJ2LevelPlayer ();
+		void                 createLevelPlayer      (LevelType levelType, Anim** anims, unsigned char x, unsigned char y);
+		LevelPlayer*         getLevelPlayer         ();
+		JJ1BonusLevelPlayer* getJJ1BonusLevelPlayer ();
+		JJ1LevelPlayer*      getJJ1LevelPlayer      ();
+		JJ2LevelPlayer*      getJJ2LevelPlayer      ();
 
 		void            addLife           ();
 		void            addScore          (int addedScore);
