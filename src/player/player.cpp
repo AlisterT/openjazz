@@ -238,7 +238,7 @@ char * Player::getName () {
  */
 JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
 
-	return (JJ1BonusLevelPlayer*)levelPlayer;
+	return dynamic_cast<JJ1BonusLevelPlayer*>(levelPlayer);
 
 }
 
@@ -250,7 +250,7 @@ JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
  */
 JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
 
-	return (JJ1LevelPlayer*)levelPlayer;
+	return dynamic_cast<JJ1LevelPlayer*>(levelPlayer);
 
 }
 
@@ -262,7 +262,7 @@ JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
  */
 JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
 
-	return (JJ2LevelPlayer*)levelPlayer;
+	return dynamic_cast<JJ2LevelPlayer*>(levelPlayer);
 
 }
 
@@ -472,7 +472,7 @@ void Player::send (unsigned char *buffer) {
 	buffer[28] = fireSpeed;
 	buffer[45] = pcontrols[C_SWIM];
 
-	levelPlayer->send(buffer);
+	if (levelPlayer) levelPlayer->send(buffer);
 
 	return;
 
@@ -506,7 +506,7 @@ void Player::receive (unsigned char *buffer) {
 
 	}
 
-	levelPlayer->receive(buffer);
+	if (levelPlayer) levelPlayer->receive(buffer);
 
 	return;
 
