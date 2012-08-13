@@ -126,6 +126,7 @@ GameMenu::~GameMenu () {
 int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 	Game* game;
+	int ret;
 
 	playSound(S_ORB);
 
@@ -137,7 +138,7 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 		} catch (int e) {
 
-			message("COULD NOT START GAME");
+			if (message("COULD NOT START GAME") == E_QUIT) return E_QUIT;
 
 			return e;
 
@@ -151,7 +152,7 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 		} catch (int e) {
 
-			message("COULD NOT CREATE SERVER");
+			if (message("COULD NOT CREATE SERVER") == E_QUIT) return E_QUIT;
 
 			return e;
 
@@ -162,23 +163,21 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 	// Play the level(s)
 
-	switch (game->play()) {
+	ret = game->play();
+
+	delete game;
+
+	switch (ret) {
 
 		case E_QUIT:
-
-			delete game;
 
 			return E_QUIT;
 
 		case E_FILE:
 
-			message("FILE NOT FOUND");
-
-			break;
+			return message("FILE NOT FOUND");
 
 	}
-
-	delete game;
 
 	return E_NONE;
 
@@ -604,37 +603,37 @@ int GameMenu::joinGame () {
 
 			case E_N_SOCKET:
 
-				message("SOCKET ERROR");
+				if (message("SOCKET ERROR") == E_QUIT) return E_QUIT;
 
 				break;
 
 			case E_N_ADDRESS:
 
-				message("INVALID ADDRESS");
+				if (message("INVALID ADDRESS") == E_QUIT) return E_QUIT;
 
 				break;
 
 			case E_N_CONNECT:
 
-				message("COULD NOT CONNECT");
+				if (message("COULD NOT CONNECT") == E_QUIT) return E_QUIT;
 
 				break;
 
 			case E_TIMEOUT:
 
-				message("OPERATION TIMED OUT");
+				if (message("OPERATION TIMED OUT") == E_QUIT) return E_QUIT;
 
 				break;
 
 			case E_DATA:
 
-				message("INCORRECT DATA\nRECEIVED");
+				if (message("INCORRECT DATA\nRECEIVED") == E_QUIT) return E_QUIT;
 
 				break;
 
 			case E_VERSION:
 
-				message("WRONG SERVER VERSION");
+				if (message("WRONG SERVER VERSION") == E_QUIT) return E_QUIT;
 
 				break;
 
@@ -645,7 +644,7 @@ int GameMenu::joinGame () {
 
 			default:
 
-				message("COULD NOT COMPLETE CONNECTION");
+				if (message("COULD NOT COMPLETE CONNECTION") == E_QUIT) return E_QUIT;
 
 				break;
 
@@ -658,29 +657,25 @@ int GameMenu::joinGame () {
 
 	// Play the level(s)
 
-	switch (game->play()) {
+	ret = game->play();
+
+	delete game;
+
+	switch (ret) {
 
 		case E_QUIT:
-
-			delete game;
 
 			return E_QUIT;
 
 		case E_FILE:
 
-			message("FILE NOT FOUND");
-
-			break;
+			return message("FILE NOT FOUND");
 
 		case E_N_DISCONNECT:
 
-			message("DISCONNECTED");
-
-			break;
+			return message("DISCONNECTED");
 
 	}
-
-	delete game;
 
 	return E_NONE;
 

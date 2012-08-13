@@ -10,7 +10,7 @@
  * 26th July 2009: Renamed menusetup.cpp to setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -631,7 +631,7 @@ int SetupMenu::setupMain () {
 #if !defined(CAANOO) && !defined(WIZ) && !defined(GP2X)
 				if (setupKeyboard() == E_QUIT) return E_QUIT;
 #else
-				message("FEATURE NOT AVAILABLE");
+				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
 #endif
 
 				break;
@@ -642,7 +642,7 @@ int SetupMenu::setupMain () {
 				if (setupJoystick() == E_QUIT) return E_QUIT;
 
 #else
-				message("FEATURE NOT AVAILABLE");
+				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
 #endif
 
 				break;
@@ -658,7 +658,7 @@ int SetupMenu::setupMain () {
 #ifdef SCALE
 				if (setupScaling() == E_QUIT) return E_QUIT;
 #else
-				message("FEATURE NOT AVAILABLE");
+				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
 #endif
 
 				break;

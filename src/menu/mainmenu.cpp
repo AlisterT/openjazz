@@ -180,7 +180,7 @@ int MainMenu::select (int option) {
 
 			} catch (int e) {
 
-				message("COULD NOT LOAD INSTRUCTIONS");
+				if (message("COULD NOT LOAD INSTRUCTIONS") == E_QUIT) return E_QUIT;
 
 				break;
 
@@ -212,7 +212,7 @@ int MainMenu::select (int option) {
 
 			} catch (int e) {
 
-				message("COULD NOT LOAD ORDER INFO");
+				if (message("COULD NOT LOAD ORDER INFO") == E_QUIT) return E_QUIT;
 
 				break;
 
