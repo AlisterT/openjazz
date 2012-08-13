@@ -444,7 +444,7 @@ int JJ1Level::loadTiles (char* fileName) {
  */
 int JJ1Level::load (char* fileName, bool checkpoint) {
 
-	Anim* pAnims[PANIMS];
+	Anim* pAnims[JJ1PANIMS];
 	File* file;
 	unsigned char* buffer;
 	const char* ext;
@@ -921,13 +921,14 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	// Load player's animation set references
 
-	buffer = file->loadRLE(PANIMS * 2);
-	string = new char[MTL_P_ANIMS + PANIMS];
+	buffer = file->loadRLE(JJ1PANIMS * 2);
+	string = new char[MTL_P_ANIMS + JJ1PANIMS];
 
-	for (x = 0; x < PANIMS; x++) {
+	for (x = 0; x < JJ1PANIMS; x++) {
 
-		pAnims[x] = animSet + buffer[x << 1];
-		string[MTL_P_ANIMS + x] = buffer[x << 1];
+		playerAnims[x] = buffer[x << 1];
+		pAnims[x] = animSet + playerAnims[x];
+		string[MTL_P_ANIMS + x] = playerAnims[x];
 
 	}
 
@@ -935,7 +936,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	if (multiplayer) {
 
-		string[0] = MTL_P_ANIMS + PANIMS;
+		string[0] = MTL_P_ANIMS + JJ1PANIMS;
 		string[1] = MT_P_ANIMS;
 		string[2] = 0;
 		game->send((unsigned char *)string);
@@ -945,7 +946,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	delete[] string;
 
 
-	createLevelPlayers(LT_JJ1, pAnims, checkpoint, startX, startY);
+	createLevelPlayers(LT_JJ1, pAnims, NULL, checkpoint, startX, startY);
 
 
 	// Load miscellaneous animations

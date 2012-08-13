@@ -276,6 +276,37 @@ Anim* JJ2Level::getAnim (int set, int anim, bool flipped) {
 
 
 /**
+ * Get a player animation.
+ *
+ * @param character Character
+ * @param anim Animation number
+ * @param flipped Whether or not the animation should be flipped horizontally
+ *
+ * @return Animation
+ */
+Anim* JJ2Level::getPlayerAnim (int character, int anim, bool flipped) {
+
+	int set;
+
+	if (TSF) {
+
+		if (character == 1) set = 85;
+		else set = 54;
+
+	} else {
+
+		if (character == 1) set = 61;
+		else if (character == 2) set = 89;
+		else set = 55;
+
+	}
+
+	return getAnim(set, playerAnims[anim], flipped);
+
+}
+
+
+/**
  * Set the water level.
  *
  * @param gridY New water level y-coordinate

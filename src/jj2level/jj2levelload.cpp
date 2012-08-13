@@ -478,57 +478,49 @@ void JJ2Level::createEvent (int x, int y, unsigned char* data) {
 
 	mods[y][x].type = 0;
 
-	if (type < 41) {
+	if (type <= 40) {
 
-		events = new AmmoJJ2Event(events, x, y, type);
+		events = new AmmoJJ2Event(events, x, y, type, TSF);
 
-	} else if (type < 44) {
+	} else if ((type >= 44) && (type <= 45)) {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
+		events = new CoinGemJJ2Event(events, x, y, type, TSF);
 
-	} else if (type < 46) {
+	} else if (type == 60) {
 
-		events = new CoinGemJJ2Event(events, x, y, type);
+		events = new SpringJJ2Event(events, x, y, type, TSF, properties);
 
-	} else if (type < 63) {
+	} else if (type == 62) {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
+		events = new SpringJJ2Event(events, x, y, type, TSF, properties);
 
-	} else if (type < 67) {
+	} else if ((type >= 63) && (type <= 66)) {
 
-		events = new CoinGemJJ2Event(events, x, y, type);
+		events = new CoinGemJJ2Event(events, x, y, type, TSF);
 
-	} else if (type < 72) {
+	} else if ((type >= 72) && (type <= 73)) {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
-
-	} else if (type < 74) {
-
-		events = new FoodJJ2Event(events, x, y, type);
+		events = new FoodJJ2Event(events, x, y, type, TSF);
 
 	} else if (type == 80) {
 
-		events = new FoodJJ2Event(events, x, y, type);
+		events = new FoodJJ2Event(events, x, y, type, TSF);
 
-	} else if (type < 141) {
+	} else if ((type >= 85) && (type <= 87)) {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
+		events = new SpringJJ2Event(events, x, y, type, TSF, properties);
 
-	} else if (type < 148) {
+	} else if ((type >= 141) && (type <= 147)) {
 
-		events = new FoodJJ2Event(events, x, y, type);
+		events = new FoodJJ2Event(events, x, y, type, TSF);
 
-	} else if (type < 154) {
+	} else if ((type >= 154) && (type <= 182)) {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
-
-	} else if (type < 183) {
-
-		events = new FoodJJ2Event(events, x, y, type);
+		events = new FoodJJ2Event(events, x, y, type, TSF);
 
 	} else {
 
-		events = new OtherJJ2Event(events, x, y, type, properties);
+		events = new OtherJJ2Event(events, x, y, type, TSF, properties);
 
 	}
 
@@ -547,7 +539,8 @@ void JJ2Level::createEvent (int x, int y, unsigned char* data) {
  */
 int JJ2Level::load (char *fileName, bool checkpoint) {
 
-	Anim* pAnims[2];
+	Anim* pAnims[JJ2PANIMS];
+	Anim* pFlippedAnims[JJ2PANIMS];
 	File *file;
 	char *string;
 	unsigned char* aBuffer;
@@ -793,7 +786,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 		string[0] = MTL_P_ANIMS + 1;
 		string[1] = MT_P_ANIMS;
 		string[2] = 0;
-		string[3] = 54;
+		string[3] = 0;
 
 		game->send((unsigned char *)string);
 
@@ -803,11 +796,108 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Set the players' initial values
 
-	pAnims[0] = animSets[54];
-	pAnims[1] = flippedAnimSets[54];
+	if (TSF) {
+
+		for (count = 0; count < JJ2PANIMS; count++) {
+
+			playerAnims[count] = count;
+			pAnims[count] = animSets[55] + count;
+			pFlippedAnims[count] = flippedAnimSets[55] + count;
+
+		}
+
+	} else {
+
+		playerAnims[JJ2PA_BOARD]        = 1;
+		playerAnims[JJ2PA_BOARDSW]      = 2;
+		playerAnims[JJ2PA_STOMP]        = 3;
+		playerAnims[JJ2PA_DEAD]         = 4;
+		playerAnims[JJ2PA_DIE]          = 5;
+		playerAnims[JJ2PA_CROUCH1]      = 6;
+		playerAnims[JJ2PA_CROUCHED]     = 7;
+		playerAnims[JJ2PA_CROUCHSHOOT]  = 8;
+		playerAnims[JJ2PA_CROUCH2]      = 9;
+		playerAnims[JJ2PA_VINE]         = 11;
+		playerAnims[JJ2PA_EXIT1]        = 12;
+		playerAnims[JJ2PA_FALL]         = 13;
+		playerAnims[JJ2PA_STOMPING]     = 14;
+		playerAnims[JJ2PA_LAND]         = 15;
+		playerAnims[JJ2PA_STANDSHOOT]   = 16;
+		playerAnims[JJ2PA_STANDSHOOTUP] = 17;
+		playerAnims[JJ2PA_WHIP1]        = 18;
+		playerAnims[JJ2PA_UNFROG]       = 19;
+		playerAnims[JJ2PA_HOOKWHIP]     = 21;
+		playerAnims[JJ2PA_HOOKDIAG]     = 22;
+		playerAnims[JJ2PA_HOOKSHOOTUP]  = 23;
+		playerAnims[JJ2PA_HOOK1]        = 24;
+		playerAnims[JJ2PA_HOOK2]        = 25;
+		playerAnims[JJ2PA_HOOKWHIPUP]   = 26;
+		playerAnims[JJ2PA_HOOKSHOOT]    = 27;
+		playerAnims[JJ2PA_HELI]         = 28;
+		playerAnims[JJ2PA_HELIWHIP]     = 29;
+		playerAnims[JJ2PA_HELISHOOT]    = 30;
+		playerAnims[JJ2PA_HPOLE]        = 31;
+		playerAnims[JJ2PA_HURT]         = 32;
+		playerAnims[JJ2PA_WAIT1]        = 33;
+		playerAnims[JJ2PA_WAIT2]        = 34;
+		playerAnims[JJ2PA_WAIT3]        = 35;
+		playerAnims[JJ2PA_WAIT4]        = 36;
+		playerAnims[JJ2PA_WAIT5]        = 37;
+		playerAnims[JJ2PA_FALLWHIP]     = 38;
+		playerAnims[JJ2PA_FALLSHOOT]    = 39;
+		playerAnims[JJ2PA_FLOAT1]       = 40;
+		playerAnims[JJ2PA_FLOAT2]       = 41;
+		playerAnims[JJ2PA_UP1]          = 42;
+		playerAnims[JJ2PA_EDGE]         = 43;
+		playerAnims[JJ2PA_CARRY]        = 44;
+		playerAnims[JJ2PA_UNLOAD]       = 45;
+		playerAnims[JJ2PA_LOAD]         = 46;
+		playerAnims[JJ2PA_LOOKUP]       = 47;
+		playerAnims[JJ2PA_WOOZYWALK]    = 55;
+		playerAnims[JJ2PA_PUSH]         = 56;
+		playerAnims[JJ2PA_WHIP2]        = 57;
+		playerAnims[JJ2PA_EXIT2]        = 58;
+		playerAnims[JJ2PA_SPEED1]       = 59;
+		playerAnims[JJ2PA_SPEED2]       = 60;
+		playerAnims[JJ2PA_FALLMOVE]     = 61;
+		playerAnims[JJ2PA_JUMP]         = 63;
+		playerAnims[JJ2PA_BALL]         = 67;
+		playerAnims[JJ2PA_WALKSHOOT]    = 68;
+		playerAnims[JJ2PA_RUN]          = 70;
+		playerAnims[JJ2PA_SPEEDRUN]     = 71;
+		playerAnims[JJ2PA_STOP1]        = 72;
+		playerAnims[JJ2PA_MYSTERY]      = 73;
+		playerAnims[JJ2PA_STOP2]        = 74;
+		playerAnims[JJ2PA_UP2]          = 75;
+		playerAnims[JJ2PA_STAND]        = 76;
+		playerAnims[JJ2PA_POWER]        = 77;
+		playerAnims[JJ2PA_POWEREND]     = 78;
+		playerAnims[JJ2PA_POWERSTART]   = 79;
+		playerAnims[JJ2PA_WOOZYSTAND]   = 80;
+		playerAnims[JJ2PA_SWIMDOWN]     = 81;
+		playerAnims[JJ2PA_SWIM]         = 82;
+		playerAnims[JJ2PA_SWIMDIAGDOWN] = 83;
+		playerAnims[JJ2PA_SWIMDIAGUP]   = 84;
+		playerAnims[JJ2PA_SWIMUP]       = 85;
+		playerAnims[JJ2PA_VINESDIAG]    = 86;
+		playerAnims[JJ2PA_WARPOUT]      = 87;
+		playerAnims[JJ2PA_WARPFALLIN]   = 88;
+		playerAnims[JJ2PA_WARPFALL]     = 89;
+		playerAnims[JJ2PA_WARPFALLOUT]  = 90;
+		playerAnims[JJ2PA_WARPIN]       = 91;
+		playerAnims[JJ2PA_VPOLE]        = 92;
+
+		for (count = 0; count < JJ2PANIMS; count++) {
+
+			pAnims[count] = animSets[54] + playerAnims[count];
+			pFlippedAnims[count] = flippedAnimSets[54] + playerAnims[count];
+
+		}
+
+	}
 
 
-	createLevelPlayers(LT_JJ2, pAnims, checkpoint, startX, startY);
+	createLevelPlayers(LT_JJ2, pAnims, pFlippedAnims, checkpoint, startX, startY);
 
 
 	// And that's us done!

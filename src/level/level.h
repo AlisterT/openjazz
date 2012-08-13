@@ -96,7 +96,7 @@ class Level {
 		LevelStage     stage; ///< Level stage
 		int            stats; ///< Which statistics to display on-screen, see #LevelStats
 
-		void createLevelPlayers (LevelType levelType, Anim** anims, bool checkpoint, unsigned char x, unsigned char y);
+		void createLevelPlayers (LevelType levelType, Anim** anims, Anim** flippedAnims, bool checkpoint, unsigned char x, unsigned char y);
 
 		int  playScene     (char* file);
 		void timeCalcs     ();

@@ -32,9 +32,9 @@
 #include "io/sound.h"
 #include "jj1bonuslevel/jj1bonuslevel.h"
 #include "jj1level/jj1level.h"
-#include "jj1level/jj1levelplayer/jj1levelplayer.h"
 #include "jj1planet/jj1planet.h"
 #include "jj2level/jj2level.h"
+#include "player/player.h"
 #include "util.h"
 
 #include <string.h>
@@ -390,21 +390,29 @@ void Game::resetPlayer (Player *player) {
  */
 void Game::addLevelPlayer (Player *player, LevelType levelType) {
 
-	Anim* pAnims[PANIMS];
 	int count;
 
 	if (level) {
 
-		for (count = 0; count < PANIMS; count++) pAnims[count] = level->getAnim(0);
+		Anim* pAnims[JJ1PANIMS];
 
-		player->createLevelPlayer(levelType, pAnims, checkX, checkY);
+		for (count = 0; count < JJ1PANIMS; count++) pAnims[count] = level->getPlayerAnim(count);
+
+		player->createLevelPlayer(levelType, pAnims, NULL, checkX, checkY);
 
 	} else if (jj2Level) {
 
-		pAnims[0] = jj2Level->getAnim(54, 0, false);
-		pAnims[1] = jj2Level->getAnim(54, 0, true);
+		Anim* pAnims[JJ2PANIMS];
+		Anim* pFlippedAnims[JJ2PANIMS];
 
-		player->createLevelPlayer(levelType, pAnims, checkX, checkY);
+		for (count = 0; count < JJ2PANIMS; count++) {
+
+			pAnims[count] = jj2Level->getPlayerAnim(0, count, false);
+			pFlippedAnims[count] = jj2Level->getPlayerAnim(0, count, true);
+
+		}
+
+		player->createLevelPlayer(levelType, pAnims, pFlippedAnims, checkX, checkY);
 
 	}
 

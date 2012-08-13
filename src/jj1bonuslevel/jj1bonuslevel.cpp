@@ -357,7 +357,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 	for (count = 0; count < BPANIMS; count++) pAnims[count] = animSet + count;
 
 
-	createLevelPlayers(LT_JJ1BONUS, pAnims, false, x, y);
+	createLevelPlayers(LT_JJ1BONUS, pAnims, NULL, false, x, y);
 
 
 	delete file;

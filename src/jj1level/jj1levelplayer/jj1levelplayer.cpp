@@ -57,7 +57,7 @@ JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 
 	player = parent;
 
-	memcpy(anims, newAnims, PANIMS * sizeof(Anim*));
+	memcpy(anims, newAnims, JJ1PANIMS * sizeof(Anim *));
 
 	birds = NULL;
 
@@ -836,7 +836,7 @@ void JJ1LevelPlayer::receive (unsigned char *buffer) {
 
 		case MT_P_ANIMS:
 
-			for (count = 0; count < PANIMS; count++)
+			for (count = 0; count < JJ1PANIMS; count++)
 				anims[count] = level->getAnim(buffer[MTL_P_ANIMS + count]);
 
 			break;

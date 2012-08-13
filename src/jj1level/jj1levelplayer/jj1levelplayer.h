@@ -32,9 +32,10 @@
 #define _JJ1LEVELPLAYER_H
 
 
-#include "player/player.h"
+#include "../jj1level.h"
 
 #include "level/levelplayer.h"
+#include "player/player.h"
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
@@ -57,48 +58,6 @@
 #define PCO_SANIM  112
 #define PCO_LANIM  116
 #define PCO_LEVEL5 124
-
-// Animations
-#define PA_LWALK    0
-#define PA_RWALK    1
-#define PA_LJUMP    2
-#define PA_RJUMP    3
-#define PA_LSPIN    4
-#define PA_RSPIN    5
-#define PA_LSHOOT   6
-#define PA_RSHOOT   7
-#define PA_LCROUCH  8
-#define PA_RCROUCH  9
-#define PA_LFALL    10
-#define PA_RFALL    11
-#define PA_LHURT    12
-#define PA_RHURT    13
-#define PA_LLEAN    14
-#define PA_RLEAN    15
-#define PA_LBOARD   16
-#define PA_RBOARD   17
-#define PA_LSTAND   18
-#define PA_RSTAND   19
-#define PA_LEAT     20
-#define PA_REAT     21
-#define PA_LEDGE    22
-#define PA_REDGE    23
-#define PA_LOOKUP   24
-#define PA_LOOKDOWN 25
-#define PA_LSWIM    26
-#define PA_RSWIM    27
-#define PA_LRUN     28
-#define PA_RRUN     29
-#define PA_LDIE     30
-#define PA_RDIE     31
-#define PA_LSTOP    32
-#define PA_RSTOP    33
-#define PA_LHALT    34 /* Yeah, I was wondering the same thing... */
-#define PA_RHALT    35
-#define PA_RSPRING  36
-#define PA_LSPRING  37 /* Surely these are the wrong way round? */
-
-#define PANIMS      38 /* Number of player animations. May be higher. */
 
 // Player reaction times
 #define PRT_HURT       1000
@@ -156,7 +115,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 
 	private:
 		JJ1Bird*          birds; ///< Bird companion(s)
-		Anim*             anims[PANIMS]; ///< Animations
+		Anim*             anims[JJ1PANIMS]; ///< Animations
 		int               energy; ///< 0 = dead, 4 = maximum
 		int               shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
 		bool              floating; ///< false = normal, true = boarding/bird/etc.

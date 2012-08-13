@@ -155,7 +155,8 @@ void Player::reset (unsigned char x, unsigned char y) {
  * @param x The level player's new grid x-coordinate
  * @param y The level player's new grid y-coordinate
  */
-void Player::createLevelPlayer (LevelType levelType, Anim** anims, unsigned char x, unsigned char y) {
+void Player::createLevelPlayer (LevelType levelType, Anim** anims,
+	Anim** flippedAnims, unsigned char x, unsigned char y) {
 
 	int count;
 
@@ -182,7 +183,7 @@ void Player::createLevelPlayer (LevelType levelType, Anim** anims, unsigned char
 
 		case LT_JJ2:
 
-			levelPlayer = new JJ2LevelPlayer(this, anims, x, y, flockSize);
+			levelPlayer = new JJ2LevelPlayer(this, anims, flippedAnims, x, y, flockSize);
 
 			break;
 

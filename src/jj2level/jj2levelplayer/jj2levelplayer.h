@@ -9,7 +9,7 @@
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,10 +30,10 @@
 #define _JJ2LEVELPLAYER_H
 
 
-#include "player/player.h"
+#include "../jj2level.h"
 
-#include "jj2level/jj2level.h"
 #include "level/levelplayer.h"
+#include "player/player.h"
 #include "OpenJazz.h"
 
 #include <SDL/SDL.h>
@@ -72,114 +72,6 @@
 #define JJ2PCL_SANIM     16
 #define JJ2PCL_LANIM     32
 #define JJ2PCL_LEVEL5    16
-
-// Animations
-#define JJ2PA_WOOZYSHAKE   0
-#define JJ2PA_BOARD        1
-#define JJ2PA_BOARDSW      2
-#define JJ2PA_STOMP        3
-#define JJ2PA_DEAD         4
-#define JJ2PA_DIE          5
-#define JJ2PA_CROUCH1      6
-#define JJ2PA_CROUCHED     7
-#define JJ2PA_CROUCHSHOOT  8
-#define JJ2PA_CROUCH2      9
-#define JJ2PA_EXIT1        10
-#define JJ2PA_VINE         11
-#define JJ2PA_EXIT2        12
-#define JJ2PA_FALL         13
-#define JJ2PA_STOMPING     14
-#define JJ2PA_LAND         15
-#define JJ2PA_STANDSHOOT   16
-#define JJ2PA_STANDSHOOTUP 17
-#define JJ2PA_WHIP1        18
-#define JJ2PA_UNFROG       19
-#define JJ2PA_MOUNT        20
-#define JJ2PA_HOOKWHIP     21
-#define JJ2PA_HOOKDIAG     22
-#define JJ2PA_HOOKSHOOTUP  23
-#define JJ2PA_HOOK1        24
-#define JJ2PA_HOOK2        25
-#define JJ2PA_HOOKWHIPUP   26
-#define JJ2PA_HOOKSHOOT    27
-#define JJ2PA_HELI         28
-#define JJ2PA_HELIWHIP     29
-#define JJ2PA_HELISHOOT    30
-#define JJ2PA_HPOLE        31
-#define JJ2PA_HURT1        32
-#define JJ2PA_WAIT1        33
-#define JJ2PA_WAIT2        34
-#define JJ2PA_WAIT3        35
-#define JJ2PA_WAIT4        36
-#define JJ2PA_WAIT5        37
-#define JJ2PA_FALLWHIP     38
-#define JJ2PA_FALLSHOOT    39
-#define JJ2PA_FLOAT1       40
-#define JJ2PA_FLOAT2       41
-#define JJ2PA_UP1          42
-#define JJ2PA_EDGE         43
-#define JJ2PA_CARRY        44
-#define JJ2PA_UNLOAD       45
-#define JJ2PA_LOAD         46
-#define JJ2PA_LOOKUP1      47
-#define JJ2PA_WALK45       48
-#define JJ2PA_WALK90       49
-#define JJ2PA_WALK135      50
-#define JJ2PA_WALK180      51
-#define JJ2PA_WALK225      52
-#define JJ2PA_WALK270      53
-#define JJ2PA_WALK315      54
-#define JJ2PA_WOOZYWALK    55
-#define JJ2PA_PUSH         56
-#define JJ2PA_WHIP2        57
-#define JJ2PA_EXIT3        58
-#define JJ2PA_SPEED1       59
-#define JJ2PA_SPEED2       60
-#define JJ2PA_FALLMOVE     61
-#define JJ2PA_MYSTERY1     62
-#define JJ2PA_JUMP2        63
-#define JJ2PA_FALLMOVEWHIP 64
-#define JJ2PA_MYSTERY2     65
-#define JJ2PA_JUMPSHOOTUP  66
-#define JJ2PA_BALL         67
-#define JJ2PA_WALKSHOOT    68
-#define JJ2PA_WALKDIAG     69
-#define JJ2PA_RUN          70
-#define JJ2PA_SPEEDRUN     71
-#define JJ2PA_STOP1        72
-#define JJ2PA_MYSTERY3     73
-#define JJ2PA_STOP2        74
-#define JJ2PA_UP2          75
-#define JJ2PA_STAND        76
-#define JJ2PA_POWER        77
-#define JJ2PA_POWEREND     78
-#define JJ2PA_POWERSTART   79
-#define JJ2PA_WOOZYSTAND   80
-#define JJ2PA_SWIMDOWN     81
-#define JJ2PA_SWIM         82
-#define JJ2PA_SWIMDIAGDOWN 83
-#define JJ2PA_SWIMDIAGUP   84
-#define JJ2PA_SWIMUP       85
-#define JJ2PA_VINESDIAG    86
-#define JJ2PA_WARPOUT      87
-#define JJ2PA_WARPFALLIN   88
-#define JJ2PA_WARPFALL     89
-#define JJ2PA_WARPFALLOUT  90
-#define JJ2PA_WARPIN       91
-#define JJ2PA_VPOLE        92
-#define JJ2PA_CROUCH3      93
-#define JJ2PA_CROUCH4      94
-#define JJ2PA_FALLSTRANGE1 95
-#define JJ2PA_HURT2        96
-#define JJ2PA_WAIT6        97
-#define JJ2PA_FALLSTRANGE2 98
-#define JJ2PA_CROUCH5      99
-#define JJ2PA_LOOKUP2      100
-#define JJ2PA_WALK2        101
-#define JJ2PA_WORRY        102
-#define JJ2PA_LOOKUP3      103
-
-#define JJ2PANIMS       104 /* Number of player animations. */
 
 // Player reaction times
 #define JJ2PRT_HURT       1000
@@ -253,8 +145,8 @@ class JJ2LevelPlayer : public LevelPlayer {
 
 	private:
 		int               birds; ///< Placeholder for eventual JJ2Bird objects
-		Anim*             anims; ///< Animations
-		Anim*             flippedAnims; ///< Animations (flipped)
+		Anim*             anims[JJ2PANIMS]; ///< Animations
+		Anim*             flippedAnims[JJ2PANIMS]; ///< Animations (flipped)
 		JJ2Modifier*      mod; ///< Modifier currently affecting player
 		int               energy; ///< 0 = dead, 3 or 5 = maximum
 		JJ2Shield         shield; ///< Current shield
@@ -279,7 +171,7 @@ class JJ2LevelPlayer : public LevelPlayer {
 		void              modify  (JJ2Modifier* nextMod, unsigned int ticks);
 
 	public:
-		JJ2LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
+		JJ2LevelPlayer  (Player* parent, Anim** newAnims, Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ2LevelPlayer ();
 
 		void              reset       (unsigned char startX, unsigned char startY);

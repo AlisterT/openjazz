@@ -116,7 +116,7 @@ class Player {
 		void            deinit            ();
 		void            reset             (unsigned char x, unsigned char y);
 
-		void                 createLevelPlayer      (LevelType levelType, Anim** anims, unsigned char x, unsigned char y);
+		void                 createLevelPlayer      (LevelType levelType, Anim** anims, Anim** flippedAnims, unsigned char x, unsigned char y);
 		LevelPlayer*         getLevelPlayer         ();
 		JJ1BonusLevelPlayer* getJJ1BonusLevelPlayer ();
 		JJ1LevelPlayer*      getJJ1LevelPlayer      ();

@@ -520,6 +520,20 @@ Anim* JJ1Level::getMiscAnim (unsigned char anim) {
 
 
 /**
+ * Get a player animation.
+ *
+ * @param anim Animation number
+ *
+ * @return Animation
+ */
+Anim* JJ1Level::getPlayerAnim (unsigned char anim) {
+
+	return animSet + playerAnims[anim];
+
+}
+
+
+/**
  * Set the water level.
  *
  * @param gridY New water level y-coordinate

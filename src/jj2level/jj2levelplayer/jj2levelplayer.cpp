@@ -45,7 +45,8 @@
  * @param startY Starting position y-coordinate
  * @param hasBird Whether or not the player is being accompanied by a bird
  */
-JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
+JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
+	Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
 	int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
 		JJ2PCO_LGREEN, JJ2PCO_LEVEL1, JJ2PCO_YELLOW, JJ2PCO_LEVEL2,
@@ -60,8 +61,8 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 
 	player = parent;
 
-	anims = newAnims[0];
-	flippedAnims = newAnims[1];
+	memcpy(anims, newAnims, JJ2PANIMS * sizeof(Anim *));
+	memcpy(flippedAnims, newFlippedAnims, JJ2PANIMS * sizeof(Anim *));
 
 	birds = flockSize;
 
@@ -208,7 +209,7 @@ void JJ2LevelPlayer::centreY () {
  */
 Anim* JJ2LevelPlayer::getAnim () {
 
-	return (facing? anims: flippedAnims) + animType;
+	return (facing? anims: flippedAnims)[animType];
 
 }
 
@@ -703,12 +704,18 @@ void JJ2LevelPlayer::send (unsigned char *buffer) {
  */
 void JJ2LevelPlayer::receive (unsigned char *buffer) {
 
+	int count;
+
 	switch (buffer[1]) {
 
 		case MT_P_ANIMS:
 
-			anims = jj2Level->getAnim(buffer[3], 0, false);
-			flippedAnims = jj2Level->getAnim(buffer[3], 0, true);
+			for (count = 0; count < JJ2PANIMS; count++) {
+
+				anims[count] = jj2Level->getPlayerAnim(buffer[3], count, false);
+				flippedAnims[count] = jj2Level->getPlayerAnim(buffer[3], count, true);
+
+			}
 
 			break;
 

@@ -55,6 +55,48 @@
 #define PATHS      16
 #define TKEY      127 /* Tileset colour key */
 
+// Player animations
+#define PA_LWALK    0
+#define PA_RWALK    1
+#define PA_LJUMP    2
+#define PA_RJUMP    3
+#define PA_LSPIN    4
+#define PA_RSPIN    5
+#define PA_LSHOOT   6
+#define PA_RSHOOT   7
+#define PA_LCROUCH  8
+#define PA_RCROUCH  9
+#define PA_LFALL    10
+#define PA_RFALL    11
+#define PA_LHURT    12
+#define PA_RHURT    13
+#define PA_LLEAN    14
+#define PA_RLEAN    15
+#define PA_LBOARD   16
+#define PA_RBOARD   17
+#define PA_LSTAND   18
+#define PA_RSTAND   19
+#define PA_LEAT     20
+#define PA_REAT     21
+#define PA_LEDGE    22
+#define PA_REDGE    23
+#define PA_LOOKUP   24
+#define PA_LOOKDOWN 25
+#define PA_LSWIM    26
+#define PA_RSWIM    27
+#define PA_LRUN     28
+#define PA_RRUN     29
+#define PA_LDIE     30
+#define PA_RDIE     31
+#define PA_LSTOP    32
+#define PA_RSTOP    33
+#define PA_LHALT    34 /* Yeah, I was wondering the same thing... */
+#define PA_RHALT    35
+#define PA_RSPRING  36
+#define PA_LSPRING  37 /* Surely these are the wrong way round? */
+
+#define JJ1PANIMS   38 /* Number of player animations. May be higher. */
+
 // Black palette index
 #define LEVEL_BLACK 31
 
@@ -130,6 +172,7 @@ class JJ1Level : public Level {
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
 		char          miscAnims[4]; ///< Further animations
+		char          playerAnims[JJ1PANIMS]; ///< Default player animations
 		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
 		JJ1EventType  eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
@@ -188,6 +231,7 @@ class JJ1Level : public Level {
 		Sprite*       getSprite     (unsigned char sprite);
 		Anim*         getAnim       (unsigned char anim);
 		Anim*         getMiscAnim   (unsigned char anim);
+		Anim*         getPlayerAnim (unsigned char anim);
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);

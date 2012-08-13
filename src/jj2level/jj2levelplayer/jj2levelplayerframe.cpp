@@ -498,7 +498,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	// Choose animation
 
 	if ((reaction == JJ2PR_HURT) && (reactionTime - ticks > JJ2PRT_HURT - JJ2PRT_HURTANIM))
-		animType = JJ2PA_HURT1;
+		animType = JJ2PA_HURT;
 
 	else if (y + JJ2PYO_MID > jj2Level->getWaterLevel())
 		animType = JJ2PA_SWIM;
@@ -508,7 +508,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	else if (dy < 0) {
 
 		if (event == LPE_SPRING) animType = JJ2PA_FLOAT1;
-		else animType = JJ2PA_JUMP2;
+		else animType = JJ2PA_JUMP;
 
 	} else if (platform) {
 
@@ -518,7 +518,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			else if (dx >= JJ2PXS_RUN) animType = JJ2PA_RUN;
 			else if ((dx < 0) && facing) animType = JJ2PA_STOP1;
 			else if ((dx > 0) && !facing) animType = JJ2PA_STOP1;
-			else animType = JJ2PA_WALK2;
+			else animType = JJ2PA_WALKSHOOT;
 
 		} else if (!jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F12, drop) &&
 			!jj2Level->checkMaskDown(x + JJ2PXO_L, y + F2, drop) &&
@@ -531,7 +531,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			animType = JJ2PA_EDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-			animType = JJ2PA_LOOKUP1;
+			animType = JJ2PA_LOOKUP;
 
 		else if (lookTime > 0) {
 

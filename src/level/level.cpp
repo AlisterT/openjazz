@@ -93,7 +93,8 @@ Level::~Level () {
  * @param x The level players' new grid x-coordinate
  * @param y The level players' new grid y-coordinate
  */
-void Level::createLevelPlayers (LevelType levelType, Anim** anims, bool checkpoint, unsigned char x, unsigned char y) {
+void Level::createLevelPlayers (LevelType levelType, Anim** anims,
+	Anim** flippedAnims, bool checkpoint, unsigned char x, unsigned char y) {
 
 	int count;
 
@@ -101,7 +102,7 @@ void Level::createLevelPlayers (LevelType levelType, Anim** anims, bool checkpoi
 
 	for (count = 0; count < nPlayers; count++) {
 
-		players[count].createLevelPlayer(levelType, anims, x, y);
+		players[count].createLevelPlayer(levelType, anims, flippedAnims, x, y);
 		game->resetPlayer(players + count);
 
 	}
