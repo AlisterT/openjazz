@@ -165,6 +165,10 @@ int ServerGame::setLevel (char* fileName) {
 
 	delete file;
 
+	levelType = getLevelType(fileName);
+
+	if (levelType != LT_JJ1) return E_NONE;
+
 	// Modify the extension section to match the actual extension
 	count = levelSize - 5;
 	while (levelData[count - 1] != 3) count--;
@@ -217,6 +221,16 @@ int ServerGame::step (unsigned int ticks) {
 	for (count = 0; count < MAX_CLIENTS; count++) {
 
 		if (clientStatus[count] >= 0) {
+
+			if (clientStatus[count] == 0) {
+
+				// Send level type
+				sendBuffer[0] = MTL_G_LTYPE;
+				sendBuffer[1] = MT_G_LTYPE;
+				sendBuffer[2] = levelType;
+				net->send(clientSock[count], sendBuffer);
+
+			}
 
 			// Client is connected, but not operational
 			// Send a chunk of the level
@@ -285,7 +299,7 @@ int ServerGame::step (unsigned int ticks) {
 							players[nPlayers].init(this,
 								(char *)(recvBuffers[count]) + 9,
 								recvBuffers[count] + 5, recvBuffers[count][4]);
-							addLevelPlayer(players + nPlayers, LT_JJ1);
+							addLevelPlayer(players + nPlayers);
 
 							printf("Player %d joined team %d.\n", nPlayers, recvBuffers[count][4]);
 

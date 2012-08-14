@@ -46,6 +46,7 @@
 Game::Game () {
 
 	levelFile = NULL;
+	levelType = LT_JJ1;
 
 	players = NULL;
 	baseLevel = NULL;
@@ -156,9 +157,26 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 	multiplayer = (mode->getMode() != M_SINGLE);
 
-	// Load and play the level
+	if (!strncasecmp(fileName, "MACRO", 5)) {
 
-	if (!strncasecmp(fileName, F_BONUSMAP, 8)) {
+		// Load and play the level
+
+		try {
+
+			baseLevel = level = new JJ1DemoLevel(this, fileName);
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		ret = level->play();
+
+		delete level;
+		baseLevel = level = NULL;
+
+	} else if (levelType == LT_JJ1BONUS) {
 
 		JJ1BonusLevel *bonus;
 
@@ -177,24 +195,7 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 		delete bonus;
 		baseLevel = NULL;
 
-	} else if (!strncasecmp(fileName, "MACRO", 5)) {
-
-		try {
-
-			baseLevel = level = new JJ1DemoLevel(this, fileName);
-
-		} catch (int e) {
-
-			return e;
-
-		}
-
-		ret = level->play();
-
-		delete level;
-		baseLevel = level = NULL;
-
-	} else if (!strcasecmp(fileName + strlen(fileName) - 4, ".j2l")) {
+	} else if (levelType == LT_JJ2) {
 
 		try {
 
@@ -269,6 +270,38 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 	}
 
 	return ret;
+
+}
+
+
+/**
+ * Determine the type of the specified level file.
+ *
+ * @return Level type
+ */
+LevelType Game::getLevelType (char* fileName) {
+
+	int length;
+
+	length = strlen(fileName);
+
+	if ((length > 4) && !strcasecmp(fileName + length - 4, ".j2l")) return LT_JJ2;
+	if (!strncasecmp(fileName, F_BONUSMAP, 8)) return LT_JJ1BONUS;
+	return LT_JJ1;
+
+}
+
+
+/**
+ * Play a level.
+ *
+ * @return Error code
+ */
+int Game::playLevel (char* fileName) {
+
+	levelType = getLevelType(fileName);
+
+	return playLevel(fileName, false, false);
 
 }
 
@@ -382,13 +415,11 @@ void Game::resetPlayer (Player *player) {
 
 
 /**
- * Re-create a player's level player
+ * Create a level player
  *
- * @param player Player to reset
- * @param levelType Type of level (and, consequently, type of level player)
- * @param anims New level player's animations
+ * @param player Player for which to create the level player
  */
-void Game::addLevelPlayer (Player *player, LevelType levelType) {
+void Game::addLevelPlayer (Player *player) {
 
 	int count;
 

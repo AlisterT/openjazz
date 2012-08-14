@@ -422,7 +422,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							players[count].init(this, (char *)recvBuffer + 9,
 								recvBuffer + 5, recvBuffer[4]);
-							addLevelPlayer(players + count, LT_JJ1);
+							addLevelPlayer(players + count);
 
 							printf("Player %d joined team %d.\n", count, recvBuffer[4]);
 
@@ -469,6 +469,12 @@ int ClientGame::step (unsigned int ticks) {
 								players[count].teamScore++;
 
 						}
+
+					}
+
+					if (recvBuffer[1] == MT_G_LTYPE) {
+
+						levelType = (LevelType)recvBuffer[2];
 
 					}
 

@@ -78,6 +78,8 @@ int LocalGame::setLevel (char *fileName) {
 	if (fileName) levelFile = createString(fileName);
 	else levelFile = NULL;
 
+	levelType = getLevelType(fileName);
+
 	return E_NONE;
 
 }

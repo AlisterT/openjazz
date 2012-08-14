@@ -385,7 +385,7 @@ int MainMenu::main () {
 					fileName = createString(F_MACRO);
 					fileName[6] += macro;
 
-					if (game->playLevel(fileName, false, false) == E_QUIT) {
+					if (game->playLevel(fileName) == E_QUIT) {
 
 						delete[] fileName;
 						delete game;

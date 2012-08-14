@@ -53,6 +53,7 @@
 #define MT_G_LEVEL 0x03 /* Level data */
 #define MT_G_CHECK 0x04
 #define MT_G_SCORE 0x05 /* Team scored a roast/lap/etc. */
+#define MT_G_LTYPE 0x06 /* Level type */
 
 #define MT_L_PROP  0x10 /* Level property */
 #define MT_L_GRID  0x11 /* Change to gridElement */
@@ -68,6 +69,7 @@
 #define MTL_G_LEVEL 4 /* + amount of level data */
 #define MTL_G_CHECK 4
 #define MTL_G_SCORE 3
+#define MTL_G_LTYPE 3
 
 #define MTL_L_PROP  5
 #define MTL_L_GRID  6
@@ -94,6 +96,7 @@ class Game {
 		GameMode*      mode; ///< Mode-specific management
 		Level*         baseLevel; ///< Current level
 		char*          levelFile; ///< Current level's file name
+		LevelType      levelType; ///< Current level's type
 		int            difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 		unsigned int   sendTime; ///< The next time data will be sent
 		unsigned int   checkTime; ///< The next time a connection/disconnection will be dealt with
@@ -104,7 +107,10 @@ class Game {
 
 		GameMode* createMode (GameModeType modeType);
 
-		void addLevelPlayer (Player *player, LevelType levelType);
+		LevelType getLevelType (char* fileName);
+		int       playLevel    (char *fileName, bool intro, bool checkpoint);
+
+		void addLevelPlayer (Player *player);
 
 	public:
 		virtual ~Game ();
@@ -112,7 +118,7 @@ class Game {
 		GameMode*    getMode       ();
 		int          getDifficulty ();
 		void         setDifficulty (int diff);
-		int          playLevel     (char *fileName, bool intro, bool checkpoint);
+		int          playLevel     (char *fileName);
 		virtual int  setLevel      (char *fileName) = 0;
 		int          play          ();
 		void         view          (int change);

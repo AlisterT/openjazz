@@ -290,14 +290,14 @@ Anim* JJ2Level::getPlayerAnim (int character, int anim, bool flipped) {
 
 	if (TSF) {
 
-		if (character == 1) set = 85;
-		else set = 54;
-
-	} else {
-
 		if (character == 1) set = 61;
 		else if (character == 2) set = 89;
 		else set = 55;
+
+	} else {
+
+		if (character == 1) set = 85;
+		else set = 54;
 
 	}
 

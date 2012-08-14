@@ -622,7 +622,7 @@ int JJ1Level::playBonus () {
 	bonusFile = createFileName(F_BONUSMAP, 0);
 
 	// If the gem has been collected, play the bonus level
-	ret = game->playLevel(bonusFile, false, false);
+	ret = game->playLevel(bonusFile);
 
 	delete[] bonusFile;
 

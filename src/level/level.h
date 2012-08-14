@@ -43,7 +43,7 @@
 /// Level type
 enum LevelType {
 
-	LT_JJ1, LT_JJ1BONUS, LT_JJ2
+	LT_JJ1 = 0, LT_JJ1BONUS = 1, LT_JJ2 = 2
 
 };
 
