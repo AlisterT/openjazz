@@ -40,6 +40,12 @@
 #include <string.h>
 
 
+/**
+ * Create a JJ1 planet approach sequence.
+ *
+ * @param fileName Name of the file containing the planet data
+ * @param previous The ID of the last planet approach sequence
+ */
 JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
 	File *file;
@@ -94,6 +100,9 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 }
 
 
+/**
+ * Delete the JJ1 planet approach sequence.
+ */
 JJ1Planet::~JJ1Planet () {
 
 	delete[] name;
@@ -103,6 +112,11 @@ JJ1Planet::~JJ1Planet () {
 }
 
 
+/**
+ * Get the ID of the planet approach squence.
+ *
+ * @return The ID
+ */
 int JJ1Planet::getId () {
 
 	return id;
@@ -110,6 +124,11 @@ int JJ1Planet::getId () {
 }
 
 
+/**
+ * Run the JJ1 planet approach sequence.
+ *
+ * @return Error code
+ */
 int JJ1Planet::play () {
 
 	unsigned int tickOffset;

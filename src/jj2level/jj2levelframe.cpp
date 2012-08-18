@@ -10,7 +10,7 @@
  * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -37,6 +37,11 @@
 #include "util.h"
 
 
+/**
+ * JJ2 level iteration.
+ *
+ * @return Error code
+ */
 int JJ2Level::step () {
 
 	int x;
@@ -89,6 +94,9 @@ int JJ2Level::step () {
 }
 
 
+/**
+ * Draw the JJ2 level.
+ */
 void JJ2Level::draw () {
 
 	int width, height;

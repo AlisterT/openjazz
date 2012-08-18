@@ -41,58 +41,85 @@
 #include <string.h>
 
 
+/**
+ * Create a JJ1 cutscne frame.
+ *
+ * @param frameType The type of the frame
+ * @param frameData The frame's data buffer
+ * @param frameSize The size of the frame's data buffer
+ */
 JJ1SceneFrame::JJ1SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
+
 	soundId = -1;
 	this->frameData = frameData;
 	this->frameType = frameType;
 	this->frameSize = frameSize;
 	prev = NULL;
 	next = NULL;
-	}
 
-JJ1SceneFrame::~JJ1SceneFrame() {
-	delete [] frameData;
 }
 
+
+/**
+ * Delete the JJ1 cutscene frame.
+ */
+JJ1SceneFrame::~JJ1SceneFrame() {
+
+	delete [] frameData;
+
+}
+
+
+/**
+ * Add a frame to the JJ1 cutscene animation.
+ *
+ * @param frameType The type of the frame
+ * @param frameData The frame's data buffer
+ * @param frameSize The size of the frame's data buffer
+ */
 void JJ1SceneAnimation::addFrame(int frameType, unsigned char* frameData, int frameSize) {
+
 	JJ1SceneFrame* frame = new JJ1SceneFrame(frameType, frameData, frameSize);
+
 	if(sceneFrames == NULL) {
+
 		sceneFrames = frame;
-	}
-	else {
+
+	} else {
+
 		frame->prev = lastFrame;
 		lastFrame->next = frame;
+
 	}
 
 	lastFrame = frame;
 	frames++;
+
 }
 
-/**
- *  This is the 0sc format
- *  Offset, Size (hex), type
- *  0, 0x13, "Digital Dimensions\1a" header
- *  0x13, 0x04, Offset to datablock
- *  0x17, 0x02, Number of script items
- *  0x19, 0x4* Number of script items, Offset to Scripts
- *
- *  ----, 0x02 Number of data items
- *  *  0x19, 0x4* Number of script items, Offset to datablocks
- *
- */
 
-JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext)
-	{
+/**
+ * Create a JJ1 cutscene animation.
+ *
+ * @param newNext The next animation
+ */
+JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext) {
+
 	next = newNext;
 	background = NULL;
 	lastFrame = NULL;
 	sceneFrames = NULL;
 	frames = 0;
 	reverseAnimation = 0;
-	}
 
-JJ1SceneAnimation::~JJ1SceneAnimation ()
-	{
+}
+
+
+/**
+ * Delete the JJ1 cutscene animation.
+ */
+JJ1SceneAnimation::~JJ1SceneAnimation () {
+
 	if (next) delete next;
 
 	if(sceneFrames) {
@@ -108,8 +135,15 @@ JJ1SceneAnimation::~JJ1SceneAnimation ()
 		}
 
 	if (background) SDL_FreeSurface(background);
-	}
 
+}
+
+
+/**
+ * Create a JJ1 cutscene image.
+ *
+ * @param newNext The next image
+ */
 JJ1SceneImage::JJ1SceneImage (JJ1SceneImage *newNext) {
 
 	next = newNext;
@@ -118,6 +152,9 @@ JJ1SceneImage::JJ1SceneImage (JJ1SceneImage *newNext) {
 }
 
 
+/**
+ * Delete the JJ1 cutscene image.
+ */
 JJ1SceneImage::~JJ1SceneImage () {
 
 	if (next) delete next;
@@ -127,6 +164,11 @@ JJ1SceneImage::~JJ1SceneImage () {
 }
 
 
+/**
+ * Create a JJ1 cutscene palette.
+ *
+ * @param newNext The next palette
+ */
 JJ1ScenePalette::JJ1ScenePalette (JJ1ScenePalette *newNext) {
 
 	next = newNext;
@@ -134,6 +176,9 @@ JJ1ScenePalette::JJ1ScenePalette (JJ1ScenePalette *newNext) {
 }
 
 
+/**
+ * Delete the JJ1 cutscene palette.
+ */
 JJ1ScenePalette::~JJ1ScenePalette () {
 
 	if (next) delete next;
@@ -141,6 +186,9 @@ JJ1ScenePalette::~JJ1ScenePalette () {
 }
 
 
+/**
+ * Create a JJ1 cutscene text object.
+ */
 JJ1SceneText::JJ1SceneText() {
 
 		x = -1;
@@ -150,14 +198,23 @@ JJ1SceneText::JJ1SceneText() {
 		extraLineHeight = -1;
 		text = NULL;
 		shadowColour = 0;
+
 }
 
+
+/**
+ * Delete the JJ1 cutscene text object.
+ */
 JJ1SceneText::~JJ1SceneText() {
 
 	if (text) delete[] text;
 
 }
 
+
+/**
+ * Create a JJ1 cutscene page.
+ */
 JJ1ScenePage::JJ1ScenePage() {
 
 	pageTime = 0;
@@ -168,8 +225,13 @@ JJ1ScenePage::JJ1ScenePage() {
 	askForYesNo = 0;
 	stopMusic = 0;
 	animIndex = -1; // no anim
+
 }
 
+
+/**
+ * Delete the JJ1 cutscene page.
+ */
 JJ1ScenePage::~JJ1ScenePage() {
 
 	if (musicFile) delete[] musicFile;
@@ -177,6 +239,11 @@ JJ1ScenePage::~JJ1ScenePage() {
 }
 
 
+/**
+ * Create a JJ1 cutscene.
+ *
+ * @param fileName Name of the file containing the cutscene data
+ */
 JJ1Scene::JJ1Scene (const char * fileName) {
 
 	File *file;
@@ -240,6 +307,9 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 }
 
 
+/**
+ * Delete the JJ1 cutscene.
+ */
 JJ1Scene::~JJ1Scene () {
 
 	delete[] pages;
@@ -250,6 +320,12 @@ JJ1Scene::~JJ1Scene () {
 
 }
 
+
+/**
+ * Play the JJ1 cutscene.
+ *
+ * @return Error code
+ */
 int JJ1Scene::play () {
 
 	SDL_Rect dst;

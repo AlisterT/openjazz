@@ -45,6 +45,7 @@
  * @param newAnims Animations
  * @param startX Starting position x-coordinate
  * @param startY Starting position y-coordinate
+ * @param flockSize The number of birds accompanying the player
  */
 JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 

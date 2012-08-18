@@ -28,6 +28,14 @@
 #include "movable.h"
 
 
+/**
+ * Derive the x-coordinate of the Movable relative to the view coordinates for
+ * the current time.
+ *
+ * @param change Time since last step
+ *
+ * @return The x-coordinate
+ */
 fixed Movable::getDrawX (int change) {
 
 	return x + ((dx * change) >> 10) - viewX;
@@ -35,6 +43,14 @@ fixed Movable::getDrawX (int change) {
 }
 
 
+/**
+ * Derive the y-coordinate of the Movable relative to the view coordinates for
+ * the current time.
+ *
+ * @param change Time since last step
+ *
+ * @return The y-coordinate
+ */
 fixed Movable::getDrawY (int change) {
 
 	return y + ((dy * change) >> 10) - viewY;
@@ -42,6 +58,11 @@ fixed Movable::getDrawY (int change) {
 }
 
 
+/**
+ * Get the basic x-coordinate of the Movable.
+ *
+ * @return The x-coordinate
+ */
 fixed Movable::getX () {
 
 	return x;
@@ -49,6 +70,11 @@ fixed Movable::getX () {
 }
 
 
+/**
+ * Get the basic y-coordinate of the Movable.
+ *
+ * @return The y-coordinate
+ */
 fixed Movable::getY () {
 
 	return y;

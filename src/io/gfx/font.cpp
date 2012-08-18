@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed font.c to font.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,6 +32,11 @@
 #include <string.h>
 
 
+/**
+ * Load a font from the given .0FN file.
+ *
+ * @param fileName Name of an .0FN file
+ */
 Font::Font (const char* fileName) {
 
 	File* file;
@@ -150,6 +155,12 @@ Font::Font (const char* fileName) {
 }
 
 
+/**
+ * Create a font from the panel pixel data.
+ *
+ * @param pixels Panel pixel data
+ * @param big Whether to use the small or the big font
+ */
 Font::Font (unsigned char* pixels, bool big) {
 
 	unsigned char* chrPixels;
@@ -210,6 +221,11 @@ Font::Font (unsigned char* pixels, bool big) {
 }
 
 
+/**
+ * Load a font from a .000 file.
+ *
+ * @param bonus whether to use FONTS.000 or BONUS.000
+ */
 Font::Font (bool bonus) {
 
 	File* file;
@@ -338,6 +354,9 @@ Font::Font (bool bonus) {
 }
 
 
+/**
+ * Delete the font.
+ */
 Font::~Font () {
 
 	int count;
@@ -349,6 +368,15 @@ Font::~Font () {
 }
 
 
+/**
+ * Draw a string using the font.
+ *
+ * @param string The string to draw
+ * @param x The x-coordinate at which to draw the string
+ * @param y The y-coordinate at which to draw the string
+ *
+ * @return The x-coordinate of the end of the string
+ */
 int Font::showString (const char* string, int x, int y) {
 
 	SDL_Surface* surface;
@@ -391,6 +419,15 @@ int Font::showString (const char* string, int x, int y) {
 }
 
 
+/**
+ * Draw a JJ1 cutscene string using the font.
+ *
+ * @param string The JJ1 cutstring to draw
+ * @param x The x-coordinate at which to draw the string
+ * @param y The y-coordinate at which to draw the string
+ *
+ * @return The x-coordinate of the end of the string
+ */
 int Font::showSceneString (const unsigned char* string, int x, int y) {
 
 	SDL_Surface* surface;
@@ -424,6 +461,15 @@ int Font::showSceneString (const unsigned char* string, int x, int y) {
 }
 
 
+/**
+ * Draw a number using the font.
+ *
+ * @param n The number to draw
+ * @param x The x-coordinate at which to draw the number
+ * @param y The y-coordinate at which to draw the number
+ *
+ * @return The x-coordinate of the end of the number
+ */
 void Font::showNumber (int n, int x, int y) {
 
 	SDL_Surface *surface;
@@ -518,6 +564,9 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 }
 
 
+/**
+ * Restore a palette to its original state.
+ */
 void Font::restorePalette () {
 
 	int count;
@@ -530,6 +579,11 @@ void Font::restorePalette () {
 }
 
 
+/**
+ * Get the height of a single line of any text.
+ *
+ * @return The height
+ */
 int Font::getHeight () {
 
 	return lineHeight;
@@ -537,6 +591,13 @@ int Font::getHeight () {
 }
 
 
+/**
+ * Get the width of a single line of a given string.
+ *
+ * @param string The string to measure
+ *
+ * @return The width
+ */
 int Font::getStringWidth (const char *string) {
 
 	int count;
@@ -557,6 +618,13 @@ int Font::getStringWidth (const char *string) {
 }
 
 
+/**
+ * Get the width of a single line of a given JJ1 cutscene string.
+ *
+ * @param string The string to measure
+ *
+ * @return The width
+ */
 int Font::getSceneStringWidth (const unsigned char *string) {
 
 	int count;

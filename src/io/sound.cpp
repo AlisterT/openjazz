@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed sound.c to sound.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -65,6 +65,13 @@ ModPlugFile   *musicFile;
 SDL_AudioSpec  audioSpec;
 
 
+/**
+ * Callback used to provide data to the audio subsystem.
+ *
+ * @param userdata N/A
+ * @param stream Output stream
+ * @param len Length of data to be placed in the output stream
+ */
 void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 	int count;
@@ -112,6 +119,9 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 }
 
 
+/**
+ * Initialise audio.
+ */
 void openAudio () {
 
 	SDL_AudioSpec asDesired;
@@ -148,6 +158,10 @@ void openAudio () {
 
 }
 
+
+/**
+ * Stop audio.
+ */
 void closeAudio () {
 
 	stopMusic();
@@ -161,6 +175,11 @@ void closeAudio () {
 }
 
 
+/**
+ * Play music from the specified file.
+ *
+ * @param fileName Name of a file containing music data.
+ */
 void playMusic (const char * fileName) {
 
 #ifdef USE_MODPLUG
@@ -240,6 +259,9 @@ void playMusic (const char * fileName) {
 }
 
 
+/**
+ * Stop the current music.
+ */
 void stopMusic () {
 
 #ifdef USE_MODPLUG
@@ -261,6 +283,11 @@ void stopMusic () {
 }
 
 
+/**
+ * Load sound clips from the specified file.
+ *
+ * @param fileName Name of a file containing sound clips
+ */
 int loadSounds (const char *fileName) {
 
 	File *file;
@@ -331,6 +358,9 @@ int loadSounds (const char *fileName) {
 }
 
 
+/**
+ * Delete sound clip data.
+ */
 void freeSounds () {
 
 	int count;
@@ -354,7 +384,7 @@ void freeSounds () {
 
 
 /**
- * Set the sound to be played
+ * Set the sound clip to be played.
  */
 void playSound (int newSound) {
 

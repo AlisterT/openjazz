@@ -7,7 +7,7 @@
  *
  * @section History
  * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
- * 1st August 2012: Renamed jj1sceneload.cpp to jj1sceneload.cpp
+ * 1st August 2012: Renamed sceneload.cpp to jj1sceneload.cpp
  *
  * @section Licence
  * Copyright (c) 2005-2012 Alister Thomson
@@ -35,6 +35,13 @@
 #include <string.h>
 
 
+/**
+ * Load a short from a buffer and advance the pointer past it.
+ *
+ * @param data Pointer to data in a buffer
+ *
+ * @return The loaded short
+ */
 unsigned short int JJ1Scene::loadShortMem (unsigned char** data) {
 
 	unsigned short int val;
@@ -49,6 +56,13 @@ unsigned short int JJ1Scene::loadShortMem (unsigned char** data) {
 }
 
 
+/**
+ * Decompress JJ1 cutscene graphical data.
+ *
+ * @param size The size of the compressed data
+ * @param frameData The compressed data
+ * @param pixels Buffer to contain the decompressed data
+ */
 void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
 	unsigned char* nextPixel = pixels;
@@ -155,12 +169,20 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 
 }
 
+
 /*
  * $0x $...	Next x + 1 bytes are 'literals'; each byte colors 1 column (Max val $3F)
  * $4x $yy        Next x + 1 columns drawn in color yy (Max value $7E)
  * $7F $xxxx $yy	Next xxxx columns colored with color yy
  * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
  * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
+ */
+/**
+ * Decompress JJ1 cutscene graphical data.
+ *
+ * @param size The size of the compressed data
+ * @param frameData The compressed data
+ * @param pixels Buffer to contain the decompressed data
  */
 void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixels) {
 
@@ -258,6 +280,12 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 }
 
 
+/**
+ * Load JJ1 cutscene animation.
+ *
+ * @param f File from which to load animation
+ * @param dataIndex Index
+ */
 void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 	LOGRESULT("ParseAni DataLen", f->loadShort()); // should be 0x02
@@ -439,6 +467,11 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 }
 
 
+/**
+ * Load JJ1 cutscene data.
+ *
+ * @param f File from which to load the data
+ */
 void JJ1Scene::loadData (File *f) {
 
 	int loop;
@@ -509,6 +542,11 @@ void JJ1Scene::loadData (File *f) {
 }
 
 
+/**
+ * Load JJ1 cutscene scripts.
+ *
+ * @param f File from which to load the scripts
+ */
 void JJ1Scene::loadScripts (File *f) {
 
 	int loop;

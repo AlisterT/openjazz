@@ -9,7 +9,7 @@
  * 3rd February 2009: Created file.cpp from parts of util.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -59,6 +59,9 @@ File::File (const char* name, bool write) {
 }
 
 
+/**
+ * Delete the file object.
+ */
 File::~File () {
 
 	fclose(file);
@@ -74,6 +77,13 @@ File::~File () {
 }
 
 
+/**
+ * Try opening a file from the given path
+ *
+ * @param path Directory path
+ * @param name File name
+ * @param write Whether or not the file can be written to
+ */
 bool File::open (const char* path, const char* name, bool write) {
 
 #if defined(UPPERCASE_FILENAMES) || defined(LOWERCASE_FILENAMES)
@@ -119,6 +129,11 @@ bool File::open (const char* path, const char* name, bool write) {
 }
 
 
+/**
+ * Get the size of the file.
+ *
+ * @return The size of the file
+ */
 int File::getSize () {
 
 	int pos, size;
@@ -135,12 +150,25 @@ int File::getSize () {
 
 }
 
+
+/**
+ * Get the current read/write location within the file.
+ *
+ * @return The current location
+ */
 int File::tell () {
 
 	return ftell(file);
 
 }
 
+
+/**
+ * Set the read/write location within the file.
+ *
+ * @param offset The new offset
+ * @param reset Whether to offset from the current location or the start of the file
+ */
 void File::seek (int offset, bool reset) {
 
 	fseek(file, offset, reset ? SEEK_SET: SEEK_CUR);
@@ -149,6 +177,12 @@ void File::seek (int offset, bool reset) {
 
 }
 
+
+/**
+ * Load an unsigned char from the file.
+ *
+ * @return The value read
+ */
 unsigned char File::loadChar () {
 
 	return fgetc(file);
@@ -165,6 +199,11 @@ void File::storeChar (unsigned char val) {
 }
 
 
+/**
+ * Load an unsigned short int from the file.
+ *
+ * @return The value read
+ */
 unsigned short int File::loadShort () {
 
 	unsigned short int val;
@@ -177,6 +216,11 @@ unsigned short int File::loadShort () {
 }
 
 
+/**
+ * Load an unsigned short int with an upper limit from the file.
+ *
+ * @return The value read
+ */
 unsigned short int File::loadShort (unsigned short int max) {
 
 	unsigned short int val;
@@ -206,6 +250,11 @@ void File::storeShort (unsigned short int val) {
 }
 
 
+/**
+ * Load a signed long int from the file.
+ *
+ * @return The value read
+ */
 signed long int File::loadInt () {
 
 	unsigned long int val;
@@ -236,6 +285,13 @@ void File::storeInt (signed long int val) {
 }
 
 
+/**
+ * Load a block of uncompressed data from the file.
+ *
+ * @param length The length of the block
+ *
+ * @return Buffer containing the block of data
+ */
 unsigned char * File::loadBlock (int length) {
 
 	unsigned char *buffer;
@@ -249,6 +305,13 @@ unsigned char * File::loadBlock (int length) {
 }
 
 
+/**
+ * Load a block of RLE compressed data from the file.
+ *
+ * @param length The length of the uncompressed block
+ *
+ * @return Buffer containing the uncompressed data
+ */
 unsigned char* File::loadRLE (int length) {
 
 	unsigned char* buffer;
@@ -298,6 +361,9 @@ unsigned char* File::loadRLE (int length) {
 }
 
 
+/**
+ * Skip past a block of RLE compressed data in the file.
+ */
 void File::skipRLE () {
 
 	int next;
@@ -312,6 +378,14 @@ void File::skipRLE () {
 }
 
 
+/**
+ * Load a block of LZ compressed data from the file.
+ *
+ * @param compressedLength The length of the compressed block
+ * @param length The length of the uncompressed block
+ *
+ * @return Buffer containing the uncompressed data
+ */
 unsigned char* File::loadLZ (int compressedLength, int length) {
 
 	unsigned char* compressedBuffer;
@@ -330,6 +404,11 @@ unsigned char* File::loadLZ (int compressedLength, int length) {
 }
 
 
+/**
+ * Load a string from the file.
+ *
+ * @return The new string
+ */
 char * File::loadString () {
 
 	char *string;
@@ -374,6 +453,15 @@ char * File::loadString () {
 
 }
 
+
+/**
+ * Load RLE compressed graphical data from the file.
+ *
+ * @param width The width of the image to load
+ * @param height The height of the image to load
+ *
+ * @return SDL surface containing the loaded image
+ */
 SDL_Surface* File::loadSurface (int width, int height) {
 
 	SDL_Surface* surface;
@@ -390,6 +478,13 @@ SDL_Surface* File::loadSurface (int width, int height) {
 }
 
 
+/**
+ * Load a block of scrambled pixel data from the file.
+ *
+ * @param length The length of the block
+ *
+ * @return Buffer containing the de-scrambled data
+ */
 unsigned char* File::loadPixels  (int length) {
 
 	unsigned char* pixels;
@@ -414,6 +509,14 @@ unsigned char* File::loadPixels  (int length) {
 }
 
 
+/**
+ * Load a block of scrambled and masked pixel data from the file.
+ *
+ * @param length The length of the block
+ * @param key The transparent pixel value
+ *
+ * @return Buffer containing the de-scrambled data
+ */
 unsigned char* File::loadPixels (int length, int key) {
 
 	unsigned char* pixels;
@@ -475,6 +578,12 @@ unsigned char* File::loadPixels (int length, int key) {
 }
 
 
+/**
+ * Load a palette from the file.
+ *
+ * @param palette The palette to be filled with loaded colours
+ * @param rle Whether or not the palette data is RLE-encoded
+ */
 void File::loadPalette (SDL_Color* palette, bool rle) {
 
 	unsigned char* buffer;
@@ -500,6 +609,12 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 }
 
 
+/**
+ * Create a new directory path object.
+ *
+ * @param newNext Next path
+ * @param newPath The new path
+ */
 Path::Path (Path* newNext, char* newPath) {
 
 	next = newNext;
@@ -510,6 +625,9 @@ Path::Path (Path* newNext, char* newPath) {
 }
 
 
+/**
+ * Delete the directory path object.
+ */
 Path::~Path () {
 
 	if (next) delete next;

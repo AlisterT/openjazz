@@ -70,6 +70,7 @@ Player::~Player () {
  *
  * Deinitialise any existing player data, assign properties and initial values.
  *
+ * @param owner The current game
  * @param playerName Name (displayed in multiplayer games)
  * @param playerCols Colours (only used in multiplayer games)
  * @param newTeam Team (in multiplayer games)
@@ -152,6 +153,7 @@ void Player::reset (unsigned char x, unsigned char y) {
  *
  * @param levelType The type of level for which to create a level player
  * @param anims New level player animations
+ * @param flippedAnims New level player flipped animations
  * @param x The level player's new grid x-coordinate
  * @param y The level player's new grid y-coordinate
  */
@@ -366,7 +368,7 @@ void Player::addAmmo (int type, int amount) {
  *
  * @param amount False for type, true for amount
  *
- * @param The requested value
+ * @return The requested value
  */
 int Player::getAmmo (bool amount) {
 

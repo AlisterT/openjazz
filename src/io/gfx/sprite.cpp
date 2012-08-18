@@ -10,7 +10,7 @@
  * 26th July 2009: Created anim.cpp from parts of sprite.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -26,6 +26,9 @@
 #include "sprite.h"
 
 
+/**
+ * Create a sprite.
+ */
 Sprite::Sprite () {
 
 	pixels = NULL;
@@ -35,6 +38,9 @@ Sprite::Sprite () {
 }
 
 
+/**
+ * Delete the sprite.
+ */
 Sprite::~Sprite () {
 
 	if (pixels) SDL_FreeSurface(pixels);
@@ -44,6 +50,9 @@ Sprite::~Sprite () {
 }
 
 
+/**
+ * Make the sprite blank.
+ */
 void Sprite::clearPixels () {
 
 	unsigned char data;
@@ -59,6 +68,14 @@ void Sprite::clearPixels () {
 }
 
 
+/**
+ * Set new pixel data for the sprite.
+ *
+ * @param data The new pixel data
+ * @param width The width of the sprite image
+ * @param height The height of the sprite image
+ * @param key The transparent pixel value
+ */
 void Sprite::setPixels (unsigned char *data, int width, int height, unsigned char key) {
 
 	if (pixels) SDL_FreeSurface(pixels);
@@ -71,6 +88,11 @@ void Sprite::setPixels (unsigned char *data, int width, int height, unsigned cha
 }
 
 
+/**
+ * Get the width of the sprite.
+ *
+ * @return The width
+ */
 int Sprite::getWidth () {
 
 	return pixels->w;
@@ -78,6 +100,11 @@ int Sprite::getWidth () {
 }
 
 
+/**
+ * Get the height of the sprite.
+ *
+ * @return The height
+ */
 int Sprite::getHeight() {
 
 	return pixels->h;
@@ -85,6 +112,13 @@ int Sprite::getHeight() {
 }
 
 
+/**
+ * Set the sprite's palette, or a portion thereof.
+ *
+ * @param palette New palette
+ * @param start First colour to change
+ * @param amount Number of colours to change
+ */
 void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 
 	SDL_SetPalette(pixels, SDL_LOGPAL, palette + start, start, amount);
@@ -94,12 +128,15 @@ void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 }
 
 
+/**
+ * Map the whole of the sprite's palette to one index.
+ *
+ * @param index The index to use
+ */
 void Sprite::flashPalette (int index) {
 
 	SDL_Color palette[256];
 	int count;
-
-	// Map the whole palette to one index
 
 	for (count = 0; count < 256; count++)
 		palette[count].r = palette[count].g = palette[count].b = index;
@@ -111,6 +148,9 @@ void Sprite::flashPalette (int index) {
 }
 
 
+/**
+ * Restore the sprite's palette to its original state.
+ */
 void Sprite::restorePalette () {
 
 	video.restoreSurfacePalette(pixels);
@@ -120,20 +160,24 @@ void Sprite::restorePalette () {
 }
 
 
+/**
+ * Draw the sprite
+ *
+ * @param x The x-coordinate at which to draw the sprite
+ * @param y The y-coordinate at which to draw the sprite
+ * @param includeOffsets Whether or not to include the sprite's offsets
+ */
 void Sprite::draw (int x, int y, bool includeOffsets) {
 
 	SDL_Rect dst;
 
+	dst.x = x;
+	dst.y = y;
+
 	if (includeOffsets) {
 
-		dst.x = x + xOffset;
-		dst.y = y + yOffset;
-
-	}
-	else {
-
-		dst.x = x;
-		dst.y = y;
+		dst.x += xOffset;
+		dst.y += yOffset;
 
 	}
 
@@ -144,6 +188,13 @@ void Sprite::draw (int x, int y, bool includeOffsets) {
 }
 
 
+/**
+ * Draw the sprite scaled
+ *
+ * @param x The x-coordinate at which to draw the sprite
+ * @param y The y-coordinate at which to draw the sprite
+ * @param scale The amount by which to scale the sprite
+ */
 void Sprite::drawScaled (int x, int y, fixed scale) {
 
 	unsigned char* srcRow;

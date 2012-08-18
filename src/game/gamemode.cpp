@@ -46,6 +46,7 @@ bool GameMode::hit (Player *source, Player *victim) {
 /**
  * Outcome of player being killed
  *
+ * @param game The current game
  * @param source Player responsible for the kill
  * @param victim Player victim of the kill
  *
@@ -63,6 +64,7 @@ bool GameMode::kill (Game* game, Player *source, Player *victim) {
 /**
  * Outcome of level being completed
  *
+ * @param game The current game
  * @param player Player that has completed level
  * @param gridX X-coordinate (in tiles) of finishing position
  * @param gridY Y-coordinate (in tiles) of finishing position
@@ -304,6 +306,7 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
 /**
  * Outcome of level being completed
  *
+ * @param game The current game
  * @param player Player that has completed level
  * @param gridX X-coordinate (in tiles) of finishing position
  * @param gridY Y-coordinate (in tiles) of finishing position

@@ -58,6 +58,8 @@
 
 /**
  * Base constructor for JJ1DemoLevel sub-class.
+ *
+ * @param owner The current game
  */
 JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 
@@ -71,8 +73,8 @@ JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 /**
  * Create a JJ1 level.
  *
+ * @param owner The current game
  * @param fileName Name of the file containing the level data.
- * @param diff Difficulty level
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  * @param multi Whether or not the level will be multi-player
  */

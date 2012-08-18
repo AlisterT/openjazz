@@ -199,8 +199,8 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 /**
  * Create a JJ1 bonus level.
  *
+ * @param owner The current game
  * @param fileName Name of the file containing the level data.
- * @param diff Difficulty level
  * @param multi Whether or not the level will be multi-player
  */
 JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(owner) {

@@ -42,6 +42,7 @@
 /**
  * Create a JJ1 demo level.
  *
+ * @param owner The current game
  * @param fileName Name of the file containing the macro data.
  */
 JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner) {

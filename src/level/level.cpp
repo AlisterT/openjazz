@@ -1,7 +1,7 @@
 
 /**
  *
- * @file baselevel.cpp
+ * @file level.cpp
  *
  * Part of the OpenJazz project
  *
@@ -89,6 +89,7 @@ Level::~Level () {
  *
  * @param levelType The type of level for which to create a level player
  * @param anims New level player animations
+ * @param flippedAnims New level player flipped animations
  * @param checkpoint Whether or not a checkpoint is in use
  * @param x The level players' new grid x-coordinate
  * @param y The level players' new grid y-coordinate
@@ -212,6 +213,9 @@ int Level::getTimeChange () {
  * @param bg Palette index of the box(es)
  * @param menu Whether or not the level menu should be displayed
  * @param option Selected menu uption
+ * @param textPalIndex The first palette index for unseleceted text
+ * @param selectedTextPalIndex The first palette index for selected text
+ * @param textPalSpan The number of palette indices for text
  */
 void Level::drawOverlay (unsigned char bg, bool menu, int option,
 	unsigned char textPalIndex, unsigned char selectedTextPalIndex,

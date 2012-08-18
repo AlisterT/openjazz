@@ -35,8 +35,9 @@
 	#include "io/gfx/scale2x/scalebit.h"
 #endif
 
+
 /**
- * Precalculate buffers
+ * Create the plasma.
  */
 Plasma::Plasma(){
 
@@ -49,10 +50,10 @@ Plasma::Plasma(){
 	// -1024 < out < 1024
 }
 
-/// @todo this code is awful in so many ways
-
 /**
- * Draws plasma onto canvas
+ * Draw the plasma.
+ *
+ * @return Error code
  */
 int Plasma::draw(){
 	int x,y;

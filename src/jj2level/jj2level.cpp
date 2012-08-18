@@ -46,8 +46,8 @@
 /**
  * Create a JJ2 level.
  *
+ * @param owner The current game
  * @param fileName Name of the file containing the level data.
- * @param diff Difficulty level
  * @param checkpoint Whether or not the player(s) will start at a checkpoint
  * @param multi Whether or not the level will be multi-player
  */
@@ -146,6 +146,7 @@ bool JJ2Level::checkMaskUp (fixed x, fixed y) {
  *
  * @param x X-coordinate
  * @param y Y-coordinate
+ * @param drop Whether or not the player is dropping
  *
  * @return Solidity
  */
@@ -310,6 +311,7 @@ Anim* JJ2Level::getPlayerAnim (int character, int anim, bool flipped) {
  * Set the water level.
  *
  * @param gridY New water level y-coordinate
+ * @param instant Whether or not the change is instant
  */
 void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 

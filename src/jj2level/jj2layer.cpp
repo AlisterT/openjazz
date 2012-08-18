@@ -9,7 +9,7 @@
  * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,7 +30,7 @@
 
 
 /**
- * Create a blank layer
+ * Create a blank 1-by-1 layer.
  */
 JJ2Layer::JJ2Layer () {
 
@@ -46,6 +46,13 @@ JJ2Layer::JJ2Layer () {
 }
 
 
+/**
+ * Create a blank layer.
+ *
+ * @param newWidth The width of the layer (in tiles)
+ * @param newHeight The height of the layer (in tiles)
+ * @param flags Layer flags
+ */
 JJ2Layer::JJ2Layer (int newWidth, int newHeight, int flags) {
 
 	int row;
@@ -68,6 +75,9 @@ JJ2Layer::JJ2Layer (int newWidth, int newHeight, int flags) {
 }
 
 
+/**
+ * Delete the layer.
+ */
 JJ2Layer::~JJ2Layer () {
 
 	delete[] *grid;
@@ -80,6 +90,11 @@ JJ2Layer::~JJ2Layer () {
 
 /**
  * Get flipped. We aim to offend!
+ *
+ * @param x The x-coordinate of the tile (in tiles)
+ * @param y The y-coordinate of the tile (in tiles)
+ *
+ * @return Whether or not the tile is flipped horizontally
  */
 bool JJ2Layer::getFlipped (int x, int y) {
 
@@ -90,6 +105,11 @@ bool JJ2Layer::getFlipped (int x, int y) {
 }
 
 
+/**
+ * Get the height of the layer.
+ *
+ * @return The height of the layer (in tiles)
+ */
 int JJ2Layer::getHeight () {
 
 	return height;
@@ -97,6 +117,14 @@ int JJ2Layer::getHeight () {
 }
 
 
+/**
+ * Get the tile for the given co-ordinates.
+ *
+ * @param x The x-coordinate of the tile (in tiles)
+ * @param y The y-coordinate of the tile (in tiles)
+ *
+ * @return The number of the tile
+ */
 int JJ2Layer::getTile (int x, int y) {
 
 	if (((x < 0) || (x >= width)) && !tileX) return 0;
@@ -107,6 +135,11 @@ int JJ2Layer::getTile (int x, int y) {
 }
 
 
+/**
+ * Get the width of the layer.
+ *
+ * @return The width of the layer (in tiles)
+ */
 int JJ2Layer::getWidth () {
 
 	return width;
@@ -114,6 +147,13 @@ int JJ2Layer::getWidth () {
 }
 
 
+/**
+ * Set the frame of the tile at the given co-ordinates.
+ *
+ * @param x The x-coordinate of the tile (in tiles)
+ * @param y The y-coordinate of the tile (in tiles)
+ * @param frame The new frame
+ */
 void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) {
 
 	grid[y][x].frame = frame;
@@ -123,6 +163,14 @@ void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) 
 }
 
 
+/**
+ * Set the tile at the given co-ordinates.
+ *
+ * @param x The x-coordinate of the tile (in tiles)
+ * @param y The y-coordinate of the tile (in tiles)
+ * @param tile The number of the tile
+ * @param tiles The total number of tiles
+ */
 void JJ2Layer::setTile (unsigned char x, unsigned char y, unsigned short int tile, int tiles) {
 
 	JJ2Tile* ge;
@@ -154,6 +202,12 @@ void JJ2Layer::setTile (unsigned char x, unsigned char y, unsigned short int til
 }
 
 
+/**
+ * Draw the layer.
+ *
+ * @param tileSet The tile set to use for non-flipped tiles
+ * @param flippedTileSet The tile set to use for flipped tiles
+ */
 void JJ2Layer::draw (SDL_Surface* tileSet, SDL_Surface* flippedTileSet) {
 
 	SDL_Rect src, dst;

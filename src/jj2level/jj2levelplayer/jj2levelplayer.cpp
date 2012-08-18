@@ -41,9 +41,10 @@
  *
  * @param parent The game player corresponding to this level player.
  * @param newAnims Animations
+ * @param newFlippedAnims Flipped animations
  * @param startX Starting position x-coordinate
  * @param startY Starting position y-coordinate
- * @param hasBird Whether or not the player is being accompanied by a bird
+ * @param flockSize The number of birds accompanying the player
  */
 JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
 	Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize) {

@@ -33,6 +33,11 @@
 #include <string.h>
 
 
+/**
+ * Create a new palette effect.
+ *
+ * @param nextPE The next palette effect
+ */
 PaletteEffect::PaletteEffect (PaletteEffect* nextPE) {
 
 	next = nextPE;
@@ -42,6 +47,9 @@ PaletteEffect::PaletteEffect (PaletteEffect* nextPE) {
 }
 
 
+/**
+ * Delete the palette effect.
+ */
 PaletteEffect::~PaletteEffect () {
 
 	if (next) delete next;
@@ -51,6 +59,13 @@ PaletteEffect::~PaletteEffect () {
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	// Apply the next palette effect
@@ -61,6 +76,12 @@ void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 }
 
 
+/**
+ * Create a new white-in palette effect.
+ *
+ * @param newDuration The length of time the effect will last
+ * @param nextPE The next palette effect
+ */
 WhiteInPaletteEffect::WhiteInPaletteEffect
 	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
@@ -72,6 +93,13 @@ WhiteInPaletteEffect::WhiteInPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
@@ -110,6 +138,12 @@ void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 }
 
 
+/**
+ * Create a new fade-in palette effect.
+ *
+ * @param newDuration The length of time the effect will last
+ * @param nextPE The next palette effect
+ */
 FadeInPaletteEffect::FadeInPaletteEffect
 	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
@@ -121,6 +155,13 @@ FadeInPaletteEffect::FadeInPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
@@ -159,6 +200,12 @@ void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf)
 }
 
 
+/**
+ * Create a new white-out palette effect.
+ *
+ * @param newDuration The length of time the effect will last
+ * @param nextPE The next palette effect
+ */
 WhiteOutPaletteEffect::WhiteOutPaletteEffect
 	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
@@ -170,6 +217,13 @@ WhiteOutPaletteEffect::WhiteOutPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
@@ -206,6 +260,12 @@ void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int msp
 }
 
 
+/**
+ * Create a new fade-out palette effect.
+ *
+ * @param newDuration The length of time the effect will last
+ * @param nextPE The next palette effect
+ */
 FadeOutPaletteEffect::FadeOutPaletteEffect
 	(int newDuration, PaletteEffect* nextPE) : PaletteEffect (nextPE) {
 
@@ -217,6 +277,13 @@ FadeOutPaletteEffect::FadeOutPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
@@ -252,6 +319,15 @@ void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 }
 
 
+/**
+ * Create a new flash-to-colour palette effect.
+ *
+ * @param newRed The red component of the colour
+ * @param newGreen The green component of the colour
+ * @param newBlue The blue component of the colour
+ * @param newDuration The length of time the effect will last
+ * @param nextPE The next palette effect
+ */
 FlashPaletteEffect::FlashPaletteEffect
 	(unsigned char newRed, unsigned char newGreen, unsigned char newBlue,
 		int newDuration, PaletteEffect* nextPE) :
@@ -268,6 +344,13 @@ FlashPaletteEffect::FlashPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int count;
@@ -314,6 +397,14 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 }
 
 
+/**
+ * Create a new colour rotation palette effect.
+ *
+ * @param newFirst The first palette index to be affected
+ * @param newAmount The number of palette indices to be affected
+ * @param newSpeed The speed of he rotation
+ * @param nextPE The next palette effect
+ */
 RotatePaletteEffect::RotatePaletteEffect
 	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect * nextPE) :
 	PaletteEffect (nextPE) {
@@ -328,6 +419,13 @@ RotatePaletteEffect::RotatePaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	SDL_Color* currentPalette;
@@ -357,6 +455,15 @@ void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf)
 }
 
 
+/**
+ * Create a new parallaxing sky background palette effect.
+ *
+ * @param newFirst The first palette index to be affected
+ * @param newAmount The number of palette indices to be affected
+ * @param newSpeed The relative speed of the background
+ * @param newSkyPalette Palette containing the sky's colours
+ * @param nextPE The next palette effect
+ */
 SkyPaletteEffect::SkyPaletteEffect
 	(unsigned char newFirst, int newAmount, fixed newSpeed,
 		SDL_Color* newSkyPalette, PaletteEffect* nextPE) :
@@ -372,6 +479,13 @@ SkyPaletteEffect::SkyPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void SkyPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	int position, count, y;
@@ -423,6 +537,14 @@ void SkyPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 }
 
 
+/**
+ * Create a new 2D parallaxing background palette effect.
+ *
+ * @param newFirst The first palette index to be affected
+ * @param newAmount The number of palette indices to be affected
+ * @param newSpeed The relative speed of the background
+ * @param nextPE The next palette effect
+ */
 P2DPaletteEffect::P2DPaletteEffect
 	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE) :
 	PaletteEffect (nextPE) {
@@ -436,6 +558,13 @@ P2DPaletteEffect::P2DPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void P2DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	SDL_Color* currentPalette;
@@ -468,6 +597,14 @@ void P2DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 }
 
 
+/**
+ * Create a new 1D parallaxing background palette effect.
+ *
+ * @param newFirst The first palette index to be affected
+ * @param newAmount The number of palette indices to be affected
+ * @param newSpeed The relative speed of the background
+ * @param nextPE The next palette effect
+ */
 P1DPaletteEffect::P1DPaletteEffect
 	(unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE) :
 	PaletteEffect (nextPE) {
@@ -481,6 +618,13 @@ P1DPaletteEffect::P1DPaletteEffect
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void P1DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	SDL_Color* currentPalette;
@@ -510,6 +654,12 @@ void P1DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 }
 
 
+/**
+ * Create a new water palette effect.
+ *
+ * @param newDepth Water depth
+ * @param nextPE The next palette effect
+ */
 WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE)
 	: PaletteEffect (nextPE) {
 
@@ -520,6 +670,13 @@ WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE)
 }
 
 
+/**
+ * Apply the palette effect.
+ *
+ * @param shownPalette The palette the effect will be applied to
+ * @param direct Whether or not to apply the effect directly
+ * @param mspf Ticks per frame
+ */
 void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
 
 	SDL_Color* currentPalette;

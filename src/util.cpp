@@ -13,7 +13,7 @@
  * 13th July 2009: Created graphics.cpp from parts of util.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -35,6 +35,13 @@
 #include <string.h>
 
 
+/**
+ * Check if a file exists.
+ *
+ * @param fileName The file to check
+ *
+ * @return Whether or not the file exists
+ */
 bool fileExists (const char * fileName) {
 
 	File *file;
@@ -60,6 +67,14 @@ bool fileExists (const char * fileName) {
 }
 
 
+/**
+ * Create a short based on the little-endian contents of the first two bytes in
+ * the given memory location.
+ *
+ * @param data Pointer to the memory location
+ *
+ * @return The generated short
+ */
 unsigned short int createShort (unsigned char* data) {
 
 	unsigned short int val;
@@ -71,6 +86,14 @@ unsigned short int createShort (unsigned char* data) {
 }
 
 
+/**
+ * Create an int based on the little-endian contents of the first two bytes in
+ * the given memory location.
+ *
+ * @param data Pointer to the memory location
+ *
+ * @return The generated int
+ */
 int createInt (unsigned char* data) {
 
 	unsigned int val;
@@ -82,6 +105,13 @@ int createInt (unsigned char* data) {
 }
 
 
+/**
+ * Create a new string from the contents of an existing string.
+ *
+ * @param string The existing string
+ *
+ * @return The new string
+ */
 char * createString (const char *string) {
 
 	char *cloned;
@@ -94,6 +124,14 @@ char * createString (const char *string) {
 }
 
 
+/**
+ * Create a new string from the concatenation of two existing strings.
+ *
+ * @param first The existing string to form the start of the new string
+ * @param second The exisitng string to form the end of the new string
+ *
+ * @return The new string
+ */
 char * createString (const char *first, const char *second) {
 
 	char *concatenated;
@@ -107,6 +145,14 @@ char * createString (const char *first, const char *second) {
 }
 
 
+/**
+ * Create a new file name string with a 3-digit numerical extension.
+ *
+ * @param type The pre-dot file name
+ * @param extension The number to constitute the extension
+ *
+ * @return The new file name string
+ */
 char * createFileName (const char *type, int extension) {
 
 	char *fileName;
@@ -126,13 +172,21 @@ char * createFileName (const char *type, int extension) {
 }
 
 
+/**
+ * Create a new file name string with the given extension.
+ *
+ * @param type The pre-dot file name
+ * @param extension The extension
+ *
+ * @return The new file name string
+ */
 char * createFileName (const char *type, const char *extension) {
 
 	char *fileName;
 	int pos;
 
 	pos = strlen(type);
-	fileName = new char[strlen(type) + strlen(extension) + 2];
+	fileName = new char[pos + strlen(extension) + 2];
 	strcpy(fileName, type);
 	fileName[pos++] = '.';
 	strcpy(fileName + pos, extension);
@@ -142,6 +196,16 @@ char * createFileName (const char *type, const char *extension) {
 }
 
 
+/**
+ * Create a new file name string with a 1-digit numerical suffix and a 3-digit
+ * numerical extension.
+ *
+ * @param type The pre-dot file name
+ * @param level The number to constitute the suffix
+ * @param extension The number to constitute the extension
+ *
+ * @return The new file name string
+ */
 char * createFileName (const char *type, int level, int extension) {
 
 	char *fileName;
@@ -162,6 +226,13 @@ char * createFileName (const char *type, int level, int extension) {
 }
 
 
+/**
+ * Create a new variable-length string from the contents of an existing string.
+ *
+ * @param string The existing string
+ *
+ * @return The new string
+ */
 char * createEditableString (const char *string) {
 
 	char *cloned;
@@ -174,6 +245,11 @@ char * createEditableString (const char *string) {
 }
 
 
+/**
+ * Add a message to the log.
+ *
+ * @param message The log message
+ */
 void log (const char *message) {
 
 	printf("%s\n", message);
@@ -183,6 +259,12 @@ void log (const char *message) {
 }
 
 
+/**
+ * Add a message with a detail message to the log.
+ *
+ * @param message The log message
+ * @param detail The detail message
+ */
 void log (const char *message, const char *detail) {
 
 	printf("%s: %s\n", message, detail);
@@ -192,6 +274,12 @@ void log (const char *message, const char *detail) {
 }
 
 
+/**
+ * Add a message with a detail number to the log.
+ *
+ * @param message The log message
+ * @param number The detail number
+ */
 void log (const char *message, int number) {
 
 	printf("%s: %d\n", message, number);
@@ -201,6 +289,12 @@ void log (const char *message, int number) {
 }
 
 
+/**
+ * Add a message with a detail message to the error log.
+ *
+ * @param message The log message
+ * @param detail The detail message
+ */
 void logError (const char *message, const char *detail) {
 
 	fprintf(stderr, "%s: %s\n", message, detail);
@@ -210,6 +304,13 @@ void logError (const char *message, const char *detail) {
 }
 
 
+/**
+ * Get the sine of the given angle
+ *
+ * @param angle The given angle (where 1024 represents a full circle)
+ *
+ * @return The sine of the angle
+ */
 fixed fSin (fixed angle) {
 
 	return sinLut[angle & 1023];
@@ -217,6 +318,13 @@ fixed fSin (fixed angle) {
 }
 
 
+/**
+ * Get the cosine of the given angle
+ *
+ * @param angle The given angle (where 1024 represetns a full circle)
+ *
+ * @return The cosine of the angle
+ */
 fixed fCos (fixed angle) {
 
 	return sinLut[(angle + 256) & 1023];
