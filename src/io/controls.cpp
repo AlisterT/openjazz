@@ -9,7 +9,7 @@
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -135,8 +135,8 @@ Controls::Controls () {
 
 	}
 
-	cursorTime = 0;
-	cursorState = false;
+	cursorPressed = false;
+	cursorReleased = false;
 
 	return;
 
@@ -250,6 +250,25 @@ int Controls::getAxisDirection (int control) {
 
 
 /**
+ * Set the position and state of the cursor.
+ *
+ * @param x The x-coordinate of the cursor
+ * @param y The y-coordinate of the cursor
+ * @param pressed The state of the cursor
+ */
+void Controls::setCursor(int x, int y, bool pressed) {
+
+	cursorX = x;
+	cursorY = y;
+	cursorPressed = pressed;
+	cursorReleased = !pressed;
+
+	return;
+
+}
+
+
+/**
  * Update controls based on a system event.
  *
  * @param event The system event. Non-input events will be ignored
@@ -330,28 +349,37 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 		case SDL_MOUSEMOTION:
 
-			cursorX = event->motion.x;
-			cursorY = event->motion.y;
-			cursorState = (((event->motion.state & SDL_BUTTON(1)) != 0) && (globalTicks > cursorTime));
+			if (event->motion.state & SDL_BUTTON(1)) {
+
+				setCursor(event->motion.x, event->motion.y, true);
+
+			}
 
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+
+			if (event->button.button == SDL_BUTTON_LEFT) {
+
+				setCursor(event->button.x, event->button.y, true);
+
+			} else if (event->button.button == 4) {
+
+				wheelUp++;
+
+			} else if (event->button.button == 5) {
+
+				wheelDown++;
+
+			}
+
+			break;
+
 		case SDL_MOUSEBUTTONUP:
 
 			if (event->button.button == SDL_BUTTON_LEFT) {
 
-				cursorX = event->button.x;
-				cursorY = event->button.y;
-				cursorState = ((event->button.state == SDL_PRESSED) && (globalTicks > cursorTime));
-
-			} else if (event->button.button == 4) {
-
-				if (event->button.state == SDL_PRESSED) wheelUp++;
-
-			} else if (event->button.button == 5) {
-
-				if (event->button.state == SDL_PRESSED) wheelDown++;
+				setCursor(event->button.x, event->button.y, false);
 
 			}
 
@@ -431,14 +459,14 @@ bool Controls::release (int control) {
 
 
 /**
- * If it's being used, release cursor.
+ * Get the position of the cursor, and determine whether or not it's being used.
  *
  * @param x Is set to the x-coordinate of the cursor
  * @param y Is set to the y-coordinate of the cursor
  *
  * @return True if the cursor was being used
  */
-bool Controls::releaseCursor (int& x, int& y) {
+bool Controls::getCursor (int& x, int& y) {
 
 #ifdef SCALE
 	int scaleFactor = video.getScaleFactor();
@@ -450,12 +478,27 @@ bool Controls::releaseCursor (int& x, int& y) {
 	y = cursorY;
 #endif
 
-	if (!cursorState) return false;
+	return cursorPressed || cursorReleased;
 
-	cursorTime = globalTicks + T_KEY;
-	cursorState = false;
+}
 
-	return true;
+
+/**
+ * Determine whether or not the cursor has been released.
+ *
+ * @return True if the cursor has been released
+ */
+bool Controls::wasCursorReleased () {
+
+	if (cursorReleased) {
+
+		cursorReleased = false;
+
+		return true;
+
+	}
+
+	return false;
 
 }
 

@@ -423,26 +423,30 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		}
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
 			x -= canvasW >> 2;
-			y -= (canvasH >> 1) - 38;
+			y -= (canvasH >> 1) - 46;
 
-			if ((x >= 0) && (x < 128) && (y >= 0) && (y < 80)) {
+			if ((x >= 0) && (x < 128) && (y >= 0) && (y < 96)) {
 
 				option = y >> 4;
 
-				ret = select(menu, option);
+				if (controls.wasCursorReleased()) {
 
-				if (ret < 0) return ret;
+					ret = select(menu, option);
 
-			} else menu = false;
+					if (ret < 0) return ret;
+
+				}
+
+			} else if (controls.wasCursorReleased()) menu = false;
 
 		}
 
 	} else {
 
-		if (controls.releaseCursor(x, y)) menu = true;
+		if (controls.wasCursorReleased()) menu = true;
 
 	}
 

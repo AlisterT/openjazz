@@ -360,10 +360,12 @@ int JJ1Scene::play () {
 
 		}
 
-		downOrRight = controls.releaseCursor(x, y);
+		controls.getCursor(x, y);
 
 		x -= (canvasW - SW) >> 1;
 		y -= (canvasH - SH) >> 1;
+
+		downOrRight = controls.wasCursorReleased();
 
 		if (controls.release(C_ESCAPE) ||
 			(controls.release(C_NO) && pages[sceneIndex].askForYesNo) ||

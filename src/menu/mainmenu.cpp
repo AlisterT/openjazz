@@ -325,7 +325,7 @@ int MainMenu::main () {
 
 		}
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
 			int count;
 
@@ -339,14 +339,18 @@ int MainMenu::main () {
 					(y >= options[count].y) &&
 					(y < options[count].y + options[count].h)) {
 
-					ret = select(count);
+					option = count;
 
-					if (ret < 0) return ret;
+					if (controls.wasCursorReleased()) {
+
+						ret = select(option);
+
+						if (ret < 0) return ret;
+
+					}
 
 					// New demo timeout
 					idleTime = globalTicks + T_DEMO;
-
-					option = count;
 
 					break;
 

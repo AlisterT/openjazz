@@ -16,7 +16,7 @@
  * 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -64,15 +64,13 @@ void Menu::showEscString () {
  */
 int Menu::message (const char* text) {
 
-	int coord;
-
 	video.setPalette(menuPalette);
 
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ENTER) || controls.release(C_ESCAPE) || controls.releaseCursor(coord, coord))
+		if (controls.release(C_ENTER) || controls.release(C_ESCAPE) || controls.wasCursorReleased())
 			return E_NONE;
 
 		SDL_Delay(T_FRAME);
@@ -122,9 +120,9 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		}
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x < 100) && (y >= canvasH - 12)) return E_RETURN;
+			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_RETURN;
 
 			x -= canvasW >> 2;
 			y -= (canvasH >> 1) - (options << 3);
@@ -133,9 +131,13 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 				chosen = y >> 4;
 
-				playSound(S_ORB);
+				if (controls.wasCursorReleased()) {
 
-				return E_NONE;
+					playSound(S_ORB);
+
+					return E_NONE;
+
+				}
 
 			}
 
@@ -241,7 +243,7 @@ int Menu::textInput (const char* request, char*& text) {
 
 
 		if (controls.release(C_ESCAPE) ||
-			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12))) {
+			(controls.getCursor(x, y) && (x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased())) {
 
 			delete[] input;
 

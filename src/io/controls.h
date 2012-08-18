@@ -9,7 +9,7 @@
  * 13th July 2009: Created controls.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -89,12 +89,14 @@ class Controls {
 
 		} controls[CONTROLS];
 
-		unsigned int cursorTime; ///< The time from which the cursor will respond to being pressed
 		int          cursorX; ///< X-coordinate of the cursor
 		int          cursorY; ///< Y-coordinate of the cursor
-		bool         cursorState; ///< Whether or not the cursor is being used
+		bool         cursorPressed; ///< Whether or not the cursor is being pressed
+		bool         cursorReleased; ///< Whether or not the cursor has been released
 		int          wheelUp; ///< How many times the wheel has been scrolled upwards
 		int          wheelDown; ///< How many times the wheel has been scrolled downwards
+
+		void setCursor (int x, int y, bool pressed);
 
 	public:
 		Controls ();
@@ -106,11 +108,14 @@ class Controls {
 		int  getButton        (int control);
 		int  getAxis          (int control);
 		int  getAxisDirection (int control);
+
 		int  update           (SDL_Event *event, LoopType type);
 		void loop             ();
-		bool getState         (int control);
-		bool release          (int control);
-		bool releaseCursor    (int& x, int& y);
+
+		bool getState          (int control);
+		bool release           (int control);
+		bool getCursor         (int& x, int& y);
+		bool wasCursorReleased ();
 
 };
 

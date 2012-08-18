@@ -132,7 +132,6 @@ int JJ1Planet::getId () {
 int JJ1Planet::play () {
 
 	unsigned int tickOffset;
-	int coord;
 
 	tickOffset = globalTicks;
 
@@ -144,7 +143,7 @@ int JJ1Planet::play () {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE) || controls.releaseCursor(coord, coord)) return E_NONE;
+		if (controls.release(C_ESCAPE) || controls.wasCursorReleased()) return E_NONE;
 
 		SDL_Delay(T_FRAME);
 

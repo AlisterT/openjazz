@@ -212,9 +212,9 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		if (controls.release(C_ENTER)) return playNewGame(mode, firstLevel);
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			x -= canvasW >> 2;
 			y -= (canvasH >> 1) - 32;
@@ -223,7 +223,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 				difficulty = y >> 4;
 
-				return playNewGame(mode, firstLevel);
+				if (controls.wasCursorReleased()) return playNewGame(mode, firstLevel);
 
 			}
 
@@ -336,9 +336,9 @@ int GameMenu::loadGame () {
 
 		}
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			if (y < (canvasH >> 1)) option = 0;
 			else option = 1;
@@ -510,9 +510,9 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		}
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x >= canvasW - 100) && (y >= canvasH - 12)) return E_NONE;
+			if ((x >= canvasW - 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			x -= canvasW >> 3;
 			y -= (canvasH >> 1) - 92;
@@ -521,7 +521,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 				episode = y >> 4;
 
-				if (exists[episode]) {
+				if (controls.wasCursorReleased() && exists[episode]) {
 
 					count = selectEpisode(mode, episode);
 

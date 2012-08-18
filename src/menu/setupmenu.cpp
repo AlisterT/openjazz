@@ -54,9 +54,11 @@ int SetupMenu::setupKeyboard () {
 
 		if (character == E_QUIT) return E_QUIT;
 
-		if ((character == controls.getKey(C_ESCAPE)) ||
-			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12)))
-			return E_NONE;
+		if (character == controls.getKey(C_ESCAPE)) return E_NONE;
+
+		if (controls.getCursor(x, y) &&
+			(x < 100) && (y >= canvasH - 12) &&
+			controls.wasCursorReleased()) return E_NONE;
 
 		if (character > 0) {
 
@@ -236,9 +238,11 @@ int SetupMenu::setupJoystick () {
 
 		}
 
-		if (controls.release(C_ESCAPE) ||
-			(controls.releaseCursor(x, y) && (x < 100) && (y >= canvasH - 12)))
-			return E_NONE;
+		if (controls.release(C_ESCAPE)) return E_NONE;
+
+		if ((controls.getCursor(x, y) &&
+			(x < 100) && (y >= canvasH - 12) &&
+			controls.wasCursorReleased())) return E_NONE;
 
 
 		SDL_Delay(T_FRAME);
@@ -302,9 +306,9 @@ int SetupMenu::setupResolution () {
 
 		if (controls.release(C_ENTER)) return E_NONE;
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x >= 32) && (x < 132) && (y >= canvasH - 12)) return E_NONE;
+			if ((x >= 32) && (x < 132) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			dimension = (x >= (canvasW >> 2) + 44);
 
@@ -427,11 +431,13 @@ int SetupMenu::setupScaling () {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE) ||
-			(controls.releaseCursor(x, y) && (x >= 32) && (x < 132) && (y >= canvasH - 12)))
-			return E_NONE;
+		if (controls.release(C_ESCAPE)) return E_NONE;
 
 		if (controls.release(C_ENTER)) return E_NONE;
+
+		if (controls.getCursor(x, y) &&
+			(x >= 32) && (x < 132) && (y >= canvasH - 12) &&
+			controls.wasCursorReleased()) return E_NONE;
 
 		SDL_Delay(T_FRAME);
 
@@ -496,22 +502,16 @@ int SetupMenu::setupSound () {
 
 		if (controls.release(C_ENTER)) return E_NONE;
 
-		if (controls.releaseCursor(x, y)) {
+		if (controls.getCursor(x, y)) {
 
-			if ((x < 100) && (y >= canvasH - 12)) return E_NONE;
+			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			x -= (canvasW >> 2) + 128;
 			y -= canvasH >> 1;
 
-			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11) &&
-				(soundsVolume != (x << 1)))
-			{
+			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11)) soundsVolume = x << 1;
 
-				soundsVolume = x << 1;
-
-				playSound(S_ORB);
-
-			}
+			if (controls.wasCursorReleased()) playSound(S_ORB);
 
 		}
 
