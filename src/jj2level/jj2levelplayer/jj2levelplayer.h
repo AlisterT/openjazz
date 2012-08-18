@@ -174,7 +174,7 @@ class JJ2LevelPlayer : public LevelPlayer {
 		JJ2LevelPlayer  (Player* parent, Anim** newAnims, Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ2LevelPlayer ();
 
-		void              reset       (unsigned char startX, unsigned char startY);
+		void              reset       (int startX, int startY);
 
 		void              addGem      (int colour);
 		int               countBirds  ();

@@ -139,7 +139,7 @@ JJ2LevelPlayer::~JJ2LevelPlayer () {
  * @param startX New x-coordinate
  * @param startY New y-coordinate
  */
-void JJ2LevelPlayer::reset (unsigned char startX, unsigned char startY) {
+void JJ2LevelPlayer::reset (int startX, int startY) {
 
 	mod = NULL;
 	energy = 5;

@@ -154,7 +154,7 @@ int JJ2Layer::getWidth () {
  * @param y The y-coordinate of the tile (in tiles)
  * @param frame The new frame
  */
-void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) {
+void JJ2Layer::setFrame (int x, int y, unsigned char frame) {
 
 	grid[y][x].frame = frame;
 
@@ -169,31 +169,28 @@ void JJ2Layer::setFrame (unsigned char x, unsigned char y, unsigned char frame) 
  * @param x The x-coordinate of the tile (in tiles)
  * @param y The y-coordinate of the tile (in tiles)
  * @param tile The number of the tile
+ * @param TSF Whether or not this is a TSF tile
  * @param tiles The total number of tiles
  */
-void JJ2Layer::setTile (unsigned char x, unsigned char y, unsigned short int tile, int tiles) {
+void JJ2Layer::setTile (int x, int y, unsigned short int tile, bool TSF, int tiles) {
 
 	JJ2Tile* ge;
 
 	ge = grid[y] + x;
 
-	if (tiles > 0) {
-
-		ge->flipped = tile & 0x400;
-		ge->tile = tile & 0x3FF;
-
-		if (ge->tile > tiles) ge->tile = 0;
-
-	} else {
-
-		// TSF
+	if (TSF) {
 
 		ge->flipped = tile & 0x1000;
 		ge->tile = tile & 0xFFF;
 
-		if (ge->tile > -tiles) ge->tile = 0;
+	} else {
+
+		ge->flipped = tile & 0x400;
+		ge->tile = tile & 0x3FF;
 
 	}
+
+	if (ge->tile > tiles) ge->tile = 0;
 
 	ge->frame = 0;
 

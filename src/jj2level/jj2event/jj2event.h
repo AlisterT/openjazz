@@ -44,7 +44,7 @@ class JJ2Event : public Movable {
 		unsigned int  endTime; ///< Point at which the event will terminate
 		bool          flipped; ///< Whether or not the sprite image should be flipped
 
-		JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties);
+		JJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, int newProperties);
 
 		void      destroy     (unsigned int ticks);
 		bool      prepareStep (unsigned int ticks, int msps);
@@ -70,7 +70,7 @@ class PickupJJ2Event : public JJ2Event {
 	protected:
 		unsigned char animSet;
 
-		PickupJJ2Event          (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties);
+		PickupJJ2Event          (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties);
 		virtual ~PickupJJ2Event ();
 
 		JJ2Event* step (unsigned int ticks, int msps);
@@ -81,7 +81,7 @@ class PickupJJ2Event : public JJ2Event {
 class AmmoJJ2Event : public PickupJJ2Event {
 
 	public:
-		AmmoJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF);
+		AmmoJJ2Event  (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF);
 		~AmmoJJ2Event ();
 
 		void      draw (unsigned int ticks, int change);
@@ -95,7 +95,7 @@ class CoinGemJJ2Event : public PickupJJ2Event {
 		void mapPalette (Anim* anim, int start);
 
 	public:
-		CoinGemJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF);
+		CoinGemJJ2Event  (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF);
 		~CoinGemJJ2Event ();
 
 		void      draw (unsigned int ticks, int change);
@@ -106,7 +106,7 @@ class CoinGemJJ2Event : public PickupJJ2Event {
 class FoodJJ2Event : public PickupJJ2Event {
 
 	public:
-		FoodJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF);
+		FoodJJ2Event  (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF);
 		~FoodJJ2Event ();
 
 		void      draw (unsigned int ticks, int change);
@@ -120,7 +120,7 @@ class SpringJJ2Event : public JJ2Event {
 		unsigned char animSet;
 
 	public:
-		SpringJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties);
+		SpringJJ2Event  (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties);
 		~SpringJJ2Event ();
 
 		JJ2Event* step (unsigned int ticks, int msps);
@@ -136,7 +136,7 @@ class OtherJJ2Event : public JJ2Event {
 		unsigned char animSet;
 
 	public:
-		OtherJJ2Event  (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties);
+		OtherJJ2Event  (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties);
 		~OtherJJ2Event ();
 
 		JJ2Event* step (unsigned int ticks, int msps);

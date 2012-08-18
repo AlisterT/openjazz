@@ -46,7 +46,7 @@ class LevelPlayer : public Movable {
 
 		virtual ~LevelPlayer ();
 
-		virtual void reset   (unsigned char startX, unsigned char startY) = 0;
+		virtual void reset   (int startX, int startY) = 0;
 
 		virtual int  countBirds () = 0;
 

@@ -135,7 +135,7 @@ void LocalGame::score (unsigned char team) {
  * @param gridX X-coordinate (in tiles) of the checkpoint
  * @param gridY Y-coordinate (in tiles) of the checkpoint
  */
-void LocalGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+void LocalGame::setCheckpoint (int gridX, int gridY) {
 
 	checkX = gridX;
 	checkY = gridY;

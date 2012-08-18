@@ -142,7 +142,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1LevelPlayer ();
 
-		void           reset       (unsigned char startX, unsigned char startY);
+		void reset (int startX, int startY);
 
 		void              addItem     ();
 		void              clearEvent  (unsigned char gridX, unsigned char gridY);

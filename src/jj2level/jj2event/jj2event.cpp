@@ -38,7 +38,7 @@
  * @param newType Event type
  * @param newProperties Event properties
  */
-JJ2Event::JJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, int newProperties) {
+JJ2Event::JJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, int newProperties) {
 
 	x = TTOF(gridX);
 	y = TTOF(gridY);
@@ -81,7 +81,7 @@ JJ2Event::~JJ2Event () {
  * @param TSF Whether or not the level uses TSF animations
  * @param newProperties Event properties
  */
-PickupJJ2Event::PickupJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
+PickupJJ2Event::PickupJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
 
 	floating = true;
 	animSet = TSF? 71: 67;
@@ -110,7 +110,7 @@ PickupJJ2Event::~PickupJJ2Event () {
  * @param newType Event type
  * @param TSF Whether or not the level uses TSF animations
  */
-AmmoJJ2Event::AmmoJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
+AmmoJJ2Event::AmmoJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
 
 	return;
 
@@ -136,7 +136,7 @@ AmmoJJ2Event::~AmmoJJ2Event () {
  * @param newType Event type
  * @param TSF Whether or not the level uses TSF animations
  */
-CoinGemJJ2Event::CoinGemJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
+CoinGemJJ2Event::CoinGemJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
 
 	return;
 
@@ -162,7 +162,7 @@ CoinGemJJ2Event::~CoinGemJJ2Event () {
  * @param newType Event type
  * @param TSF Whether or not the level uses TSF animations
  */
-FoodJJ2Event::FoodJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
+FoodJJ2Event::FoodJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF) : PickupJJ2Event(newNext, gridX, gridY, newType, TSF, 0) {
 
 	return;
 
@@ -189,7 +189,7 @@ FoodJJ2Event::~FoodJJ2Event () {
  * @param TSF Whether or not the level uses TSF animations
  * @param newProperties Event properties
  */
-SpringJJ2Event::SpringJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
+SpringJJ2Event::SpringJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
 
 	animSet = TSF? 96: 92;
 
@@ -218,7 +218,7 @@ SpringJJ2Event::~SpringJJ2Event () {
  * @param TSF Whether or not the level uses TSF animations
  * @param newProperties Event properties
  */
-OtherJJ2Event::OtherJJ2Event (JJ2Event* newNext, unsigned char gridX, unsigned char gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
+OtherJJ2Event::OtherJJ2Event (JJ2Event* newNext, int gridX, int gridY, unsigned char newType, bool TSF, int newProperties) : JJ2Event(newNext, gridX, gridY, newType, newProperties) {
 
 	animSet = TSF? 71: 67;
 

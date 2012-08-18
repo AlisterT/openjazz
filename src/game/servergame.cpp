@@ -314,6 +314,13 @@ int ServerGame::step (unsigned int ticks) {
 							checkX = recvBuffers[count][2];
 							checkY = recvBuffers[count][3];
 
+							if (recvBuffers[count][0] > 4) {
+
+								checkX += recvBuffers[count][4] << 8;
+								checkY += recvBuffers[count][5] << 8;
+
+							}
+
 						}
 
 						if (recvBuffers[count][1] == MT_G_SCORE) {
@@ -394,8 +401,10 @@ int ServerGame::step (unsigned int ticks) {
 					// Inform the new client of the checkpoint
 					sendBuffer[0] = MTL_G_CHECK;
 					sendBuffer[1] = MT_G_CHECK;
-					sendBuffer[2] = checkX;
-					sendBuffer[3] = checkY;
+					sendBuffer[2] = checkX & 0xFF;
+					sendBuffer[3] = checkY & 0xFF;
+					sendBuffer[4] = (checkX >> 8) & 0xFF;
+					sendBuffer[5] = (checkY >> 8) & 0xFF;
 					net->send(clientSock[count], sendBuffer);
 
 					// Inform the new client of the existing players
@@ -525,14 +534,16 @@ void ServerGame::score (unsigned char team) {
  * @param gridX X-coordinate (in tiles) of the checkpoint
  * @param gridY Y-coordinate (in tiles) of the checkpoint
  */
-void ServerGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+void ServerGame::setCheckpoint (int gridX, int gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];
 
 	buffer[0] = MTL_G_CHECK;
 	buffer[1] = MT_G_CHECK;
-	buffer[2] = gridX;
-	buffer[3] = gridY;
+	buffer[2] = gridX & 0xFF;
+	buffer[3] = gridY & 0xFF;
+	buffer[4] = (gridX >> 8) & 0xFF;
+	buffer[5] = (gridY >> 8) & 0xFF;
 	send(buffer);
 
 	checkX = gridX;

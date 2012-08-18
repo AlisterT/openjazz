@@ -174,8 +174,8 @@ class JJ2Layer {
 		int  getHeight  ();
 		int  getTile    (int x, int y);
 		int  getWidth   ();
-		void setFrame   (unsigned char x, unsigned char y, unsigned char frame);
-		void setTile    (unsigned char x, unsigned char y, unsigned short int tile, int tiles);
+		void setFrame   (int x, int y, unsigned char frame);
+		void setTile    (int x, int y, unsigned short int tile, bool TSF, int tiles);
 
 		void draw       (SDL_Surface* tileSet, SDL_Surface* flippedTileSet);
 
@@ -227,12 +227,12 @@ class JJ2Level : public Level {
 		bool         checkMaskUp   (fixed x, fixed y);
 		Anim*        getAnim       (int set, int anim, bool flipped);
 		Anim*        getPlayerAnim (int character, int anim, bool flipped);
-		JJ2Modifier* getModifier   (unsigned char gridX, unsigned char gridY);
+		JJ2Modifier* getModifier   (int gridX, int gridY);
 		Sprite*      getSprite     (unsigned char sprite);
 		fixed        getWaterLevel ();
-		void         setFrame      (unsigned char gridX, unsigned char gridY, unsigned char frame);
+		void         setFrame      (int gridX, int gridY, unsigned char frame);
 		void         setNext       (char* fileName);
-		void         setWaterLevel (unsigned char gridY, bool instant);
+		void         setWaterLevel (int gridY, bool instant);
 		void         warp          (JJ2LevelPlayer *player, int id);
 
 		void         receive       (unsigned char* buffer);

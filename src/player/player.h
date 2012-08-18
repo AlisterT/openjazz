@@ -114,7 +114,7 @@ class Player {
 
 		void            init              (Game* owner, char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit            ();
-		void            reset             (unsigned char x, unsigned char y);
+		void            reset             (int x, int y);
 
 		void                 createLevelPlayer      (LevelType levelType, Anim** anims, Anim** flippedAnims, unsigned char x, unsigned char y);
 		LevelPlayer*         getLevelPlayer         ();
@@ -124,7 +124,7 @@ class Player {
 
 		void            addLife           ();
 		void            addScore          (int addedScore);
-		bool            endOfLevel        (unsigned char gridX, unsigned char gridY);
+		bool            endOfLevel        (int gridX, int gridY);
 		int             getAmmo           (bool amount);
 		unsigned char*  getCols           ();
 		bool            getControl        (int control);
@@ -134,7 +134,7 @@ class Player {
 		unsigned char   getTeam           ();
 		bool            hit               (Player* source);
 		bool            kill              (Player* source);
-		void            setCheckpoint     (unsigned char gridX, unsigned char gridY);
+		void            setCheckpoint     (int gridX, int gridY);
 		void            setControl        (int control, bool state);
 
 		void            send              (unsigned char* buffer);

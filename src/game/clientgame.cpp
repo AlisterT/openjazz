@@ -459,6 +459,13 @@ int ClientGame::step (unsigned int ticks) {
 						checkX = recvBuffer[2];
 						checkY = recvBuffer[3];
 
+						if (recvBuffer[0] > 4) {
+
+							checkX += recvBuffer[4] << 8;
+							checkY += recvBuffer[5] << 8;
+
+						}
+
 					}
 
 					if (recvBuffer[1] == MT_G_SCORE) {
@@ -563,14 +570,16 @@ void ClientGame::score (unsigned char team) {
  * @param gridX X-coordinate (in tiles) of the checkpoint
  * @param gridY Y-coordinate (in tiles) of the checkpoint
  */
-void ClientGame::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+void ClientGame::setCheckpoint (int gridX, int gridY) {
 
 	unsigned char buffer[MTL_G_CHECK];
 
 	buffer[0] = MTL_G_CHECK;
 	buffer[1] = MT_G_CHECK;
-	buffer[2] = gridX;
-	buffer[3] = gridY;
+	buffer[2] = gridX & 0xFF;
+	buffer[3] = gridY & 0xFF;
+	buffer[4] = (gridX >> 8) & 0xFF;
+	buffer[5] = (gridY >> 8) & 0xFF;
 	send(buffer);
 
 	return;

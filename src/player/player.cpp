@@ -139,7 +139,7 @@ void Player::deinit () {
  * @param x The level player's new grid x-coordinate
  * @param y The level player's new grid y-coordinate
  */
-void Player::reset (unsigned char x, unsigned char y) {
+void Player::reset (int x, int y) {
 
 	levelPlayer->reset(x, y);
 
@@ -423,7 +423,7 @@ bool Player::kill (Player *source) {
  * @param gridX X-coordinate (in tiles) of the checkpoint
  * @param gridY Y-coordinate (in tiles) of the checkpoint
  */
-void Player::setCheckpoint (unsigned char gridX, unsigned char gridY) {
+void Player::setCheckpoint (int gridX, int gridY) {
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -440,7 +440,7 @@ void Player::setCheckpoint (unsigned char gridX, unsigned char gridY) {
  *
  * @return Whether or not the level should end
  */
-bool Player::endOfLevel (unsigned char gridX, unsigned char gridY) {
+bool Player::endOfLevel (int gridX, int gridY) {
 
 	return game->getMode()->endOfLevel(game, this, gridX, gridY);
 

@@ -207,7 +207,7 @@ void JJ2Level::setNext (char* fileName) {
  * @param gridY Y-coordinate of the tile
  * @param frame The new frame
  */
-void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char frame) {
+void JJ2Level::setFrame (int gridX, int gridY, unsigned char frame) {
 
 	unsigned char buffer[MTL_L_GRID];
 
@@ -217,10 +217,12 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
 
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
-		buffer[2] = gridX;
-		buffer[3] = gridY;
+		buffer[2] = gridX & 0xFF;
+		buffer[3] = gridY & 0xFF;
 		buffer[4] = 0; // tile variable
 		buffer[5] = frame;
+		buffer[6] = (gridX >> 8) & 0xFF;
+		buffer[7] = (gridY >> 8) & 0xFF;
 
 		game->send(buffer);
 
@@ -239,7 +241,7 @@ void JJ2Level::setFrame (unsigned char gridX, unsigned char gridY, unsigned char
  *
  * @return Modifier event
  */
-JJ2Modifier* JJ2Level::getModifier (unsigned char gridX, unsigned char gridY) {
+JJ2Modifier* JJ2Level::getModifier (int gridX, int gridY) {
 
 	return mods[gridY] + gridX;
 
@@ -313,7 +315,7 @@ Anim* JJ2Level::getPlayerAnim (int character, int anim, bool flipped) {
  * @param gridY New water level y-coordinate
  * @param instant Whether or not the change is instant
  */
-void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
+void JJ2Level::setWaterLevel (int gridY, bool instant) {
 
 	unsigned char buffer[MTL_L_PROP];
 
@@ -326,8 +328,8 @@ void JJ2Level::setWaterLevel (unsigned char gridY, bool instant) {
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 1; // set water level
-		buffer[3] = gridY;
-		buffer[4] = 0; // Doesn't really matter
+		buffer[3] = gridY & 0xFF;
+		buffer[4] = (gridY >> 8) & 0xFF;
 
 		game->send(buffer);
 
@@ -392,7 +394,7 @@ void JJ2Level::receive (unsigned char* buffer) {
 
 			if (buffer[2] == 1) {
 
-				waterLevelTarget = TTOF(buffer[3]);
+				waterLevelTarget = TTOF(buffer[3] + (buffer[4] << 8));
 
 			} else if (buffer[2] == 2) {
 
@@ -405,7 +407,7 @@ void JJ2Level::receive (unsigned char* buffer) {
 
 		case MT_L_GRID:
 
-			if (buffer[4] == 0) layer->setFrame(buffer[2], buffer[3], buffer[5]);
+			if (buffer[4] == 0) layer->setFrame(buffer[2] + (buffer[6] << 8), buffer[3] + (buffer[7] << 8), buffer[5]);
 
 			break;
 

@@ -55,7 +55,7 @@ class GameMode {
 		virtual void          drawScore  (Font* font) = 0;
 		virtual bool          hit        (Player *source, Player *victim);
 		virtual bool          kill       (Game* game, Player *source, Player *victim);
-		virtual bool          endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY);
+		virtual bool          endOfLevel (Game* game, Player *player, int gridX, int gridY);
 		virtual void          outOfTime  ();
 
 };
@@ -136,7 +136,7 @@ class RaceGameMode : public FreeForAllGameMode {
 	public:
 		GameModeType getMode    ();
 		bool         hit        (Player *source, Player *victim);
-		bool         endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY);
+		bool         endOfLevel (Game* game, Player *player, int gridX, int gridY);
 
 };
 

@@ -681,7 +681,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 					if ((x & 3) == 0) memcpy(tileQuad, cBuffer + (quadRefs[x >> 2] << 3), 8);
 
-					layers[count]->setTile(x, y, createShort(tileQuad + ((x & 3) << 1)), TSF? -tiles: tiles);
+					layers[count]->setTile(x, y, createShort(tileQuad + ((x & 3) << 1)), TSF, tiles);
 
 				}
 

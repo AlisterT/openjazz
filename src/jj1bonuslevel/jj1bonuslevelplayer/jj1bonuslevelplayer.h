@@ -90,7 +90,7 @@ class JJ1BonusLevelPlayer : public LevelPlayer {
 		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1BonusLevelPlayer ();
 
-		void          reset        (unsigned char startX, unsigned char startY);
+		void          reset        (int startX, int startY);
 
 		void          addGem       ();
 		int           countBirds   ();

@@ -140,7 +140,7 @@ JJ1LevelPlayer::~JJ1LevelPlayer () {
  * @param startX New x-coordinate
  * @param startY New y-coordinate
  */
-void JJ1LevelPlayer::reset (unsigned char startX, unsigned char startY) {
+void JJ1LevelPlayer::reset (int startX, int startY) {
 
 	event = LPE_NONE;
 	energy = 4;

@@ -71,7 +71,7 @@ bool GameMode::kill (Game* game, Player *source, Player *victim) {
  *
  * @return Whether or not the level should end (true)
  */
-bool GameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
+bool GameMode::endOfLevel (Game* game, Player *player, int gridX, int gridY) {
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -313,7 +313,7 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
  *
  * @return Whether or not the level should end (false)
  */
-bool RaceGameMode::endOfLevel (Game* game, Player *player, unsigned char gridX, unsigned char gridY) {
+bool RaceGameMode::endOfLevel (Game* game, Player *player, int gridX, int gridY) {
 
 	if (player == localPlayer) game->score(localPlayer->getTeam());
 

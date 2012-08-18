@@ -67,12 +67,12 @@
 #define MTL_G_PJOIN 10
 #define MTL_G_PQUIT 3
 #define MTL_G_LEVEL 4 /* + amount of level data */
-#define MTL_G_CHECK 4
+#define MTL_G_CHECK 6
 #define MTL_G_SCORE 3
 #define MTL_G_LTYPE 3
 
 #define MTL_L_PROP  5
-#define MTL_L_GRID  6
+#define MTL_L_GRID  8
 #define MTL_L_STAGE 3
 
 #define MTL_P_ANIMS 3 /* + PANIMS, BPANIMS, or 1 (for JJ2) */
@@ -100,8 +100,8 @@ class Game {
 		int            difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 		unsigned int   sendTime; ///< The next time data will be sent
 		unsigned int   checkTime; ///< The next time a connection/disconnection will be dealt with
-		unsigned char  checkX; ///< X-coordinate of the level checkpoint
-		unsigned char  checkY; ///< Y-coordinate of the level checkpoint
+		short int      checkX; ///< X-coordinate of the level checkpoint
+		short int      checkY; ///< Y-coordinate of the level checkpoint
 
 		Game ();
 
@@ -125,7 +125,7 @@ class Game {
 		virtual void send          (unsigned char *buffer) = 0;
 		virtual int  step          (unsigned int ticks) = 0;
 		virtual void score         (unsigned char team) = 0;
-		virtual void setCheckpoint (unsigned char gridX, unsigned char gridY) = 0;
+		virtual void setCheckpoint (int gridX, int gridY) = 0;
 		void         resetPlayer   (Player *player);
 
 };
@@ -142,7 +142,7 @@ class LocalGame : public Game {
 		void send          (unsigned char *buffer);
 		int  step          (unsigned int ticks);
 		void score         (unsigned char team);
-		void setCheckpoint (unsigned char gridX, unsigned char gridY);
+		void setCheckpoint (int gridX, int gridY);
 
 };
 
@@ -171,7 +171,7 @@ class ServerGame : public Game {
 		void send          (unsigned char *buffer);
 		int  step          (unsigned int ticks);
 		void score         (unsigned char team);
-		void setCheckpoint (unsigned char gridX, unsigned char gridY);
+		void setCheckpoint (int gridX, int gridY);
 
 };
 
@@ -195,7 +195,7 @@ class ClientGame : public Game {
 		void send          (unsigned char *buffer);
 		int  step          (unsigned int ticks);
 		void score         (unsigned char team);
-		void setCheckpoint (unsigned char gridX, unsigned char gridY);
+		void setCheckpoint (int gridX, int gridY);
 
 };
 
