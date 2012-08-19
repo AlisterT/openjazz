@@ -37,6 +37,7 @@
 LocalGame::LocalGame (char *firstLevel, int gameDifficulty) {
 
 	levelFile = createString(firstLevel);
+	levelType = getLevelType(firstLevel);
 
 	difficulty = gameDifficulty;
 
