@@ -51,6 +51,18 @@
 	#include "platforms/wiz.h"
 #endif
 
+
+class Main {
+
+	public:
+		Main  (int argc, char *argv[]);
+		~Main ();
+
+		int play ();
+
+};
+
+
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
 extern float sinf (float);
@@ -69,10 +81,8 @@ extern float sinf (float);
  *
  * @param argc Number of arguments, as passed to main function
  * @param argv Array of argument strings, as apsse to main function
- *
- * @return Error code
  */
-int loadMain (int argc, char *argv[]) {
+Main::Main (int argc, char *argv[]) {
 
 	File* file;
 	unsigned char* pixels = NULL;
@@ -281,7 +291,7 @@ int loadMain (int argc, char *argv[]) {
 
 		delete firstPath;
 
-		return E_VIDEO;
+		throw E_VIDEO;
 
 	}
 
@@ -312,7 +322,7 @@ int loadMain (int argc, char *argv[]) {
 
 		delete firstPath;
 
-		return e;
+		throw e;
 
 	}
 
@@ -352,7 +362,7 @@ int loadMain (int argc, char *argv[]) {
 
 		delete firstPath;
 
-		return e;
+		throw e;
 
 	}
 
@@ -363,7 +373,7 @@ int loadMain (int argc, char *argv[]) {
 	globalTicks = SDL_GetTicks() - 20;
 
 
-	// Fill trigonomatric function look-up tables
+	// Fill trigonometric function look-up tables
 	for (count = 0; count < 1024; count++)
 		sinLut[count] = fixed(sinf(2 * PI * float(count) / 1024.0f) * 1024.0f);
 
@@ -375,9 +385,6 @@ int loadMain (int argc, char *argv[]) {
 	level = NULL;
 	jj2Level = NULL;
 
-
-	return E_NONE;
-
 }
 
 
@@ -386,7 +393,7 @@ int loadMain (int argc, char *argv[]) {
  *
  * Frees data, writes configuration, and shuts down SDL.
  */
-void freeMain () {
+Main::~Main () {
 
 	File *file;
 	int count;
@@ -489,11 +496,83 @@ void freeMain () {
 
 	delete firstPath;
 
+}
 
-	SDL_Quit();
+
+/**
+ * Run the cutscenes and the main menu.
+ *
+ * @return Error code
+ */
+int Main::play () {
+
+	MainMenu *mainMenu = NULL;
+	JJ1Scene *scene = NULL;
+
+	// Load and play the startup cutscene
+
+	try {
+
+		scene = new JJ1Scene(F_STARTUP_0SC);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	if (scene->play() == E_QUIT) {
+
+		delete scene;
+
+		return E_NONE;
+
+	}
+
+	delete scene;
 
 
-	return;
+	// Load and run the menu
+
+	try {
+
+		mainMenu = new MainMenu();
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	if (mainMenu->main() == E_QUIT) {
+
+		delete mainMenu;
+
+		return E_NONE;
+
+	}
+
+	delete mainMenu;
+
+
+	// Load and play the ending cutscene
+
+	try {
+
+		scene = new JJ1Scene(F_END_0SC);
+
+	} catch (int e) {
+
+		return e;
+
+	}
+
+	scene->play();
+
+	delete scene;
+
+
+	return E_NONE;
 
 }
 
@@ -574,8 +653,8 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
  */
 int main(int argc, char *argv[]) {
 
-	MainMenu *mainMenu = NULL;
-	JJ1Scene *scene = NULL;
+	Main* mainObj;
+	int ret;
 
 	// Initialise SDL
 
@@ -588,9 +667,13 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	// Load universal game data and establish a window
+	// Load configuration and establish a window
 
-	if (loadMain(argc, argv) != E_NONE) {
+	try {
+
+		mainObj = new Main(argc, argv);
+
+	} catch (int e) {
 
 		SDL_Quit();
 
@@ -599,75 +682,18 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	// Show the startup cutscene
+	// Play the opening cutscene, run the main menu, etc.
 
-	try {
-
-		scene = new JJ1Scene(F_STARTUP_0SC);
-
-	} catch (int e) {
-
-		freeMain();
-
-		return e;
-
-	}
-
-	if (scene->play() == E_QUIT) {
-
-		delete scene;
-		freeMain();
-
-		return 0;
-
-	}
-
-	delete scene;
+	ret = mainObj->play();
 
 
-	// Load the menu
-	try {
+	// Save configuration and shut down
 
-		mainMenu = new MainMenu();
+	delete mainObj;
 
-	} catch (int e) {
+	SDL_Quit();
 
-		freeMain();
-
-		return e;
-
-	}
-
-	// Run the main menu
-	if (mainMenu->main() != E_QUIT) {
-
-		// Show the ending cutscene
-
-		try {
-
-			scene = new JJ1Scene(F_END_0SC);
-
-		} catch (int e) {
-
-			delete mainMenu;
-			freeMain();
-
-			return e;
-
-		}
-
-		scene->play();
-
-		delete scene;
-
-
-	}
-
-	delete mainMenu;
-	freeMain();
-
-
-	return 0;
+	return ret;
 
 }
 
