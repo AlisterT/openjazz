@@ -332,13 +332,7 @@ int Game::play () {
 
 		ret = playLevel(levelFile, !multiplayer, checkpoint);
 
-		if (ret <= 0) {
-
-			if (ret != E_QUIT) playMusic("menusng.psm");
-
-			return ret;
-
-		}
+		if (ret <= 0) return ret;
 
 		if (levelFile && !strncasecmp(levelFile, F_BONUSMAP, 8)) {
 

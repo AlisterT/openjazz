@@ -75,10 +75,12 @@ int LocalGame::setLevel (char *fileName) {
 
 	if (levelFile) delete[] levelFile;
 
-	if (fileName) levelFile = createString(fileName);
-	else levelFile = NULL;
+	if (fileName) {
 
-	levelType = getLevelType(fileName);
+		levelFile = createString(fileName);
+		levelType = getLevelType(fileName);
+
+	} else levelFile = NULL;
 
 	return E_NONE;
 

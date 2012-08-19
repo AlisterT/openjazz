@@ -167,6 +167,8 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 	delete game;
 
+	if (ret != E_QUIT) playMusic("menusng.psm");
+
 	switch (ret) {
 
 		case E_QUIT:
@@ -660,6 +662,8 @@ int GameMenu::joinGame () {
 	ret = game->play();
 
 	delete game;
+
+	if (ret != E_QUIT) playMusic("menusng.psm");
 
 	switch (ret) {
 
