@@ -164,10 +164,12 @@ class JJ2Layer {
 		bool      tileY; ///< Repeat vertically
 		bool      limit; ///< Do not view beyond edges
 		bool      warp; ///< Warp effect
+		fixed     xSpeed; ///< Relative horizontal speed
+		fixed     ySpeed; ///< Relative vertical speed
 
 	public:
 		JJ2Layer  ();
-		JJ2Layer  (int newWidth, int newHeight, int flags);
+		JJ2Layer  (int flags, int newWidth, int newHeight, fixed newXSpeed, fixed newYSpeed);
 		~JJ2Layer ();
 
 		bool getFlipped (int x, int y);

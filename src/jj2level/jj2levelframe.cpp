@@ -113,10 +113,10 @@ void JJ2Level::draw () {
 	else localPlayer->getJJ2LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
 
 	// Ensure the new viewport is within the level
-	if (viewX < 0) viewX = 0;
 	if (FTOI(viewX) + canvasW >= TTOI(width)) viewX = ITOF(TTOI(width) - canvasW);
-	if (viewY < 0) viewY = 0;
+	if (viewX < 0) viewX = 0;
 	if (FTOI(viewY) + canvasH >= TTOI(height)) viewY = ITOF(TTOI(height) - canvasH);
+	if (viewY < 0) viewY = 0;
 
 
 	// Show background layers
@@ -144,6 +144,17 @@ void JJ2Level::draw () {
 	drawRect(0, FTOI(waterLevel - viewY) + 3, canvasW, 1, 72);
 	drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 72);
 	drawRect(0, FTOI(waterLevel - viewY) + 10, canvasW, 1, 72);
+
+
+	// Black-out areas outside the level (for high resolutions)
+
+	if (TTOI(layers[3]->getWidth()) - FTOI(viewX) < canvasW)
+		drawRect(TTOI(layers[3]->getWidth()) - FTOI(viewX), 0,
+			canvasW, canvasH, JJ2_BLACK);
+
+	if (TTOI(layers[3]->getHeight()) - FTOI(viewY) < canvasH)
+		drawRect(0, TTOI(layers[3]->getHeight()) - FTOI(viewY),
+			TTOI(layers[3]->getWidth()) - FTOI(viewX), canvasH, JJ2_BLACK);
 
 
 	// Show "panel" data

@@ -554,6 +554,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	unsigned char tileQuad[8];
 	short int* quadRefs;
 	int flags, width, pitch, height;
+	fixed xSpeed, ySpeed;
 	unsigned char startX, startY;
 
 	// Thanks to Neobeo for working out the most of the .j2l format
@@ -668,12 +669,14 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 		width = createInt(aBuffer + 8403 + 48 + (count << 2));
 		pitch = createInt(aBuffer + 8403 + 80 + (count << 2));
 		height = createInt(aBuffer + 8403 + 112 + (count << 2));
+		xSpeed = createInt(aBuffer + 8403 + 248 + (count << 2)) >> 6;
+		ySpeed = createInt(aBuffer + 8403 + 280 + (count << 2)) >> 6;
 
-		if (pitch & 3) pitch += 4;
+		pitch = (pitch + 3) >> 2;
 
 		if (aBuffer[8403 + 40 + count]) {
 
-			layers[count] = new JJ2Layer(width, height, flags);
+			layers[count] = new JJ2Layer(flags, width, height, xSpeed, ySpeed);
 
 			for (y = 0; y < height; y++) {
 
@@ -685,7 +688,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 				}
 
-				quadRefs += pitch >> 2;
+				quadRefs += pitch;
 
 			}
 

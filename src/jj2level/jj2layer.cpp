@@ -53,7 +53,7 @@ JJ2Layer::JJ2Layer () {
  * @param newHeight The height of the layer (in tiles)
  * @param flags Layer flags
  */
-JJ2Layer::JJ2Layer (int newWidth, int newHeight, int flags) {
+JJ2Layer::JJ2Layer (int flags, int newWidth, int newHeight, fixed newXSpeed, fixed newYSpeed) {
 
 	int row;
 
@@ -69,6 +69,9 @@ JJ2Layer::JJ2Layer (int newWidth, int newHeight, int flags) {
 	tileY = flags & 2;
 	limit = flags & 4;
 	warp = flags & 8;
+
+	xSpeed = newXSpeed;
+	ySpeed = newYSpeed;
 
 	return;
 
@@ -127,10 +130,12 @@ int JJ2Layer::getHeight () {
  */
 int JJ2Layer::getTile (int x, int y) {
 
-	if (((x < 0) || (x >= width)) && !tileX) return 0;
-	if (((y < 0) || (y >= height)) && !tileY) return 0;
+	if ((x < 0) || (y < 0)) return 0;
 
-	return grid[tileY? y % height: y][tileX? x % width: x].tile;
+	if ((x >= width) && !tileX) return 0;
+	if ((y >= height) && !tileY) return 0;
+
+	return grid[y % height][x % width].tile;
 
 }
 
@@ -218,15 +223,23 @@ void JJ2Layer::draw (SDL_Surface* tileSet, SDL_Surface* flippedTileSet) {
 
 
 	// Calculate the layer view
-	if (width <= 30) {
+	vX = FTOI(FTOI(viewX) * xSpeed);
+	vY = FTOI(FTOI(viewY) * ySpeed);
 
-		vX = 0;
-		vY = 0;
+	if (limit) {
 
-	} else {
+		if (!tileX) {
 
-		vX = FTOI(viewX);
-		vY = FTOI(viewY);
+			if (vX + canvasW > TTOI(width)) vX = TTOI(width) - canvasW;
+
+		}
+
+		if (!tileY) {
+
+			vY -= canvasH - SH;
+			if (vY + canvasH > TTOI(height)) vY = TTOI(height) - canvasH;
+
+		}
 
 	}
 

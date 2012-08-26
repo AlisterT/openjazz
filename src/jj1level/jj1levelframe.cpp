@@ -200,10 +200,10 @@ void JJ1Level::draw () {
 	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
 
 	// Ensure the new viewport is within the level
-	if (viewX < 0) viewX = 0;
 	if (FTOI(viewX) + viewW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - viewW);
-	if (viewY < 0) viewY = 0;
+	if (viewX < 0) viewX = 0;
 	if (FTOI(viewY) + viewH >= TTOI(LH)) viewY = ITOF(TTOI(LH) - viewH);
+	if (viewY < 0) viewY = 0;
 
 	// Use the viewport
 	dst.x = 0;
@@ -258,6 +258,14 @@ void JJ1Level::draw () {
 
 		for (x = 0; x <= ITOT(viewW - 1) + 1; x++) {
 
+			if ((x + ITOT(vX) >= 256) || (y + ITOT(vY) >= 64)) {
+
+				drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
+
+				continue;
+
+			}
+
 			// Get the grid element from the given coordinates
 			ge = grid[y + ITOT(vY)] + x + ITOT(vX);
 
@@ -304,6 +312,8 @@ void JJ1Level::draw () {
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
 		for (x = 0; x <= ITOT(viewW - 1) + 1; x++) {
+
+			if ((x + ITOT(vX) >= 256) || (y + ITOT(vY) >= 64)) continue;
 
 			// Get the grid element from the given coordinates
 			ge = grid[y + ITOT(vY)] + x + ITOT(vX);
