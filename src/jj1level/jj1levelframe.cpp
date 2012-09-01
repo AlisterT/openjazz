@@ -55,7 +55,7 @@ int JJ1Level::step () {
 
 
 	// Milliseconds per step
-	msps = 16;
+	msps = T_STEP;
 
 
 	// Search for active events
@@ -195,9 +195,13 @@ void JJ1Level::draw () {
 	unsigned int change;
 
 
+	// Calculate change since last step
+	change = getTimeChange();
+
+
 	// Calculate viewport
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
-	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
+	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks), change);
 
 	// Ensure the new viewport is within the level
 	if (FTOI(viewX) + viewW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - viewW);
@@ -288,10 +292,6 @@ void JJ1Level::draw () {
 		}
 
 	}
-
-
-	// Calculate change since last step
-	change = getTimeChange();
 
 
 	// Show active events

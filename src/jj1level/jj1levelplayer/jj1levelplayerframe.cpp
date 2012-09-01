@@ -530,6 +530,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			if (level->checkMaskUp(x + PXO_L - F4, y + PYO_MID)) {
 
 				x &= ~4095;
+				dx = 0;
 
 				break;
 
@@ -542,16 +543,29 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			if (level->checkMaskUp(x + PXO_ML, y) &&
 				!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
 
+			// If on a downhill slope, push the player downwards
+			if (!level->checkMaskUp(x + PXO_ML, y + F4) &&
+				level->checkMaskUp(x + PXO_ML, y + F8)) y += F4;
+
 		}
 
 		pdx = (-pdx) & 4095;
 
 		if (!level->checkMaskUp(x + PXO_L - pdx, y + PYO_MID)) x -= pdx;
-		else x &= ~4095;
+		else {
+
+			x &= ~4095;
+			dx = 0;
+
+		}
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMaskUp(x + PXO_ML, y) &&
-			!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F1;
+		if (level->checkMaskUp(x + PXO_ML, y) &&
+			!level->checkMaskUp(x + PXO_ML, y - F4)) y -= F4;
+
+		// If on a downhill slope, push the player downwards
+		if (!level->checkMaskUp(x + PXO_ML, y + F4) &&
+			level->checkMaskUp(x + PXO_ML, y + F8)) y += F4;
 
 	} else if (pdx > 0) {
 
@@ -565,6 +579,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			if (level->checkMaskUp(x + PXO_R + F4, y + PYO_MID)) {
 
 				x |= 4095;
+				dx = 0;
 
 				break;
 
@@ -577,16 +592,29 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			if (level->checkMaskUp(x + PXO_MR, y) &&
 				!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
 
+			// If on a downhill slope, push the player downwards
+			if (!level->checkMaskUp(x + PXO_MR, y + F4) &&
+				level->checkMaskUp(x + PXO_MR, y + F8)) y += F4;
+
 		}
 
 		pdx &= 4095;
 
 		if (!level->checkMaskUp(x + PXO_R + pdx, y + PYO_MID)) x += pdx;
-		else x |= 4095;
+		else {
+
+			x |= 4095;
+			dx = 0;
+
+		}
 
 		// If on an uphill slope, push the player upwards
-		while (level->checkMaskUp(x + PXO_MR, y) &&
-			!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F1;
+		if (level->checkMaskUp(x + PXO_MR, y) &&
+			!level->checkMaskUp(x + PXO_MR, y - F4)) y -= F4;
+
+		// If on a downhill slope, push the player downwards
+		if (!level->checkMaskUp(x + PXO_MR, y + F4) &&
+			level->checkMaskUp(x + PXO_MR, y + F8)) y += F4;
 
 	}
 
@@ -625,7 +653,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param mspf Ticks per frame
  */
-void JJ1LevelPlayer::view (unsigned int ticks, int mspf) {
+void JJ1LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 
 	int oldViewX, oldViewY, speed;
 
@@ -639,8 +667,8 @@ void JJ1LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	// Find new position
 
-	viewX = x + F8 - (viewW << 9);
-	viewY = y - F24 - (viewH << 9);
+	viewX = x + ((dx * change) >> 10) + F8 - (viewW << 9);
+	viewY = y + ((dy * change) >> 10) - F24 - (viewH << 9);
 
 	if ((lookTime > 0) && ((int)ticks > 1000 + lookTime)) {
 
@@ -728,12 +756,12 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 
 	// Uncomment the following to see the area of the player
-	/*drawRect(FTOI(drawX + PXO_L - viewX),
-		FTOI(drawY + PYO_TOP - viewY),
+	/*drawRect(FTOI(drawX + PXO_L),
+		FTOI(drawY + PYO_TOP),
 		FTOI(PXO_R - PXO_L),
 		FTOI(-PYO_TOP), 89);
-	drawRect(FTOI(drawX + PXO_ML - viewX),
-		FTOI(drawY + PYO_TOP - viewY),
+	drawRect(FTOI(drawX + PXO_ML),
+		FTOI(drawY + PYO_TOP),
 		FTOI(PXO_MR - PXO_ML),
 		FTOI(-PYO_TOP), 88);*/
 

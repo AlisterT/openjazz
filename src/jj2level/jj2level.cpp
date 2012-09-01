@@ -441,7 +441,7 @@ int JJ2Level::play () {
 	jj2LevelPlayer = localPlayer->getJJ2LevelPlayer();
 
 	tickOffset = globalTicks;
-	ticks = 17;
+	ticks = T_STEP;
 	steps = 0;
 
 	pmessage = pmenu = false;
@@ -474,7 +474,7 @@ int JJ2Level::play () {
 
 		// Process frame-by-frame activity
 
-		while (getTimeChange() >= 17) {
+		while (getTimeChange() >= T_STEP) {
 
 			// Apply controls to local player
 			for (count = 0; count < PCONTROLS; count++)

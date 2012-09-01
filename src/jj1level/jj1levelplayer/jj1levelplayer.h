@@ -71,10 +71,10 @@
 
 // Player offsets
 #define PXO_MID F16
-#define PXO_L    (PXO_MID - F10)
-#define PXO_ML   (PXO_MID - F4)
-#define PXO_MR   (PXO_MID + F4)
-#define PXO_R    (PXO_MID + F10)
+#define PXO_L    (PXO_MID - F12)
+#define PXO_ML   (PXO_MID - F8)
+#define PXO_MR   (PXO_MID + F8)
+#define PXO_R    (PXO_MID + F12)
 #define PYO_TOP  (-F20)
 #define PYO_MID  (-F10)
 #define PYO_JUMP ITOF(84)
@@ -168,7 +168,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 
 		void           control     (unsigned int ticks, int msps);
 		void           move        (unsigned int ticks, int msps);
-		void           view        (unsigned int ticks, int mspf);
+		void           view        (unsigned int ticks, int mspf, int change);
 		void           draw        (unsigned int ticks, int change);
 
 };

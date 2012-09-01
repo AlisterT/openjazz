@@ -49,7 +49,7 @@ int JJ2Level::step () {
 
 
 	// Milliseconds per step
-	msps = 16;
+	msps = T_STEP;
 
 
 	// Determine the players' trajectories
@@ -108,9 +108,13 @@ void JJ2Level::draw () {
 	height = layer->getHeight();
 
 
+	// Calculate change since last step
+	change = getTimeChange();
+
+
 	// Calculate viewport
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
-	else localPlayer->getJJ2LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks));
+	else localPlayer->getJJ2LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks), change);
 
 	// Ensure the new viewport is within the level
 	if (FTOI(viewX) + canvasW >= TTOI(width)) viewX = ITOF(TTOI(width) - canvasW);
@@ -121,10 +125,6 @@ void JJ2Level::draw () {
 
 	// Show background layers
 	for (x = 7; x >= 3; x--) layers[x]->draw(tileSet, flippedTileSet);
-
-
-	// Calculate change since last step
-	change = getTimeChange();
 
 
 	// Show the events

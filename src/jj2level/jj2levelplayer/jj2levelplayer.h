@@ -196,7 +196,7 @@ class JJ2LevelPlayer : public LevelPlayer {
 
 		void              control     (unsigned int ticks, int msps);
 		void              move        (unsigned int ticks, int msps);
-		void              view        (unsigned int ticks, int mspf);
+		void              view        (unsigned int ticks, int mspf, int change);
 		void              draw        (unsigned int ticks, int change);
 
 };

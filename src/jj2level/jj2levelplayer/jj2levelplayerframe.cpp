@@ -676,6 +676,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			if (jj2Level->checkMaskUp(x + JJ2PXO_L - F1, y + JJ2PYO_MID)) {
 
 				x &= ~1023;
+				dx = 0;
 
 				break;
 
@@ -688,16 +689,29 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			if (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
 				!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
 
+			// If on an downhill slope, push the player downwards
+			if (!jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F1) &&
+				jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F2)) y += F1;
+
 		}
 
 		pdx = (-pdx) & 1023;
 
 		if (!jj2Level->checkMaskUp(x + JJ2PXO_L - pdx, y + JJ2PYO_MID)) x -= pdx;
-		else x &= ~1023;
+		else {
+
+			x &= ~1023;
+			dx = 0;
+
+		}
 
 		// If on an uphill slope, push the player upwards
-		while (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
+		if (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
 			!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
+
+		// If on an downhill slope, push the player downwards
+		if (!jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F1) &&
+			jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F2)) y += F1;
 
 	} else if (pdx > 0) {
 
@@ -711,6 +725,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			if (jj2Level->checkMaskUp(x + JJ2PXO_R + F1, y + JJ2PYO_MID)) {
 
 				x |= 1023;
+				dx = 0;
 
 				break;
 
@@ -723,16 +738,29 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			if (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
 				!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
 
+			// If on an downhill slope, push the player downwards
+			if (!jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F1) &&
+				jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F2)) y += F1;
+
 		}
 
 		pdx &= 1023;
 
 		if (!jj2Level->checkMaskUp(x + JJ2PXO_R + pdx, y + JJ2PYO_MID)) x += pdx;
-		else x |= 1023;
+		else {
+
+			x |= 1023;
+			dx = 0;
+
+		}
 
 		// If on an uphill slope, push the player upwards
-		while (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
+		if (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
 			!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
+
+		// If on an downhill slope, push the player downwards
+		if (!jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F1) &&
+			jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F2)) y += F1;
 
 	}
 
@@ -760,7 +788,7 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
  * @param ticks Time
  * @param mspf Ticks per frame
  */
-void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
+void JJ2LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 
 	int oldViewX, oldViewY, speed;
 
@@ -771,8 +799,8 @@ void JJ2LevelPlayer::view (unsigned int ticks, int mspf) {
 
 	// Find new position
 
-	viewX = x + F8 - (canvasW << 9);
-	viewY = y - F24 - (canvasH << 9);
+	viewX = x + ((dx * change) >> 10) + F8 - (canvasW << 9);
+	viewY = y + ((dy * change) >> 10) - F24 - (canvasH << 9);
 
 	if ((lookTime > 0) && ((int)ticks > 1000 + lookTime)) {
 

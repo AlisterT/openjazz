@@ -167,7 +167,7 @@ int JJ1DemoLevel::play () {
 		// Process frame-by-frame activity
 
 		// Process step
-		while (getTimeChange() >= 17) {
+		while (getTimeChange() >= T_STEP) {
 
 			ret = step();
 			steps++;

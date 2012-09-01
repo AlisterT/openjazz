@@ -756,7 +756,7 @@ int JJ1BonusLevel::play () {
 
 
 	tickOffset = globalTicks;
-	ticks = 17;
+	ticks = T_STEP;
 	steps = 0;
 
 	pmessage = pmenu = false;
@@ -791,7 +791,7 @@ int JJ1BonusLevel::play () {
 
 		// Process frame-by-frame activity
 
-		while ((getTimeChange() >= 17) && (stage == LS_NORMAL)) {
+		while ((getTimeChange() >= T_STEP) && (stage == LS_NORMAL)) {
 
 			ret = step();
 			steps++;

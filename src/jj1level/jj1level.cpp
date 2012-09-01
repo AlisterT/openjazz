@@ -705,7 +705,7 @@ int JJ1Level::play () {
 	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
 	tickOffset = globalTicks;
-	ticks = 17;
+	ticks = T_STEP;
 	steps = 0;
 
 	pmessage = pmenu = false;
@@ -761,7 +761,7 @@ int JJ1Level::play () {
 
 		// Process frame-by-frame activity
 
-		while (getTimeChange() >= 17) {
+		while (getTimeChange() >= T_STEP) {
 
 			bool playerWasAlive = (localPlayer->getJJ1LevelPlayer()->getEnergy() != 0);
 
