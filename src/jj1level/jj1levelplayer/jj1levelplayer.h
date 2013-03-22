@@ -89,7 +89,7 @@
 // Player accelerations
 #define PXA_REVERSE 1800
 #define PXA_STOP    1000
-#define PXA_WALK    700
+#define PXA_WALK    1000
 #define PXA_RUN     200
 #define PYA_GRAVITY 2750
 #define PYA_SINK    1000
@@ -137,6 +137,9 @@ class JJ1LevelPlayer : public LevelPlayer {
 		int               enemies; ///< Number of enemies killed
 		int               items; ///< Number of items collected
 		bool              gem; ///< Bonus level gem collected
+
+		bool checkMaskDown (fixed yOffset);
+		bool checkMaskUp   (fixed yOffset);
 
 	public:
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);

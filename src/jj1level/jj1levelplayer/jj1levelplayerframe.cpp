@@ -42,6 +42,40 @@
 
 
 /**
+ * Determine whether or not the area below the player is solid when travelling
+ * downwards.
+ *
+ * @param yOffset Vertical offset of the mask values to check
+ *
+ * @return Solidity
+ */
+bool JJ1LevelPlayer::checkMaskDown (fixed yOffset) {
+
+	return level->checkMaskDown(x + PXO_ML, y + yOffset) ||
+		level->checkMaskDown(x + PXO_MID, y + yOffset) ||
+		level->checkMaskDown(x + PXO_MR, y + yOffset);
+
+}
+
+
+/**
+ * Determine whether or not the area above the player is solid when travelling
+ * upwards.
+ *
+ * @param yOffset Vertical offset of the mask values to check
+ *
+ * @return Solidity
+ */
+bool JJ1LevelPlayer::checkMaskUp (fixed yOffset) {
+
+	return level->checkMaskUp(x + PXO_ML, y + yOffset) ||
+		level->checkMaskUp(x + PXO_MID, y + yOffset) ||
+		level->checkMaskUp(x + PXO_MR, y + yOffset);
+
+}
+
+
+/**
  * Respond to controls, unless the player has been killed.
  *
  * @param ticks Time
@@ -116,9 +150,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Check for platform event, bridge or level mask below player
 	platform = (event == LPE_PLATFORM) ||
-		level->checkMaskDown(x + PXO_ML, y + 1) ||
-		level->checkMaskDown(x + PXO_MID, y + 1) ||
-		level->checkMaskDown(x + PXO_MR, y + 1) ||
+		checkMaskDown(F4) ||
 		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
 		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
 
@@ -282,7 +314,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4) && (jumpY < y) && (event != LPE_FLOAT)) {
+	if (checkMaskUp(PYO_TOP - F4) && (jumpY < y) && (event != LPE_FLOAT)) {
 
 		jumpY = TTOF(LH);
 		if (dy < 0) dy = 0;
@@ -450,7 +482,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+			if (checkMaskUp(PYO_TOP - F4)) {
 
 				y &= ~4095;
 				dy = 0;
@@ -466,7 +498,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 4095;
 
-		if (!level->checkMaskUp(x + PXO_MID, y + PYO_TOP - pdy))
+		if (!checkMaskUp(PYO_TOP - pdy))
 			y -= pdy;
 		else {
 
@@ -483,9 +515,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		while (count > 0) {
 
-			if (level->checkMaskDown(x + PXO_ML, y + F4) ||
-				level->checkMaskDown(x + PXO_MID, y + F4) ||
-				level->checkMaskDown(x + PXO_MR, y + F4)) {
+			if (checkMaskDown(F4)) {
 
 				y |= 4095;
 				dy = 0;
@@ -501,9 +531,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy &= 4095;
 
-		if (!(level->checkMaskDown(x + PXO_ML, y + pdy) ||
-			level->checkMaskDown(x + PXO_MID, y + pdy) ||
-			level->checkMaskDown(x + PXO_MR, y + pdy)))
+		if (!checkMaskDown(pdy))
 			y += pdy;
 		else {
 
