@@ -50,6 +50,7 @@
 int JJ1Level::step () {
 
 	JJ1Event *event;
+	int viewH;
 	int x, y;
 	int msps;
 
@@ -58,10 +59,14 @@ int JJ1Level::step () {
 	msps = T_STEP;
 
 
+	// Can we see below the panel?
+	if (canvasW > SW) viewH = canvasH;
+	else viewH = canvasH - 33;
+
 	// Search for active events
 	for (y = FTOT(viewY) - 5; y < ITOT(FTOI(viewY) + viewH) + 5; y++) {
 
-		for (x = FTOT(viewX) - 5; x < ITOT(FTOI(viewX) + viewW) + 5; x++) {
+		for (x = FTOT(viewX) - 5; x < ITOT(FTOI(viewX) + canvasW) + 5; x++) {
 
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
 				grid[y][x].event && (grid[y][x].event < 121) &&
@@ -190,6 +195,7 @@ void JJ1Level::draw () {
 
 	GridElement *ge;
 	SDL_Rect src, dst;
+	int viewH;
 	int vX, vY;
 	int x, y, bgScale;
 	unsigned int change;
@@ -203,8 +209,12 @@ void JJ1Level::draw () {
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
 	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks), change);
 
+	// Can we see below the panel?
+	if (canvasW > SW) viewH = canvasH;
+	else viewH = canvasH - 33;
+
 	// Ensure the new viewport is within the level
-	if (FTOI(viewX) + viewW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - viewW);
+	if (FTOI(viewX) + canvasW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - canvasW);
 	if (viewX < 0) viewX = 0;
 	if (FTOI(viewY) + viewH >= TTOI(LH)) viewY = ITOF(TTOI(LH) - viewH);
 	if (viewY < 0) viewY = 0;
@@ -214,7 +224,7 @@ void JJ1Level::draw () {
 	dst.y = 0;
 	vX = FTOI(viewX);
 	vY = FTOI(viewY);
-	dst.w = viewW;
+	dst.w = canvasW;
 	dst.h = viewH;
 	SDL_SetClipRect(canvas, &dst);
 
@@ -239,8 +249,8 @@ void JJ1Level::draw () {
 		// Show sun / moon / etc.
 		if (skyOrb) {
 
-			dst.x = (viewW * 4) / 5;
-			dst.y = (viewH * 3) / 25;
+			dst.x = (canvasW * 4) / 5;
+			dst.y = ((canvasH - 33) * 3) / 25;
 			src.y = TTOI(skyOrb);
 			SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
@@ -260,7 +270,7 @@ void JJ1Level::draw () {
 
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
-		for (x = 0; x <= ITOT(viewW - 1) + 1; x++) {
+		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
 
 			if ((x + ITOT(vX) >= 256) || (y + ITOT(vY) >= 64)) {
 
@@ -311,7 +321,7 @@ void JJ1Level::draw () {
 
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
-		for (x = 0; x <= ITOT(viewW - 1) + 1; x++) {
+		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
 
 			if ((x + ITOT(vX) >= 256) || (y + ITOT(vY) >= 64)) continue;
 

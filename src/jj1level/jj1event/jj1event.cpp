@@ -290,12 +290,12 @@ JJ1EventType* JJ1Event::prepareStep (unsigned int ticks, int msps) {
 	// If the event and its origin are off-screen, the event is not in the
 	// process of self-destruction, remove it
 	if (((animType & ~1) != E_LFINISHANIM) &&
-		((x < viewX - F192) || (x > viewX + ITOF(viewW) + F192) ||
-		(y < viewY - F160) || (y > viewY + ITOF(viewH) + F160)) &&
+		((x < viewX - F192) || (x > viewX + ITOF(canvasW) + F192) ||
+		(y < viewY - F160) || (y > viewY + ITOF(canvasH) + F160)) &&
 		((gridX < FTOT(viewX) - 1) ||
-		(gridX > ITOT(FTOI(viewX) + viewW) + 1) ||
+		(gridX > ITOT(FTOI(viewX) + canvasW) + 1) ||
 		(gridY < FTOT(viewY) - 1) ||
-		(gridY > ITOT(FTOI(viewY) + viewH) + 1))) return NULL;
+		(gridY > ITOT(FTOI(viewY) + canvasH) + 1))) return NULL;
 
 	return set;
 
@@ -332,13 +332,13 @@ void JJ1Event::drawEnergy (unsigned int ticks) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		anim->draw(ITOF(viewW - 44), ITOF(hits + 48));
+		anim->draw(ITOF(canvasW - 44), ITOF(hits + 48));
 
 		if (ticks < flashTime) anim->restorePalette();
 
 
 		// Bar
-		drawRect(viewW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
+		drawRect(canvasW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
 
 	}
 

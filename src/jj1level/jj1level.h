@@ -260,8 +260,5 @@ class JJ1DemoLevel : public JJ1Level {
 
 EXTERN JJ1Level* level; ///< JJ1 level
 
-EXTERN int viewH; ///< Canvas height, minus 33 if the panel obscures the whole of the bottom of the canvas
-#define viewW canvasW
-
 #endif
 

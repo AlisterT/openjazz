@@ -689,14 +689,10 @@ void JJ1LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 	oldViewX = viewX;
 	oldViewY = viewY;
 
-	// Can we see below the panel?
-	if (canvasW > SW) viewH = canvasH;
-	else viewH = canvasH - 33;
-
 	// Find new position
 
-	viewX = x + ((dx * change) >> 10) + F8 - (viewW << 9);
-	viewY = y + ((dy * change) >> 10) - F24 - (viewH << 9);
+	viewX = x + ((dx * change) >> 10) + F8 - (canvasW << 9);
+	viewY = y + ((dy * change) >> 10) - F24 - ((canvasH - 33) << 9);
 
 	if ((lookTime > 0) && ((int)ticks > 1000 + lookTime)) {
 

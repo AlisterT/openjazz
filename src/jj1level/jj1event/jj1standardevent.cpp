@@ -35,6 +35,7 @@
 #include "jj1event.h"
 
 #include "io/gfx/sprite.h"
+#include "io/gfx/video.h"
 #include "io/sound.h"
 #include "util.h"
 
@@ -836,7 +837,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 					} else if (animType == E_RIGHTANIM) {
 
 						if (level->checkMaskDown(x + width + F4, y - (height >> 1)) ||
-							(x + width + F4 > viewX + ITOF(320)))
+							(x + width + F4 > viewX + ITOF(canvasW)))
 							animType = E_LEFTANIM;
 
 					}
