@@ -37,6 +37,56 @@
 
 
 /**
+ * Determine whether or not the area below the player is solid when travelling
+ * downwards.
+ *
+ * @param yOffset Vertical offset of the mask values to check
+ *
+ * @return Solidity
+ */
+bool JJ2LevelPlayer::checkMaskDown (fixed yOffset, bool drop) {
+
+	return jj2Level->checkMaskDown(x + JJ2PXO_ML, y + yOffset, drop) ||
+		jj2Level->checkMaskDown(x + JJ2PXO_MID, y + yOffset, drop) ||
+		jj2Level->checkMaskDown(x + JJ2PXO_MR, y + yOffset, drop);
+
+}
+
+
+/**
+ * Determine whether or not the area above the player is solid when travelling
+ * upwards.
+ *
+ * @param yOffset Vertical offset of the mask values to check
+ *
+ * @return Solidity
+ */
+bool JJ2LevelPlayer::checkMaskUp (fixed yOffset) {
+
+	return jj2Level->checkMaskUp(x + JJ2PXO_ML, y + yOffset) ||
+		jj2Level->checkMaskUp(x + JJ2PXO_MID, y + yOffset) ||
+		jj2Level->checkMaskUp(x + JJ2PXO_MR, y + yOffset);
+
+}
+
+
+/**
+ * Move the player to the ground's surface.
+ */
+void JJ2LevelPlayer::ground () {
+
+	// If on an uphill slope, push the player upwards
+	if (checkMaskUp(0) && !checkMaskUp(-F1)) y -= F1;
+
+	// If on a downhill slope, push the player downwards
+	if (!checkMaskUp(F1) && checkMaskUp(F2)) y += F1;
+
+	return;
+
+}
+
+
+/**
  * Respond to tile modifier events.
  *
  * @param nextMod The modifier event
@@ -268,9 +318,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Check for platform event, bridge or level mask below player
 	platform = (event == LPE_PLATFORM) ||
-		jj2Level->checkMaskDown(x + JJ2PXO_ML, y + 1, drop) ||
-		jj2Level->checkMaskDown(x + JJ2PXO_MID, y + 1, drop) ||
-		jj2Level->checkMaskDown(x + JJ2PXO_MR, y + 1, drop) ||
+		checkMaskDown(1, drop) ||
 		((dx > 0) && jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F8, drop)) ||
 		((dx < 0) && jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F8, drop));
 
@@ -561,6 +609,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	fixed pdx, pdy;
+	bool grounded = false;
 	int count;
 	bool drop;
 
@@ -612,49 +661,57 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 		pdy = (-pdy) & 1023;
 
-		if (!jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - pdy))
-			y -= pdy;
-		else {
+		if (jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - pdy)) {
 
 			y &= ~1023;
 			dy = 0;
 
-		}
+		} else y -= pdy;
 
-	} else if (pdy > 0) {
+	} else {
 
-		// Moving down
+		if (pdy > 0) {
 
-		count = pdy >> 10;
+			// Moving down
 
-		while (count > 0) {
+			count = pdy >> 10;
 
-			if (jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F1, drop) ||
-				jj2Level->checkMaskDown(x + JJ2PXO_MID, y + F1, drop) ||
-				jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F1, drop)) {
+			while (count > 0) {
 
-				y |= 1023;
-				dy = 0;
+				if (checkMaskDown(F1, drop)) {
 
-				break;
+					y |= 1023;
+					dy = 0;
+
+					break;
+
+				}
+
+				y += F1;
+				count--;
 
 			}
 
-			y += F1;
-			count--;
+			pdy &= 1023;
+
+			if (checkMaskDown(pdy, drop)) y |= 1023;
+			else y += pdy;
 
 		}
 
-		pdy &= 1023;
+		if (checkMaskDown(0, drop)) {
 
-		if (!(jj2Level->checkMaskDown(x + JJ2PXO_ML, y + pdy, drop) ||
-			jj2Level->checkMaskDown(x + JJ2PXO_MID, y + pdy, drop) ||
-			jj2Level->checkMaskDown(x + JJ2PXO_MR, y + pdy, drop)))
-			y += pdy;
-		else {
+			// In the ground, so move up
+			if (y >= 1024) y = (y - 1024) | 1023;
 
-			y |= 1023;
 			dy = 0;
+			grounded = true;
+
+		} else if (checkMaskDown(1, drop)) {
+
+			// On the ground
+			dy = 0;
+			grounded = true;
 
 		}
 
@@ -685,33 +742,20 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			x -= F1;
 			count--;
 
-			// If on an uphill slope, push the player upwards
-			if (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
-				!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
-
-			// If on an downhill slope, push the player downwards
-			if (!jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F1) &&
-				jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F2)) y += F1;
+			if (grounded) ground();
 
 		}
 
 		pdx = (-pdx) & 1023;
 
-		if (!jj2Level->checkMaskUp(x + JJ2PXO_L - pdx, y + JJ2PYO_MID)) x -= pdx;
-		else {
+		if (jj2Level->checkMaskUp(x + JJ2PXO_L - pdx, y + JJ2PYO_MID)) {
 
 			x &= ~1023;
 			dx = 0;
 
-		}
+		} else x -= pdx;
 
-		// If on an uphill slope, push the player upwards
-		if (jj2Level->checkMaskUp(x + JJ2PXO_ML, y) &&
-			!jj2Level->checkMaskUp(x + JJ2PXO_ML, y - F1)) y -= F1;
-
-		// If on an downhill slope, push the player downwards
-		if (!jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F1) &&
-			jj2Level->checkMaskUp(x + JJ2PXO_ML, y + F2)) y += F1;
+		if (grounded) ground();
 
 	} else if (pdx > 0) {
 
@@ -734,33 +778,20 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 			x += F1;
 			count--;
 
-			// If on an uphill slope, push the player upwards
-			if (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
-				!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
-
-			// If on an downhill slope, push the player downwards
-			if (!jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F1) &&
-				jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F2)) y += F1;
+			if (grounded) ground();
 
 		}
 
 		pdx &= 1023;
 
-		if (!jj2Level->checkMaskUp(x + JJ2PXO_R + pdx, y + JJ2PYO_MID)) x += pdx;
-		else {
+		if (jj2Level->checkMaskUp(x + JJ2PXO_R + pdx, y + JJ2PYO_MID)) {
 
 			x |= 1023;
 			dx = 0;
 
-		}
+		} else x += pdx;
 
-		// If on an uphill slope, push the player upwards
-		if (jj2Level->checkMaskUp(x + JJ2PXO_MR, y) &&
-			!jj2Level->checkMaskUp(x + JJ2PXO_MR, y - F1)) y -= F1;
-
-		// If on an downhill slope, push the player downwards
-		if (!jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F1) &&
-			jj2Level->checkMaskUp(x + JJ2PXO_MR, y + F2)) y += F1;
+		if (grounded) ground();
 
 	}
 

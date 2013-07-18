@@ -166,8 +166,12 @@ class JJ2LevelPlayer : public LevelPlayer {
 		int               gems[4]; ///< Gems collected
 		int               coins; ///< Value of coins collected
 
+		bool checkMaskDown (fixed yOffset, bool drop);
+		bool checkMaskUp   (fixed yOffset);
+
 		void              centreX ();
 		void              centreY ();
+		void              ground  ();
 		void              modify  (JJ2Modifier* nextMod, unsigned int ticks);
 
 	public:

@@ -141,6 +141,8 @@ class JJ1LevelPlayer : public LevelPlayer {
 		bool checkMaskDown (fixed yOffset);
 		bool checkMaskUp   (fixed yOffset);
 
+		void ground ();
+
 	public:
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1LevelPlayer ();
