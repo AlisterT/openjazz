@@ -498,12 +498,12 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 			for (count = 0; count < nPlayers; count++) {
 
-				if (players[count].getJJ1LevelPlayer()->overlap(x + F8, y + F4 - height, width - F16,
-					height - F8)) {
+				if (players[count].getJJ1LevelPlayer()->overlap(x + F8,
+					y + F4 - height, width - F16, height - F8)) {
 
 					players[count].getJJ1LevelPlayer()->setSpeed(
-						set->multiB? set->magnitude * F4: set->magnitude * F40,
-						set->multiB? set->multiA * -F20: 0);
+						set->multiB? set->magnitude * ITOF(6): set->magnitude * F40,
+						set->multiB? set->multiA * -F24: 0);
 
 				}
 

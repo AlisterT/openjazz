@@ -540,6 +540,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 				if (checkMaskDown(F4)) {
 
 					y |= 4095;
+					dy = 0;
 
 					break;
 
@@ -552,23 +553,29 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 			pdy &= 4095;
 
-			if (checkMaskDown(pdy)) y |= 4095;
-			else y += pdy;
+			if (checkMaskDown(pdy)) {
+
+				y |= 4095;
+				dy = 0;
+
+			} else y += pdy;
 
 		}
 
-		if (checkMaskDown(0)) {
+		if (!floating) {
 
-			// In the ground, so move up
-			if (y >= 4096) y = (y - 4096) | 4095;
-			dy = 0;
-			grounded = true;
+			if (checkMaskDown(0)) {
 
-		} else if (checkMaskDown(1)) {
+				// In the ground, so move up
+				if (y >= 4096) y = (y - 4096) | 4095;
+				grounded = true;
 
-			// On the ground
-			dy = 0;
-			grounded = true;
+			} else if (checkMaskDown(1)) {
+
+				// On the ground
+				grounded = true;
+
+			}
 
 		}
 

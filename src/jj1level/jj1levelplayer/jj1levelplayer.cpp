@@ -727,7 +727,17 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 		case 28: // Belt
 
-			x += set->magnitude * 4 * msps;
+			if (set->magnitude < 0) {
+
+				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 4 * msps), y + PYO_MID))
+					x += set->magnitude * 4 * msps;
+
+			} else {
+
+				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 4 * msps), y + PYO_MID))
+					x += set->magnitude * 4 * msps;
+
+			}
 
 			break;
 
