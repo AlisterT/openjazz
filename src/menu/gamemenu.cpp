@@ -6,6 +6,8 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd of August 2005: Created menu.c
+ * 3rd of February 2009: Renamed menu.c to menu.cpp
  * 18th July 2009: Created menugame.cpp from parts of menu.cpp
  * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
  *

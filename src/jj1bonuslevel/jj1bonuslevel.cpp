@@ -11,7 +11,7 @@
  * 1st August 2012: Renamed bonus.cpp to jj1bonuslevel.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -72,9 +72,6 @@ int JJ1BonusLevel::loadSprites () {
 	spriteSet = new Sprite[sprites];
 
 	for (count = 0; count < sprites; count++) {
-
-		spriteSet[count].xOffset = 0;
-		spriteSet[count].yOffset = 0;
 
 		// Load dimensions
 		width = file->loadShort(SW);

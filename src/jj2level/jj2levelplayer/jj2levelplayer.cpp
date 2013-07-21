@@ -6,6 +6,12 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  *
  * @section Licence

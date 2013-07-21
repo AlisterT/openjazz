@@ -6,6 +6,9 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created level.h from parts of OpenJazz.h
+ * 4th February 2009: Created events.h from parts of level.h
  * 11th February 2009: Created bullet.h from parts of events.h
  * 1st August 2012: Renamed bullet.h to jj1bullet.h
  *

@@ -6,11 +6,14 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 22nd July 2008: Created levelload.c from parts of level.c
+ * 3rd February 2009: Renamed levelload.c to levelload.cpp
  * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
  * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -35,7 +38,6 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "menu/menu.h"
 #include "loop.h"
 #include "util.h"
 
@@ -112,8 +114,8 @@ void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedP
 
 
 	// Set sprite data
-	sprite->xOffset = createShort(parameters + 8);
-	sprite->yOffset = createShort(parameters + 10);
+	sprite->setOffset(createShort(parameters + 8),
+		createShort(parameters + 10));
 	sprite->setPixels(pixels, width, height, 0);
 
 	// Flip sprite
@@ -130,8 +132,8 @@ void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedP
 	}
 
 	// Set flipped sprite data
-	flippedSprite->xOffset = -createShort(parameters + 8) - width;
-	flippedSprite->yOffset = createShort(parameters + 10);
+	flippedSprite->setOffset(-createShort(parameters + 8) - width,
+		createShort(parameters + 10));
 	flippedSprite->setPixels(pixels, width, height, 0);
 
 	delete[] pixels;

@@ -6,6 +6,8 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created player.h from parts of OpenJazz.h
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  * 1st August 2012: Renamed bonusplayer.h to jj1bonuslevelplayer.h
  *

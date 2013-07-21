@@ -6,10 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created level.h from parts of OpenJazz.h
+ * 29th June 2010: Created jj2level.h from parts of level.h
  * 2nd July 2010: Created jj2event.h from parts of jj2level.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -40,7 +43,7 @@ class JJ2Event : public Movable {
 
 	protected:
 		unsigned char type;
-		int           properties;
+		int           properties; ///< Event-specific options
 		unsigned int  endTime; ///< Point at which the event will terminate
 		bool          flipped; ///< Whether or not the sprite image should be flipped
 

@@ -6,6 +6,9 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 3rd February 2009: Renamed level.c to level.cpp
+ * 19th July 2009: Created levelframe.cpp from parts of level.cpp
  * 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
  * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *

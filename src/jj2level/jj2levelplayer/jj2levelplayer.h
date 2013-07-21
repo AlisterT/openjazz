@@ -6,10 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created player.h from parts of OpenJazz.h
+ * 24th June 2010: Created levelplayer.h from parts of player.h
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -123,14 +126,21 @@
 /// JJ2 player reaction type
 enum JJ2PlayerReaction {
 
-	JJ2PR_NONE, JJ2PR_HURT, JJ2PR_KILLED, JJ2PR_INVINCIBLE
+	JJ2PR_NONE, ///< Not reacting
+	JJ2PR_HURT, ///< Hurt
+	JJ2PR_KILLED, ///< Killed
+	JJ2PR_INVINCIBLE ///< Invincibility
 
 };
 
 /// JJ2 shield type
 enum JJ2Shield {
 
-	 JJ2S_NONE = 0, JJ2S_FLAME = 1, JJ2S_BUBBLE = 2, JJ2S_PLASMA = 3, JJ2S_LASER = 4
+	 JJ2S_NONE = 0, ///< No shield
+	 JJ2S_FLAME = 1, ///< Flame shield
+	 JJ2S_BUBBLE = 2, ///< Bubble shield
+	 JJ2S_PLASMA = 3, ///< Plasma shield
+	 JJ2S_LASER = 4 ///< Laser shield
 
 };
 
@@ -161,8 +171,8 @@ class JJ2LevelPlayer : public LevelPlayer {
 		fixed             jumpHeight; ///< The height the player can reach when jumping
 		fixed             throwX; ///< Having been thrown, the x-coordinate the player can reach
 		fixed             throwY; ///< Having been thrown, the y-coordinate the player can reach
-		unsigned int      fastFeetTime;
-		unsigned int      stopTime;
+		unsigned int      fastFeetTime; ///< Time fast feet will expire
+		unsigned int      stopTime; ///< Time a modifier will cease stopping the player
 		int               gems[4]; ///< Gems collected
 		int               coins; ///< Value of coins collected
 

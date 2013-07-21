@@ -6,12 +6,16 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 3rd February 2009: Renamed level.c to level.cpp
+ * 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * 19th July 2009: Added parts of levelload.cpp to level.cpp
  * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
  * 1st August 2012: Renamed baselevel.cpp to level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -34,10 +38,10 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "menu/menu.h"
 #include "player/player.h"
 #include "jj1scene/jj1scene.h"
 #include "loop.h"
+#include "setup.h"
 
 
 /**
@@ -308,6 +312,7 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 /**
  * Process in-game menu selection.
  *
+ * @param menu Whether or not the level menu should be displayed
  * @param option Chosen menu option
  *
  * @return Error code

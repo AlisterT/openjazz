@@ -6,10 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 2nd March 2009: Created network.h from parts of OpenJazz.h
+ * 9th February 2009: Renamed network.h to game.h
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -35,7 +38,11 @@
 /// Game mode identifier
 enum GameModeType {
 
-	M_SINGLE = 0, M_COOP = 1, M_BATTLE = 2, M_TEAMBATTLE = 3, M_RACE = 4
+	M_SINGLE = 0, ///< Single-player mode
+	M_COOP = 1, ///< Co-operative mode
+	M_BATTLE = 2, ///< Battle mode
+	M_TEAMBATTLE = 3, ///< Team battle mode
+	M_RACE = 4 ///< Race mode
 
 };
 

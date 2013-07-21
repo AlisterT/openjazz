@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 2nd March 2009: Created network.h from parts of OpenJazz.h
  * 9th February 2009: Renamed network.h to game.h
  * 2nd August 2009: Created gamemode.h from parts of game.h

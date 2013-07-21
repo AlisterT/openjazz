@@ -6,11 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 30th March 2010: Created baselevel.h from parts of level.h
  * 1st August 2012: Renamed baselevel.h to level.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -43,21 +45,26 @@
 /// Level type
 enum LevelType {
 
-	LT_JJ1 = 0, LT_JJ1BONUS = 1, LT_JJ2 = 2
+	LT_JJ1 = 0, ///< JJ1 level
+	LT_JJ1BONUS = 1, ///< JJ1 bonus level
+	LT_JJ2 = 2 ///< JJ2 level
 
 };
 
 /// Which stats to display on-screen
 enum LevelStats {
 
-	S_PLAYERS = 1, S_SCREEN = 2
+	S_PLAYERS = 1, ///< Display player list
+	S_SCREEN = 2 ///< Display video statisitics
 
 };
 
 /// Level stage
 enum LevelStage {
 
-	LS_NORMAL = 0, LS_SUDDENDEATH = 1, LS_END = 2
+	LS_NORMAL = 0, ///< Normal gameplay
+	LS_SUDDENDEATH = 1, ///< Sudden death
+	LS_END = 2 ///< Ending sequence
 
 };
 

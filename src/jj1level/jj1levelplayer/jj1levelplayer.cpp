@@ -6,12 +6,17 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
  * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
  * 1st August 2012: Renamed levelplayer.cpp to jj1levelplayer.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -34,6 +39,7 @@
 
 #include "game/game.h"
 #include "io/sound.h"
+#include "setup.h"
 
 #include <string.h>
 

@@ -6,12 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 31st January 2006: Created player.h from parts of OpenJazz.h
  * 24th June 2010: Created levelplayer.h from parts of player.h
  * 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -47,6 +48,9 @@
 // General
 #define PCONTROLS   8 /* Number of player controls. */
 
+// Number of configurable player colour ranges
+#define PCOLOURS 4
+
 
 // Enums
 
@@ -73,7 +77,10 @@ enum PlayerColour {
 /// Player event types
 enum PlayerEvent {
 
-	LPE_NONE, LPE_SPRING, LPE_FLOAT, LPE_PLATFORM
+	LPE_NONE, ///< No event
+	LPE_SPRING, ///< Spring
+	LPE_FLOAT, ///< Float up
+	LPE_PLATFORM ///< Moving platform
 
 };
 

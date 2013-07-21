@@ -6,6 +6,9 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created main.c
+ * 22nd July 2008: Created util.c from parts of main.c
+ * 3rd February 2009: Renamed util.c to util.cpp
  * 3rd February 2009: Created file.cpp from parts of util.cpp
  *
  * @section Licence

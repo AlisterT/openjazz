@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 3rd June 2009: Created network.h from parts of OpenJazz.h
  *
  * @section Licence

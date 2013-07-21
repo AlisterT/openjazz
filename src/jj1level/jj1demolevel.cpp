@@ -6,6 +6,10 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 22nd July 2008: Created levelload.c from parts of level.c
+ * 3rd February 2009: Renamed level.c to level.cpp and levelload.c to
+ *                    levelload.cpp
  * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
  *                 levelload.cpp
  * 1st August 2012: Renamed demolevel.cpp to jj1demolevel.cpp

@@ -6,11 +6,16 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp
+ * 19th July 2009: Created eventframe.cpp from parts of events.cpp
+ * 19th July 2009: Renamed events.cpp to event.cpp
  * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
  * 1st August 2012: Renamed guardians.cpp to jj1guardians.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -182,9 +187,9 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F32);
-		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F32);
-		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
+		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F64);
+		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F64);
+		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F64);
 
 		if (ticks < flashTime) anim->restorePalette();
 
@@ -434,7 +439,6 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 void MedGuardian::draw(unsigned int ticks, int change) {
 
 	Anim *anim;
-	Anim *accessory;
 	unsigned char frame;
 
 	if (next) next->draw(ticks, change);
@@ -460,10 +464,6 @@ void MedGuardian::draw(unsigned int ticks, int change) {
 
 	if (ticks < flashTime) anim->restorePalette();
 
-	accessory = anim->getAccessory();
-	accessory->setFrame(frame + gridX + gridY, true);
-	accessory->disableDefaultOffset();
-	accessory->draw(xChange + (anim->getAccessoryX()), yChange + anim->getAccessoryY());
 
 	return;
 

@@ -6,11 +6,14 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd of August 2005: Created menu.c
+ * 3rd of February 2009: Renamed menu.c to menu.cpp
  * 18th July 2009: Created menusetup.cpp from parts of menu.cpp
  * 26th July 2009: Renamed menusetup.cpp to setupmenu.cpp
+ * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -33,6 +36,7 @@
 #include "io/sound.h"
 #include "player/player.h"
 #include "loop.h"
+#include "setup.h"
 #include "util.h"
 
 
@@ -575,8 +579,8 @@ int SetupMenu::setupMain () {
 	option = 0;
 
 	setupMods[0] = (setup.slowMotion? setupModsOn[0]: setupModsOff[0]);
-	setupMods[1] = (setup.manyBirds? setupModsOn[1]: setupModsOff[1]);
-	setupMods[2] = (setup.leaveUnneeded? setupModsOn[2]: setupModsOff[2]);
+	setupMods[1] = (setup.leaveUnneeded? setupModsOn[1]: setupModsOff[1]);
+	setupMods[2] = (setup.manyBirds? setupModsOn[2]: setupModsOff[2]);
 
 	video.setPalette(menuPalette);
 
@@ -686,8 +690,8 @@ int SetupMenu::setupMain () {
 						setupMods[suboption] = setupModsOff[suboption];
 
 					setup.slowMotion = (setupMods[0] == setupModsOn[0]);
-					setup.manyBirds = (setupMods[1] == setupModsOn[1]);
-					setup.leaveUnneeded = (setupMods[2] == setupModsOn[2]);
+					setup.leaveUnneeded = (setupMods[1] == setupModsOn[1]);
+					setup.manyBirds = (setupMods[2] == setupModsOn[2]);
 
 				}
 
@@ -698,35 +702,6 @@ int SetupMenu::setupMain () {
 	}
 
 	return E_NONE;
-
-}
-
-
-/**
- * Create default setup
- */
-Setup::Setup () {
-
-	// Create the player's name
-	characterName = createEditableString(CHAR_NAME);
-
-	// Assign the player's colour
-	characterCols[0] = CHAR_FUR;
-	characterCols[1] = CHAR_BAND;
-	characterCols[2] = CHAR_GUN;
-	characterCols[3] = CHAR_WBAND;
-
-	return;
-
-}
-
-
-/**
- * Delete the setup data
- */
-Setup::~Setup () {
-
-	delete[] characterName;
 
 }
 

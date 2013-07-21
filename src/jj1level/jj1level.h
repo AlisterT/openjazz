@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 4th February 2009: Created events.h from parts of level.h
  * 19th March 2009: Created sprite.h from parts of level.h
@@ -14,7 +15,7 @@
  * 1st August 2012: Renamed level.h to jj1level.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

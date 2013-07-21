@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
  * 1st January 2006: Created events.c from parts of level.c
  * 3rd February 2009: Renamed events.c to events.cpp
  * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
@@ -14,13 +15,14 @@
  * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 19th July 2009: Created eventframe.cpp from parts of events.cpp
  * 19th July 2009: Renamed events.cpp to event.cpp
- * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
+ * 2nd March 2010: Created guardians.cpp from parts of event.cpp and
+ *                 eventframe.cpp
  * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
  * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
  * 1st August 2012: Renamed event.cpp to jj1event.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 4th February 2009: Created palette.h from parts of OpenJazz.h
  * 1st August 2009: Renamed palette.h to paletteeffects.h
  *

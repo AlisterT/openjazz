@@ -6,10 +6,11 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -33,7 +34,10 @@
 /// Ways the loop function should handle input.
 enum LoopType {
 
-	NORMAL_LOOP, TYPING_LOOP, SET_KEY_LOOP, SET_JOYSTICK_LOOP
+	NORMAL_LOOP, ///< Normal behaviour
+	TYPING_LOOP, ///< Return key presses
+	SET_KEY_LOOP, ///< Return key presses without modifying control state
+	SET_JOYSTICK_LOOP ///< Return joystick actions without modifying control state
 
 };
 

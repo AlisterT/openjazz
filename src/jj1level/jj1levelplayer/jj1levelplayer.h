@@ -6,12 +6,14 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created player.h from parts of OpenJazz.h
  * 24th June 2010: Created levelplayer.h from parts of player.h
  * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
  * 1st August 2012: Renamed levelplayer.h to jj1levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -100,7 +102,10 @@
 /// JJ1 player reaction type
 enum JJ1PlayerReaction {
 
-	PR_NONE, PR_HURT, PR_KILLED, PR_INVINCIBLE
+	PR_NONE, ///< Not reacting
+	PR_HURT, ///< Hurt
+	PR_KILLED, ///< Killed
+	PR_INVINCIBLE ///< Invincibility
 
 };
 

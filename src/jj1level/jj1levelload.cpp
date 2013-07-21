@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
  * 22nd July 2008: Created levelload.c from parts of level.c
  * 3rd February 2009: Renamed levelload.c to levelload.cpp
  * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
@@ -15,7 +16,7 @@
  * 1st August 2012: Renamed levelload.cpp to jj1levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -216,6 +217,7 @@ int JJ1Level::loadSprites (char * fileName) {
 
 	File* mainFile = NULL;
 	File* specFile = NULL;
+	unsigned char* buffer;
 	int count;
 	bool loaded;
 
@@ -251,13 +253,14 @@ int JJ1Level::loadSprites (char * fileName) {
 	// Include space in the sprite set for the blank sprite at the end
 	spriteSet = new Sprite[sprites + 1];
 
-	// Read horizontal offsets
-	for (count = 0; count < sprites; count++)
-		spriteSet[count].xOffset = specFile->loadChar() << 2;
 
-	// Read vertical offsets
+	// Read offsets
+	buffer = specFile->loadBlock(sprites * 2);
+
 	for (count = 0; count < sprites; count++)
-		spriteSet[count].yOffset = specFile->loadChar();
+		spriteSet[count].setOffset(buffer[count] << 2, buffer[sprites + count]);
+
+	delete[] buffer;
 
 
 	// Skip to where the sprites start in mainchar.000
@@ -328,8 +331,6 @@ int JJ1Level::loadSprites (char * fileName) {
 
 	// Include a blank sprite at the end
 	spriteSet[sprites].clearPixels();
-	spriteSet[sprites].xOffset = 0;
-	spriteSet[sprites].yOffset = 0;
 
 	return E_NONE;
 

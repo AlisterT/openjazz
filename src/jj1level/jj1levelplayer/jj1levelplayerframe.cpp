@@ -6,6 +6,11 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  * 24th June 2010: Renamed playerframe.cpp to levelplayerframe.cpp
  * 29th June 2010: Created jj2levelplayerframe.cpp from parts of
@@ -13,7 +18,7 @@
  * 1st August 2012: Renamed levelplayerframe.cpp to jj1levelplayerframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -681,6 +686,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
  *
  * @param ticks Time
  * @param mspf Ticks per frame
+ * @param change Time since last step
  */
 void JJ1LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 

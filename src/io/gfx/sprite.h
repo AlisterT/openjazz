@@ -6,11 +6,13 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created OpenJazz.h
+ * 31st January 2006: Created level.h from parts of OpenJazz.h
  * 19th March 2009: Created sprite.h from parts of level.h
  * 26th July 2009: Created anim.h from parts of sprite.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -38,15 +40,15 @@ class Sprite {
 
 	private:
 		SDL_Surface* pixels; ///< Sprite image
+		short int    xOffset; ///< Horizontal offset
+		short int    yOffset; ///< Vertical offset
 
 	public:
-		short int xOffset;
-		short int yOffset;
-
 		Sprite              ();
 		~Sprite             ();
 
 		void clearPixels    ();
+		void setOffset      (short int x, short int y);
 		void setPixels      (unsigned char* data, int width, int height, unsigned char key);
 		int  getWidth       ();
 		int  getHeight      ();

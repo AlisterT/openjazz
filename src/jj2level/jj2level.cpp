@@ -6,6 +6,10 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 22nd July 2008: Created levelload.c from parts of level.c
+ * 3rd February 2009: Renamed level.c to level.cpp
+ * 19th July 2009: Added parts of levelload.cpp to level.cpp
  * 29th June 2010: Created jj2level.cpp from parts of level.cpp
  * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
  * 2nd July 2010: Created jj2eventframe.cpp from parts of jj2level.cpp

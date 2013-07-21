@@ -6,6 +6,12 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * 18th July 2009: Created playerframe.cpp from parts of player.cpp
  * 24th June 2010: Created bonusplayer.cpp from parts of player.cpp and
  *                 playerframe.cpp
  * 1st August 2012: Renamed bonusplayer.cpp to jj1bonuslevelplayer.cpp

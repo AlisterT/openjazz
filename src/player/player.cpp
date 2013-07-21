@@ -6,7 +6,10 @@
  * Part of the OpenJazz project
  *
  * @section History
- * 3rd February 2009: Created player.cpp
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
  * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 18th July 2009: Created playerframe.cpp from parts of player.cpp

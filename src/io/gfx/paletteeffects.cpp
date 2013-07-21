@@ -6,11 +6,14 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created main.c
+ * 22nd July 2008: Created util.c from parts of main.c
+ * 3rd February 2009: Renamed main.c to main.cpp and util.c to util.cpp
  * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
  * 1st August 2009: Renamed palette.cpp to paletteeffects.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

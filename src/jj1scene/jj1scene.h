@@ -6,6 +6,7 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created scene.c
  * 3rd February 2009: Created scene.h from parts of scene.c
  * 1st August 2012: Renamed scene.h to jj1scene.h
  *

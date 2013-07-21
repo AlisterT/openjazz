@@ -6,10 +6,16 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 26th July 2009: Created anim.cpp from parts of sprite.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -192,30 +198,6 @@ fixed Anim::getShootY () {
 
 
 /**
- * Determine the accessory animation x-coordinate.
- *
- * @return The accessory animation x-coordinate
- */
-fixed Anim::getAccessoryX () {
-
-	return ITOF(accessoryX << 2);
-
-}
-
-
-/**
- * Determine the accessory animation y-coordinate.
- *
- * @return The accessory animation y-coordinate
- */
-fixed Anim::getAccessoryY () {
-
-	return ITOF(accessoryY - yOffset);
-
-}
-
-
-/**
  * Determine the accessory bullet generation x-coordinate of the current frame.
  *
  * @return The accessory bullet generation x-coordinate
@@ -255,18 +237,6 @@ fixed Anim::getOffset () {
 
 
 /**
- * Determine the accessory animation.
- *
- * @return The accessory animation
- */
-Anim* Anim::getAccessory() {
-
-	return level->getAnim(accessory);
-
-}
-
-
-/**
  * Draw current frame.
  *
  * @param x X-coordinate at which to draw
@@ -274,25 +244,28 @@ Anim* Anim::getAccessory() {
  */
 void Anim::draw (fixed x, fixed y) {
 
-	// In case yOffset is zero, and the ignore default offset flag is set,
-	// draw the animation without any offset.
+	Anim* anim;
 
-	if (ignoreDefaultYOffset && yOffset == 0)
-		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
-				FTOI(y) + yOffsets[frame] + 1);
+	// In case yOffset is zero, and the ignore default flag is not set,
+	// most animations need a default offset of 1 tile (32 pixels).
 
-	// In case yOffset is zero, most animations need a default offset
-	// of 1 tile (32 pixels).
-
-	else if (yOffset == 0)
+	if ((yOffset == 0) && !ignoreDefaultYOffset)
 		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
 				FTOI(y) + yOffsets[frame] - TTOI(1) + 2);
-
-	// In all other cases drawing with the Y offset will do.
-
 	else
 		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
 				FTOI(y) + yOffsets[frame] - yOffset + 1);
+
+
+	if (accessory != 0) {
+
+		anim = level->getAnim(accessory);
+		anim->setFrame(frame, true);
+		anim->disableDefaultOffset();
+		anim->draw(x + ITOF(accessoryX << 2), y + ITOF(accessoryY - yOffset));
+
+	}
+
 
 	return;
 
@@ -337,7 +310,7 @@ void Anim::disableDefaultOffset() {
  */
 void Anim::setPalette (SDL_Color *palette, int start, int amount) {
 
-	sprites[frame]->setPalette(palette, 0, 256);
+	sprites[frame]->setPalette(palette, start, amount);
 
 	return;
 

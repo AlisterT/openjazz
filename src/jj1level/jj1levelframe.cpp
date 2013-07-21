@@ -6,6 +6,8 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 3rd February 2009: Renamed level.c to level.cpp
  * 19th July 2009: Created levelframe.cpp from parts of level.cpp
  * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
@@ -13,7 +15,7 @@
  * 1st August 2012: Renamed levelframe.cpp to jj1levelframe.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

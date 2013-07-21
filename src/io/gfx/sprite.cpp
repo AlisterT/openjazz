@@ -6,11 +6,16 @@
  * Part of the OpenJazz project
  *
  * @section History
+ * 23rd August 2005: Created level.c
+ * 1st January 2006: Created events.c from parts of level.c
+ * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ *                    created player.cpp
+ * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
  * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
  * 26th July 2009: Created anim.cpp from parts of sprite.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,6 +37,8 @@
 Sprite::Sprite () {
 
 	pixels = NULL;
+	xOffset = 0;
+	yOffset = 0;
 
 	return;
 
@@ -62,6 +69,16 @@ void Sprite::clearPixels () {
 	data = 0;
 	pixels = createSurface(&data, 1, 1);
 	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, 0);
+
+	return;
+
+}
+
+
+void Sprite::setOffset (short int x, short int y) {
+
+	xOffset = x;
+	yOffset = y;
 
 	return;
 
