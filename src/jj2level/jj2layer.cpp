@@ -55,6 +55,8 @@ JJ2Layer::JJ2Layer () {
  *
  * @param newWidth The width of the layer (in tiles)
  * @param newHeight The height of the layer (in tiles)
+ * @param newXSpeed The relative horizontal speed of the layer
+ * @param newYSpeed The relative vertical speed of the layer
  * @param flags Layer flags
  */
 JJ2Layer::JJ2Layer (int flags, int newWidth, int newHeight, fixed newXSpeed, fixed newYSpeed) {

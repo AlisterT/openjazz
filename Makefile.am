@@ -39,5 +39,5 @@ openjazz_SOURCES = \
 	src/menu/gamemenu.cpp src/menu/mainmenu.cpp src/menu/menu.cpp \
 	src/menu/plasma.cpp src/menu/setupmenu.cpp \
 	src/player/player.cpp \
-	src/main.cpp src/util.cpp
+	src/main.cpp src/setup.cpp src/util.cpp
 openjazz_LDADD = -lz ${libSDL_LIBS} ${libmodplug_LIBS}
