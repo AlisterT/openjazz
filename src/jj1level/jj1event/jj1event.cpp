@@ -65,7 +65,8 @@ JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 	gridY = gY;
 	flashTime = 0;
 
-	animType = E_LEFTANIM;
+	animType = E_NOANIM;
+	setAnimType(E_LEFTANIM);
 	noAnimOffset = false;
 
 	return;
@@ -122,9 +123,9 @@ JJ1Event * JJ1Event::getNext () {
  */
 void JJ1Event::destroy (unsigned int ticks) {
 
-	animType = E_LFINISHANIM | (animType & 1);
+	setAnimType(E_LFINISHANIM | (animType & 1));
 
-	level->setEventTime(gridX, gridY, ticks + (getAnim()->getLength() * set->animSpeed << 3));
+	level->setEventTime(gridX, gridY, ticks + (anim->getLength() * set->animSpeed << 3));
 
 	level->playSound(set->sound);
 
@@ -190,40 +191,26 @@ bool JJ1Event::isFrom (unsigned char gX, unsigned char gY) {
 
 
 /**
- * Get the width of the event
- *
- * @return The width of the event
+ * Calculate the width and height of the event
  */
-fixed JJ1Event::getWidth () {
+void JJ1Event::calcDimensions () {
 
-	fixed width;
+	if (animType == E_NOANIM) height = F32;
+	else if ((set->anims[animType] & 0x7F) == 0) height = 0;
+	else height = ITOF(anim->getHeight());
 
-	if (animType == E_NOANIM) return F32;
+	if (animType == E_NOANIM) width = F32;
+	else if ((set->anims[animType] & 0x7F) == 0) width = 0;
+	else {
 
-	if ((set->anims[animType] & 0x7F) == 0) return 0;
+		width = ITOF(anim->getWidth());
 
-	width = ITOF(getAnim()->getWidth());
+		// Blank sprites for e.g. invisible springs
+		if ((width == F1) && (height == F1)) width = F32;
 
-	// Blank sprites for e.g. invisible springs
-	if ((width == F1) && (getHeight() == F1)) return F32;
+	}
 
-	return width;
-
-}
-
-
-/**
- * Get the height of the event
- *
- * @return The height of the event
- */
-fixed JJ1Event::getHeight () {
-
-	if (animType == E_NOANIM) return F32;
-
-	if ((set->anims[animType] & 0x7F) == 0) return 0;
-
-	return ITOF(getAnim()->getHeight());
+	return;
 
 }
 
@@ -241,31 +228,54 @@ fixed JJ1Event::getHeight () {
 bool JJ1Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
 	fixed offset = 0;
-	if (getAnim() && noAnimOffset)
-		offset = getAnim()->getOffset();
 
-	return (x + getWidth() >= left) &&
+	if (anim && noAnimOffset) offset = anim->getOffset();
+
+	return (x + this->width >= left) &&
 		(x < left + width) &&
 		(y + offset >= top) &&
-		(y + offset - getHeight() < top + height);
+		(y + offset - this->height < top + height);
 
 }
 
 
 /**
- * Get the current animation
+ * Sets the animation type and updates the current animation and dimensions
  *
- * @return Animation
+ * @param type The new animation type
  */
-Anim* JJ1Event::getAnim () {
+void JJ1Event::setAnimType(unsigned char type) {
 
-	if (animType == E_NOANIM) return NULL;
+	if (type == animType) return;
+
+	animType = type;
+
+	if (animType == E_NOANIM) anim = NULL;
 
 	// If there is no shooting animation, use the normal animation instead
-	if (((animType & ~1) == E_LSHOOTANIM) && (set->anims[animType] == 0))
-		return level->getAnim(set->anims[animType & 1] & 0x7F);
+	else if (((animType & ~1) == E_LSHOOTANIM) && (set->anims[animType] == 0))
+		anim = level->getAnim(set->anims[animType & 1] & 0x7F);
 
-	return level->getAnim(set->anims[animType] & 0x7F);
+	else anim = level->getAnim(set->anims[animType] & 0x7F);
+
+	calcDimensions();
+
+	return;
+
+}
+
+
+/**
+ * Sets the animation frame and updates the current dimensions
+ */
+void JJ1Event::setAnimFrame (int frame) {
+
+	if (!anim) return;
+
+	anim->setFrame(frame, true);
+	calcDimensions();
+
+	return;
 
 }
 
@@ -311,7 +321,7 @@ JJ1EventType* JJ1Event::prepareStep (unsigned int ticks, int msps) {
  */
 void JJ1Event::drawEnergy (unsigned int ticks) {
 
-	Anim* anim;
+	Anim* miscAnim;
 	int hits;
 
 	if (!set || set->modifier != 8) {
@@ -329,14 +339,14 @@ void JJ1Event::drawEnergy (unsigned int ticks) {
 
 		// Devan head
 
-		anim = level->getMiscAnim(1);
-		anim->setFrame(0, true);
+		miscAnim = level->getMiscAnim(1);
+		miscAnim->setFrame(0, true);
 
-		if (ticks < flashTime) anim->flashPalette(0);
+		if (ticks < flashTime) miscAnim->flashPalette(0);
 
-		anim->draw(ITOF(canvasW - 44), ITOF(hits + 48));
+		miscAnim->draw(ITOF(canvasW - 44), ITOF(hits + 48));
 
-		if (ticks < flashTime) anim->restorePalette();
+		if (ticks < flashTime) miscAnim->restorePalette();
 
 
 		// Bar

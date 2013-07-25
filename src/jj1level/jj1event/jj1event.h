@@ -60,14 +60,20 @@
 
 // Classes
 
+class Anim;
 class JJ1LevelPlayer;
 
 /// JJ1 level event
 class JJ1Event : public Movable {
 
+	private:
+		void calcDimensions ();
+
 	protected:
 		JJ1Event*     next; ///< Next event
 		JJ1EventType* set; ///< Type
+		Anim*         anim; ///< Current animation
+		fixed         width, height; ///< Current dimensions
 		unsigned char gridX, gridY; ///< Grid position of the event
 		unsigned char animType; ///< Animation type (E_LEFTANIM, etc.)
 		unsigned int  flashTime; ///< Time flash will end
@@ -78,9 +84,8 @@ class JJ1Event : public Movable {
 		JJ1Event* remove  ();
 		void      destroy (unsigned int ticks);
 
-		Anim* getAnim   ();
-		fixed getHeight ();
-		fixed getWidth  ();
+		void setAnimType  (unsigned char type);
+		void setAnimFrame (int frame);
 
 		JJ1EventType* prepareStep (unsigned int ticks, int msps);
 

@@ -227,8 +227,6 @@ MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) 
  */
 JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 
-	Anim *anim = getAnim();
-
 	fixed sin = fSin(ticks / 2);
 	fixed cos = fCos(ticks / 2);
 
@@ -249,7 +247,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction == 1) {
 
 			// Lower right part of the eight
-			animType = E_LEFTANIM;
+			setAnimType(E_LEFTANIM);
 
 			dx = TTOF(gridX) + (sin * 96) - x + ITOF(96);
 			dy = TTOF(gridY) - (cos * 64) - y;
@@ -261,7 +259,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction == 2) {
 
 			// Upper left part of the eight
-			animType = E_LEFTANIM;
+			setAnimType(E_LEFTANIM);
 
 			dx = TTOF(gridX) - (sin * 96) - x - ITOF(96);
 			dy = TTOF(gridY) - (cos * 64) - y;
@@ -273,7 +271,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction == 3) {
 
 			// Lower left part of the eight
-			animType = E_RIGHTANIM;
+			setAnimType(E_RIGHTANIM);
 
 			dx = TTOF(gridX) - (sin * 96) - x - ITOF(96);
 			dy = TTOF(gridY) - (cos * 64) - y;
@@ -285,7 +283,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction == 4) {
 
 			// Upper right part of the eight
-			animType = E_RIGHTANIM;
+			setAnimType(E_RIGHTANIM);
 
 			dx = TTOF(gridX) + (sin * 96) - x + ITOF(96);
 			dy = TTOF(gridY) - (cos * 64) - y;
@@ -373,8 +371,8 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 		if (direction == 8) {
 
 			if (level->checkMaskUp(x, y) ||
-					level->checkMaskUp(x + getWidth(), y))
-				animType = (animType == E_LEFTANIM) ? E_RIGHTANIM : E_LEFTANIM;
+					level->checkMaskUp(x + width, y))
+				setAnimType((animType == E_LEFTANIM) ? E_RIGHTANIM : E_LEFTANIM);
 
 			dy = startPos - abs(cos * 96) - y;
 			dx = abs(cos * 6);
@@ -438,7 +436,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
  */
 void MedGuardian::draw(unsigned int ticks, int change) {
 
-	Anim *anim;
+	Anim *stageAnim;
 	unsigned char frame;
 
 	if (next) next->draw(ticks, change);
@@ -451,18 +449,18 @@ void MedGuardian::draw(unsigned int ticks, int change) {
 
 
 	if (stage == 0)
-		anim = getAnim();
+		stageAnim = anim;
 	else
-		anim = level->getAnim(set->anims[E_LFINISHANIM | (animType & 1)] & 0x7F);
+		stageAnim = level->getAnim(set->anims[E_LFINISHANIM | (animType & 1)] & 0x7F);
 
 
-	anim->setFrame(frame + gridX + gridY, true);
+	stageAnim->setFrame(frame + gridX + gridY, true);
 
-	if (ticks < flashTime) anim->flashPalette(0);
+	if (ticks < flashTime) stageAnim->flashPalette(0);
 
-	anim->draw(xChange, yChange);
+	stageAnim->draw(xChange, yChange);
 
-	if (ticks < flashTime) anim->restorePalette();
+	if (ticks < flashTime) stageAnim->restorePalette();
 
 
 	return;

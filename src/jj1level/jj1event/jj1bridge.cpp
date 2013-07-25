@@ -128,7 +128,6 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
  */
 void JJ1Bridge::draw (unsigned int ticks, int change) {
 
-	Anim* anim;
 	unsigned char frame;
 	int count;
 	fixed bridgeLength, anchorY, leftDipY, rightDipY;
@@ -147,8 +146,7 @@ void JJ1Bridge::draw (unsigned int ticks, int change) {
 
 	frame = ticks / (set->animSpeed << 5);
 
-	anim = getAnim();
-	anim->setFrame(frame + gridX + gridY, true);
+	setAnimFrame(frame + gridX + gridY);
 
 
 	// Draw the bridge

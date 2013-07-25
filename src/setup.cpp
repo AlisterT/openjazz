@@ -69,7 +69,7 @@ Setup::~Setup () {
 /**
  * Load settings from config file.
  */
-void Setup::load (int* videoW, int* videoH, int* videoScale) {
+void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 	File* file;
 	int count;

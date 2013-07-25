@@ -62,7 +62,7 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 		case 2: // Walk from side to side
 		case 4: // Walk from side to side and down hills
 
-			animType = E_LEFTANIM;
+			setAnimType(E_LEFTANIM);
 			onlyRAnimOffset = true;
 
 			break;
@@ -70,7 +70,7 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 		case 6: // Use the path from the level file
 		case 7: // Flying snake behavior
 
-			animType = E_LEFTANIM;
+			setAnimType(E_LEFTANIM);
 			noAnimOffset = true;
 
 			break;
@@ -82,13 +82,13 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 		case 40: // Monochrome
 		case 57: // Bubbles
 
-			animType = E_NOANIM;
+			setAnimType(E_NOANIM);
 
 			break;
 
 		case 26: // Flip animation
 
-			animType = E_RIGHTANIM;
+			setAnimType(E_RIGHTANIM);
 			onlyLAnimOffset = true;
 
 			break;
@@ -113,7 +113,6 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 	JJ1LevelPlayer* levelPlayer;
-	fixed width, height;
 	int count;
 	int length;
 	fixed angle;
@@ -131,9 +130,6 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
-	// Find dimensions
-	width = getWidth();
-	height = getHeight();
 
 	// Handle movement
 
@@ -607,7 +603,6 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 	JJ1LevelPlayer* levelPlayer;
-	fixed width, height;
 	int count;
 
 
@@ -618,9 +613,6 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
-	// Find dimensions
-	width = getWidth();
-	height = getHeight();
 
 	// Move
 	move(ticks, msps);
@@ -638,13 +630,13 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 					if (!level->checkMaskDown(x, y + F4) ||
 					    level->checkMaskDown(x - F4, y - (height >> 1)))
-					    animType = E_RIGHTANIM;
+						setAnimType(E_RIGHTANIM);
 
 				} else if (animType == E_RIGHTANIM) {
 
 					if (!level->checkMaskDown(x + width, y + F4) ||
 					    level->checkMaskDown(x + width + F4, y - (height >> 1)))
-					    animType = E_LEFTANIM;
+						setAnimType(E_LEFTANIM);
 
 				}
 
@@ -654,9 +646,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 				// Seek jazz
 				if (levelPlayer->getX() + PXO_R < x)
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 				else if (levelPlayer->getX() + PXO_L > x + width)
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 
 				break;
 
@@ -670,12 +662,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 					if (animType == E_LEFTANIM) {
 
 						if (level->checkMaskDown(x - F4, y - (height >> 1) - F12))
-							animType = E_RIGHTANIM;
+							setAnimType(E_RIGHTANIM);
 
 					} else if (animType == E_RIGHTANIM) {
 
 						if (level->checkMaskDown(x + width + F4, y - (height >> 1) - F12))
-							animType = E_LEFTANIM;
+							setAnimType(E_LEFTANIM);
 
 					}
 
@@ -689,9 +681,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				// Check movement direction
 				if ((FTOI(node) < 3) ||
 					(level->path[set->multiA].x[FTOI(node)] <= level->path[set->multiA].x[FTOI(node) - 3]))
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 				else
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 
 				break;
 
@@ -701,11 +693,11 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 				if (animType == E_LEFTANIM) {
 
-					if (x < TTOF(gridX)) animType = E_RIGHTANIM;
+					if (x < TTOF(gridX)) setAnimType(E_RIGHTANIM);
 
 				} else if (animType == E_RIGHTANIM) {
 
-					if (x > TTOF(gridX) + F100) animType = E_LEFTANIM;
+					if (x > TTOF(gridX) + F100) setAnimType(E_LEFTANIM);
 
 				}
 
@@ -718,12 +710,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				if (animType == E_LEFTANIM) {
 
 					if (level->checkMaskDown(x - F4, y - (height >> 1)))
-						animType = E_RIGHTANIM;
+						setAnimType(E_RIGHTANIM);
 
 				} else if (animType == E_RIGHTANIM) {
 
 					if (level->checkMaskDown(x + width + F4, y - (height >> 1)))
-						animType = E_LEFTANIM;
+						setAnimType(E_LEFTANIM);
 
 				}
 
@@ -736,12 +728,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				if (animType == E_LEFTANIM) {
 
 					if (level->checkMaskDown(x + (width >> 1), y - height - F4))
-						animType = E_RIGHTANIM;
+						setAnimType(E_RIGHTANIM);
 
 				} else if (animType == E_RIGHTANIM) {
 
 					if (level->checkMaskDown(x + (width >> 1), y + F4))
-						animType = E_LEFTANIM;
+						setAnimType(E_LEFTANIM);
 
 				}
 
@@ -752,9 +744,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				// Flip animation
 
 				if (levelPlayer->overlap(x, y - height, width, height))
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 				else
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 
 				break;
 
@@ -765,12 +757,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				if (animType == E_LEFTANIM) {
 
 					if (level->checkMaskDown(x, y - (height >> 1)))
-					    animType = E_RIGHTANIM;
+						setAnimType(E_RIGHTANIM);
 
 				} else if (animType == E_RIGHTANIM) {
 
 					if (level->checkMaskDown(x + width, y - (height >> 1)))
-					    animType = E_LEFTANIM;
+						setAnimType(E_LEFTANIM);
 
 				}
 
@@ -781,9 +773,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				// Moving platform
 
 				if (x < TTOF(gridX) - (set->pieceSize << 14))
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 				else if (x > TTOF(gridX + set->pieceSize))
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 
 				break;
 
@@ -794,12 +786,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				if (levelPlayer->getFacing() &&
 					(x + width < levelPlayer->getX())) {
 
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 
 				} else if (!levelPlayer->getFacing() &&
 					(x > levelPlayer->getX() + F32)) {
 
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 
 				}
 
@@ -812,15 +804,15 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				if (ticks > level->getEventTime(gridX, gridY)) {
 
 					if (y <= F16 + TTOF(gridY) - (set->multiA * F12))
-						animType = E_RIGHTANIM;
+						setAnimType(E_RIGHTANIM);
 					else if (y >= F16 + TTOF(gridY)) {
 
-						animType = E_LEFTANIM;
+						setAnimType(E_LEFTANIM);
 						level->setEventTime(gridX, gridY, ticks + (set->multiB * 50));
 
 					}
 
-				} else animType = E_LEFTANIM;
+				} else setAnimType(E_LEFTANIM);
 
 				break;
 
@@ -835,13 +827,13 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 						if (level->checkMaskDown(x - F4, y - (height >> 1)) ||
 							(x - F4 < viewX))
-							animType = E_RIGHTANIM;
+							setAnimType(E_RIGHTANIM);
 
 					} else if (animType == E_RIGHTANIM) {
 
 						if (level->checkMaskDown(x + width + F4, y - (height >> 1)) ||
 							(x + width + F4 > viewX + ITOF(canvasW)))
-							animType = E_LEFTANIM;
+							setAnimType(E_LEFTANIM);
 
 					}
 
@@ -858,14 +850,14 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 					if (animType == E_LEFTANIM) {
 
 						if (level->checkMaskDown(x - F4, y - (height >> 1)))
-							animType = E_RIGHTANIM;
+							setAnimType(E_RIGHTANIM);
 
 					} else if (animType == E_RIGHTANIM) {
 
 						if (level->checkMaskDown(x + width + F4, y - (height >> 1)))
-							animType = E_LEFTANIM;
+							setAnimType(E_LEFTANIM);
 
-					} else animType = E_LEFTANIM;
+					} else setAnimType(E_LEFTANIM);
 
 				}
 
@@ -874,9 +866,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 			default:
 
 				if (levelPlayer->getX() + PXO_MID < x + (width >> 1))
-					animType = E_LEFTANIM;
+					setAnimType(E_LEFTANIM);
 				else
-					animType = E_RIGHTANIM;
+					setAnimType(E_RIGHTANIM);
 
 				break;
 
@@ -903,8 +895,8 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 			((animType & ~1) == E_LEFTANIM)) {
 
 			// Enter firing mode
-			if (animType == E_LEFTANIM) animType = E_LSHOOTANIM;
-			else animType = E_RSHOOTANIM;
+			if (animType == E_LEFTANIM) setAnimType(E_LSHOOTANIM);
+			else setAnimType(E_RSHOOTANIM);
 
 			level->setEventTime(gridX, gridY, ticks + count);
 
@@ -929,11 +921,11 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 			if ((set->bullet < 32) &&
 				(level->getBullet(set->bullet)[B_SPRITE | (animType & 1)] != 0))
 				level->bullets = new JJ1Bullet(
-					x + getAnim()->getShootX(),
-					y + getAnim()->getShootY() - F4,
+					x + anim->getShootX(),
+					y + anim->getShootY() - F4,
 					set->bullet, (animType & 1)? true: false, ticks);
 
-			animType = E_LEFTANIM | (animType & 1);
+			setAnimType(E_LEFTANIM | (animType & 1));
 
 		} else {
 
@@ -959,8 +951,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 		fixed offset = 0;
 
-		if ((animType != E_NOANIM) && getAnim() && noAnimOffset)
-			offset = getAnim()->getOffset();
+		if (anim && noAnimOffset) offset = anim->getOffset();
 
 		if (set->modifier == 6) {
 
@@ -1006,7 +997,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
  */
 void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
-	Anim* anim;
+	Anim* miscAnim;
 	unsigned char frame;
 
 
@@ -1015,8 +1006,8 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	// Uncomment the following to see the area of the event
 	/*drawRect(FTOI(getDrawX(change)),
-		FTOI(getDrawY(change) - getHeight()), FTOI(getWidth()),
-		FTOI(getHeight()), 88);*/
+		FTOI(getDrawY(change) - height), FTOI(width),
+		FTOI(height), 88);*/
 
 
 	// If the event has been removed from the grid, do not show it
@@ -1025,9 +1016,6 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	// Check if the event has anything to draw
 	if (animType == E_NOANIM) return;
 
-
-	// Decide on the frame to draw
-	anim = getAnim();
 
 	if ((animType & ~1) == E_LFINISHANIM) {
 
@@ -1043,7 +1031,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	}
 
-	anim->setFrame(frame, true);
+	setAnimFrame(frame);
 
 
 	// Calculate new positions
@@ -1110,9 +1098,9 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	// If the event has been destroyed, draw an explosion
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
-		anim = level->getMiscAnim(2);
-		anim->setFrame(frame, false);
-		anim->draw(changeX, changeY);
+		miscAnim = level->getMiscAnim(2);
+		miscAnim->setFrame(frame, false);
+		miscAnim->draw(changeX, changeY);
 
 	}
 
