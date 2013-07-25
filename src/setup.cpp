@@ -82,12 +82,14 @@ void Setup::load (int* videoW, int* videoH, int* videoScale) {
 
 	} catch (int e) {
 
-		file = NULL;
+		log("Configuration file not found.");
+
+		return;
 
 	}
 
-	// Check that the config file was opened, and has the correct version
-	if (!file || (file->loadChar() != 3)) {
+	// Check that the config file has the correct version
+	if (file->loadChar() != 3) {
 
 		log("Valid configuration file not found.");
 
@@ -99,7 +101,14 @@ void Setup::load (int* videoW, int* videoH, int* videoScale) {
 	// Read video settings
 	*videoW = file->loadShort(7680);
 	*videoH = file->loadShort(4800);
-	*videoScale = file->loadChar();
+	count = file->loadChar();
+#ifndef FULLSCREEN_ONLY
+	*fullscreen = count & 1;
+#endif
+#ifdef SCALE
+	if (count >= 10) count = 2;
+	*videoScale = count >> 1;
+#endif
 
 
 	// Read controls

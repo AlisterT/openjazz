@@ -47,7 +47,7 @@ class Setup {
 		Setup  ();
 		~Setup ();
 
-		void load (int* videoW, int* videoH, int* videoScale);
+		void load (int* videoW, int* videoH, bool* fullscreen, int* videoScale);
 		void save ();
 
 };

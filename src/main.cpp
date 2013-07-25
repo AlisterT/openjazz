@@ -199,16 +199,7 @@ Main::Main (int argc, char *argv[]) {
 
 
 	// Load settings from config file
-	setup.load(&screenW, &screenH, &scaleFactor);
-
-
-#ifndef FULLSCREEN_ONLY
-	fullscreen = scaleFactor & 1;
-#endif
-#ifdef SCALE
-	scaleFactor >>= 1;
-	if (scaleFactor > 4) scaleFactor = 1;
-#endif
+	setup.load(&screenW, &screenH, &fullscreen, &scaleFactor);
 
 
 	// Get command-line override
