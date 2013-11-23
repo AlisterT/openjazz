@@ -57,6 +57,9 @@ pixel_t pixel_get(int x, int y, const unsigned char* pix, unsigned slice, unsign
 
 void pixel_put(int x, int y, unsigned char* pix, unsigned slice, unsigned pixel, unsigned dx, unsigned dy, pixel_t v)
 {
+	(void)dx;
+	(void)dy;
+
 	unsigned char* p;
 	unsigned i;
 

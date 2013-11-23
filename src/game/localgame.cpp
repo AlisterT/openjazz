@@ -102,6 +102,8 @@ int LocalGame::setLevel (char *fileName) {
  */
 void LocalGame::send (unsigned char *buffer) {
 
+	(void)buffer;
+
 	// Do nothing
 
 	return;
@@ -118,6 +120,8 @@ void LocalGame::send (unsigned char *buffer) {
  */
 int LocalGame::step (unsigned int ticks) {
 
+	(void)ticks;
+
 	// Do nothing
 
 	return E_NONE;
@@ -131,6 +135,8 @@ int LocalGame::step (unsigned int ticks) {
  * @param team Team to receive point
  */
 void LocalGame::score (unsigned char team) {
+
+	(void)team;
 
 	// Do nothing
 

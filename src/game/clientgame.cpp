@@ -261,6 +261,8 @@ ClientGame::~ClientGame () {
  */
 int ClientGame::setLevel (char* fileName) {
 
+	(void)fileName;
+
 	int ret;
 
 	video.setPalette(menuPalette);

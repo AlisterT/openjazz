@@ -74,6 +74,8 @@ SDL_AudioSpec  audioSpec;
  */
 void audioCallback (void * userdata, unsigned char * stream, int len) {
 
+	(void)userdata;
+
 	int count;
 
 #ifdef USE_MODPLUG

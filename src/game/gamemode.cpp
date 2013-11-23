@@ -42,6 +42,9 @@
  */
 bool GameMode::hit (Player *source, Player *victim) {
 
+	(void)source;
+	(void)victim;
+
 	return true;
 
 }
@@ -76,6 +79,8 @@ bool GameMode::kill (Game* game, Player *source, Player *victim) {
  * @return Whether or not the level should end (true)
  */
 bool GameMode::endOfLevel (Game* game, Player *player, int gridX, int gridY) {
+
+	(void)player;
 
 	game->setCheckpoint(gridX, gridY);
 
@@ -125,6 +130,8 @@ unsigned char SingleGameMode::chooseTeam () {
  */
 void SingleGameMode::drawScore (Font* font) {
 
+	(void)font;
+
 	return;
 
 }
@@ -150,6 +157,8 @@ unsigned char CooperativeGameMode::chooseTeam () {
  * @param font Font to use to draw score
  */
 void CooperativeGameMode::drawScore (Font* font) {
+
+	(void)font;
 
 	// Do nothing
 
@@ -302,6 +311,9 @@ GameModeType RaceGameMode::getMode () {
  */
 bool RaceGameMode::hit (Player *source, Player *victim) {
 
+	(void)source;
+	(void)victim;
+
 	return false;
 
 }
@@ -318,6 +330,9 @@ bool RaceGameMode::hit (Player *source, Player *victim) {
  * @return Whether or not the level should end (false)
  */
 bool RaceGameMode::endOfLevel (Game* game, Player *player, int gridX, int gridY) {
+
+	(void)gridX;
+	(void)gridY;
 
 	if (player == localPlayer) game->score(localPlayer->getTeam());
 

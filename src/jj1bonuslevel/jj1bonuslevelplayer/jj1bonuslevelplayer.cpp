@@ -185,6 +185,8 @@ int JJ1BonusLevelPlayer::countBirds () {
  */
 void JJ1BonusLevelPlayer::step (unsigned int ticks, int msps, JJ1BonusLevel* bonus) {
 
+	(void)ticks;
+
 	fixed cdx, cdy;
 
 	// Bonus stages use polar coordinates for movement (but not position)

@@ -437,6 +437,8 @@ void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
  */
 bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps) {
 
+	(void)msps;
+
 	unsigned char type;
 	bool fullPickup = false;
 

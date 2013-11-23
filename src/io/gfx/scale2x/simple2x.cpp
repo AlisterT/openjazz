@@ -27,6 +27,8 @@
 
 void Simple2x(unsigned char *srcPtr, unsigned int srcPitch, unsigned char *deltaPtr, unsigned char *dstPtr, unsigned int dstPitch, int width, int height)
 {
+	(void)deltaPtr;
+
     unsigned char *nextLine, *finish;
   
 	nextLine = dstPtr + dstPitch;
@@ -79,6 +81,8 @@ void Simple2x(unsigned char *srcPtr, unsigned int srcPitch, unsigned char *delta
 
 void Simple2x32(unsigned char *srcPtr, unsigned int srcPitch, unsigned char *deltaPtr, unsigned char *dstPtr, unsigned int dstPitch, int width, int height)
 {
+	(void)deltaPtr;
+
     unsigned char *nextLine, *finish;
   
 	nextLine = dstPtr + dstPitch;
