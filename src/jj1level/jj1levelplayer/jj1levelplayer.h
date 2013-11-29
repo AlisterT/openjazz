@@ -125,6 +125,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		int               shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
 		bool              floating; ///< false = normal, true = boarding/bird/etc.
 		bool              facing; ///< false = left, true = right
+		fixed             udx; ///< Unobstructed horizontal speed
 		unsigned char     animType; ///< Current animation
 		unsigned char     eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
 		unsigned char     eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)

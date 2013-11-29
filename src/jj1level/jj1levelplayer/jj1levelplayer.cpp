@@ -148,10 +148,16 @@ JJ1LevelPlayer::~JJ1LevelPlayer () {
  */
 void JJ1LevelPlayer::reset (int startX, int startY) {
 
+	x = TTOF(startX);
+	y = TTOF(startY);
+	dx = 0;
+	dy = 0;
+
 	event = LPE_NONE;
 	energy = 4;
 	floating = false;
 	facing = true;
+	udx = 0;
 	animType = PA_RSTAND;
 	reaction = PR_NONE;
 	reactionTime = 0;
@@ -159,10 +165,6 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	jumpY = TTOF(LH);
 	fastFeetTime = 0;
 	warpTime = 0;
-	dx = 0;
-	dy = 0;
-	x = TTOF(startX);
-	y = TTOF(startY);
 
 	return;
 

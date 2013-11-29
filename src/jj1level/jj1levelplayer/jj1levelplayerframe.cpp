@@ -56,9 +56,9 @@
  */
 bool JJ1LevelPlayer::checkMaskDown (fixed yOffset) {
 
-	return level->checkMaskDown(x + PXO_ML, y + yOffset) ||
+	return level->checkMaskDown(x + PXO_ML + F1, y + yOffset) ||
 		level->checkMaskDown(x + PXO_MID, y + yOffset) ||
-		level->checkMaskDown(x + PXO_MR, y + yOffset);
+		level->checkMaskDown(x + PXO_MR - F1, y + yOffset);
 
 }
 
@@ -73,9 +73,9 @@ bool JJ1LevelPlayer::checkMaskDown (fixed yOffset) {
  */
 bool JJ1LevelPlayer::checkMaskUp (fixed yOffset) {
 
-	return level->checkMaskUp(x + PXO_ML, y + yOffset) ||
+	return level->checkMaskUp(x + PXO_ML + F1, y + yOffset) ||
 		level->checkMaskUp(x + PXO_MID, y + yOffset) ||
-		level->checkMaskUp(x + PXO_MR, y + yOffset);
+		level->checkMaskUp(x + PXO_MR - F1, y + yOffset);
 
 }
 
@@ -131,9 +131,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		// Walk/run right
 
-		if (dx < 0) dx += PXA_REVERSE * msps;
-		else if (dx < PXS_WALK) dx += PXA_WALK * msps;
-		else if (dx < PXS_RUN) dx += PXA_RUN * msps;
+		if (udx < 0) udx += PXA_REVERSE * msps;
+		else if (udx < PXS_WALK) udx += PXA_WALK * msps;
+		else if (udx < PXS_RUN) udx += PXA_RUN * msps;
 
 		facing = true;
 
@@ -141,9 +141,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		// Walk/run left
 
-		if (dx > 0) dx -= PXA_REVERSE * msps;
-		else if (dx > -PXS_WALK) dx -= PXA_WALK * msps;
-		else if (dx > -PXS_RUN) dx -= PXA_RUN * msps;
+		if (udx > 0) udx -= PXA_REVERSE * msps;
+		else if (udx > -PXS_WALK) udx -= PXA_WALK * msps;
+		else if (udx > -PXS_RUN) udx -= PXA_RUN * msps;
 
 		facing = false;
 
@@ -151,22 +151,22 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		// Slow down
 
-		if (dx > 0) {
+		if (udx > 0) {
 
-			if (dx < PXA_STOP * msps) dx = 0;
-			else dx -= PXA_STOP * msps;
+			if (udx < PXA_STOP * msps) udx = 0;
+			else udx -= PXA_STOP * msps;
 
 		} else if (dx < 0) {
 
-			if (dx > -PXA_STOP * msps) dx = 0;
-			else dx += PXA_STOP * msps;
+			if (udx > -PXA_STOP * msps) udx = 0;
+			else udx += PXA_STOP * msps;
 
 		}
 
 	}
 
-	if (dx < -PXS_RUN) dx = -PXS_RUN;
-	else if (dx > PXS_RUN) dx = PXS_RUN;
+	if (udx < -PXS_RUN) udx = -PXS_RUN;
+	else if (udx > PXS_RUN) udx = PXS_RUN;
 
 
 	// Check for platform event, bridge or level mask below player
@@ -400,60 +400,6 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 	if (birds) birds = birds->step(ticks, msps);
 
 
-	// Choose animation
-
-	if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
-		animType = facing? PA_RHURT: PA_LHURT;
-
-	else if (y + PYO_MID > level->getWaterLevel())
-		animType = facing? PA_RSWIM: PA_LSWIM;
-
-	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
-
-	else if (dy < 0) {
-
-		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
-		else animType = facing? PA_RJUMP: PA_LJUMP;
-
-	} else if (platform) {
-
-		if (dx) {
-
-			if (dx <= -PXS_RUN) animType = PA_LRUN;
-			else if (dx >= PXS_RUN) animType = PA_RRUN;
-			else if ((dx < 0) && facing) animType = PA_LSTOP;
-			else if ((dx > 0) && !facing) animType = PA_RSTOP;
-			else animType = facing? PA_RWALK: PA_LWALK;
-
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
-			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != LPE_PLATFORM))
-			animType = PA_LEDGE;
-
-		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
-			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != LPE_PLATFORM))
-			animType = PA_REDGE;
-
-		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
-			animType = PA_LOOKUP;
-
-		else if (lookTime > 0) {
-
-			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
-			else animType = PA_LOOKDOWN;
-
-		}
-
-		else if (player->pcontrols[C_FIRE])
-			animType = facing? PA_RSHOOT: PA_LSHOOT;
-
-		else
-			animType = facing? PA_RSTAND: PA_LSTAND;
-
-	} else animType = facing? PA_RFALL: PA_LFALL;
-
-
 	return;
 
 }
@@ -484,12 +430,12 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	if (fastFeetTime > ticks) {
 
-		pdx = (dx * msps * 3) >> 11;
+		pdx = (udx * msps * 3) >> 11;
 		pdy = (dy * msps * 3) >> 11;
 
 	} else {
 
-		pdx = (dx * msps) >> 10;
+		pdx = (udx * msps) >> 10;
 		pdy = (dy * msps) >> 10;
 
 	}
@@ -585,6 +531,8 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	// Then for the horizontal component of the trajectory
 
+	dx = udx;
+
 	if (pdx < 0) {
 
 		// Moving left
@@ -598,6 +546,8 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 				x &= ~4095;
 				dx = 0;
+
+				if (udx < -PXS_WALK) udx = -PXS_WALK;
 
 				break;
 
@@ -617,6 +567,8 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x &= ~4095;
 			dx = 0;
 
+			if (udx < -PXS_WALK) udx = -PXS_WALK;
+
 		} else x -= pdx;
 
 		if (grounded) ground();
@@ -634,6 +586,8 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 				x |= 4095;
 				dx = 0;
+
+				if (udx > PXS_WALK) udx = PXS_WALK;
 
 				break;
 
@@ -653,6 +607,8 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x |= 4095;
 			dx = 0;
 
+			if (udx > PXS_WALK) udx = PXS_WALK;
+
 		} else x += pdx;
 
 		if (grounded) ground();
@@ -669,18 +625,72 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 	}
 
 
-	if (level->getStage() == LS_END) return;
+	if (level->getStage() != LS_END) {
+
+		// If the player has hit the bottom of the level, kill
+		if (y + F4 > TTOF(LH)) kill(NULL, ticks);
+
+		// Handle spikes
+		if (level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
+			level->checkSpikes(x + PXO_MID, y + F4) ||
+			level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
+			level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(NULL, ticks);
+
+	}
 
 
-	// If the player has hit the bottom of the level, kill
-	if (y + F4 > TTOF(LH)) kill(NULL, ticks);
+	// Choose animation
 
+	if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
+		animType = facing? PA_RHURT: PA_LHURT;
 
-	// Handle spikes
-	if (level->checkSpikes(x + PXO_MID, y + PYO_TOP - F4) ||
-		level->checkSpikes(x + PXO_MID, y + F4) ||
-		level->checkSpikes(x + PXO_L - F4, y + PYO_MID) ||
-		level->checkSpikes(x + PXO_R + F4, y + PYO_MID)) hit(NULL, ticks);
+	else if (y + PYO_MID > level->getWaterLevel())
+		animType = facing? PA_RSWIM: PA_LSWIM;
+
+	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
+
+	else if (dy < 0) {
+
+		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
+		else animType = facing? PA_RJUMP: PA_LJUMP;
+
+	} else if (grounded || (event == LPE_PLATFORM)) {
+
+		if (udx) {
+
+			if (udx <= -PXS_RUN) animType = PA_LRUN;
+			else if (udx >= PXS_RUN) animType = PA_RRUN;
+			else if ((udx < 0) && facing) animType = PA_LSTOP;
+			else if ((udx > 0) && !facing) animType = PA_RSTOP;
+			else animType = facing? PA_RWALK: PA_LWALK;
+
+		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
+			!level->checkMaskDown(x + PXO_L, y + F2) &&
+			(event != LPE_PLATFORM))
+			animType = PA_LEDGE;
+
+		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
+			!level->checkMaskDown(x + PXO_R, y + F2) &&
+			(event != LPE_PLATFORM))
+			animType = PA_REDGE;
+
+		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
+			animType = PA_LOOKUP;
+
+		else if (lookTime > 0) {
+
+			if ((int)ticks < 1000 + lookTime) animType = facing? PA_RCROUCH: PA_LCROUCH;
+			else animType = PA_LOOKDOWN;
+
+		}
+
+		else if (player->pcontrols[C_FIRE])
+			animType = facing? PA_RSHOOT: PA_LSHOOT;
+
+		else
+			animType = facing? PA_RSTAND: PA_LSTAND;
+
+	} else animType = facing? PA_RFALL: PA_LFALL;
 
 
 	return;
