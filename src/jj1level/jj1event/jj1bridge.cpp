@@ -75,7 +75,7 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return remove();
+	if (!set) return remove(false);
 
 
 	bridgeLength = set->multiA * set->pieceSize * F4;
@@ -146,7 +146,7 @@ void JJ1Bridge::draw (unsigned int ticks, int change) {
 
 	frame = ticks / (set->animSpeed << 5);
 
-	setAnimFrame(frame + gridX + gridY);
+	setAnimFrame(frame + gridX + gridY, true);
 
 
 	// Draw the bridge

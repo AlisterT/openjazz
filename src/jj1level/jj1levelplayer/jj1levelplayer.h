@@ -66,6 +66,7 @@
 #define PRT_HURTANIM   200
 #define PRT_KILLED     2000
 #define PRT_INVINCIBLE 10000
+#define PRT_SHIELDED   100
 
 // Other time periods
 #define T_FASTFEET 25000
@@ -105,7 +106,8 @@ enum JJ1PlayerReaction {
 	PR_NONE, ///< Not reacting
 	PR_HURT, ///< Hurt
 	PR_KILLED, ///< Killed
-	PR_INVINCIBLE ///< Invincibility
+	PR_INVINCIBLE, ///< Invincibility
+	PR_SHIELDED ///< Hit to shield
 
 };
 
@@ -122,7 +124,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1Bird*          birds; ///< Bird companion(s)
 		Anim*             anims[JJ1PANIMS]; ///< Animations
 		int               energy; ///< 0 = dead, 4 = maximum
-		int               shield; ///< 0 = none, 1 = 1 yellow, 2 = 2 yellow, 3 = 1 orange, 4 = 2 orange, 5 = 3 orange, 6 = 4 orange
+		int               shield; ///< 0 = none, 1 = yellow, 2 = 1 orange, 3 = 2 orange, 4 = 3 orange, 5 = 4 orange
 		bool              floating; ///< false = normal, true = boarding/bird/etc.
 		bool              facing; ///< false = left, true = right
 		fixed             udx; ///< Unobstructed horizontal speed

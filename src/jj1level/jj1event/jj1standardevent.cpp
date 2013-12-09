@@ -604,18 +604,52 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 	JJ1LevelPlayer* levelPlayer;
 	int count;
+	unsigned int eventTime;
+	int hits;
 
 
 	set = prepareStep(ticks, msps);
+	hits = level->getEventHits(gridX, gridY);
 
-	if (!set) return remove();
+	// If the event is off-screen, remove it (permanently if it's been deflected by a shield)
+	if (!set) return remove(hits == 255);
 
 
+	// If the event has been deflected by a shield, move it
+	if (hits == 255) {
+
+		dy = 200 * F1;
+
+		x += (dx * msps) >> 10;
+		y += (dy * msps) >> 10;
+
+		return this;
+
+	}
+
+
+	// Get the time of the event's next action
+	eventTime = level->getEventTime(gridX, gridY);
+
+
+	// If the event's finish animation has expired, remove it
+	if (eventTime && ((animType & ~1) == E_LFINISHANIM)) {
+
+		if (anim == NULL) return remove(true);
+
+		if (((int)(ticks - eventTime) / (int)(set->animSpeed << 3)) > anim->getLength())
+			return remove(true);
+
+	}
+
+
+	// Get the player
 	levelPlayer = localPlayer->getJJ1LevelPlayer();
 
 
 	// Move
 	move(ticks, msps);
+
 
 	// Choose animation and direction
 
@@ -801,7 +835,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 				// Launching event
 
-				if (ticks > level->getEventTime(gridX, gridY)) {
+				if (ticks > eventTime) {
 
 					if (y <= F16 + TTOF(gridY) - (set->multiA * F12))
 						setAnimType(E_RIGHTANIM);
@@ -876,11 +910,14 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 	}
 
+
+	// If the event is in its finish stage, nothing else needs to be done
+	if ((animType & ~1) == E_LFINISHANIM) return this;
+
+
 	// If the event has been destroyed, play its finishing animation and set its
 	// reaction time
-	if (set->strength &&
-		(level->getEventHits(gridX, gridY) >= set->strength) &&
-		((animType & ~1) != E_LFINISHANIM)) {
+	if (set->strength && (hits >= set->strength)) {
 
 		destroy(ticks);
 
@@ -906,17 +943,9 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 
 	// If the reaction time has expired
-	if (level->getEventTime(gridX, gridY) &&
-		(ticks > level->getEventTime(gridX, gridY))) {
+	if (eventTime && (ticks > eventTime)) {
 
-		if ((animType & ~1) == E_LFINISHANIM) {
-
-			// The event has been destroyed, so remove it
-			level->clearEvent(gridX, gridY);
-
-			return remove();
-
-		} else if ((animType & ~1) == E_LSHOOTANIM) {
+		if ((animType & ~1) == E_LSHOOTANIM) {
 
 			if ((set->bullet < 32) &&
 				(level->getBullet(set->bullet)[B_SPRITE | (animType & 1)] != 0))
@@ -937,8 +966,6 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 
 	if (level->getStage() == LS_END) return this;
-
-	if ((animType & ~1) == E_LFINISHANIM) return this;
 
 
 	// Handle contact with player
@@ -974,8 +1001,24 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				levelPlayer->overlap(x, y + offset - height, width, height)) {
 
 				// If the player picks up the event, destroy it
-				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps))
-					destroy(ticks);
+				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps)) {
+
+					if (level->getEventHits(gridX, gridY) == 255) {
+
+						if (levelPlayer->getX() + PXO_MID > x + (width >> 1))
+							dx = -400 * F1;
+						else
+							dx = 400 * F1;
+
+						dy = 200 * F1;
+
+					} else {
+
+						destroy(ticks);
+
+					}
+
+				}
 
 			}
 
@@ -998,7 +1041,6 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	Anim* miscAnim;
-	unsigned char frame;
 
 
 	if (next) next->draw(ticks, change);
@@ -1019,19 +1061,18 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	if ((animType & ~1) == E_LFINISHANIM) {
 
-		frame = (ticks + (anim->getLength() * set->animSpeed << 3) - level->getEventTime(gridX, gridY)) / (set->animSpeed << 3);
+		setAnimFrame((ticks - level->getEventTime(gridX, gridY)) / (set->animSpeed << 3), false);
 
 	} else if ((animType & ~1) == E_LSHOOTANIM) {
 
-		frame = (ticks + (anim->getLength() * set->animSpeed << 5) - level->getEventTime(gridX, gridY)) / (set->animSpeed << 5);
+		setAnimFrame((ticks + (anim->getLength() * set->animSpeed << 5) - level->getEventTime(gridX, gridY)) / (set->animSpeed << 5), false);
 
 	} else {
 
-		frame = (ticks / (set->animSpeed << 5)) + gridX + gridY;
+		setAnimFrame((ticks / (set->animSpeed << 5)) + gridX + gridY, true);
 
 	}
 
-	setAnimFrame(frame);
 
 
 	// Calculate new positions
@@ -1067,8 +1108,8 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 		// In case of an explosion
 
 		// Determine position in a half circle path
-		fixed xOffset = fSin(level->getEventTime(gridX, gridY) - ticks) * 48 - ITOF(16);
-		fixed yOffset = fCos(level->getEventTime(gridX, gridY) - ticks) * 48;
+		fixed xOffset = fCos((ticks - level->getEventTime(gridX, gridY)) >> 1) * 48 - ITOF(16);
+		fixed yOffset = fSin((ticks - level->getEventTime(gridX, gridY)) >> 1) * 48;
 
 		int val = gridX + gridY;
 
@@ -1099,7 +1140,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
 		miscAnim = level->getMiscAnim(2);
-		miscAnim->setFrame(frame, false);
+		miscAnim->setFrame((ticks - level->getEventTime(gridX, gridY)) >> 3, false);
 		miscAnim->draw(changeX, changeY);
 
 	}

@@ -302,18 +302,29 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 	// Hits from the same team have no effect
 	if (source && (source->getTeam() == player->team)) return false;
 
+	// Hits to the shield only affect the shield
+	if (shield) {
 
-	if (shield == 3) shield = 0;
-	else if (shield) shield--;
-	else if (player->hit(source)) {
+		if (shield == 2) shield = 0;
+		else shield--;
 
-		energy--;
+		reaction = PR_SHIELDED;
+		reactionTime = ticks + PRT_SHIELDED;
 
-		if (birds) birds->hit();
-
-		playSound(S_OW);
+		return true;
 
 	}
+
+	// Hits only cause damage in applicable game modes
+	if (player->hit(source)) {
+
+		// Hits don't cause damage with a bird, but do scare the bird away
+		if (birds) birds->hit();
+		else energy--;
+
+	}
+
+	playSound(S_OW);
 
 	if (energy) {
 
@@ -465,7 +476,7 @@ void JJ1LevelPlayer::setPosition (fixed newX, fixed newY) {
  */
 void JJ1LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 
-	dx = newDx;
+	udx = newDx;
 	if (newDy) dy = newDy;
 
 	return;
@@ -621,11 +632,10 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
 
 			break;
 
-		case 33: // 2-hit shield
+		case 33: // 1-hit shield
 
-			if ((shield >= 2) && setup.leaveUnneeded) return false;
-
-			if (shield < 2) shield = 2;
+			if ((shield >= 1) && setup.leaveUnneeded) return false;
+			else shield = 1;
 
 			break;
 
@@ -647,9 +657,9 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
 
 		case 36: // 4-hit shield
 
-			if ((shield == 6) && setup.leaveUnneeded) return false;
+			if ((shield == 5) && setup.leaveUnneeded) return false;
 
-			shield = 6;
+			shield = 5;
 
 			break;
 
@@ -704,7 +714,19 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 		case 0: // Hurt
 		case 8: // Boss
 
-			if ((set->movement < 37) || (set->movement > 44)) hit(NULL, ticks);
+			if ((set->movement < 37) || (set->movement > 44)) {
+
+				if (reaction != PR_SHIELDED) hit(NULL, ticks);
+
+				if (reaction == PR_SHIELDED) {
+
+					level->hitEvent(gridX, gridY, 255, this, ticks);
+
+					return true;
+
+				}
+
+			}
 
 			break;
 

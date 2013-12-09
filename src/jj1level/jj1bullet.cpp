@@ -248,8 +248,7 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 					// If the event is within range, hit it
 					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100)) {
 
-						event->hit(source, ticks);
-						event->hit(source, ticks);
+						event->hit(source, 2, ticks);
 
 					}
 
@@ -296,7 +295,7 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 					ITOF(sprite->getWidth()), ITOF(sprite->getHeight()))) {
 
 					// If the event is hittable, hit it and destroy the bullet
-					if (event->hit(source, ticks)) return remove();
+					if (event->hit(source, 1, ticks)) return remove();
 
 				}
 

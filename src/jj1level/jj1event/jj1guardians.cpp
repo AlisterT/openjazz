@@ -112,7 +112,7 @@ JJ1Event* DeckGuardian::step (unsigned int ticks, int msps) {
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return remove();
+	if (!set) return remove(false);
 
 
 	count = level->getEventHits(gridX, gridY);
@@ -138,14 +138,7 @@ JJ1Event* DeckGuardian::step (unsigned int ticks, int msps) {
 	if (level->getEventTime(gridX, gridY) &&
 		(ticks > level->getEventTime(gridX, gridY))) {
 
-		if ((animType & ~1) == E_LFINISHANIM) {
-
-			// The event has been destroyed, so remove it
-			level->clearEvent(gridX, gridY);
-
-			return remove();
-
-		} else {
+		if ((animType & ~1) != E_LFINISHANIM) {
 
 			level->setEventTime(gridX, gridY, 0);
 
@@ -232,7 +225,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 	set = prepareStep(ticks, msps);
 
-	if (!set) return remove();
+	if (!set) return remove(false);
 
 
 	if (level->getEventHits(gridX, gridY) >= set->strength / 2)

@@ -112,6 +112,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 	if (!energy) {
 
 		dx = 0;
+		udx = 0;
 
 		if (floating) dy = 0;
 		else {
@@ -121,8 +122,6 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		animType = facing? PA_RDIE: PA_LDIE;
-
 		return;
 
 	}
@@ -130,6 +129,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 	if (player->pcontrols[C_RIGHT]) {
 
 		// Walk/run right
+
+		if (udx < 0) udx = dx;
 
 		if (udx < 0) udx += PXA_REVERSE * msps;
 		else if (udx < PXS_WALK) udx += PXA_WALK * msps;
@@ -140,6 +141,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 	} else if (player->pcontrols[C_LEFT]) {
 
 		// Walk/run left
+
+		if (udx > 0) udx = dx;
 
 		if (udx > 0) udx -= PXA_REVERSE * msps;
 		else if (udx > -PXS_WALK) udx -= PXA_WALK * msps;
@@ -156,7 +159,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 			if (udx < PXA_STOP * msps) udx = 0;
 			else udx -= PXA_STOP * msps;
 
-		} else if (dx < 0) {
+		} else if (udx < 0) {
 
 			if (udx > -PXA_STOP * msps) udx = 0;
 			else udx += PXA_STOP * msps;
@@ -547,7 +550,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 				x &= ~4095;
 				dx = 0;
 
-				if (udx < -PXS_WALK) udx = -PXS_WALK;
+				if (udx < -PXS_RUN) udx = -PXS_RUN;
 
 				break;
 
@@ -567,7 +570,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x &= ~4095;
 			dx = 0;
 
-			if (udx < -PXS_WALK) udx = -PXS_WALK;
+			if (udx < -PXS_RUN) udx = -PXS_RUN;
 
 		} else x -= pdx;
 
@@ -587,7 +590,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 				x |= 4095;
 				dx = 0;
 
-				if (udx > PXS_WALK) udx = PXS_WALK;
+				if (udx > PXS_RUN) udx = PXS_RUN;
 
 				break;
 
@@ -607,7 +610,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 			x |= 4095;
 			dx = 0;
 
-			if (udx > PXS_WALK) udx = PXS_WALK;
+			if (udx > PXS_RUN) udx = PXS_RUN;
 
 		} else x += pdx;
 
@@ -641,7 +644,10 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	// Choose animation
 
-	if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
+	if (!energy)
+		animType = facing? PA_RDIE: PA_LDIE;
+
+	else if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
 		animType = facing? PA_RHURT: PA_LHURT;
 
 	else if (y + PYO_MID > level->getWaterLevel())
@@ -654,7 +660,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
 		else animType = facing? PA_RJUMP: PA_LJUMP;
 
-	} else if (grounded || (event == LPE_PLATFORM)) {
+	} else if (checkMaskDown(F4) || (event == LPE_PLATFORM)) {
 
 		if (udx) {
 
@@ -839,7 +845,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		an->setFrame(frame + 3, true);
 		an->draw(drawX + PXO_MID - yOffset, drawY + PYO_MID - xOffset);
 
-	} else if (shield > 2) {
+	} else if (shield > 1) {
 
 		// Show the 4-hit shield
 
@@ -850,24 +856,23 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 
-		if (shield > 3) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+		if (shield > 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
 
-		if (shield > 4) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+		if (shield > 3) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
 
-		if (shield > 5) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+		if (shield > 4) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
 
 	} else if (shield) {
 
-		// Show the 2-hit shield
+		// Show the 1-hit shield
 
 		xOffset = fCos(ticks) * 20;
 		yOffset = fSin(ticks) * 20;
 
 		an = level->getAnim(50);
 
-		an->draw(drawX + xOffset, drawY + yOffset + PYO_TOP);
-
-		if (shield == 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+		an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
 
 	}
 

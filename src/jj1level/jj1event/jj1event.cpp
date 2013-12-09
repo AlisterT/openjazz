@@ -89,11 +89,15 @@ JJ1Event::~JJ1Event () {
 /**
  * Delete this event
  *
+ * @param permanently Whether or not to delete the event from the level
+ *
  * @return The next event
  */
-JJ1Event* JJ1Event::remove () {
+JJ1Event* JJ1Event::remove (bool permanently) {
 
 	JJ1Event *oldNext;
+
+	if (permanently) level->clearEvent(gridX, gridY);
 
 	oldNext = next;
 	next = NULL;
@@ -125,7 +129,7 @@ void JJ1Event::destroy (unsigned int ticks) {
 
 	setAnimType(E_LFINISHANIM | (animType & 1));
 
-	level->setEventTime(gridX, gridY, ticks + (anim->getLength() * set->animSpeed << 3));
+	level->setEventTime(gridX, gridY, ticks);
 
 	level->playSound(set->sound);
 
@@ -137,19 +141,20 @@ void JJ1Event::destroy (unsigned int ticks) {
 /**
  * Deal with bullet collisions
  *
- * @param source Source of the bullet
+ * @param source Source of the hit(s)
+ * @param hits Number of hits to inflict
  * @param ticks Current time
  *
  * @return Whether or not the hit was successful
  */
-bool JJ1Event::hit (JJ1LevelPlayer *source, unsigned int ticks) {
+bool JJ1Event::hit (JJ1LevelPlayer *source, int hits, unsigned int ticks) {
 
 	int hitsRemaining;
 
 	// Check if event has already been destroyed
 	if (((animType & ~1) == E_LFINISHANIM) || (ticks < flashTime)) return false;
 
-	hitsRemaining = level->hitEvent(gridX, gridY, source);
+	hitsRemaining = level->hitEvent(gridX, gridY, hits, source, ticks);
 
 	// If the event cannot be hit, do not register hit
 	if (hitsRemaining < 0) return false;
@@ -268,11 +273,11 @@ void JJ1Event::setAnimType(unsigned char type) {
 /**
  * Sets the animation frame and updates the current dimensions
  */
-void JJ1Event::setAnimFrame (int frame) {
+void JJ1Event::setAnimFrame (int frame, bool looping) {
 
 	if (!anim) return;
 
-	anim->setFrame(frame, true);
+	anim->setFrame(frame, looping);
 	calcDimensions();
 
 	return;

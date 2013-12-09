@@ -81,11 +81,11 @@ class JJ1Event : public Movable {
 
 		JJ1Event (unsigned char gX, unsigned char gY);
 
-		JJ1Event* remove  ();
+		JJ1Event* remove  (bool permanently);
 		void      destroy (unsigned int ticks);
 
 		void setAnimType  (unsigned char type);
-		void setAnimFrame (int frame);
+		void setAnimFrame (int frame, bool looping);
 
 		JJ1EventType* prepareStep (unsigned int ticks, int msps);
 
@@ -93,7 +93,7 @@ class JJ1Event : public Movable {
 		virtual ~JJ1Event ();
 
 		JJ1Event*      getNext        ();
-		bool           hit            (JJ1LevelPlayer *source, unsigned int ticks);
+		bool           hit            (JJ1LevelPlayer *source, int hits, unsigned int ticks);
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
 		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);

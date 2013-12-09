@@ -392,15 +392,17 @@ void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 
 /**
- * Register a hit on the event from the given tile.
+ * Register hit(s) on the event for the given tile.
  *
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
- * @param source The player that fired the bullet that hit the event
+ * @param hits The number of hits to attempt to inflict on the event
+ * @param source The player that inflicted the hit(s)
+ * @param time Time
  *
  * @return The remaining number of hits until the event is destroyed
  */
-int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, JJ1LevelPlayer* source) {
+int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time) {
 
 	GridElement* ge;
 	unsigned char buffer[MTL_L_GRID];
@@ -411,23 +413,28 @@ int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, JJ1LevelPlayer
 	hitsToKill = eventSet[ge->event].strength;
 
 	// If the event cannot be hit, return negative
-	if (!hitsToKill) return -1;
+	if (!hitsToKill || (ge->hits == 255)) return -1;
 
-	// Increase the hit count
-	ge->hits++;
+	// If the event has already been destroyed, do nothing
+	if (ge->hits >= hitsToKill) return 0;
 
 	// Check if the event has been killed
-	if (ge->hits == hitsToKill) {
+	if (ge->hits + hits >= hitsToKill) {
 
 		// Notify the player that shot the bullet
 		// If this returns false, ignore the hit
 		if (!source->takeEvent(gridX, gridY, ticks)) {
 
-			ge->hits--;
-
-			return 1;
+			return hitsToKill - ge->hits;
 
 		}
+
+		ge->hits = (hits == 255)? 255: hitsToKill;
+		ge->time = time;
+
+	} else {
+
+		ge->hits += hits;
 
 	}
 
