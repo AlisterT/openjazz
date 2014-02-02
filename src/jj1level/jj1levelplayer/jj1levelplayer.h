@@ -94,7 +94,7 @@
 #define PXA_STOP    1000
 #define PXA_WALK    1000
 #define PXA_RUN     200
-#define PYA_GRAVITY 2750
+#define PYA_GRAVITY 2250
 #define PYA_SINK    1000
 
 

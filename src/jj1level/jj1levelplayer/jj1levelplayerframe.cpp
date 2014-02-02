@@ -117,8 +117,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		if (floating) dy = 0;
 		else {
 
-			dy += PYA_GRAVITY * msps;
-			if (dy > PYS_FALL) dy = PYS_FALL;
+			if (dy < 0) dy += PYA_GRAVITY * msps;
+			else dy = PYS_FALL;
 
 		}
 
@@ -313,8 +313,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		} else if (!platform) {
 
 			// Fall under gravity
-			dy += PYA_GRAVITY * msps;
-			if (dy > PYS_FALL) dy = PYS_FALL;
+			if (dy < 0) dy += PYA_GRAVITY * msps;
+			else dy = PYS_FALL;
 
 		}
 

@@ -498,8 +498,8 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 					y + F4 - height, width - F16, height - F8)) {
 
 					players[count].getJJ1LevelPlayer()->setSpeed(
-						set->multiB? set->magnitude * ITOF(6): set->magnitude * F40,
-						set->multiB? set->multiA * -F24: 0);
+						set->multiB? (set->magnitude < 0 ? -ITOF(320): ITOF(320)): set->magnitude * F32,
+						set->multiB? set->multiA * -F32: 0);
 
 				}
 
