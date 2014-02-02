@@ -83,7 +83,7 @@
 #define PYO_JUMP ITOF(84)
 
 // Player speeds
-#define PXS_WALK  ITOF(300)
+#define PXS_WALK  ITOF(150)
 #define PXS_RUN   ITOF(325)
 #define PYS_FALL  ITOF(350)
 #define PYS_SINK  ITOF(150)
@@ -93,12 +93,25 @@
 #define PXA_REVERSE 1800
 #define PXA_STOP    1000
 #define PXA_WALK    1000
-#define PXA_RUN     200
+#define PXA_RUN     1000
 #define PYA_GRAVITY 2250
 #define PYA_SINK    1000
 
 
-// Enum
+// Enums
+
+/// JJ1 player event types
+enum JJ1PlayerEvent {
+
+	JJ1PE_NONE, ///< No event
+	JJ1PE_SPRING, ///< Spring
+	JJ1PE_FLOAT, ///< Float up
+	JJ1PE_REPELH, ///< Repel horizontally only
+	JJ1PE_REPELUP, ///< Repel upwards
+	JJ1PE_REPELDOWN, ///< Repel downwards
+	JJ1PE_PLATFORM ///< Moving platform
+
+};
 
 /// JJ1 player reaction type
 enum JJ1PlayerReaction {
@@ -131,13 +144,13 @@ class JJ1LevelPlayer : public LevelPlayer {
 		unsigned char     animType; ///< Current animation
 		unsigned char     eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
 		unsigned char     eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)
-		PlayerEvent       event; ///< Event type
+		JJ1PlayerEvent    event; ///< Event type
 		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
 		JJ1PlayerReaction reaction; ///< Reaction type
 		unsigned int      reactionTime; ///< Time reaction will end
 		unsigned int      fireTime; ///< The next time the player can fire
 		fixed             jumpHeight; ///< The height the player can reach when jumping
-		fixed             jumpY; ///< Having started jumping, the y-coordinate the player can reach
+		fixed             targetY; ///< Having been propelled, the y-coordinate the player could reach
 		unsigned int      fastFeetTime; ///< Time fast feet will expire
 		unsigned char     warpX; ///< X-coordinate (in tiles) player will warp to
 		unsigned char     warpY; ///< Y-coordinate (in tiles) player will warp to
@@ -170,9 +183,8 @@ class JJ1LevelPlayer : public LevelPlayer {
 		void              kill        (Player* source, unsigned int ticks);
 		bool              overlap     (fixed left, fixed top, fixed width, fixed height);
 		JJ1PlayerReaction reacted     (unsigned int ticks);
-		void              setEvent    (unsigned char gridX, unsigned char gridY);
+		void              setPlatform (unsigned char gridX, unsigned char gridY);
 		void              setPosition (fixed newX, fixed newY);
-		void              setSpeed    (fixed newDx, fixed newDy);
 		bool              takeEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks);
 		bool              touchEvent  (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
 

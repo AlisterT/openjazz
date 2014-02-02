@@ -123,6 +123,16 @@
 
 // Enum
 
+/// JJ2 player event types
+enum JJ2PlayerEvent {
+
+	JJ2PE_NONE, ///< No event
+	JJ2PE_SPRING, ///< Spring
+	JJ2PE_FLOAT, ///< Float up
+	JJ2PE_PLATFORM ///< Moving platform
+
+};
+
 /// JJ2 player reaction type
 enum JJ2PlayerReaction {
 
@@ -163,7 +173,7 @@ class JJ2LevelPlayer : public LevelPlayer {
 		int               floating; ///< 0 = normal, 1 = helicopter ears, 2 = boarding
 		bool              facing; ///< false = left, true = right
 		unsigned char     animType; ///< Current animation
-		PlayerEvent       event; ///< Event type
+		JJ2PlayerEvent    event; ///< Event type
 		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
 		JJ2PlayerReaction reaction; ///< Reaction type
 		unsigned int      reactionTime; ///< Time reaction will end

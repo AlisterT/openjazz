@@ -104,7 +104,7 @@ void JJ1LevelPlayer::ground () {
  */
 void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
-	int speed;
+	fixed speed;
 	bool platform;
 
 
@@ -126,7 +126,45 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	}
 
-	if (player->pcontrols[C_RIGHT]) {
+	if (event == JJ1PE_REPELH) {
+
+		speed = level->getEvent(eventX, eventY)->magnitude * F40;
+
+		if (speed < -PXS_WALK || speed > PXS_WALK) {
+
+			udx = speed;
+
+		} else if ((speed < 0) && player->pcontrols[C_RIGHT]) {
+
+			// Walk right, against the flow
+
+			if (udx < speed) udx += PXA_REVERSE * msps;
+			else if (udx < speed + PXS_WALK) udx += PXA_WALK * msps;
+
+			if (udx > speed + PXS_WALK) udx = speed + PXS_WALK;
+
+			facing = true;
+
+		} else if ((speed > 0) && player->pcontrols[C_LEFT]) {
+
+			// Walk left, against the flow
+
+			if (udx > 0) udx -= PXA_REVERSE * msps;
+			else if (udx > speed - PXS_WALK) udx -= PXA_WALK * msps;
+
+			if (udx < speed - PXS_WALK) udx = speed - PXS_WALK;
+
+			facing = false;
+
+		} else {
+
+			udx = speed;
+
+		}
+
+		event = JJ1PE_NONE;
+
+	} else if (player->pcontrols[C_RIGHT]) {
 
 		// Walk/run right
 
@@ -135,6 +173,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		if (udx < 0) udx += PXA_REVERSE * msps;
 		else if (udx < PXS_WALK) udx += PXA_WALK * msps;
 		else if (udx < PXS_RUN) udx += PXA_RUN * msps;
+
+		if (udx > PXS_RUN) udx = PXS_RUN;
 
 		facing = true;
 
@@ -147,6 +187,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		if (udx > 0) udx -= PXA_REVERSE * msps;
 		else if (udx > -PXS_WALK) udx -= PXA_WALK * msps;
 		else if (udx > -PXS_RUN) udx -= PXA_RUN * msps;
+
+		if (udx < -PXS_RUN) udx = -PXS_RUN;
 
 		facing = false;
 
@@ -168,12 +210,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	}
 
-	if (udx < -PXS_RUN) udx = -PXS_RUN;
-	else if (udx > PXS_RUN) udx = PXS_RUN;
-
 
 	// Check for platform event, bridge or level mask below player
-	platform = (event == LPE_PLATFORM) ||
+	platform = (event == JJ1PE_PLATFORM) ||
 		checkMaskDown(F4) ||
 		((dx > 0) && level->checkMaskDown(x + PXO_ML, y + F8)) ||
 		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
@@ -215,12 +254,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (event != LPE_NONE) {
-
-			if (event == LPE_SPRING) dy = level->getEvent(eventX, eventY)->multiA * -F20;
-			else if (event == LPE_FLOAT) dy = PYS_JUMP;
-
-		}
+		if (event == JJ1PE_SPRING) dy = level->getEvent(eventX, eventY)->multiA * -F20;
+		else if (event == JJ1PE_FLOAT) dy = PYS_JUMP;
 
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		else if (dy > PXS_RUN) dy = PXS_RUN;
@@ -239,12 +274,12 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			if (!level->checkMaskUp(x + PXO_MID, y - F36)) {
 
-				jumpY = y - jumpHeight;
+				targetY = y - jumpHeight;
 
-				if (dx < 0) jumpY += dx >> 4;
-				else if (dx > 0) jumpY -= dx >> 4;
+				if (dx < 0) targetY += dx >> 4;
+				else if (dx > 0) targetY -= dx >> 4;
 
-				event = LPE_NONE;
+				event = JJ1PE_NONE;
 
 			}
 
@@ -275,29 +310,37 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Jump
 
-			jumpY = y - jumpHeight;
+			targetY = y - jumpHeight;
 
 			// Increase jump height if walking/running
-			if (dx < 0) jumpY += dx >> 3;
-			else if (dx > 0) jumpY -= dx >> 3;
+			if (dx < 0) targetY += dx >> 3;
+			else if (dx > 0) targetY -= dx >> 3;
 
-			event = LPE_NONE;
+			event = JJ1PE_NONE;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && (event != LPE_SPRING) && (event != LPE_FLOAT))
-			jumpY = TTOF(LH);
+		if (!player->pcontrols[C_JUMP] && ((event == JJ1PE_NONE) || (event == JJ1PE_PLATFORM)))
+			targetY = TTOF(LH);
 
-		if (y >= jumpY) {
+		if (player->pcontrols[C_DOWN] && (event == JJ1PE_FLOAT)) {
 
-			// If jumping, rise
-			dy = (jumpY - y - F64) * 4;
+			targetY = TTOF(LH);
+			event = JJ1PE_NONE;
+
+			dy = PYS_FALL;
+
+		}
+
+		if (y >= targetY) {
+
+			dy = (targetY - y - F64) * 4;
 
 			// Spring/float up speed limit
-			if ((event == LPE_SPRING) || (event == LPE_FLOAT)) {
+			if ((event == JJ1PE_SPRING) || (event == JJ1PE_FLOAT) || (event == JJ1PE_REPELUP)) {
 
 				speed = level->getEvent(eventX, eventY)->multiA * -F20;
 
@@ -308,7 +351,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 			}
 
 			// Avoid jumping too fast, unless caused by an event
-			if ((event == LPE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
+			if ((event == JJ1PE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -319,7 +362,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		if ((dy > 0) && (event == LPE_PLATFORM)) dy = 0;
+		if ((dy > 0) && (event == JJ1PE_PLATFORM)) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -336,23 +379,13 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	}
 
-	// If there is an obstacle above and the player is not floating up, stop
-	// rising
-	if (checkMaskUp(PYO_TOP - F4) && (jumpY < y) && (event != LPE_FLOAT)) {
+	// If there is an obstacle above, stop rising
+	if ((targetY < y) && checkMaskUp(PYO_TOP - F4)) {
 
-		jumpY = TTOF(LH);
+		targetY = TTOF(LH);
 		if (dy < 0) dy = 0;
 
-		if (event != LPE_PLATFORM) event = LPE_NONE;
-
-	}
-
-	// If jump completed, stop rising
-	if (y <= jumpY) {
-
-		jumpY = TTOF(LH);
-
-		if (event != LPE_PLATFORM) event = LPE_NONE;
+		if (event != JJ1PE_PLATFORM) event = JJ1PE_NONE;
 
 	}
 
@@ -619,11 +652,12 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 	}
 
 
-	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == LPE_FLOAT) && level->checkMaskUp(x + PXO_MID, y + PYO_TOP - F4)) {
+	// If the target has been reached, stop rising
+	if (y <= targetY) {
 
-		jumpY = TTOF(LH);
-		event = LPE_NONE;
+		targetY = TTOF(LH);
+
+		if ((event != JJ1PE_PLATFORM) && (event != JJ1PE_REPELH)) event = JJ1PE_NONE;
 
 	}
 
@@ -657,10 +691,10 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	else if (dy < 0) {
 
-		if (event == LPE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
+		if (event == JJ1PE_SPRING) animType = facing? PA_RSPRING: PA_LSPRING;
 		else animType = facing? PA_RJUMP: PA_LJUMP;
 
-	} else if (checkMaskDown(F4) || (event == LPE_PLATFORM)) {
+	} else if (checkMaskDown(F4) || (event == JJ1PE_PLATFORM)) {
 
 		if (udx) {
 
@@ -672,12 +706,12 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
 			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(event != LPE_PLATFORM))
+			(event != JJ1PE_PLATFORM))
 			animType = PA_LEDGE;
 
 		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
 			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(event != LPE_PLATFORM))
+			(event != JJ1PE_PLATFORM))
 			animType = PA_REDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
@@ -820,7 +854,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		FTOI(-PYO_TOP), 88);*/
 
 	// Uncomment the following to show the player's event tile
-	// if (event != LPE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
+	// if (event != JJ1PE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
 
 
 	if (reaction == PR_INVINCIBLE) {

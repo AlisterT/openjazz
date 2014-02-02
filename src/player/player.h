@@ -74,16 +74,6 @@ enum PlayerColour {
 
 };
 
-/// Player event types
-enum PlayerEvent {
-
-	LPE_NONE, ///< No event
-	LPE_SPRING, ///< Spring
-	LPE_FLOAT, ///< Float up
-	LPE_PLATFORM ///< Moving platform
-
-};
-
 
 // Classes
 

@@ -152,7 +152,7 @@ void JJ2LevelPlayer::reset (int startX, int startY) {
 	floating = false;
 	facing = true;
 	animType = JJ2PA_STAND;
-	event = LPE_NONE;
+	event = JJ2PE_NONE;
 	reaction = JJ2PR_NONE;
 	reactionTime = 0;
 	jumpHeight = JJ2PYO_JUMP;
@@ -498,7 +498,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			throwY = y - TTOF(14);
 			dx = 0;
-			event = LPE_SPRING;
+			event = JJ2PE_SPRING;
 
 			break;
 
@@ -512,7 +512,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			throwY = y - TTOF(18);
 			dx = 0;
-			event = LPE_SPRING;
+			event = JJ2PE_SPRING;
 
 			break;
 
@@ -586,7 +586,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			throwY = y - TTOF(8);
 			dx = 0;
-			event = LPE_SPRING;
+			event = JJ2PE_SPRING;
 
 			break;
 
@@ -594,7 +594,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			throwY = y - TTOF(14);
 			dx = 0;
-			event = LPE_SPRING;
+			event = JJ2PE_SPRING;
 
 			break;
 
@@ -602,7 +602,7 @@ bool JJ2LevelPlayer::touchEvent (JJ2Event* touched, unsigned int ticks, int msps
 
 			throwY = y - TTOF(18);
 			dx = 0;
-			event = LPE_SPRING;
+			event = JJ2PE_SPRING;
 
 			break;
 

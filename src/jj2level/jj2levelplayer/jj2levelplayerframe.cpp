@@ -324,7 +324,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 	drop = player->pcontrols[C_DOWN];
 
 	// Check for platform event, bridge or level mask below player
-	platform = (event == LPE_PLATFORM) ||
+	platform = (event == JJ2PE_PLATFORM) ||
 		checkMaskDown(1, drop) ||
 		((dx > 0) && jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F8, drop)) ||
 		((dx < 0) && jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F8, drop));
@@ -367,12 +367,8 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		}
 
-		if (event != LPE_NONE) {
-
-			if (event == LPE_SPRING) dy = JJ2PYS_SPRING;
-			else if (event == LPE_FLOAT) dy = JJ2PYS_JUMP;
-
-		}
+		if (event == JJ2PE_SPRING) dy = JJ2PYS_SPRING;
+		else if (event == JJ2PE_FLOAT) dy = JJ2PYS_JUMP;
 
 	} else if (y + JJ2PYO_MID > jj2Level->getWaterLevel()) {
 
@@ -393,7 +389,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 				if (dx < 0) throwY += dx >> 4;
 				else if (dx > 0) throwY -= dx >> 4;
 
-				event = LPE_NONE;
+				event = JJ2PE_NONE;
 
 			}
 
@@ -427,14 +423,14 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			if (dx < 0) throwY += dx >> 3;
 			else if (dx > 0) throwY -= dx >> 3;
 
-			event = LPE_NONE;
+			event = JJ2PE_NONE;
 
 			playSound(S_JUMPA);
 
 		}
 
 		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && (event != LPE_SPRING) && (event != LPE_FLOAT))
+		if (!player->pcontrols[C_JUMP] && (event != JJ2PE_SPRING) && (event != JJ2PE_FLOAT))
 			throwY = TTOF(256);
 
 		if (y >= throwY) {
@@ -443,7 +439,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 			dy = (throwY - y - F64) * 4;
 
 			// Avoid jumping too fast, unless caused by an event
-			if ((event == LPE_NONE) && (dy < JJ2PYS_JUMP)) dy = JJ2PYS_JUMP;
+			if ((event == JJ2PE_NONE) && (dy < JJ2PYS_JUMP)) dy = JJ2PYS_JUMP;
 
 		} else if (!platform) {
 
@@ -454,7 +450,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 		}
 
 		// Don't descend through platforms
-		if ((dy > 0) && (event == LPE_PLATFORM)) dy = 0;
+		if ((dy > 0) && (event == JJ2PE_PLATFORM)) dy = 0;
 
 		if (platform && !lookTime) {
 
@@ -473,12 +469,12 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// If there is an obstacle above and the player is not floating up, stop
 	// rising
-	if (jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1) && (throwY < y) && (event != LPE_FLOAT)) {
+	if (jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1) && (throwY < y) && (event != JJ2PE_FLOAT)) {
 
 		throwY = TTOF(256);
 		if (dy < 0) dy = 0;
 
-		if (event != LPE_PLATFORM) event = LPE_NONE;
+		if (event != JJ2PE_PLATFORM) event = JJ2PE_NONE;
 
 	}
 
@@ -487,7 +483,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		throwY = TTOF(256);
 
-		if (event != LPE_PLATFORM) event = LPE_NONE;
+		if (event != JJ2PE_PLATFORM) event = JJ2PE_NONE;
 
 	}
 
@@ -562,7 +558,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	else if (dy < 0) {
 
-		if (event == LPE_SPRING) animType = JJ2PA_FLOAT1;
+		if (event == JJ2PE_SPRING) animType = JJ2PA_FLOAT1;
 		else animType = JJ2PA_JUMP;
 
 	} else if (platform) {
@@ -577,12 +573,12 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 		} else if (!jj2Level->checkMaskDown(x + JJ2PXO_ML, y + F12, drop) &&
 			!jj2Level->checkMaskDown(x + JJ2PXO_L, y + F2, drop) &&
-			(event != LPE_PLATFORM))
+			(event != JJ2PE_PLATFORM))
 			animType = JJ2PA_EDGE;
 
 		else if (!jj2Level->checkMaskDown(x + JJ2PXO_MR, y + F12, drop) &&
 			!jj2Level->checkMaskDown(x + JJ2PXO_R, y + F2, drop) &&
-			(event != LPE_PLATFORM))
+			(event != JJ2PE_PLATFORM))
 			animType = JJ2PA_EDGE;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
@@ -804,10 +800,10 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 
 	// If using a float up event and have hit a ceiling, ignore event
-	if ((event == LPE_FLOAT) && jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1)) {
+	if ((event == JJ2PE_FLOAT) && jj2Level->checkMaskUp(x + JJ2PXO_MID, y + JJ2PYO_TOP - F1)) {
 
 		throwY = TTOF(256);
-		event = LPE_NONE;
+		event = JJ2PE_NONE;
 
 	}
 

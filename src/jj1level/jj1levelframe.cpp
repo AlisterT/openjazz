@@ -291,8 +291,10 @@ void JJ1Level::draw () {
 
 
 			// If this is not a foreground tile, draw it
-			if ((eventSet[ge->event].movement != 38) &&
-			    ((ge->event < 124) || (ge->event > 125))  ) {
+			if ((ge->event != 124) &&
+				(ge->event != 125) &&
+				(eventSet[ge->event].movement != 37) &&
+				(eventSet[ge->event].movement != 38)) {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
@@ -342,8 +344,10 @@ void JJ1Level::draw () {
 			}
 
 			// If this is a foreground tile, draw it
-			if ((ge->event == 124) || (ge->event == 125) ||
-				(eventSet[ge->event].movement == 38)   ) {
+			if ((ge->event == 124) ||
+				(ge->event == 125) ||
+				(eventSet[ge->event].movement == 37) ||
+				(eventSet[ge->event].movement == 38)) {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);

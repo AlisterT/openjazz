@@ -113,7 +113,6 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 	JJ1LevelPlayer* levelPlayer;
-	int count;
 	int length;
 	fixed angle;
 
@@ -487,26 +486,6 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 			break;
 
-		case 37:
-		case 38:
-
-			// Sucker tubes
-
-			for (count = 0; count < nPlayers; count++) {
-
-				if (players[count].getJJ1LevelPlayer()->overlap(x + F8,
-					y + F4 - height, width - F16, height - F8)) {
-
-					players[count].getJJ1LevelPlayer()->setSpeed(
-						set->multiB? (set->magnitude < 0 ? -ITOF(320): ITOF(320)): set->magnitude * F32,
-						set->multiB? set->multiA * -F32: 0);
-
-				}
-
-			}
-
-			break;
-
 		case 39:
 
 			/// @todo Collapsing floor
@@ -574,6 +553,7 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 			// Do nothing for the following:
 			// 0: Static
 			// 25: Float up / Belt
+			// 37/38: Repel
 
 			/// @todo Remaining event behaviours
 
@@ -989,7 +969,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 				// Player is on a platform
 
-				levelPlayer->setEvent(gridX, gridY);
+				levelPlayer->setPlatform(gridX, gridY);
 				levelPlayer->setPosition(levelPlayer->getX() + ((dx * msps) >> 10), F4 + y - height);
 
 			} else levelPlayer->clearEvent(gridX, gridY);
@@ -998,7 +978,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				levelPlayer->overlap(x, y + offset - height, width, height)) {
+				levelPlayer->overlap(x + F2, y + F2 + offset - height, width - F4, height - F4)) {
 
 				// If the player picks up the event, destroy it
 				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps)) {

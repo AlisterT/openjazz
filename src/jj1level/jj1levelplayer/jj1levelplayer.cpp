@@ -153,7 +153,7 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	dx = 0;
 	dy = 0;
 
-	event = LPE_NONE;
+	event = JJ1PE_NONE;
 	energy = 4;
 	floating = false;
 	facing = true;
@@ -162,7 +162,7 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	reaction = PR_NONE;
 	reactionTime = 0;
 	jumpHeight = PYO_JUMP;
-	jumpY = TTOF(LH);
+	targetY = TTOF(LH);
 	fastFeetTime = 0;
 	warpTime = 0;
 
@@ -193,7 +193,7 @@ void JJ1LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	// If the location matches, clear the event
 
-	if ((gridX == eventX) && (gridY == eventY)) event = LPE_NONE;
+	if ((gridX == eventX) && (gridY == eventY)) event = JJ1PE_NONE;
 
 	return;
 
@@ -423,27 +423,14 @@ JJ1PlayerReaction JJ1LevelPlayer::reacted (unsigned int ticks) {
 
 
 /**
- * Tie the player to the event from the given tile.
+ * Tie the player to the platform from the given tile.
  *
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  */
-void JJ1LevelPlayer::setEvent (unsigned char gridX, unsigned char gridY) {
+void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY) {
 
-	JJ1EventType *set;
-
-	set = level->getEvent(gridX, gridY);
-
-	if (set->modifier == 29) {
-
-		// Upwards spring
-		jumpY = y + (set->magnitude * (F20 + F1));
-		event = LPE_SPRING;
-
-	} else if (set->modifier == 6) event = LPE_PLATFORM;
-	else if (set->movement == 28) event = LPE_PLATFORM;
-	else return;
-
+	event = JJ1PE_PLATFORM;
 	eventX = gridX;
 	eventY = gridY;
 
@@ -462,22 +449,6 @@ void JJ1LevelPlayer::setPosition (fixed newX, fixed newY) {
 
 	x = newX;
 	y = newY;
-
-	return;
-
-}
-
-
-/**
- * Set the player's speed.
- *
- * @param newDx New x-speed
- * @param newDy New y-speed
- */
-void JJ1LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
-
-	udx = newDx;
-	if (newDy) dy = newDy;
 
 	return;
 
@@ -709,6 +680,40 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 	set = level->getEvent(gridX, gridY);
 
+	if ((set->movement == 37) || (set->movement == 38)) {
+
+		// Repel
+
+		if (set->multiB) {
+
+			if (set->multiA > 0) {
+
+				udx = (set->magnitude < 0 ? -ITOF(240): ITOF(240));
+
+				event = JJ1PE_REPELUP;
+				targetY = TTOF(gridY) - ITOF(set->multiA * 3);
+
+			} else {
+
+				event = JJ1PE_REPELDOWN;
+
+			}
+
+			eventX = gridX;
+			eventY = gridY;
+
+			dy = set->multiA * -F24;
+
+		} else {
+
+			event = JJ1PE_REPELH;
+			eventX = gridX;
+			eventY = gridY;
+
+		}
+
+	}
+
 	switch (set->modifier) {
 
 		case 0: // Hurt
@@ -767,7 +772,10 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 		case 29: // Upwards spring
 
-			setEvent(gridX, gridY);
+			event = JJ1PE_SPRING;
+			eventX = gridX;
+			eventY = gridY;
+			targetY = y + (set->magnitude * (F20 + F1));
 
 			level->playSound(set->sound);
 
@@ -783,14 +791,13 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 			if (set->multiB) {
 
+				event = JJ1PE_FLOAT;
 				eventX = gridX;
 				eventY = gridY;
-				event = LPE_FLOAT;
+				targetY = TTOF(gridY);
 
 				if (dy > set->multiA * -F20)
 					dy -= set->multiA * 320 * msps;
-
-				jumpY = y - (8 * F16);
 
 			} else if (set->magnitude < 0) {
 
@@ -843,10 +850,10 @@ void JJ1LevelPlayer::send (unsigned char *buffer) {
 	buffer[30] = (jumpHeight >> 16) & 255;
 	buffer[31] = (jumpHeight >> 8) & 255;
 	buffer[32] = jumpHeight & 255;
-	buffer[33] = jumpY >> 24;
-	buffer[34] = (jumpY >> 16) & 255;
-	buffer[35] = (jumpY >> 8) & 255;
-	buffer[36] = jumpY & 255;
+	buffer[33] = targetY >> 24;
+	buffer[34] = (targetY >> 16) & 255;
+	buffer[35] = (targetY >> 8) & 255;
+	buffer[36] = targetY & 255;
 	buffer[37] = x >> 24;
 	buffer[38] = (x >> 16) & 255;
 	buffer[39] = (x >> 8) & 255;
@@ -900,7 +907,7 @@ void JJ1LevelPlayer::receive (unsigned char *buffer) {
 			floating = buffer[26];
 			facing = buffer[27];
 			jumpHeight = (buffer[29] << 24) + (buffer[30] << 16) + (buffer[31] << 8) + buffer[32];
-			jumpY = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];
+			targetY = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];
 			x = (buffer[37] << 24) + (buffer[38] << 16) + (buffer[39] << 8) + buffer[40];
 			y = (buffer[41] << 24) + (buffer[42] << 16) + (buffer[43] << 8) + buffer[44];
 
