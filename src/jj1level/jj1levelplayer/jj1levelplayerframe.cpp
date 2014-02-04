@@ -114,7 +114,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		dx = 0;
 		udx = 0;
 
-		if (floating) dy = 0;
+		if (flying) dy = 0;
 		else {
 
 			if (dy < 0) dy += PYA_GRAVITY * msps;
@@ -218,7 +218,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		((dx < 0) && level->checkMaskDown(x + PXO_MR, y + F8));
 
 
-	if (floating) {
+	if (flying) {
 
 		if (player->pcontrols[C_UP]) {
 
@@ -320,27 +320,36 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			playSound(S_JUMPA);
 
+		} else if (((event == JJ1PE_NONE) || (event == JJ1PE_PLATFORM)) &&
+			!player->pcontrols[C_JUMP]) {
+
+			// Stop jumping
+
+			targetY = TTOF(LH);
+
 		}
 
-		// Stop jumping
-		if (!player->pcontrols[C_JUMP] && ((event == JJ1PE_NONE) || (event == JJ1PE_PLATFORM)))
-			targetY = TTOF(LH);
+		if ((event == JJ1PE_FLOAT) &&
+			player->pcontrols[C_DOWN]) {
 
-		if (player->pcontrols[C_DOWN] && (event == JJ1PE_FLOAT)) {
-
-			targetY = TTOF(LH);
-			event = JJ1PE_NONE;
+			// Prevent floating
 
 			dy = PYS_FALL;
 
-		}
+		} else if (y >= targetY) {
 
-		if (y >= targetY) {
+			if ((event == JJ1PE_FLOAT) && (dy > PYS_JUMP)) {
 
-			dy = (targetY - y - F64) * 4;
+					dy -= (F1 + FH) * msps;
+
+			} else {
+
+				dy = (targetY - y - F64) * 4;
+
+			}
 
 			// Spring/float up speed limit
-			if ((event == JJ1PE_SPRING) || (event == JJ1PE_FLOAT) || (event == JJ1PE_REPELUP)) {
+			if ((event == JJ1PE_SPRING) || (event == JJ1PE_REPELUP)) {
 
 				speed = level->getEvent(eventX, eventY)->multiA * -F20;
 
@@ -353,7 +362,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 			// Avoid jumping too fast, unless caused by an event
 			if ((event == JJ1PE_NONE) && (dy < PYS_JUMP)) dy = PYS_JUMP;
 
-		} else if (!platform) {
+		} else if (event != JJ1PE_PLATFORM) {
 
 			// Fall under gravity
 			if (dy < 0) dy += PYA_GRAVITY * msps;
@@ -544,7 +553,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 		}
 
-		if (!floating) {
+		if (!flying) {
 
 			if (checkMaskDown(0)) {
 
@@ -687,7 +696,7 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 	else if (y + PYO_MID > level->getWaterLevel())
 		animType = facing? PA_RSWIM: PA_LSWIM;
 
-	else if (floating) animType = facing? PA_RBOARD: PA_LBOARD;
+	else if (flying) animType = facing? PA_RBOARD: PA_LBOARD;
 
 	else if (dy < 0) {
 
@@ -852,6 +861,9 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		FTOI(drawY + PYO_TOP),
 		FTOI(PXO_MR - PXO_ML),
 		FTOI(-PYO_TOP), 88);*/
+
+	// Uncomment the following to show the tile containing the player's base
+	//drawRect(FTOI(TTOF(FTOT(x + PXO_MID)) - viewX), FTOI(TTOF(FTOT(y)) - viewY), 32, 32, 48);
 
 	// Uncomment the following to show the player's event tile
 	// if (event != JJ1PE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);

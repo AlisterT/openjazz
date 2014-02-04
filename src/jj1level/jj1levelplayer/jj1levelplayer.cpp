@@ -155,7 +155,7 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 
 	event = JJ1PE_NONE;
 	energy = 4;
-	floating = false;
+	flying = false;
 	facing = true;
 	udx = 0;
 	animType = PA_RSTAND;
@@ -620,9 +620,9 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
 
 		case 35: // Airboard, etc.
 
-			if (floating && setup.leaveUnneeded) return false;
+			if (flying && setup.leaveUnneeded) return false;
 
-			floating = true;
+			flying = true;
 
 			break;
 
@@ -775,7 +775,7 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 			event = JJ1PE_SPRING;
 			eventX = gridX;
 			eventY = gridY;
-			targetY = y + (set->magnitude * (F20 + F1));
+			targetY = TTOF(gridY) + (set->magnitude * ITOF(21));
 
 			level->playSound(set->sound);
 
@@ -794,10 +794,7 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 				event = JJ1PE_FLOAT;
 				eventX = gridX;
 				eventY = gridY;
-				targetY = TTOF(gridY);
-
-				if (dy > set->multiA * -F20)
-					dy -= set->multiA * 320 * msps;
+				targetY = TTOF(gridY) - (set->multiA * ITOF(17));
 
 			} else if (set->magnitude < 0) {
 
@@ -815,7 +812,7 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 		case 38: // Airboard, etc. off
 
-			floating = false;
+			flying = false;
 
 			break;
 
@@ -844,7 +841,7 @@ void JJ1LevelPlayer::send (unsigned char *buffer) {
 	buffer[9] = countBirds();
 	buffer[23] = energy;
 	buffer[25] = shield;
-	buffer[26] = floating;
+	buffer[26] = flying;
 	buffer[27] = getFacing();
 	buffer[29] = jumpHeight >> 24;
 	buffer[30] = (jumpHeight >> 16) & 255;
@@ -904,7 +901,7 @@ void JJ1LevelPlayer::receive (unsigned char *buffer) {
 
 			energy = buffer[23];
 			shield = buffer[25];
-			floating = buffer[26];
+			flying = buffer[26];
 			facing = buffer[27];
 			jumpHeight = (buffer[29] << 24) + (buffer[30] << 16) + (buffer[31] << 8) + buffer[32];
 			targetY = (buffer[33] << 24) + (buffer[34] << 16) + (buffer[35] << 8) + buffer[36];

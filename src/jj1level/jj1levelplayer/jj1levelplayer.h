@@ -138,7 +138,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		Anim*             anims[JJ1PANIMS]; ///< Animations
 		int               energy; ///< 0 = dead, 4 = maximum
 		int               shield; ///< 0 = none, 1 = yellow, 2 = 1 orange, 3 = 2 orange, 4 = 3 orange, 5 = 4 orange
-		bool              floating; ///< false = normal, true = boarding/bird/etc.
+		bool              flying; ///< false = normal, true = boarding/bird/etc.
 		bool              facing; ///< false = left, true = right
 		fixed             udx; ///< Unobstructed horizontal speed
 		unsigned char     animType; ///< Current animation
