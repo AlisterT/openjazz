@@ -454,6 +454,14 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
 
+	if (globalTicks - prevTicks < T_ACTIVE_FRAME) {
+
+		// Limit framerate
+		SDL_Delay(T_ACTIVE_FRAME + prevTicks - globalTicks);
+		globalTicks = SDL_GetTicks();
+
+	}
+
 	// Show what has been drawn
 	video.flip(globalTicks - prevTicks, paletteEffects);
 

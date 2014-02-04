@@ -138,8 +138,9 @@
 #define JOYSTICKAPOS 0x300
 
 // Time intervals
-#define T_FRAME 20
-#define T_STEP  16
+#define T_FRAME        20
+#define T_ACTIVE_FRAME 4
+#define T_STEP         16
 
 
 // Macros
