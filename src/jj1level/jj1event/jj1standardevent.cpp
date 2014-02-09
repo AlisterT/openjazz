@@ -51,7 +51,11 @@
  * @param gX X-coordinate
  * @param gY Y-coordinate
  */
-JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
+JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsigned char gY, fixed startX, fixed startY) : JJ1Event(gX, gY) {
+
+	set = event;
+	x = startX;
+	y = startY;
 
 	node = 0;
 	onlyLAnimOffset = false;
@@ -82,6 +86,7 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 		case 40: // Monochrome
 		case 57: // Bubbles
 
+			animType = E_LEFTANIM;
 			setAnimType(E_NOANIM);
 
 			break;
@@ -94,6 +99,8 @@ JJ1StandardEvent::JJ1StandardEvent (unsigned char gX, unsigned char gY) : JJ1Eve
 			break;
 
 		default:
+
+			setAnimType(E_LEFTANIM);
 
 			break;
 
@@ -927,12 +934,15 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 		if ((animType & ~1) == E_LSHOOTANIM) {
 
-			if ((set->bullet < 32) &&
-				(level->getBullet(set->bullet)[B_SPRITE | (animType & 1)] != 0))
-				level->bullets = new JJ1Bullet(
+			if (set->bullet < 32)
+				level->createBullet(NULL,
+					gridX,
+					gridY,
 					x + anim->getShootX(),
 					y + anim->getShootY() - F4,
-					set->bullet, (animType & 1)? true: false, ticks);
+					set->bullet,
+					(animType & 1)? true: false,
+					ticks);
 
 			setAnimType(E_LEFTANIM | (animType & 1));
 
@@ -981,7 +991,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				levelPlayer->overlap(x + F2, y + F2 + offset - height, width - F4, height - F4)) {
 
 				// If the player picks up the event, destroy it
-				if (levelPlayer->touchEvent(gridX, gridY, ticks, msps)) {
+				if (levelPlayer->touchEvent(set, gridX, gridY, ticks, msps)) {
 
 					if (level->getEventHits(gridX, gridY) == 255) {
 

@@ -166,8 +166,9 @@ class JJ1Level : public Level {
 	private:
 		SDL_Surface*  tileSet; ///< Tile images
 		SDL_Surface*  panel; ///< HUD background image
-		SDL_Surface*  panelAmmo[5]; ///< HUD ammo type images
-		JJ1Event*     events; ///< JJ1Events
+		SDL_Surface*  panelAmmo[6]; ///< HUD ammo type images
+		JJ1Event*     events; ///< Active events
+		JJ1Bullet*    bullets; ///< Active bullets
 		char*         musicFile; ///< Music file name
 		char*         sceneFile; ///< File name of cutscene to play when level has been completed
 		Sprite*       spriteSet; ///< Sprites
@@ -191,6 +192,8 @@ class JJ1Level : public Level {
 		fixed         waterLevelTarget; ///< Future height of water
 		fixed         waterLevelSpeed; ///< Rate of water level change
 		fixed         energyBar; ///< HUD energy bar fullness
+		int           ammoType; ///< HUD ammo type
+		fixed         ammoOffset; ///< HUD ammo offset
 
 		void deletePanel  ();
 		int  loadPanel    ();
@@ -209,7 +212,6 @@ class JJ1Level : public Level {
 		void draw ();
 
 	public:
-		JJ1Bullet*   bullets; ///< Active bullets
 		JJ1EventPath path[PATHS]; ///< Pre-defined event movement paths
 
 		JJ1Level          (Game* owner, char* fileName, bool checkpoint, bool multi);
@@ -228,11 +230,11 @@ class JJ1Level : public Level {
 		void          clearEvent    (unsigned char gridX, unsigned char gridY);
 		int           hitEvent      (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time);
 		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
-		signed char*  getBullet     (unsigned char bullet);
 		Sprite*       getSprite     (unsigned char sprite);
 		Anim*         getAnim       (unsigned char anim);
 		Anim*         getMiscAnim   (unsigned char anim);
 		Anim*         getPlayerAnim (unsigned char anim);
+		void          createBullet  (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time);
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          playSound     (int sound);

@@ -97,6 +97,7 @@ void Player::init (Game* owner, char *playerName, unsigned char *playerCols, uns
 	ammo[1] = 0;
 	ammo[2] = 0;
 	ammo[3] = 0;
+	ammo[4] = 0;
 	fireSpeed = 0;
 	flockSize = 0;
 	team = newTeam;

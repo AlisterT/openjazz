@@ -107,6 +107,7 @@ void JJ1Level::deletePanel () {
 	SDL_FreeSurface(panelAmmo[2]);
 	SDL_FreeSurface(panelAmmo[3]);
 	SDL_FreeSurface(panelAmmo[4]);
+	SDL_FreeSurface(panelAmmo[5]);
 
 	return;
 
@@ -423,7 +424,7 @@ int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1L
 
 		// Notify the player that shot the bullet
 		// If this returns false, ignore the hit
-		if (!source->takeEvent(gridX, gridY, ticks)) {
+		if (!source->takeEvent(eventSet + ge->event, gridX, gridY, ticks)) {
 
 			return hitsToKill - ge->hits;
 
@@ -468,20 +469,6 @@ void JJ1Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned 
 	grid[gridY][gridX].time = time;
 
 	return;
-
-}
-
-
-/**
- * Get the bullet data for the given bullet type.
- *
- * @param bullet JJ1Bullet type
- *
- * @return JJ1Bullet data
- */
-signed char* JJ1Level::getBullet (unsigned char bullet) {
-
-	return bulletSet[bullet];
 
 }
 
@@ -578,6 +565,65 @@ void JJ1Level::setWaterLevel (unsigned char gridY) {
 fixed JJ1Level::getWaterLevel () {
 
 	return waterLevel;
+
+}
+
+
+/**
+ * Create new bullet(s) (or event(s), if applicable)
+ *
+ * @param sourcePlayer The player that fired the bullet (if any)
+ * @param gridX The grid x-coordinate of the event that fired the bullet (if any)
+ * @param gridY The grid y-coordinate of the event that fired the bullet (if any)
+ * @param xStart The x-coordinate of the bullet
+ * @param yStart The y-coordinate of the bullet
+ * @param bullet Type
+ * @param lower Indicates if this the second of two bullets to be created
+ * @param facing The direction of the bullet
+ * @param ticks Time
+ */
+void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time) {
+
+	signed char* set;
+	int direction;
+
+	set = bulletSet[bullet];
+
+	direction = facing? 1: 0;
+
+	if (set[B_GRAVITY | direction] == 4) {
+
+		events = new JJ1StandardEvent(eventSet + set[B_SPRITE | direction], gridX, gridY, startX, startY + F32);
+
+	} else if (set[B_SPRITE | direction] != 0) {
+
+		// Create new bullet
+		level->bullets = new JJ1Bullet(level->bullets,
+			sourcePlayer,
+			startX,
+			startY,
+			set,
+			direction,
+			time);
+
+		if (set[B_XSPEED | direction | 2] != 0) {
+
+			// Create the other bullet
+			level->bullets = new JJ1Bullet(level->bullets,
+				sourcePlayer,
+				startX,
+				startY,
+				set,
+				direction | 2,
+				time);
+
+		}
+
+		level->playSound(set[B_STARTSOUND]);
+
+	}
+
+	return;
 
 }
 

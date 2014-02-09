@@ -48,6 +48,8 @@
  */
 Guardian::Guardian(unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 
+	setAnimType(E_LEFTANIM);
+
 	stage = 0;
 
 	return;
@@ -299,12 +301,15 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 				(ticks > level->getEventTime(gridX, gridY)) &&
 				shoot) {
 
-			if ((set->bullet < 32) &&
-					(level->getBullet(set->bullet)[B_SPRITE] != 0))
-				level->bullets = new JJ1Bullet(
-						x + anim->getAccessoryShootX(),
-						y + anim->getAccessoryShootY(),
-						set->bullet, (animType != E_LEFTANIM), ticks);
+			if (set->bullet < 32)
+				level->createBullet(NULL,
+					gridX,
+					gridY,
+					x + anim->getAccessoryShootX(),
+					y + anim->getAccessoryShootY(),
+					set->bullet,
+					(animType != E_LEFTANIM),
+					ticks);
 
 			shoot = false;
 

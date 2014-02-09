@@ -464,11 +464,7 @@ void JJ1LevelPlayer::setPosition (fixed newX, fixed newY) {
  *
  * @return Whether or not the event should be destroyed.
  */
-bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks) {
-
-	JJ1EventType* set;
-
-	set = level->getEvent(gridX, gridY);
+bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
 	switch (set->modifier) {
 
@@ -593,7 +589,7 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
 
 		case 30: // TNT
 
-			player->addAmmo(3, 1);
+			player->addAmmo(4, 1);
 
 			break;
 
@@ -645,6 +641,18 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
 
 			break;
 
+		case 39: // Ammo
+
+			player->addAmmo(3, 15);
+
+			break;
+
+		case 40: // Ammo
+
+			player->addAmmo(3, 2);
+
+			break;
+
 		default:
 
 			return false;
@@ -674,11 +682,7 @@ bool JJ1LevelPlayer::takeEvent (unsigned char gridX, unsigned char gridY, unsign
  *
  * @return Whether or not the event should be destroyed.
  */
-bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
-
-	JJ1EventType* set;
-
-	set = level->getEvent(gridX, gridY);
+bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
 
 	if ((set->movement == 37) || (set->movement == 38)) {
 
@@ -818,7 +822,7 @@ bool JJ1LevelPlayer::touchEvent (unsigned char gridX, unsigned char gridY, unsig
 
 		default:
 
-			if (!set->strength) return takeEvent(gridX, gridY, ticks);
+			if (!set->strength) return takeEvent(set, gridX, gridY, ticks);
 
 			break;
 

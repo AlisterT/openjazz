@@ -275,7 +275,14 @@ JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
 			// If there is a target in the vicinity, generate bullets
 			if (target) {
 
-				level->bullets = new JJ1Bullet(this, false, ticks);
+				level->createBullet(player,
+					0,
+					0,
+					x + (player->getFacing()? PXO_R: PXO_L),
+					y,
+					30,
+					player->getFacing(),
+					ticks);
 
 				fireTime = ticks + T_BIRD_FIRE;
 

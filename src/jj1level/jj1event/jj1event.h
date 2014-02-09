@@ -115,7 +115,7 @@ class JJ1StandardEvent : public JJ1Event {
 		void move (unsigned int ticks, int msps);
 
 	public:
-		JJ1StandardEvent (unsigned char gX, unsigned char gY);
+		JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsigned char gY, fixed startX, fixed startY);
 
 		JJ1Event* step (unsigned int ticks, int msps);
 		void   draw (unsigned int ticks, int change);

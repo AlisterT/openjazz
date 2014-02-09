@@ -45,6 +45,8 @@ JJ1Bridge::JJ1Bridge (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 
 	y = TTOF(gY) + ITOF(set->multiB);
 
+	setAnimType(E_LEFTANIM);
+
 	// Bridges should ignore the default yOffsets
 	noAnimOffset = true;
 

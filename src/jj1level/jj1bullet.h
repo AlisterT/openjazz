@@ -66,16 +66,14 @@ class JJ1Bullet : public Movable {
 		JJ1Bullet*      next; ///< The next bullet
 		JJ1LevelPlayer* source; ///< Source player. If NULL, was fired by an event
 		Sprite*         sprite; ///< Sprite
-		int             type; ///< -1 is TNT, otherwise indexes the bullet set
+		signed char*    set; ///< Bullet type properties
 		int             direction; ///< 0: Left, 1: Right, 2: L (lower), 3: R (lower)
 		unsigned int    time; ///< Time at which the bullet will self-destruct
 
 		JJ1Bullet* remove ();
 
 	public:
-		JJ1Bullet  (JJ1LevelPlayer* sourcePlayer, bool lower, unsigned int ticks);
-		JJ1Bullet  (JJ1Bird* sourceBird, bool lower, unsigned int ticks);
-		JJ1Bullet  (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks);
+		JJ1Bullet  (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed startX, fixed startY, signed char *bullet, int newDirection, unsigned int ticks);
 		~JJ1Bullet ();
 
 		JJ1LevelPlayer* getSource ();

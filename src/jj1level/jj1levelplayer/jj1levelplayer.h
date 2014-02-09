@@ -185,8 +185,8 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1PlayerReaction reacted     (unsigned int ticks);
 		void              setPlatform (unsigned char gridX, unsigned char gridY);
 		void              setPosition (fixed newX, fixed newY);
-		bool              takeEvent   (unsigned char gridX, unsigned char gridY, unsigned int ticks);
-		bool              touchEvent  (unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
+		bool              takeEvent   (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
+		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
 
 		void           send        (unsigned char* buffer);
 		void           receive     (unsigned char* buffer);

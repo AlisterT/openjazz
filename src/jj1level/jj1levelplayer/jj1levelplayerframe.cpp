@@ -402,13 +402,47 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 	// Handle firing
 	if (player->pcontrols[C_FIRE]) {
 
-		if ((ticks > fireTime) && (level->getBullet(player->ammoType + 1)[B_SPRITE] != 0)) {
+		if (ticks > fireTime) {
 
-			// Make sure bullet position is taken from correct animation
-			if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
+			if (player->ammoType == 4) {
 
-			// Create new bullet
-			level->bullets = new JJ1Bullet(this, false, ticks);
+				JJ1Event* event;
+
+				// TNT
+
+				event = level->getEvents();
+
+				while (event) {
+
+					// If the event is within range, hit it
+					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100)) {
+
+						event->hit(this, 2, ticks);
+
+					}
+
+					event = event->getNext();
+
+				}
+
+				// Red flash
+				level->flash(255, 0, 0, T_TNT);
+
+			} else {
+
+				// Make sure bullet position is taken from correct animation
+				if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
+
+				level->createBullet(this,
+					0,
+					0,
+					x + anims[animType]->getShootX() + PXO_MID - F4,
+					y + anims[animType]->getShootY() - F4,
+					player->getAmmo(false) + 1,
+					facing,
+					ticks);
+
+			}
 
 			// Set when the next bullet can be fired
 			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
@@ -419,7 +453,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			/* If the current ammo type has been exhausted or TNT has been used,
 			use the previous non-exhausted ammo type */
-			while (((player->ammoType > -1) && !player->ammo[player->ammoType]) || (player->ammoType == 3)) player->ammoType--;
+			while (((player->ammoType > -1) && !player->ammo[player->ammoType]) || (player->ammoType == 4)) player->ammoType--;
 
 		}
 
@@ -431,11 +465,11 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (player == localPlayer) controls.release(C_CHANGE);
 
-		player->ammoType = ((player->ammoType + 2) % 5) - 1;
+		player->ammoType = ((player->ammoType + 2) % 6) - 1;
 
 		// If there is no ammo of this type, go to the next type that has ammo
 		while ((player->ammoType > -1) && !player->ammo[player->ammoType])
-			player->ammoType = ((player->ammoType + 2) % 5) - 1;
+			player->ammoType = ((player->ammoType + 2) % 6) - 1;
 
 	}
 

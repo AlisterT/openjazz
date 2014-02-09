@@ -66,7 +66,7 @@ JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 	flashTime = 0;
 
 	animType = E_NOANIM;
-	setAnimType(E_LEFTANIM);
+	anim = NULL;
 	noAnimOffset = false;
 
 	return;
@@ -297,9 +297,6 @@ JJ1EventType* JJ1Event::prepareStep (unsigned int ticks, int msps) {
 
 	// Process the next event
 	if (next) next = next->step(ticks, msps);
-
-	// Get the event properties
-	set = level->getEvent(gridX, gridY);
 
 	// If the event has been removed from the grid, destroy it
 	if (!set) return NULL;

@@ -61,7 +61,7 @@ int JJ1Level::loadPanel () {
 	File* file;
 	unsigned char* pixels;
 	unsigned char* sorted;
-	int x, y;
+	int type, x, y;
 
 
 	try {
@@ -85,56 +85,20 @@ int JJ1Level::loadPanel () {
 
 	// De-scramble the panel's ammo graphics
 
-	sorted = new unsigned char[64 * 27];
+	sorted = new unsigned char[64 * 26];
 
-	for (y = 0; y < 27; y++) {
+	for (type = 0; type < 6; type++) {
 
-		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
+		for (y = 0; y < 26; y++) {
 
-	}
+			for (x = 0; x < 64; x++)
+				sorted[(y * 64) + x] = pixels[(type * 64 * 32) + (y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
 
-	panelAmmo[0] = createSurface(sorted, 64, 27);
+		}
 
-
-	for (y = 0; y < 27; y++) {
-
-		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (61 * 320)];
+		panelAmmo[type] = createSurface(sorted, 64, 26);
 
 	}
-
-	panelAmmo[1] = createSurface(sorted, 64, 27);
-
-
-	for (y = 0; y < 27; y++) {
-
-		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (68 * 320)];
-
-	}
-
-	panelAmmo[2] = createSurface(sorted, 64, 27);
-
-
-	for (y = 0; y < 27; y++) {
-
-		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (74 * 320)];
-
-	}
-
-	panelAmmo[3] = createSurface(sorted, 64, 27);
-
-
-	for (y = 0; y < 27; y++) {
-
-		for (x = 0; x < 64; x++)
-			sorted[(y * 64) + x] = pixels[(y * 64) + (x >> 2) + ((x & 3) << 4) + (86 * 320)];
-
-	}
-
-	panelAmmo[4] = createSurface(sorted, 64, 27);
 
 	delete[] sorted;
 
@@ -1087,6 +1051,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	bullets = NULL;
 
 	energyBar = 0;
+	ammoType = 0;
+	ammoOffset = -1;
 
 	return E_NONE;
 

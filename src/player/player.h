@@ -93,8 +93,8 @@ class Player {
 		char*           name; ///< Name
 		bool            pcontrols[PCONTROLS]; ///< Control status
 		unsigned char   cols[PCOLOURS]; ///< Character colours
-		int             ammo[4]; ///< Amount of ammo
-		int             ammoType; ///< Ammo type. -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer 3 = TNT
+		int             ammo[5]; ///< Amount of ammo
+		int             ammoType; ///< Ammo type. -1 = blaster, 0 = toaster, 1 = missiles, 2 = bouncer, 3 = unknown, 4 = TNT
 		int             score; ///< Total score
 		int             lives; ///< Remaining lives
 		int             fireSpeed; ///< Rapid-fire rate

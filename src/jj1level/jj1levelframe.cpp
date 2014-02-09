@@ -110,7 +110,7 @@ int JJ1Level::step () {
 
 						default:
 
-							events = new JJ1StandardEvent(x, y);
+							events = new JJ1StandardEvent(eventSet + grid[y][x].event, x, y, TTOF(x), TTOF(y + 1));
 
 							break;
 
@@ -160,6 +160,30 @@ int JJ1Level::step () {
 		}
 
 	}
+
+
+	// Handle change in ammo selection
+
+	x = localPlayer->getAmmo(false) + 1;
+
+	if (x != ammoType) {
+
+		// Change the ammo type display on the panel
+		ammoType = x;
+		ammoOffset = ITOF(26);
+
+	}
+
+	if (ammoOffset > 0) {
+
+		// Descending
+		ammoOffset -= 60 * msps;
+
+		// Avoid an offset of 0, which prevents changes
+		if (ammoOffset == 0) ammoOffset = -1;
+
+	}
+
 
 	// Handle change in water level
 	if (waterLevel < waterLevelTarget) waterLevelSpeed += 100 * msps;
@@ -378,10 +402,24 @@ void JJ1Level::draw () {
 
 	SDL_SetClipRect(canvas, NULL);
 
-	// Change the ammo type display on the panel
-	dst.x = 250;
-	dst.y = 2;
-	SDL_BlitSurface(panelAmmo[localPlayer->getAmmo(false) + 1], NULL, panel, &dst);
+	if (ammoOffset != 0) {
+
+		if (ammoOffset < 0) {
+
+			// Finished descending
+			ammoOffset = 0;
+
+		}
+
+		src.x = 0;
+		src.y = FTOI(ammoOffset);
+		src.w = 64;
+		src.h = 26 - src.y;
+		dst.x = 248;
+		dst.y = 3;
+		SDL_BlitSurface(panelAmmo[ammoType], &src, panel, &dst);
+
+	}
 
 	dst.x = 0;
 	dst.y = canvasH - 33;

@@ -37,135 +37,30 @@
 
 
 /**
- * Create a bullet fired by a player.
+ * Generic bullet constructor.
  *
- * @param sourcePlayer The player that fired the bullet
- * @param lower Indicates if this the second of two bullets to be created
- * @param ticks Time
- */
-JJ1Bullet::JJ1Bullet (JJ1LevelPlayer* sourcePlayer, bool lower, unsigned int ticks) {
-
-	Anim* anim;
-
-	// Properties based on the player
-
-	source = sourcePlayer;
-	type = source->player->getAmmo(false) + 1;
-
-	if (!lower && (level->getBullet(type)[B_XSPEED | 2] != 0)) {
-
-		// Create the other bullet
-		next = new JJ1Bullet(source, true, ticks);
-
-	} else {
-
-		next = level->bullets;
-
-	}
-
-	direction = source->getFacing()? 1: 0;
-	direction |= lower? 2: 0;
-
-	if (type == 4) {
-
-		// TNT
-		type = -1;
-
-		sprite = level->getSprite(130);
-		dx = 0;
-		dy = 0;
-		time = ticks + T_TNT;
-
-		// Red flash
-		level->flash(255, 0, 0, T_TNT);
-
-	} else {
-
-		sprite = level->getSprite(((unsigned char *)level->getBullet(type)) [B_SPRITE + direction]);
-		dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
-		dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
-		time = ticks + T_BULLET;
-
-		level->playSound(level->getBullet(type)[B_STARTSOUND]);
-
-	}
-
-	anim = source->getAnim();
-	x = source->getX() + anim->getShootX() + PXO_MID - F4;
-	y = source->getY() + anim->getShootY() - F4;
-
-	return;
-
-}
-
-
-/**
- * Create a bullet fired by an event.
- *
- * @param xStart The x-coordinate of the bullet
- * @param yStart The y-coordinate of the bullet
+ * @param nextBullet The next bullet
+ * @param sourcePlayer The player that fired the bullet (if any)
+ * @param startX The starting x-coordinate of the bullet
+ * @param startY The starting y-coordinate of the bullet
  * @param bullet Type
- * @param facing The direction of the bullet
+ * @param direction The direction of the bullet
  * @param ticks Time
  */
-JJ1Bullet::JJ1Bullet (fixed xStart, fixed yStart, unsigned char bullet, bool facing, unsigned int ticks) {
+JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed startX, fixed startY, signed char* bullet, int newDirection, unsigned int ticks) {
 
-	// Properties based on a given bullet type and starting position
+	next = nextBullet;
+	source = sourcePlayer;
+	set = bullet;
+	direction = newDirection;
 
-	next = level->bullets;
-	source = NULL;
-	type = bullet;
-	direction = facing? 1: 0;
-	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
+	x = startX;
+	y = startY;
+	dx = set[B_XSPEED + direction] * 500 * F1;
+	dy = set[B_YSPEED + direction] * 250 * F1;
 
-	x = xStart;
-	y = yStart;
-	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
-	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
+	sprite = level->getSprite(((unsigned char *)set)[B_SPRITE + direction]);
 	time = ticks + T_BULLET;
-
-	level->playSound(level->getBullet(type)[B_STARTSOUND]);
-
-	return;
-
-}
-
-
-/**
- * Create a bullet fired by a bird.
- *
- * @param sourceBird The bird that fired the bullet
- * @param lower Indicates if this the second of two bullets to be created
- * @param ticks Time
- */
-JJ1Bullet::JJ1Bullet (JJ1Bird* sourceBird, bool lower, unsigned int ticks) {
-
-	// Properties based on the bird and its player
-
-	source = sourceBird->getPlayer();
-
-	if (!lower) {
-
-		// Create the other bullet
-		next = new JJ1Bullet(sourceBird, true, ticks);
-
-	} else {
-
-		next = level->bullets;
-
-	}
-
-	type = 30;
-	direction = source->getFacing()? 1: 0;
-	direction |= lower? 2: 0;
-	sprite = level->getSprite(((unsigned char *)level->getBullet(type))[B_SPRITE + direction]);
-	x = sourceBird->getX() + (source->getFacing()? PXO_R: PXO_L);
-	y = sourceBird->getY();
-	dx = level->getBullet(type)[B_XSPEED + direction] * 500 * F1;
-	dy = level->getBullet(type)[B_YSPEED + direction] * 250 * F1;
-	time = ticks + T_BULLET;
-
-	level->playSound(level->getBullet(type)[B_STARTSOUND]);
 
 	return;
 
@@ -224,7 +119,6 @@ JJ1LevelPlayer* JJ1Bullet::getSource () {
  */
 JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 
-	signed char* set;
 	JJ1Event* event;
 	int count;
 
@@ -234,38 +128,8 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 
 	if (level->getStage() != LS_END) {
 
-
 		// If the time has expired, destroy the bullet
-		if (ticks > time) {
-
-			// If the bullet is TNT, hit all destructible events nearby twice
-			if (type == -1) {
-
-				event = level->getEvents();
-
-				while (event) {
-
-					// If the event is within range, hit it
-					if (event->overlap(x - F160, y - F100, 2 * F160, 2 * F100)) {
-
-						event->hit(source, 2, ticks);
-
-					}
-
-					event = event->getNext();
-
-				}
-
-			}
-
-			// Destroy the bullet
-			return remove();
-
-		}
-
-
-		// If this is TNT, don't need to do anything else
-		if (type == -1) return this;
+		if (ticks > time) return remove();
 
 
 		// Check if a player has been hit
@@ -308,8 +172,6 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 
 	}
 
-
-	set = level->getBullet(type);
 
 	// If the scenery has been hit and this is not a bouncer, destroy the bullet
 	if (level->checkMaskUp(x, y) && (set[B_BEHAVIOUR] != 4)) {
