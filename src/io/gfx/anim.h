@@ -70,7 +70,7 @@ class Anim {
 		fixed getAccessoryShootX    ();
 		fixed getAccessoryShootY    ();
 		fixed getOffset             ();
-		void  draw                  (fixed x, fixed y);
+		void  draw                  (fixed x, fixed y, int accessories = 7);
 		void  drawScaled            (fixed x, fixed y, fixed scale);
 		void  disableDefaultOffset  ();
 		void  setPalette            (SDL_Color *palette, int start, int amount);

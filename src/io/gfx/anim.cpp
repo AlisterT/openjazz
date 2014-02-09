@@ -242,7 +242,7 @@ fixed Anim::getOffset () {
  * @param x X-coordinate at which to draw
  * @param y Y-coordinate at which to draw
  */
-void Anim::draw (fixed x, fixed y) {
+void Anim::draw (fixed x, fixed y, int accessories) {
 
 	Anim* anim;
 
@@ -257,12 +257,12 @@ void Anim::draw (fixed x, fixed y) {
 				FTOI(y) + yOffsets[frame] - yOffset + 1);
 
 
-	if (accessory != 0) {
+	if (accessories && accessory) {
 
 		anim = level->getAnim(accessory);
 		anim->setFrame(frame, true);
 		anim->disableDefaultOffset();
-		anim->draw(x + ITOF(accessoryX << 2), y + ITOF(accessoryY - yOffset));
+		anim->draw(x + ITOF(accessoryX << 2), y + ITOF(accessoryY - yOffset), accessories - 1);
 
 	}
 
