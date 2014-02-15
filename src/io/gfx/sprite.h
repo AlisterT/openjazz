@@ -52,6 +52,8 @@ class Sprite {
 		void setPixels      (unsigned char* data, int width, int height, unsigned char key);
 		int  getWidth       ();
 		int  getHeight      ();
+		int  getXOffset     ();
+		int  getYOffset     ();
 		void draw           (int x, int y, bool includeOffsets = true);
 		void drawScaled     (int x, int y, fixed scale);
 		void setPalette     (SDL_Color* palette, int start, int amount);

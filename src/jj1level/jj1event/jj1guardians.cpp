@@ -71,35 +71,6 @@ DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) : Guardian(gX, g
 
 
 /**
- * Determine whether or not the guardian overlaps the given area.
- *
- * @param left The x-coordinate of the left of the area
- * @param top The y-coordinate of the top of the area
- * @param width The width of the area
- * @param height The height of the area
- *
- * @return Whether or not there is an overlap
- */
-bool DeckGuardian::overlap (fixed left, fixed top, fixed width, fixed height) {
-
-	if (stage == 0)
-		return (x + F8 - F64 >= left) && (x - F64 < left + width) &&
-			(y + F64 >= top) && (y + F32 < top + height);
-
-	if (stage == 1)
-		return (x + F32 >= left) && (x + F32 - F8 < left + width) &&
-			(y + F64 >= top) && (y + F32 < top + height);
-
-	if (stage == 2)
-		return (x + F64 - F16 >= left) && (x + F32 - F8 < left + width) &&
-			(y + F64 >= top) && (y + F32 < top + height);
-
-	return false;
-
-}
-
-
-/**
  * Episode B guardian iteration.
  *
  * @param ticks Time
@@ -180,11 +151,31 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 		anim = level->getAnim(29 + stage);
 
+		if (stage == 0) {
+
+			width = F8;
+			drawnX = x - F64;
+
+		} else if (stage == 1) {
+
+			width = F8;
+			drawnX = x + F32 - F8;
+
+		} else if (stage == 2) {
+
+			width = F64 + F32;
+			drawnX = x - F64;
+
+		}
+
+		drawnY = y + F32;
+		height = F32;
+
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F64);
-		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F64);
-		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F64);
+		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F32);
+		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F32);
+		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
 
 		if (ticks < flashTime) anim->restorePalette();
 
@@ -455,6 +446,9 @@ void MedGuardian::draw(unsigned int ticks, int change) {
 	stageAnim->setFrame(frame + gridX + gridY, true);
 
 	if (ticks < flashTime) stageAnim->flashPalette(0);
+
+	drawnX = x + anim->getXOffset();
+	drawnY = y + anim->getYOffset() + stageAnim->getOffset();
 
 	stageAnim->draw(xChange, yChange);
 

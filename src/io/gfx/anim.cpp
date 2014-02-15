@@ -44,7 +44,6 @@ Anim::Anim () {
 
 	frame = 0;
 	yOffset = 0;
-	ignoreDefaultYOffset = false;
 
 	return;
 
@@ -228,10 +227,31 @@ fixed Anim::getAccessoryShootY () {
  */
 fixed Anim::getOffset () {
 
-	if (!ignoreDefaultYOffset && yOffset == 0)
-		return ITOF(yOffset) + TTOF(1);
+	return -ITOF(yOffset);
 
-	return ITOF(yOffset);
+}
+
+
+/**
+ * Determine the horizontal offset of the current frame.
+ *
+ * @return The horizontal offset
+ */
+fixed Anim::getXOffset () {
+
+	return ITOF(sprites[frame]->getXOffset() + (xOffsets[frame] << 2) + 1);
+
+}
+
+
+/**
+ * Determine the vertical offset of the current frame.
+ *
+ * @return The vertical offset
+ */
+fixed Anim::getYOffset () {
+
+	return ITOF(sprites[frame]->getYOffset() + yOffsets[frame] + 1);
 
 }
 
@@ -246,23 +266,19 @@ void Anim::draw (fixed x, fixed y, int accessories) {
 
 	Anim* anim;
 
-	// In case yOffset is zero, and the ignore default flag is not set,
-	// most animations need a default offset of 1 tile (32 pixels).
-
-	if ((yOffset == 0) && !ignoreDefaultYOffset)
-		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
-				FTOI(y) + yOffsets[frame] - TTOI(1) + 2);
-	else
-		sprites[frame]->draw(FTOI(x) + (xOffsets[frame] << 2) + 1,
-				FTOI(y) + yOffsets[frame] - yOffset + 1);
+	sprites[frame]->draw(
+		FTOI(x) + (xOffsets[frame] << 2) + 1,
+		FTOI(y) + yOffsets[frame] - yOffset + 1);
 
 
 	if (accessories && accessory) {
 
 		anim = level->getAnim(accessory);
 		anim->setFrame(frame, true);
-		anim->disableDefaultOffset();
-		anim->draw(x + ITOF(accessoryX << 2), y + ITOF(accessoryY - yOffset), accessories - 1);
+		anim->draw(
+			x + ITOF(accessoryX << 2),
+			y + ITOF(accessoryY - yOffset) - anim->getOffset(),
+			accessories - 1);
 
 	}
 
@@ -283,18 +299,6 @@ void Anim::drawScaled (fixed x, fixed y, fixed scale) {
 
 	// Used to draw bonus level player, so no offset
 	sprites[frame]->drawScaled(FTOI(x), FTOI(y), scale);
-
-	return;
-
-}
-
-
-/**
- * Disable default vertical offset.
- */
-void Anim::disableDefaultOffset() {
-
-	ignoreDefaultYOffset = true;
 
 	return;
 

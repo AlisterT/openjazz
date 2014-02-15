@@ -130,6 +130,30 @@ int Sprite::getHeight() {
 
 
 /**
+ * Get the horizontal offset of the sprite.
+ *
+ * @return The horizontal offset
+ */
+int Sprite::getXOffset () {
+
+	return xOffset;
+
+}
+
+
+/**
+ * Get the vertical offset of the sprite.
+ *
+ * @return The vertical offset
+ */
+int Sprite::getYOffset () {
+
+	return yOffset;
+
+}
+
+
+/**
  * Set the sprite's palette, or a portion thereof.
  *
  * @param palette New palette

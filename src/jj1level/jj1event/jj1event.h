@@ -73,6 +73,7 @@ class JJ1Event : public Movable {
 		JJ1Event*     next; ///< Next event
 		JJ1EventType* set; ///< Type
 		Anim*         anim; ///< Current animation
+		fixed         drawnX, drawnY; ///< Current drawing co-ordinates
 		fixed         width, height; ///< Current dimensions
 		unsigned char gridX, gridY; ///< Grid position of the event
 		unsigned char animType; ///< Animation type (E_LEFTANIM, etc.)
@@ -96,7 +97,7 @@ class JJ1Event : public Movable {
 		bool           hit            (JJ1LevelPlayer *source, int hits, unsigned int ticks);
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
-		virtual bool   overlap        (fixed left, fixed top, fixed width, fixed height);
+		bool           overlap        (fixed left, fixed top, fixed width, fixed height);
 
 		virtual JJ1Event* step        (unsigned int ticks, int msps) = 0;
 		virtual void      draw        (unsigned int ticks, int change) = 0;

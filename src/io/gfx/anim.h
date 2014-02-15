@@ -44,7 +44,6 @@ class Anim {
 		Sprite**       sprites;   ///< Sprite images
 		signed char*   xOffsets;  ///< Horizontal offsets for each frame
 		signed char*   yOffsets;  ///< Vertical offsets for each frame
-		bool           ignoreDefaultYOffset;
 		signed char    shootX;     ///< Bullet generation x-coordinate
 		signed char    shootY;     ///< Bullet generation y-coordinate
 		signed char    accessoryX; ///< Accessory animation x-coordinate
@@ -70,9 +69,10 @@ class Anim {
 		fixed getAccessoryShootX    ();
 		fixed getAccessoryShootY    ();
 		fixed getOffset             ();
+		fixed getXOffset            ();
+		fixed getYOffset            ();
 		void  draw                  (fixed x, fixed y, int accessories = 7);
 		void  drawScaled            (fixed x, fixed y, fixed scale);
-		void  disableDefaultOffset  ();
 		void  setPalette            (SDL_Color *palette, int start, int amount);
 		void  flashPalette          (int index);
 		void  restorePalette        ();

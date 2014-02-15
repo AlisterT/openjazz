@@ -69,6 +69,11 @@ JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 	anim = NULL;
 	noAnimOffset = false;
 
+	drawnX = x;
+	drawnY = y;
+	width = F32;
+	height = F32;
+
 	return;
 
 }
@@ -200,18 +205,23 @@ bool JJ1Event::isFrom (unsigned char gX, unsigned char gY) {
  */
 void JJ1Event::calcDimensions () {
 
-	if (animType == E_NOANIM) height = F32;
-	else if ((set->anims[animType] & 0x7F) == 0) height = 0;
-	else height = ITOF(anim->getHeight());
+	if (animType == E_NOANIM) {
 
-	if (animType == E_NOANIM) width = F32;
-	else if ((set->anims[animType] & 0x7F) == 0) width = 0;
-	else {
+		width = F32;
+		height = F32;
+
+	} else {
 
 		width = ITOF(anim->getWidth());
+		height = ITOF(anim->getHeight());
 
 		// Blank sprites for e.g. invisible springs
-		if ((width == F1) && (height == F1)) width = F32;
+		if ((width == F1) && (height == F1)) {
+
+			width = F32;
+			height = F32;
+
+		}
 
 	}
 
@@ -232,14 +242,10 @@ void JJ1Event::calcDimensions () {
  */
 bool JJ1Event::overlap (fixed left, fixed top, fixed width, fixed height) {
 
-	fixed offset = 0;
-
-	if (anim && noAnimOffset) offset = anim->getOffset();
-
-	return (x + this->width >= left) &&
-		(x < left + width) &&
-		(y + offset >= top) &&
-		(y + offset - this->height < top + height);
+	return (drawnX + this->width >= left) &&
+		(drawnX < left + width) &&
+		(drawnY + this->height >= top) &&
+		(drawnY < top + height);
 
 }
 

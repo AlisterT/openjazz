@@ -84,6 +84,8 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 		case 37: // Sucker tubes
 		case 38: // Sucker tubes
 		case 40: // Monochrome
+		case 42: // Reflection
+		case 45: // Semitransparency
 		case 57: // Bubbles
 
 			animType = E_LEFTANIM;
@@ -966,21 +968,17 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 		// Check if the player is touching the event
 
-		fixed offset = 0;
-
-		if (anim && noAnimOffset) offset = anim->getOffset();
-
 		if (set->modifier == 6) {
 
 			if (width && height &&
-				levelPlayer->overlap(x, y + offset - height, width - F8, F8) &&
-				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + y - height) &&
-				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + y - height)) {
+				levelPlayer->overlap(drawnX, drawnY, width - F8, F8) &&
+				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + drawnY) &&
+				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + drawnY)) {
 
 				// Player is on a platform
 
 				levelPlayer->setPlatform(gridX, gridY);
-				levelPlayer->setPosition(levelPlayer->getX() + ((dx * msps) >> 10), F4 + y - height);
+				levelPlayer->setPosition(levelPlayer->getX() + ((dx * msps) >> 10), F4 + drawnY);
 
 			} else levelPlayer->clearEvent(gridX, gridY);
 
@@ -988,7 +986,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 			// Check if the player is touching the event
 			if (width && height &&
-				levelPlayer->overlap(x + F2, y + F2 + offset - height, width - F4, height - F4)) {
+				levelPlayer->overlap(drawnX + F2, drawnY + F2, width - F4, height - F4)) {
 
 				// If the player picks up the event, destroy it
 				if (levelPlayer->touchEvent(set, gridX, gridY, ticks, msps)) {
@@ -1036,7 +1034,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	if (next) next->draw(ticks, change);
 
 
-	// Uncomment the following to see the area of the event
+	// Uncomment the following to see the raw location
 	/*drawRect(FTOI(getDrawX(change)),
 		FTOI(getDrawY(change) - height), FTOI(width),
 		FTOI(height), 88);*/
@@ -1046,7 +1044,16 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	if (!set) return;
 
 	// Check if the event has anything to draw
-	if (animType == E_NOANIM) return;
+	if (animType == E_NOANIM) {
+
+		drawnX = x;
+		drawnY = y - F32;
+		width = F32;
+		height = F32;
+
+		return;
+
+	}
 
 
 	if ((animType & ~1) == E_LFINISHANIM) {
@@ -1070,26 +1077,6 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	fixed changeY = getDrawY(change);
 
 
-	// Correct the position without altering the animation
-	if (noAnimOffset) {
-
-		changeY += anim->getOffset();
-
-	}
-	else if (onlyLAnimOffset && animType == E_RIGHTANIM) {
-
-		changeY += anim->getOffset();
-		changeY -= level->getAnim(set->anims[E_LEFTANIM] & 0x7F)->getOffset();
-
-	}
-	else if (onlyRAnimOffset && animType == E_LEFTANIM) {
-
-		changeY += anim->getOffset();
-		changeY -= level->getAnim(set->anims[E_RIGHTANIM] & 0x7F)->getOffset();
-
-	}
-
-
 	// Draw the event
 
 	// Check if an explosive effect should be drawn
@@ -1111,14 +1098,52 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 		anim->draw(changeX + ITOF(val % 24) - yOffset, changeY + ITOF(val % 12) - xOffset);
 		anim->draw(changeX - ITOF(val % 48) + yOffset, changeY + ITOF(val % 24) - xOffset);
 
-	}
-	else {
+	} else {
 
 		// In case an event can be drawn normally
 
+		fixed offset;
+
 		if (ticks < flashTime) anim->flashPalette(0);
 
-		anim->draw(changeX, changeY);
+		// Determine the corect vertical offset
+		// Most animations need a default offset of 1 tile (32 pixels)
+
+		if ((anim->getWidth() == 1) && (anim->getHeight() == 1)) {
+
+			offset = -F32;
+
+		} else if (noAnimOffset) {
+
+			offset = 0;
+
+		} else {
+
+			if (onlyLAnimOffset && (animType == E_RIGHTANIM)) {
+
+				offset = level->getAnim(set->anims[E_LEFTANIM] & 0x7F)->getOffset();
+
+			} else if (onlyRAnimOffset && (animType == E_LEFTANIM)) {
+
+				offset = level->getAnim(set->anims[E_RIGHTANIM] & 0x7F)->getOffset();
+
+			} else {
+
+				offset = anim->getOffset();
+
+			}
+
+			if (offset == 0) offset = ITOF(1 - TTOI(1));
+
+		}
+
+		drawnX = x + anim->getXOffset();
+		drawnY = y + anim->getYOffset() + offset;
+
+		// Uncomment the following line to see the draw area
+		//drawRect(FTOI(changeX - x + drawnX), FTOI(changeY - y + drawnY), FTOI(width), FTOI(height), 88);
+
+		anim->draw(changeX, changeY + offset - anim->getOffset());
 
 	}
 

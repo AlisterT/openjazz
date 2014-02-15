@@ -154,7 +154,7 @@ void JJ1Bridge::draw (unsigned int ticks, int change) {
 	// Draw the bridge
 
 	bridgeLength = set->multiA * set->pieceSize * F4;
-	anchorY = getDrawY(change) - F10 + anim->getOffset();
+	anchorY = getDrawY(change) - F10 - anim->getOffset();
 
 	if (rightDipX >= leftDipX) {
 
