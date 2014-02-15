@@ -125,24 +125,18 @@ int JJ1Level::step () {
 	}
 
 
+	// Process bullets
+	if (bullets) bullets = bullets->step(ticks, msps);
+
 	// Determine the players' trajectories
 	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->control(ticks, msps);
 
-
 	// Process active events
-
 	if (events) events = events->step(ticks, msps);
-
-
-	// Process bullets
-
-	if (bullets) bullets = bullets->step(ticks, msps);
-
 
 	// Apply as much of those trajectories as possible, without going into the
 	// scenery
 	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->move(ticks, msps);
-
 
 
 	// Check if time has run out
@@ -198,6 +192,8 @@ int JJ1Level::step () {
 	for (x = 0; x < nPlayers; x++) {
 
 		if (players[x].getJJ1LevelPlayer()->reacted(ticks) == PR_KILLED) {
+
+			players[x].clearAmmo();
 
 			if (!multiplayer) return LOST;
 

@@ -98,6 +98,15 @@
 
 #define JJ1PANIMS   38 /* Number of player animations. May be higher. */
 
+// Miscellaneous animations
+#define MA_SPARKLE   0
+#define MA_DEVHEAD   1
+#define MA_EXPLOSION 2
+#define MA_LBOARD    4
+#define MA_RBOARD    5
+
+#define JJ1MANIMS    6
+
 // Black palette index
 #define LEVEL_BLACK 31
 
@@ -173,7 +182,7 @@ class JJ1Level : public Level {
 		char*         sceneFile; ///< File name of cutscene to play when level has been completed
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
-		char          miscAnims[4]; ///< Further animations
+		char          miscAnims[JJ1MANIMS]; ///< Further animations
 		char          playerAnims[JJ1PANIMS]; ///< Default player animations
 		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
 		JJ1EventType  eventSet[EVENTS]; ///< Event types

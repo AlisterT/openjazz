@@ -197,6 +197,7 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 			break;
 
 		case 6:
+		case 7:
 
 			node = (node + (msps << 5)) % ITOF(level->path[set->multiA].length);
 
@@ -210,14 +211,6 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 			dy = (dy << 10) / msps;
 
 			return;
-
-		case 7:
-
-			// Move back and forth horizontally with tail
-			if (animType == E_LEFTANIM) dx = -ES_SLOW;
-			else if (animType == E_RIGHTANIM) dx = ES_SLOW;
-
-			break;
 
 		case 8:
 
@@ -1104,7 +1097,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 		fixed offset;
 
-		if (ticks < flashTime) anim->flashPalette(0);
+		if ((ticks < flashTime) && ((ticks >> 4) & 3)) anim->flashPalette(0);
 
 		// Determine the corect vertical offset
 		// Most animations need a default offset of 1 tile (32 pixels)
@@ -1145,16 +1138,16 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 		anim->draw(changeX, changeY + offset - anim->getOffset());
 
+		if ((ticks < flashTime) && ((ticks >> 4) & 3)) anim->restorePalette();
+
 	}
 
-
-	if (ticks < flashTime) anim->restorePalette();
 
 
 	// If the event has been destroyed, draw an explosion
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
-		miscAnim = level->getMiscAnim(2);
+		miscAnim = level->getMiscAnim(MA_EXPLOSION);
 		miscAnim->setFrame((ticks - level->getEventTime(gridX, gridY)) >> 3, false);
 		miscAnim->draw(changeX, changeY);
 

@@ -347,7 +347,7 @@ void JJ1Event::drawEnergy (unsigned int ticks) {
 
 		// Devan head
 
-		miscAnim = level->getMiscAnim(1);
+		miscAnim = level->getMiscAnim(MA_DEVHEAD);
 		miscAnim->setFrame(0, true);
 
 		if (ticks < flashTime) miscAnim->flashPalette(0);

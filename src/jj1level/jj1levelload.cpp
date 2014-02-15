@@ -1037,6 +1037,12 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	skyOrb = file->loadChar(); /* A.k.a the sun, the moon, the brightest star,
 		that red planet with blue veins... */
 
+	file->seek(15, false);
+
+	// Board animations
+	miscAnims[MA_LBOARD] = file->loadChar();
+	miscAnims[MA_RBOARD] = file->loadChar();
+
 
 	// And that's us done!
 

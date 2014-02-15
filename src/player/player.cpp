@@ -138,6 +138,23 @@ void Player::deinit () {
 
 
 /**
+ * Discard all the player's ammo.
+ */
+void Player::clearAmmo () {
+
+	int type;
+
+	for (type = 0; type < 5; type++) ammo[type] = 0;
+
+	ammoType = -1;
+	fireSpeed = 0;
+
+	return;
+
+}
+
+
+/**
  * Reset the player's current level player.
  *
  * @param x The level player's new grid x-coordinate

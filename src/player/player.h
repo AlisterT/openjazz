@@ -111,6 +111,7 @@ class Player {
 
 		void            init              (Game* owner, char* playerName, unsigned char* cols, unsigned char newTeam);
 		void            deinit            ();
+		void            clearAmmo         ();
 		void            reset             (int x, int y);
 
 		void                 createLevelPlayer      (LevelType levelType, Anim** anims, Anim** flippedAnims, unsigned char x, unsigned char y);

@@ -903,6 +903,15 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	// if (event != JJ1PE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
 
 
+	if (flying) {
+
+		an = level->getMiscAnim(facing? MA_RBOARD: MA_LBOARD);
+
+		an->setFrame(ticks >> 4, true);
+		an->draw(drawX, drawY + F10);
+
+	}
+
 	if (reaction == PR_INVINCIBLE) {
 
 		// Show invincibility stars
@@ -910,7 +919,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		xOffset = fSin(ticks * 2) * 12;
 		yOffset = fCos(ticks * 2) * 12;
 
-		an = level->getMiscAnim(0);
+		an = level->getMiscAnim(MA_SPARKLE);
 
 		an->setFrame(frame, true);
 		an->draw(drawX + PXO_MID + xOffset, drawY + PYO_MID + yOffset);
