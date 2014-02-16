@@ -266,9 +266,9 @@ void JJ1Level::draw () {
 		// Show sun / moon / etc.
 		if (skyOrb) {
 
-			dst.x = (canvasW * 4) / 5;
+			dst.x = ((canvasW * 4) / 5) - (vX & 3);
 			dst.y = ((canvasH - 33) * 3) / 25;
-			src.y = TTOI(skyOrb);
+			src.y = TTOI(skyOrb + (vX & 3));
 			SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
 		}

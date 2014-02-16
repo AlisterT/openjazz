@@ -179,7 +179,7 @@ int Anim::getLength () {
  */
 fixed Anim::getShootX () {
 
-	return ITOF(shootX + (xOffsets[frame] << 2));
+	return ITOF(shootX + xOffsets[frame]) << 2;
 
 }
 
@@ -191,7 +191,7 @@ fixed Anim::getShootX () {
  */
 fixed Anim::getShootY () {
 
-	return ITOF(shootY + yOffsets[frame] - yOffset);
+	return ITOF(shootY + yOffsets[frame]);
 
 }
 
@@ -203,7 +203,7 @@ fixed Anim::getShootY () {
  */
 fixed Anim::getAccessoryShootX () {
 
-	return ITOF(shootX + (accessoryX << 2) + xOffsets[frame]);
+	return ITOF(shootX + accessoryX + xOffsets[frame]) << 2;
 
 }
 
@@ -215,7 +215,7 @@ fixed Anim::getAccessoryShootX () {
  */
 fixed Anim::getAccessoryShootY () {
 
-	return ITOF(shootY + accessoryY + yOffsets[frame] - yOffset);
+	return ITOF(shootY + accessoryY + yOffsets[frame]);
 
 }
 
@@ -267,8 +267,8 @@ void Anim::draw (fixed x, fixed y, int accessories) {
 	Anim* anim;
 
 	sprites[frame]->draw(
-		FTOI(x) + (xOffsets[frame] << 2) + 1,
-		FTOI(y) + yOffsets[frame] - yOffset + 1);
+		FTOI(x) + (xOffsets[frame] << 2),
+		FTOI(y) + yOffsets[frame] - yOffset);
 
 
 	if (accessories && accessory) {

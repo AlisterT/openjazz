@@ -429,14 +429,14 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			} else {
 
-				// Make sure bullet position is taken from correct animation
-				if (platform) animType = facing? PA_RSHOOT: PA_LSHOOT;
+				// Horizontal bullet position is taken from the shooting animation
+				animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 				level->createBullet(this,
 					0,
 					0,
-					x + anims[animType]->getShootX() + PXO_MID - F4,
-					y + anims[animType]->getShootY() - F4,
+					x + anims[animType]->getShootX(),
+					y - ITOF(lookTime? 1: 6),
 					player->getAmmo(false) + 1,
 					facing,
 					ticks);

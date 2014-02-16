@@ -280,7 +280,7 @@ JJ1Bird* JJ1Bird::step (unsigned int ticks) {
 					x + (player->getFacing()? PXO_R: PXO_L),
 					y,
 					30,
-					player->getFacing(),
+					!player->getFacing(),
 					ticks);
 
 				fireTime = ticks + T_BIRD_FIRE;

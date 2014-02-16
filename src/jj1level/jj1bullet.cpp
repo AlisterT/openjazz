@@ -60,6 +60,9 @@ JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed
 	dy = set[B_YSPEED + direction] * 250 * F1;
 
 	sprite = level->getSprite(((unsigned char *)set)[B_SPRITE + direction]);
+	x -= ITOF(sprite->getWidth()) >> 1;
+	y -= ITOF(sprite->getHeight()) >> 1;
+
 	time = ticks + T_BULLET;
 
 	return;

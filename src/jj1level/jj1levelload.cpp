@@ -928,20 +928,6 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		memcpy(bulletSet[count], buffer + (count * BLENGTH), BLENGTH);
 
-		// Make sure bullets go in the right direction
-
-		if (bulletSet[count][B_XSPEED] > 0)
-			bulletSet[count][B_XSPEED] = -bulletSet[count][B_XSPEED];
-
-		if (bulletSet[count][B_XSPEED | 1] < 0)
-			bulletSet[count][B_XSPEED | 1] = -bulletSet[count][B_XSPEED | 1];
-
-		if (bulletSet[count][B_XSPEED | 2] > 0)
-			bulletSet[count][B_XSPEED | 2] = -bulletSet[count][B_XSPEED | 2];
-
-		if (bulletSet[count][B_XSPEED | 3] < 0)
-			bulletSet[count][B_XSPEED | 3] = -bulletSet[count][B_XSPEED | 3];
-
 	}
 
 	delete[] buffer;
@@ -1032,10 +1018,13 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	else paletteEffects = new WhiteInPaletteEffect(T_START, paletteEffects);
 
 
-	file->seek(1, false);
+	// Check if a sun/star/distant planet, etc. is visible
+	skyOrb = file->loadChar();
 
-	skyOrb = file->loadChar(); /* A.k.a the sun, the moon, the brightest star,
-		that red planet with blue veins... */
+	// If so, find out which tile it uses
+	if (skyOrb) skyOrb = file->loadChar();
+	else file->loadChar();
+
 
 	file->seek(15, false);
 

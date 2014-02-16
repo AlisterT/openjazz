@@ -342,7 +342,7 @@ void JJ1StandardEvent::move (unsigned int ticks) {
 			// Rotate
 
 			length = set->pieceSize * set->pieces;
-			angle = set->magnitude * ticks / 13;
+			angle = (set->angle << 2) + (set->magnitude * ticks / 13);
 
 			dx = TTOF(gridX) + (fSin(angle) * length) - x;
 			dy = TTOF(gridY) + ((fCos(angle) + F1) * length) - y;
@@ -928,11 +928,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
 		if ((animType & ~1) == E_LSHOOTANIM) {
 
 			if (set->bullet < 32)
-				level->createBullet(NULL,
+				level->createBullet(
+					NULL,
 					gridX,
 					gridY,
-					x + anim->getShootX(),
-					y + anim->getShootY() - F4,
+					drawnX + anim->getShootX(),
+					drawnY + anim->getShootY(),
 					set->bullet,
 					(animType & 1)? true: false,
 					ticks);
