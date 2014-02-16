@@ -78,8 +78,6 @@ JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed
 	}
 
 	sprite = level->getSprite(((unsigned char *)set)[B_SPRITE + direction]);
-	x -= ITOF(sprite->getWidth()) >> 1;
-	y -= ITOF(sprite->getHeight()) >> 1;
 
 	time = ticks + T_BULLET;
 

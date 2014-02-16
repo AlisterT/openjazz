@@ -872,9 +872,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	// Thanks to Doubble Dutch for the water level bytes
 	file->seek(4, false);
-	waterLevelTarget = ITOF(file->loadShort());
+	waterLevelTarget = ITOF(file->loadShort() + 17);
 	waterLevel = waterLevelTarget - F8;
-	waterLevelSpeed = 0;
+	waterLevelSpeed = -80000;
 
 
 	// Thanks to Feline and the JCS94 team for the next bits:

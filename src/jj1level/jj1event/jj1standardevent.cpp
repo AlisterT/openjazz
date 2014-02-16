@@ -963,13 +963,13 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
 		if (set->modifier == 6) {
 
 			if (width && height &&
-				levelPlayer->overlap(drawnX, drawnY, width - F8, F8) &&
-				(levelPlayer->getY() <= F8 + (PYS_FALL >> 6) + drawnY) &&
+				levelPlayer->overlap(drawnX, drawnY - F4, width - F8, F8) &&
+				(levelPlayer->getY() <= F4 + (PYS_FALL >> 6) + drawnY) &&
 				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + drawnY)) {
 
 				// Player is on a platform
 
-				levelPlayer->setPlatform(gridX, gridY, (dx >> 6), F4 + drawnY);
+				levelPlayer->setPlatform(gridX, gridY, (dx >> 6), drawnY);
 
 			} else levelPlayer->clearEvent(gridX, gridY);
 
@@ -1128,13 +1128,13 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 		}
 
-		drawnX = x + anim->getXOffset();
-		drawnY = y + anim->getYOffset() + offset;
+		drawnX = x + anim->getXOffset() + F1;
+		drawnY = y + anim->getYOffset() + offset + F1;
 
 		// Uncomment the following line to see the draw area
 		//drawRect(FTOI(changeX - x + drawnX), FTOI(changeY - y + drawnY), FTOI(width), FTOI(height), 88);
 
-		anim->draw(changeX, changeY + offset - anim->getOffset());
+		anim->draw(changeX + F1, changeY + offset + F1 - anim->getOffset());
 
 		if ((ticks < flashTime) && ((ticks >> 4) & 3)) anim->restorePalette();
 

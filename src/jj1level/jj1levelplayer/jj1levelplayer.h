@@ -106,6 +106,7 @@ enum JJ1PlayerEvent {
 	JJ1PE_NONE, ///< No event
 	JJ1PE_SPRING, ///< Spring
 	JJ1PE_FLOAT, ///< Float up
+	JJ1PE_FLOATH, ///< Float horizontally
 	JJ1PE_REPELH, ///< Repel horizontally only
 	JJ1PE_REPELUP, ///< Repel upwards
 	JJ1PE_REPELDOWN, ///< Repel downwards

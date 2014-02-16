@@ -602,7 +602,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned
 
 		case 31: // Water level
 
-			level->setWaterLevel(gridY);
+			level->setWaterLevel(gridY + 1);
 
 			break;
 
@@ -793,7 +793,7 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 		case 31: // Water level
 
-			level->setWaterLevel(gridY);
+			level->setWaterLevel(gridY + 1);
 
 			break;
 
@@ -806,15 +806,11 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 				eventY = gridY;
 				targetY = TTOF(gridY) - (set->multiA * ITOF(17));
 
-			} else if (set->magnitude < 0) {
-
-				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 320), y + PYO_MID))
-					x += set->magnitude * 320;
-
 			} else {
 
-				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 320), y + PYO_MID))
-					x += set->magnitude * 320;
+				event = JJ1PE_FLOATH;
+				eventX = gridX;
+				eventY = gridY;
 
 			}
 

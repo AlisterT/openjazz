@@ -125,9 +125,10 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	}
 
-	if (event == JJ1PE_REPELH) {
+	if ((event == JJ1PE_FLOATH) || (event == JJ1PE_REPELH)) {
 
-		speed = level->getEvent(eventX, eventY)->magnitude * F40;
+		speed = level->getEvent(eventX, eventY)->magnitude *
+			((event == JJ1PE_FLOATH)? F10: F40);
 
 		if (speed < -PXS_WALK || speed > PXS_WALK) {
 
@@ -259,7 +260,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 		if (dy < -PXS_RUN) dy = -PXS_RUN;
 		else if (dy > PXS_RUN) dy = PXS_RUN;
 
-	} else if (y + PYO_MID > level->getWaterLevel()) {
+	} else if (y + PYO_MID > level->getWaterLevel() + F8) {
 
 		if (player->pcontrols[C_SWIM]) {
 
@@ -436,7 +437,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 					0,
 					0,
 					x + anims[animType]->getShootX(),
-					y - ITOF(lookTime? 1: 6),
+					y - ITOF(lookTime? 5: 10),
 					player->getAmmo(false) + 1,
 					facing,
 					ticks);
@@ -698,7 +699,9 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 
 		targetY = TTOF(LH);
 
-		if ((event != JJ1PE_PLATFORM) && (event != JJ1PE_REPELH)) event = JJ1PE_NONE;
+		if ((event != JJ1PE_PLATFORM) &&
+			(event != JJ1PE_FLOATH) &&
+			(event != JJ1PE_REPELH)) event = JJ1PE_NONE;
 
 	}
 
@@ -725,7 +728,7 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 	else if ((reaction == PR_HURT) && (reactionTime - ticks > PRT_HURT - PRT_HURTANIM))
 		animType = facing? PA_RHURT: PA_LHURT;
 
-	else if (y + PYO_MID > level->getWaterLevel())
+	else if (y + PYO_MID > level->getWaterLevel() + F8)
 		animType = facing? PA_RSWIM: PA_LSWIM;
 
 	else if (flying) animType = facing? PA_RBOARD: PA_LBOARD;

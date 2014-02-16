@@ -175,10 +175,10 @@ int JJ1Level::step () {
 
 
 	// Handle change in water level
-	if (waterLevel < waterLevelTarget) waterLevelSpeed += 1600;
-	else waterLevelSpeed -= 1600;
-	if (waterLevelSpeed > 40000) waterLevelSpeed = 40000;
-	if (waterLevelSpeed < -40000) waterLevelSpeed = -40000;
+	if (waterLevel < waterLevelTarget) waterLevelSpeed += 3200;
+	else waterLevelSpeed -= 3200;
+	if (waterLevelSpeed > 80000) waterLevelSpeed = 80000;
+	if (waterLevelSpeed < -80000) waterLevelSpeed = -80000;
 
 	waterLevel += waterLevelSpeed >> 6;
 

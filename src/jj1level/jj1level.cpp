@@ -538,7 +538,7 @@ void JJ1Level::setWaterLevel (unsigned char gridY) {
 
 	unsigned char buffer[MTL_L_PROP];
 
-	waterLevelTarget = TTOF(gridY);
+	waterLevelTarget = TTOF(gridY) + F2;
 
 	if (multiplayer) {
 
