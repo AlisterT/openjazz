@@ -249,6 +249,18 @@ bool JJ1LevelPlayer::getFacing () {
 
 
 /**
+ * Get the horizontal speed of the player.
+ *
+ * @return The player's horizontal speed
+ */
+fixed JJ1LevelPlayer::getXSpeed () {
+
+	return dx;
+
+}
+
+
+/**
  * Determine the number of items the player has collected.
  *
  * @return Number of items collected

@@ -177,6 +177,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		int               getEnemies  ();
 		int               getEnergy   ();
 		bool              getFacing   ();
+		int               getXSpeed   ();
 		int               getItems    ();
 		bool              hasGem      ();
 		bool              hit         (Player* source, unsigned int ticks);

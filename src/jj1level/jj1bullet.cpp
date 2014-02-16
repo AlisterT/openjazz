@@ -35,6 +35,8 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 
+#include <stdlib.h>
+
 
 /**
  * Generic bullet constructor.
@@ -56,8 +58,10 @@ JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed
 
 	x = startX;
 	y = startY;
-	dx = set[B_XSPEED + direction] * 500 * F1;
-	dy = set[B_YSPEED + direction] * 250 * F1;
+	dx = set[B_XSPEED + direction] << 18;
+	dy = set[B_YSPEED + direction] << 16;
+
+	if (source && (set[B_BEHAVIOUR] == 4)) dx += source->getXSpeed();
 
 	sprite = level->getSprite(((unsigned char *)set)[B_SPRITE + direction]);
 	x -= ITOF(sprite->getWidth()) >> 1;
@@ -188,14 +192,41 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks) {
 	// Calculate trajectory
 	if (set[B_BEHAVIOUR] == 4) {
 
-		// Bounce the bullet
-		if (level->checkMaskDown(x, y - F4) && (dy < 0)) dy = 0;
-		else if (level->checkMaskDown(x, y + F4)) dy = -600 * F1;
-		else if (level->checkMaskDown(x - F4, y)) direction |= 1;
-		else if (level->checkMaskDown(x + F4, y)) direction &= ~1;
-		else dy += 102400 * set[B_GRAVITY];
+		if (level->checkMaskDown(x, y - F1)) {
 
-	} else dy += 102400 * set[B_GRAVITY];
+			// Bounce the bullet away from a vertical surface
+			if (dx < 0) direction |= 1;
+			else direction &= ~1;
+
+			dx = -dx;
+			dy = 0;
+
+		}
+
+		if (level->checkMaskDown(x, y + (dy >> 6) - F1)) {
+
+			// Bounce the bullet against a horizontal surface
+			if (dy < 0) dy = 0;
+			else dy = -dy - (abs(dx - (set[B_XSPEED + direction] << 18)) >> 1);
+
+		} else {
+
+			// Respond to gravity
+			dy += F32 * set[B_GRAVITY];
+
+		}
+
+	} else {
+
+		dy += F32 * set[B_GRAVITY];
+
+		if (source && (abs(source->getXSpeed() + dx) > abs(dx))) {
+
+			x += source->getXSpeed() >> 6;
+
+		}
+
+	}
 
 
 	// Apply trajectory
