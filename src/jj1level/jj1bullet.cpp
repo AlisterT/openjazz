@@ -61,7 +61,21 @@ JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed
 	dx = set[B_XSPEED + direction] << 18;
 	dy = set[B_YSPEED + direction] << 16;
 
-	if (source && (set[B_BEHAVIOUR] == 4)) dx += source->getXSpeed();
+	if (source) {
+
+		if ((newDirection & 1) == 0) {
+
+			if (dx > 0) dx = -dx;
+
+		} else {
+
+			if (dx < 0) dx = -dx;
+
+		}
+
+		if (set[B_BEHAVIOUR] == 4) dx += source->getXSpeed();
+
+	}
 
 	sprite = level->getSprite(((unsigned char *)set)[B_SPRITE + direction]);
 	x -= ITOF(sprite->getWidth()) >> 1;
