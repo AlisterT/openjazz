@@ -74,16 +74,15 @@ DeckGuardian::DeckGuardian (unsigned char gX, unsigned char gY) : Guardian(gX, g
  * Episode B guardian iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining event
  */
-JJ1Event* DeckGuardian::step (unsigned int ticks, int msps) {
+JJ1Event* DeckGuardian::step (unsigned int ticks) {
 
 	int count;
 
 
-	set = prepareStep(ticks, msps);
+	set = prepareStep(ticks);
 
 	if (!set) return remove(false);
 
@@ -207,16 +206,15 @@ MedGuardian::MedGuardian(unsigned char gX, unsigned char gY) : Guardian(gX, gY) 
  * Episode 1 guardian iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining event
  */
-JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
+JJ1Event* MedGuardian::step(unsigned int ticks) {
 
 	fixed sin = fSin(ticks / 2);
 	fixed cos = fCos(ticks / 2);
 
-	set = prepareStep(ticks, msps);
+	set = prepareStep(ticks);
 
 	if (!set) return remove(false);
 
@@ -407,10 +405,10 @@ JJ1Event* MedGuardian::step(unsigned int ticks, int msps) {
 
 	}
 
-	dx = ((dx << 10) / msps);
-	dy = ((dy << 10) / msps);
-	x += (dx * msps) >> 10;
-	y += (dy * msps) >> 10;
+	x += dx;
+	y += dy;
+	dx = dx << 6;
+	dy = dy << 6;
 
 	return this;
 

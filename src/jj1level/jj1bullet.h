@@ -77,7 +77,7 @@ class JJ1Bullet : public Movable {
 		~JJ1Bullet ();
 
 		JJ1LevelPlayer* getSource ();
-		JJ1Bullet*      step      (unsigned int ticks, int msps);
+		JJ1Bullet*      step      (unsigned int ticks);
 		void            draw      (int change);
 
 };

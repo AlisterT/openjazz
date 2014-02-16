@@ -100,9 +100,8 @@ void JJ1LevelPlayer::ground () {
  * Respond to controls, unless the player has been killed.
  *
  * @param ticks Time
- * @param msps Ticks per step
  */
-void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
+void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	fixed speed;
 	bool platform;
@@ -117,7 +116,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		if (flying) dy = 0;
 		else {
 
-			if (dy < 0) dy += PYA_GRAVITY * msps;
+			if (dy < 0) dy += PYA_GRAVITY;
 			else dy = PYS_FALL;
 
 		}
@@ -138,8 +137,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Walk right, against the flow
 
-			if (udx < speed) udx += PXA_REVERSE * msps;
-			else if (udx < speed + PXS_WALK) udx += PXA_WALK * msps;
+			if (udx < speed) udx += PXA_REVERSE;
+			else if (udx < speed + PXS_WALK) udx += PXA_WALK;
 
 			if (udx > speed + PXS_WALK) udx = speed + PXS_WALK;
 
@@ -149,8 +148,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Walk left, against the flow
 
-			if (udx > 0) udx -= PXA_REVERSE * msps;
-			else if (udx > speed - PXS_WALK) udx -= PXA_WALK * msps;
+			if (udx > 0) udx -= PXA_REVERSE;
+			else if (udx > speed - PXS_WALK) udx -= PXA_WALK;
 
 			if (udx < speed - PXS_WALK) udx = speed - PXS_WALK;
 
@@ -170,9 +169,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (udx < 0) udx = dx;
 
-		if (udx < 0) udx += PXA_REVERSE * msps;
-		else if (udx < PXS_WALK) udx += PXA_WALK * msps;
-		else if (udx < PXS_RUN) udx += PXA_RUN * msps;
+		if (udx < 0) udx += PXA_REVERSE;
+		else if (udx < PXS_WALK) udx += PXA_WALK;
+		else if (udx < PXS_RUN) udx += PXA_RUN;
 
 		if (udx > PXS_RUN) udx = PXS_RUN;
 
@@ -184,9 +183,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (udx > 0) udx = dx;
 
-		if (udx > 0) udx -= PXA_REVERSE * msps;
-		else if (udx > -PXS_WALK) udx -= PXA_WALK * msps;
-		else if (udx > -PXS_RUN) udx -= PXA_RUN * msps;
+		if (udx > 0) udx -= PXA_REVERSE;
+		else if (udx > -PXS_WALK) udx -= PXA_WALK;
+		else if (udx > -PXS_RUN) udx -= PXA_RUN;
 
 		if (udx < -PXS_RUN) udx = -PXS_RUN;
 
@@ -198,13 +197,13 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 		if (udx > 0) {
 
-			if (udx < PXA_STOP * msps) udx = 0;
-			else udx -= PXA_STOP * msps;
+			if (udx < PXA_STOP) udx = 0;
+			else udx -= PXA_STOP;
 
 		} else if (udx < 0) {
 
-			if (udx > -PXA_STOP * msps) udx = 0;
-			else udx += PXA_STOP * msps;
+			if (udx > -PXA_STOP) udx = 0;
+			else udx += PXA_STOP;
 
 		}
 
@@ -224,17 +223,17 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Fly upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * msps;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
+			if (dy > 0) dy -= PXA_REVERSE;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN;
 
 		} else if (player->pcontrols[C_DOWN]) {
 
 			// Fly downwards
 
-			if (dy < 0) dy += PXA_REVERSE * msps;
-			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
-			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
+			if (dy < 0) dy += PXA_REVERSE;
+			else if (dy < PXS_WALK) dy += PXA_WALK;
+			else if (dy < PXS_RUN) dy += PXA_RUN;
 
 		} else {
 
@@ -242,13 +241,13 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			if (dy > 0) {
 
-				if (dy < PXA_STOP * msps) dy = 0;
-				else dy -= PXA_STOP * msps;
+				if (dy < PXA_STOP) dy = 0;
+				else dy -= PXA_STOP;
 
 			} else if (dy < 0) {
 
-				if (dy > -PXA_STOP * msps) dy = 0;
-				else dy += PXA_STOP * msps;
+				if (dy > -PXA_STOP) dy = 0;
+				else dy += PXA_STOP;
 
 			}
 
@@ -266,9 +265,9 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Swim upwards
 
-			if (dy > 0) dy -= PXA_REVERSE * msps;
-			else if (dy > -PXS_WALK) dy -= PXA_WALK * msps;
-			else if (dy > -PXS_RUN) dy -= PXA_RUN * msps;
+			if (dy > 0) dy -= PXA_REVERSE;
+			else if (dy > -PXS_WALK) dy -= PXA_WALK;
+			else if (dy > -PXS_RUN) dy -= PXA_RUN;
 
 			// Prepare to jump upon leaving the water
 
@@ -287,15 +286,15 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			// Swim downwards
 
-			if (dy < 0) dy += PXA_REVERSE * msps;
-			else if (dy < PXS_WALK) dy += PXA_WALK * msps;
-			else if (dy < PXS_RUN) dy += PXA_RUN * msps;
+			if (dy < 0) dy += PXA_REVERSE;
+			else if (dy < PXS_WALK) dy += PXA_WALK;
+			else if (dy < PXS_RUN) dy += PXA_RUN;
 
 		} else {
 
 			// Sink
 
-			dy += PYA_SINK * msps;
+			dy += PYA_SINK;
 			if (dy > PYS_SINK) dy = PYS_SINK;
 
 		}
@@ -340,7 +339,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 			if ((event == JJ1PE_FLOAT) && (dy > PYS_JUMP)) {
 
-					dy -= (F1 + FH) * msps;
+					dy -= F16 + F8;
 
 			} else {
 
@@ -365,7 +364,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 		} else if (event != JJ1PE_PLATFORM) {
 
 			// Fall under gravity
-			if (dy < 0) dy += PYA_GRAVITY * msps;
+			if (dy < 0) dy += PYA_GRAVITY;
 			else dy = PYS_FALL;
 
 		}
@@ -476,7 +475,7 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
 
 	// Deal with the bird
 
-	if (birds) birds = birds->step(ticks, msps);
+	if (birds) birds = birds->step(ticks);
 
 
 	return;
@@ -488,9 +487,8 @@ void JJ1LevelPlayer::control (unsigned int ticks, int msps) {
  * Move the player.
  *
  * @param ticks Time
- * @param msps Ticks per step
  */
-void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
+void JJ1LevelPlayer::move (unsigned int ticks) {
 
 	fixed pdx, pdy;
 	bool grounded = false;
@@ -509,13 +507,13 @@ void JJ1LevelPlayer::move (unsigned int ticks, int msps) {
 
 	if (fastFeetTime > ticks) {
 
-		pdx = (udx * msps * 3) >> 11;
-		pdy = (dy * msps * 3) >> 11;
+		pdx = (udx * 3) >> 7;
+		pdy = (dy * 3) >> 7;
 
 	} else {
 
-		pdx = (udx * msps) >> 10;
-		pdy = (dy * msps) >> 10;
+		pdx = udx >> 6;
+		pdy = dy >> 6;
 
 	}
 

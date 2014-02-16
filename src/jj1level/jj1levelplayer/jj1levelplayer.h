@@ -90,12 +90,12 @@
 #define PYS_JUMP  ITOF(-350)
 
 // Player accelerations
-#define PXA_REVERSE 1800
-#define PXA_STOP    1000
-#define PXA_WALK    1000
-#define PXA_RUN     1000
-#define PYA_GRAVITY 2250
-#define PYA_SINK    1000
+#define PXA_REVERSE ITOF(28)
+#define PXA_STOP    ITOF(16)
+#define PXA_WALK    ITOF(16)
+#define PXA_RUN     ITOF(16)
+#define PYA_GRAVITY ITOF(36)
+#define PYA_SINK    ITOF(16)
 
 
 // Enums
@@ -186,13 +186,13 @@ class JJ1LevelPlayer : public LevelPlayer {
 		void              setPlatform (unsigned char gridX, unsigned char gridY);
 		void              setPosition (fixed newX, fixed newY);
 		bool              takeEvent   (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
-		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps);
+		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 
 		void           send        (unsigned char* buffer);
 		void           receive     (unsigned char* buffer);
 
-		void           control     (unsigned int ticks, int msps);
-		void           move        (unsigned int ticks, int msps);
+		void           control     (unsigned int ticks);
+		void           move        (unsigned int ticks);
 		void           view        (unsigned int ticks, int mspf, int change);
 		void           draw        (unsigned int ticks, int change);
 

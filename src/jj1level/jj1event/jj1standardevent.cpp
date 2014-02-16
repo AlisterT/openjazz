@@ -117,9 +117,8 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
  * Move standard event.
  *
  * @param ticks Time
- * @param msps Ticks per step
  */
-void JJ1StandardEvent::move (unsigned int ticks, int msps) {
+void JJ1StandardEvent::move (unsigned int ticks) {
 
 	JJ1LevelPlayer* levelPlayer;
 	int length;
@@ -199,7 +198,7 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 		case 6:
 		case 7:
 
-			node = (node + (msps << 5)) % ITOF(level->path[set->multiA].length);
+			node = (node + FH) % ITOF(level->path[set->multiA].length);
 
 			// Use the path from the level file
 			dx = TTOF(gridX) + ITOF(level->path[set->multiA].x[FTOI(node)]) - x;
@@ -207,8 +206,8 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 			x += dx;
 			y += dy;
-			dx = (dx << 10) / msps;
-			dy = (dy << 10) / msps;
+			dx = dx << 6;
+			dy = dy << 6;
 
 			return;
 
@@ -350,8 +349,8 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 			x += dx;
 			y += dy;
-			dx = (dx << 10) / msps;
-			dy = (dy << 10) / msps;
+			dx = dx << 6;
+			dy = dy << 6;
 
 			return;
 
@@ -367,8 +366,8 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 			x += dx;
 			y += dy;
-			dx = (dx << 10) / msps;
-			dy = (dy << 10) / msps;
+			dx = dx << 6;
+			dy = dy << 6;
 
 			return;
 
@@ -433,7 +432,7 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 				dy = TTOF(gridY) + F16 - y;
 
 				y += dy;
-				dy = ((dy << 10) / msps);
+				dy = dy << 6;
 
 				return;
 
@@ -566,8 +565,8 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
 
 	dx /= set->speed;
 	dy /= set->speed;
-	x += (dx * msps) >> 10;
-	y += (dy * msps) >> 10;
+	x += dx >> 6;
+	y += dy >> 6;
 
 	return;
 
@@ -578,11 +577,10 @@ void JJ1StandardEvent::move (unsigned int ticks, int msps) {
  * Event iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining event
  */
-JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
+JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
 
 	JJ1LevelPlayer* levelPlayer;
 	int count;
@@ -590,7 +588,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 	int hits;
 
 
-	set = prepareStep(ticks, msps);
+	set = prepareStep(ticks);
 	hits = level->getEventHits(gridX, gridY);
 
 	// If the event is off-screen, remove it (permanently if it's been deflected by a shield)
@@ -602,8 +600,8 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 		dy = 200 * F1;
 
-		x += (dx * msps) >> 10;
-		y += (dy * msps) >> 10;
+		x += dx >> 6;
+		y += dy >> 6;
 
 		return this;
 
@@ -630,7 +628,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 
 	// Move
-	move(ticks, msps);
+	move(ticks);
 
 
 	// Choose animation and direction
@@ -965,13 +963,13 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 
 			if (width && height &&
 				levelPlayer->overlap(drawnX, drawnY, width - F8, F8) &&
-				(levelPlayer->getY() <= F8 + ((PYS_FALL * msps) >> 10) + drawnY) &&
+				(levelPlayer->getY() <= F8 + (PYS_FALL >> 6) + drawnY) &&
 				!level->checkMaskDown(levelPlayer->getX() + PXO_MID, PYO_TOP + drawnY)) {
 
 				// Player is on a platform
 
 				levelPlayer->setPlatform(gridX, gridY);
-				levelPlayer->setPosition(levelPlayer->getX() + ((dx * msps) >> 10), F4 + drawnY);
+				levelPlayer->setPosition(levelPlayer->getX() + (dx >> 6), F4 + drawnY);
 
 			} else levelPlayer->clearEvent(gridX, gridY);
 
@@ -982,7 +980,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks, int msps) {
 				levelPlayer->overlap(drawnX + F2, drawnY + F2, width - F4, height - F4)) {
 
 				// If the player picks up the event, destroy it
-				if (levelPlayer->touchEvent(set, gridX, gridY, ticks, msps)) {
+				if (levelPlayer->touchEvent(set, gridX, gridY, ticks)) {
 
 					if (level->getEventHits(gridX, gridY) == 255) {
 

@@ -159,18 +159,17 @@ JJ1Bird* JJ1Bird::setFlockSize (int size) {
  * JJ1Bird iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining bird (NULL if none)
  */
-JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
+JJ1Bird* JJ1Bird::step (unsigned int ticks) {
 
 	Movable* leader;
 	JJ1Event* event;
 	bool target;
 
 	// Process the next bird
-	if (next) next = next->step(ticks, msps);
+	if (next) next = next->step(ticks);
 
 	if (next) leader = next;
 	else leader = player;
@@ -199,13 +198,13 @@ JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
 
 			// To the left of the leader, so move right
 
-			if (dx < F80) dx += 400 * msps;
+			if (dx < F80) dx += 6400;
 
 		} else {
 
 			// To the right of the leader, so move left
 
-			if (dx > -F80) dx -= 400 * msps;
+			if (dx > -F80) dx -= 6400;
 
 		}
 
@@ -229,13 +228,13 @@ JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
 
 				// Above the leader, so move downwards
 
-				if (dy < F80) dy += 400 * msps;
+				if (dy < F80) dy += 6400;
 
 			} else {
 
 				// Below the leader, so move upwards
 
-				if (dy > -F80) dy -= 400 * msps;
+				if (dy > -F80) dy -= 6400;
 
 			}
 
@@ -293,8 +292,8 @@ JJ1Bird* JJ1Bird::step (unsigned int ticks, int msps) {
 	}
 
 	// Apply trajectory
-	x += (dx * msps) >> 10;
-	y += (dy * msps) >> 10;
+	x += dx >> 6;
+	y += dy >> 6;
 
 	return this;
 

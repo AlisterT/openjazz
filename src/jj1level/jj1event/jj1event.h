@@ -88,7 +88,7 @@ class JJ1Event : public Movable {
 		void setAnimType  (unsigned char type);
 		void setAnimFrame (int frame, bool looping);
 
-		JJ1EventType* prepareStep (unsigned int ticks, int msps);
+		JJ1EventType* prepareStep (unsigned int ticks);
 
 	public:
 		virtual ~JJ1Event ();
@@ -99,7 +99,7 @@ class JJ1Event : public Movable {
 		bool           isFrom         (unsigned char gX, unsigned char gY);
 		bool           overlap        (fixed left, fixed top, fixed width, fixed height);
 
-		virtual JJ1Event* step        (unsigned int ticks, int msps) = 0;
+		virtual JJ1Event* step        (unsigned int ticks) = 0;
 		virtual void      draw        (unsigned int ticks, int change) = 0;
 		void              drawEnergy  (unsigned int ticks);
 
@@ -113,12 +113,12 @@ class JJ1StandardEvent : public JJ1Event {
 		bool  onlyLAnimOffset;
 		bool  onlyRAnimOffset;
 
-		void move (unsigned int ticks, int msps);
+		void move (unsigned int ticks);
 
 	public:
 		JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsigned char gY, fixed startX, fixed startY);
 
-		JJ1Event* step (unsigned int ticks, int msps);
+		JJ1Event* step (unsigned int ticks);
 		void   draw (unsigned int ticks, int change);
 
 };
@@ -133,7 +133,7 @@ class JJ1Bridge : public JJ1Event {
 	public:
 		JJ1Bridge (unsigned char gX, unsigned char gY);
 
-		JJ1Event* step (unsigned int ticks, int msps);
+		JJ1Event* step (unsigned int ticks);
 		void   draw (unsigned int ticks, int change);
 
 };

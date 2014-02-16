@@ -113,17 +113,16 @@ JJ1LevelPlayer* JJ1Bullet::getSource () {
  * Bullet iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining bullet
  */
-JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
+JJ1Bullet* JJ1Bullet::step (unsigned int ticks) {
 
 	JJ1Event* event;
 	int count;
 
 	// Process the next bullet
-	if (next) next = next->step(ticks, msps);
+	if (next) next = next->step(ticks);
 
 
 	if (level->getStage() != LS_END) {
@@ -191,14 +190,14 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks, int msps) {
 		else if (level->checkMaskDown(x, y + F4)) dy = -600 * F1;
 		else if (level->checkMaskDown(x - F4, y)) direction |= 1;
 		else if (level->checkMaskDown(x + F4, y)) direction &= ~1;
-		else dy += 6400 * msps * set[B_GRAVITY];
+		else dy += 102400 * set[B_GRAVITY];
 
-	} else dy += 6400 * msps * set[B_GRAVITY];
+	} else dy += 102400 * set[B_GRAVITY];
 
 
 	// Apply trajectory
-	x += (dx * msps) >> 10;
-	y += (dy * msps) >> 10;
+	x += dx >> 6;
+	y += dy >> 6;
 
 
 	// Do not destroy the bullet

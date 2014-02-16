@@ -678,11 +678,10 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Whether or not the event should be destroyed.
  */
-bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks, int msps) {
+bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
 	if ((set->movement == 37) || (set->movement == 38)) {
 
@@ -762,13 +761,13 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 			if (set->magnitude < 0) {
 
-				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 4 * msps), y + PYO_MID))
-					x += set->magnitude * 4 * msps;
+				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 64), y + PYO_MID))
+					x += set->magnitude * 64;
 
 			} else {
 
-				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 4 * msps), y + PYO_MID))
-					x += set->magnitude * 4 * msps;
+				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 64), y + PYO_MID))
+					x += set->magnitude * 64;
 
 			}
 
@@ -802,13 +801,13 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 			} else if (set->magnitude < 0) {
 
-				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 20 * msps), y + PYO_MID))
-					x += set->magnitude * 20 * msps;
+				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 320), y + PYO_MID))
+					x += set->magnitude * 320;
 
 			} else {
 
-				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 20 * msps), y + PYO_MID))
-					x += set->magnitude * 20 * msps;
+				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 320), y + PYO_MID))
+					x += set->magnitude * 320;
 
 			}
 

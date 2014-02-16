@@ -64,18 +64,17 @@ JJ1Bridge::JJ1Bridge (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
  * Bridge iteration.
  *
  * @param ticks Time
- * @param msps Ticks per step
  *
  * @return Remaining event
  */
-JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
+JJ1Event* JJ1Bridge::step (unsigned int ticks) {
 
 	JJ1LevelPlayer* levelPlayer;
 	int count;
 	fixed bridgeLength, playerDipX, playerDipY;
 
 
-	set = prepareStep(ticks, msps);
+	set = prepareStep(ticks);
 
 	if (!set) return remove(false);
 
@@ -84,9 +83,9 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks, int msps) {
 
 
 	// Gradually stop the bridge sagging
-	if (leftDipX < bridgeLength) leftDipX += 320 * msps;
+	if (leftDipX < bridgeLength) leftDipX += 5120;
 	if (leftDipX > bridgeLength) leftDipX = bridgeLength;
-	if (rightDipX > 0) rightDipX -= 320 * msps;
+	if (rightDipX > 0) rightDipX -= 5120;
 	if (rightDipX < 0) rightDipX = 0;
 
 

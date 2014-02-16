@@ -54,11 +54,6 @@ int JJ1Level::step () {
 	JJ1Event *event;
 	int viewH;
 	int x, y;
-	int msps;
-
-
-	// Milliseconds per step
-	msps = T_STEP;
 
 
 	// Can we see below the panel?
@@ -126,17 +121,17 @@ int JJ1Level::step () {
 
 
 	// Process bullets
-	if (bullets) bullets = bullets->step(ticks, msps);
+	if (bullets) bullets = bullets->step(ticks);
 
 	// Determine the players' trajectories
-	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->control(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->control(ticks);
 
 	// Process active events
-	if (events) events = events->step(ticks, msps);
+	if (events) events = events->step(ticks);
 
 	// Apply as much of those trajectories as possible, without going into the
 	// scenery
-	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->move(ticks, msps);
+	for (x = 0; x < nPlayers; x++) players[x].getJJ1LevelPlayer()->move(ticks);
 
 
 	// Check if time has run out
@@ -171,7 +166,7 @@ int JJ1Level::step () {
 	if (ammoOffset > 0) {
 
 		// Descending
-		ammoOffset -= 60 * msps;
+		ammoOffset -= F1;
 
 		// Avoid an offset of 0, which prevents changes
 		if (ammoOffset == 0) ammoOffset = -1;
@@ -180,12 +175,12 @@ int JJ1Level::step () {
 
 
 	// Handle change in water level
-	if (waterLevel < waterLevelTarget) waterLevelSpeed += 100 * msps;
-	else waterLevelSpeed -= 100 * msps;
+	if (waterLevel < waterLevelTarget) waterLevelSpeed += 1600;
+	else waterLevelSpeed -= 1600;
 	if (waterLevelSpeed > 40000) waterLevelSpeed = 40000;
 	if (waterLevelSpeed < -40000) waterLevelSpeed = -40000;
 
-	waterLevel += (waterLevelSpeed * msps) >> 10;
+	waterLevel += waterLevelSpeed >> 6;
 
 
 	// Handle player reactions

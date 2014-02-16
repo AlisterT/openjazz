@@ -67,7 +67,7 @@ class JJ1Bird : public Movable {
 		void            hit          ();
 		JJ1Bird*        setFlockSize (int size);
 
-		JJ1Bird*     step      (unsigned int ticks, int msps);
+		JJ1Bird*     step      (unsigned int ticks);
 		void         draw      (unsigned int ticks, int change);
 
 };
