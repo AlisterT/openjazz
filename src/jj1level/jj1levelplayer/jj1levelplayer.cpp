@@ -427,27 +427,22 @@ JJ1PlayerReaction JJ1LevelPlayer::reacted (unsigned int ticks) {
  *
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
+ * @param shiftX Change in horizontal position
+ * @param newY New vertical position
  */
-void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY) {
+void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY, fixed shiftX, fixed newY) {
 
 	event = JJ1PE_PLATFORM;
 	eventX = gridX;
 	eventY = gridY;
 
-	return;
+	if (((shiftX < 0) && !level->checkMaskUp(x + PXO_L + shiftX, y + PYO_MID)) ||
+		((shiftX > 0) && !level->checkMaskUp(x + PXO_R + shiftX, y + PYO_MID))) {
 
-}
+		x += shiftX;
 
+	}
 
-/**
- * Set the player's position.
- *
- * @param newX New x-coordinate
- * @param newY New y-coordinate
- */
-void JJ1LevelPlayer::setPosition (fixed newX, fixed newY) {
-
-	x = newX;
 	y = newY;
 
 	return;

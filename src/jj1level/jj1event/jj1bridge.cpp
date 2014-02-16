@@ -103,13 +103,11 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks) {
 
 			// Player is on the bridge
 
-			levelPlayer->setPlatform(gridX, gridY);
-
 			if (playerDipX < leftDipX) leftDipX = playerDipX;
 
 			if (playerDipX > rightDipX) rightDipX = playerDipX;
 
-			levelPlayer->setPosition(levelPlayer->getX(), y - F8 - F1 + playerDipY);
+			levelPlayer->setPlatform(gridX, gridY, 0, y - F8 - F1 + playerDipY);
 
 		} else levelPlayer->clearEvent(gridX, gridY);
 

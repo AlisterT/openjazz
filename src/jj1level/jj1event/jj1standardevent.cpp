@@ -968,8 +968,7 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
 
 				// Player is on a platform
 
-				levelPlayer->setPlatform(gridX, gridY);
-				levelPlayer->setPosition(levelPlayer->getX() + (dx >> 6), F4 + drawnY);
+				levelPlayer->setPlatform(gridX, gridY, (dx >> 6), F4 + drawnY);
 
 			} else levelPlayer->clearEvent(gridX, gridY);
 

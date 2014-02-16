@@ -183,8 +183,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		void              kill        (Player* source, unsigned int ticks);
 		bool              overlap     (fixed left, fixed top, fixed width, fixed height);
 		JJ1PlayerReaction reacted     (unsigned int ticks);
-		void              setPlatform (unsigned char gridX, unsigned char gridY);
-		void              setPosition (fixed newX, fixed newY);
+		void              setPlatform (unsigned char gridX, unsigned char gridY, fixed shiftX, fixed newY);
 		bool              takeEvent   (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 
