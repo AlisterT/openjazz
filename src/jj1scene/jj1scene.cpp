@@ -225,7 +225,7 @@ JJ1ScenePage::JJ1ScenePage() {
 	askForYesNo = 0;
 	stopMusic = 0;
 	animIndex = -1; // no anim
-
+	backgroundFade = 255;
 }
 
 
