@@ -93,84 +93,51 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 
 		} else if (header) {
 
-			fillWidth = header & 0x1F;
+			if(trans) {
+				fillWidth = header;
+				LOG("PL FF SKIP bytes", fillWidth);
+			}
+			else {
+				fillWidth = header & 0x1F;
 
-			switch (header & 0x60) {
+				switch (header & 0x60) {
 				default:
-				break;
+					break;
+
 				case 0x00:
-
-					if (trans) {
-
-						LOG("PL FF 0x00 SKIP bytes", fillWidth);
-						fillWidth = header;
-					} else {
-
-						LOG("PL FF 0x00 Copy bytes", header);
-
-						memcpy(nextPixel, nextData, fillWidth);
-
-						nextData += fillWidth;
-
-					}
-
+					LOG("PL FF 0x00 Copy bytes", header);
+					memcpy(nextPixel, nextData, fillWidth);
+					nextData += fillWidth;
 					break;
 
 				case 0x20:
-
 					LOG("PL FF 0x20 copy previous line op", fillWidth);
-					if(trans) {
-					fillWidth = header;
-					}
-					else {
-						if (nextPixel - 320 >= pixels) memcpy(nextPixel, nextPixel - 320, fillWidth);
-					}
-
+					if (nextPixel - 320 >= pixels) memcpy(nextPixel, nextPixel - 320, fillWidth);
 					break;
 
 				case 0x40:
-
 					LOG("PL FF 0x40 fillWidth", fillWidth);
-					if(trans) {
-						fillWidth = header;
-					}
-					else {
-						memset(nextPixel, *nextData, fillWidth);
-
-						nextData++;
-					}
-
+					memset(nextPixel, *nextData, fillWidth);
+					nextData++;
 					break;
 
 				case 0x60:
-
 					LOG("PL FF 0x60 header", header);
-					if(trans) {
-						fillWidth = header;
-					}
-					else {
-						fillWidth = header&0x3F;
-						memset(nextPixel, *nextData, fillWidth);
-						nextData++;
-					}
-
+					fillWidth = header&0x3F;
+					memset(nextPixel, *nextData, fillWidth);
+					nextData++;
 					break;
-
+				}
 			}
-
 		} else {
-
 			LOG("PL FF FAULTY END OF STREAM", size);
-
 			return;
-
 		}
 
 		nextPixel += fillWidth;
 
 		if (header & 0x80) trans = false;
 		else trans = !trans;
-
 	}
 
 	LOG("PL FF pixels", nextPixel - pixels);
@@ -891,9 +858,9 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneTime:
 
-						pages[loop].pageTime = f->loadShort() & 255;
+						pages[loop].pageTime = (f->loadShort());
 						LOG("Scene time", pages[loop].pageTime);
-
+						pages[loop].pageTime&=255;
 						break;
 
 					case ESceneBreaker:
