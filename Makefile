@@ -33,12 +33,22 @@ objects = \
 	src/player/player.o \
 	src/main.o src/setup.o src/util.o
 
+CXXFLAGS += -g -Wall -O2 -DSCALE
+CXXFLAGS += -DUSE_SOCKETS
+
+# SDL flags
+CXXFLAGS+=`sdl-config --cflags`
+LDFLAGS+=`sdl-config --libs`
+
+# Enable modplug music
+CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
+LDFLAGS += `pkg-config --libs libmodplug`
 
 OpenJazz: $(objects)
-	cc -Wall -o OpenJazz -lSDL -lstdc++ -lz $(objects)
+	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lstdc++ -lz $(objects)
 
 %.o: %.cpp
-	cc -Wall -DUSE_SOCKETS -DSCALE -Isrc -O2 -c $< -o $@
+	cc $(CXXFLAGS) -Isrc -c $< -o $@
 
 clean:
 	rm -f OpenJazz $(objects)
