@@ -37,27 +37,50 @@
 
 
 /**
- * Try opening a file from the available paths
+ * Try opening a file from the available paths. If the file is
+ * not found, try a second time with the path upcased. This helps
+ * find files extracted from a DOS zip file on modern, case-
+ * sensitive filesystems.
  *
  * @param name File name
  * @param write Whether or not the file can be written to
  */
 File::File (const char* name, bool write) {
-
+	char uppercase_name[64];
 	Path* path;
 
-	path = firstPath;
+	while (1)
+	{
+		path = firstPath;
 
-	while (path) {
+		while (path) {
 
-		if (open(path->path, name, write)) return;
-		path = path->next;
+			if (open(path->path, name, write)) return;
+			path = path->next;
 
+		}
+
+		log("Could not open file", name);
+
+		if (name == uppercase_name) {
+
+			// Have already tried uppercase version of filename.
+			throw E_FILE;
+
+		} else {
+
+			// Upcase filename, to see if that matches on case-sensitive filesystems.
+			int pos = 0;
+			while(name[pos]) {
+				uppercase_name[pos] = toupper(name[pos]);
+				pos++;
+			}
+			uppercase_name[pos] = '\0';
+			name = uppercase_name;
+
+		}
 	}
 
-	log("Could not open file", name);
-
-	throw E_FILE;
 
 }
 
