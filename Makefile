@@ -1,4 +1,5 @@
 # OpenJazz makefile
+prefix=/usr/local
 
 objects = \
 	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
@@ -52,3 +53,9 @@ OpenJazz: $(objects)
 
 clean:
 	rm -f OpenJazz $(objects)
+
+install: OpenJazz
+	install -m 0755 OpenJazz $(prefix)/bin
+	install -m 0644 openjazz.000 $(prefix)/bin
+
+.PHONY: install
