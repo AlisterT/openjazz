@@ -449,11 +449,14 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		}
 
-	} else {
+	}
+#if !(ANDROID)
+	else {
 
 		if (controls.wasCursorReleased()) menu = true;
 
 	}
+#endif
 
 	if (!multiplayer) paused = message || menu;
 
