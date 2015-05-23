@@ -66,8 +66,13 @@ Controls::Controls () {
 	keys[C_JUMP].key   = SDLK_SPACE;
 	keys[C_FIRE].key   = SDLK_LALT;
 	#endif
+	#ifdef ANDROID
+	keys[C_CHANGE].key = SDLK_RETURN;
+	keys[C_ENTER].key  = SDLK_SPACE;
+	#else
 	keys[C_CHANGE].key = SDLK_RCTRL;
 	keys[C_ENTER].key  = SDLK_RETURN;
+	#endif
 	keys[C_ESCAPE].key = SDLK_ESCAPE;
 	keys[C_STATS].key  = SDLK_F9;
 	keys[C_PAUSE].key  = SDLK_p;
