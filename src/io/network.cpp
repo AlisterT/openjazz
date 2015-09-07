@@ -53,6 +53,9 @@
 		#include <errno.h>
 		#include <string.h>
 	#endif
+	#ifdef __APPLE__
+		#define MSG_NOSIGNAL SO_NOSIGPIPE
+	#endif
 #elif defined USE_SDL_NET
 	#include <arpa/inet.h>
 #endif
