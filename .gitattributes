@@ -1,0 +1,11 @@
+* text=auto
+
+*.txt text
+*.cpp text
+*.h text
+configure.ac text
+Makefile text
+Makefile.* text
+
+*.o binary
+OpenJazz binary
