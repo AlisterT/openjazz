@@ -94,6 +94,18 @@ Controls::Controls () {
 	buttons[C_ESCAPE].button        = GP2X_BUTTON_L;
 	buttons[C_STATS].button         = GP2X_BUTTON_SELECT;
 	buttons[C_PAUSE].button         = GP2X_BUTTON_START;
+#elif defined (PSP)
+	buttons[C_UP].button     = 8;
+	buttons[C_DOWN].button   = 6;
+	buttons[C_LEFT].button   = 7;
+	buttons[C_RIGHT].button  = 9;
+	buttons[C_JUMP].button   = 2;
+	buttons[C_FIRE].button   = 3;
+	buttons[C_CHANGE].button = 0;
+	buttons[C_ENTER].button  = 5;
+	buttons[C_ESCAPE].button = 4;
+	buttons[C_STATS].button  = 10;
+	buttons[C_PAUSE].button  = 11;
 #else
 	buttons[C_UP].button = -1;
 	buttons[C_DOWN].button = -1;

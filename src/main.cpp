@@ -47,6 +47,16 @@
 #include "setup.h"
 #include "util.h"
 
+#ifdef PSP
+	#include <pspsdk.h>
+	#include <pspkernel.h>
+	#include <pspthreadman.h>
+	#include <pspmoduleinfo.h>
+	#include <pspdebug.h>
+	#include <psputility.h>
+	#include <pspdisplay.h>
+#endif
+
 #include <string.h>
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X)
@@ -201,6 +211,11 @@ Main::Main (int argc, char *argv[]) {
 	// Load settings from config file
 	setup.load(&screenW, &screenH, &fullscreen, &scaleFactor);
 
+#ifdef PSP
+	// Fix Video size
+	screenH = 272;
+	screenW = 480;
+#endif
 
 	// Get command-line override
 
@@ -510,6 +525,12 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 
 }
 
+#ifdef PSP
+	PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
+	PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
+	//PSP_HEAP_SIZE_MAX();
+	PSP_HEAP_SIZE_KB(-2048);
+#endif
 
 /**
  * Main.
@@ -520,6 +541,12 @@ int main(int argc, char *argv[]) {
 
 	Main* mainObj;
 	int ret;
+
+#ifdef PSP
+	pspDebugScreenInit();
+	atexit(sceKernelExitGame);
+	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
+#endif
 
 	// Initialise SDL
 

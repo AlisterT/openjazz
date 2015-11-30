@@ -1,2 +1,7 @@
 *.o
 OpenJazz
+
+*.elf
+*.prx
+PARAM.SFO
+EBOOT.PBP
