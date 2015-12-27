@@ -1,6 +1,5 @@
-# OpenJazz makefile
 
-objects = \
+OBJS = \
 	src/game/clientgame.o src/game/game.o src/game/gamemode.o \
 	src/game/localgame.o src/game/servergame.o \
 	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
@@ -32,19 +31,3 @@ objects = \
 	src/menu/plasma.o src/menu/setupmenu.o \
 	src/player/player.o \
 	src/main.o src/setup.o src/util.o
-
-
-CXXFLAGS += -g -Wall -O2 -DUSE_SOCKETS -DSCALE
-
-# Uncomment the following two lines for music (requires libmodplug)
-#CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
-#LDFLAGS += `pkg-config --libs libmodplug`
-
-OpenJazz: $(objects)
-	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lSDL -lstdc++ -lz $(objects)
-
-%.o: %.cpp
-	cc $(CXXFLAGS) -Isrc -c $< -o $@
-
-clean:
-	rm -f OpenJazz $(objects)
