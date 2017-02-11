@@ -13,7 +13,7 @@
  * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -155,8 +155,8 @@ int JJ2Level::loadSprites () {
 	unsigned char* bBuffer;
 	unsigned char* cBuffer;
 	int* setOffsets;
-	int aCLength, bCLength, cCLength, dCLength;
-	int aLength, bLength, cLength, dLength;
+	int aCLength, bCLength, cCLength;
+	int aLength, bLength, cLength;
 	int setAnims, sprites, animSprites;
 	int set, anim, sprite, setSprite;
 
@@ -230,8 +230,8 @@ int JJ2Level::loadSprites () {
 		bLength = file->loadInt();
 		cCLength = file->loadInt();
 		cLength = file->loadInt();
-		dCLength = file->loadInt();
-		dLength = file->loadInt();
+		file->loadInt(); // Don't need this compressed block length
+		file->loadInt(); // Don't need this block length
 
 		aBuffer = file->loadLZ(aCLength, aLength);
 		bBuffer = file->loadLZ(bCLength, bLength);
@@ -297,7 +297,7 @@ int JJ2Level::loadTiles (char* fileName) {
 	unsigned char* dBuffer;
 	unsigned char* tileBuffer;
 	int aCLength, bCLength, cCLength, dCLength;
-	int aLength, bLength, cLength, dLength;
+	int aLength, bLength, dLength;
 	int count, x, y;
 	int maxTiles;
 	int tiles;
@@ -331,7 +331,7 @@ int JJ2Level::loadTiles (char* fileName) {
 	bCLength = file->loadInt();
 	bLength = file->loadInt();
 	cCLength = file->loadInt();
-	cLength = file->loadInt();
+	file->loadInt(); // Don't need this block length
 	dCLength = file->loadInt();
 	dLength = file->loadInt();
 

@@ -12,7 +12,7 @@
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -57,6 +57,8 @@ class Player;
 class GameMode {
 
 	public:
+        virtual ~GameMode ();
+
 		virtual GameModeType  getMode    () = 0;
 		virtual unsigned char chooseTeam () = 0;
 		virtual void          drawScore  (Font* font) = 0;

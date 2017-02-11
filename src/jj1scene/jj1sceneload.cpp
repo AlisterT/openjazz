@@ -287,9 +287,8 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			}
 
 		} else if (type == EPlayListAniHeader) {// PL
-			int pos = f->tell();
 			int nextPos = f->tell();
-			LOG("PL Read position", pos);
+			LOG("PL Read position", nextPos);
 			f->loadShort(); // Length
 
 			palettes = new JJ1ScenePalette(palettes);
@@ -301,9 +300,8 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			unsigned short int value = 0;
 			int items = 0;
 			int validValue = true;
-			pos = f->tell();
 
-			LOG("PL Read position start", pos);
+			LOG("PL Read position start", f->tell());
 
 			while (validValue) {
 
@@ -423,7 +421,6 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 				}
 
-				pos = f->tell();
 				LOG("PL Read position after block should be", nextPos);
 				f->seek(nextPos, true);
 
@@ -432,8 +429,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			}
 
 			LOG("PL Parsed through number of items skipping 0 items", items);
-			pos = f->tell();
-			LOG("PL Read position after parsing anim blocks", pos);
+			LOG("PL Read position after parsing anim blocks", f->tell());
 
 		}
 
@@ -727,7 +723,7 @@ void JJ1Scene::loadScripts (File *f) {
 
 						{
 							pages[loop].backgroundFade =  f->loadShort();
-							LOGRESULT("ESceneBackgroundFade", pages[loop].backgroundFade);
+							LOG("ESceneBackgroundFade", pages[loop].backgroundFade);
 						}
 
 						break;

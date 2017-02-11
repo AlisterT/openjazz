@@ -15,7 +15,7 @@
  * 1st August 2012: Renamed demolevel.cpp to jj1demolevel.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -53,7 +53,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	File* file;
 	char* levelFile;
-	int lNum, wNum, diff, ret;
+	int lNum, wNum, ret;
 
 	multiplayer = false;
 
@@ -76,7 +76,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 	levelFile = createFileName(F_LEVEL, lNum, wNum);
 
 	// Difficulty
-	diff = file->loadShort();
+	file->loadShort();
 
 	macro = file->loadBlock(1024);
 

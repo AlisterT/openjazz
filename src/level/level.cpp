@@ -15,7 +15,7 @@
  * 1st August 2012: Renamed baselevel.cpp to level.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -225,7 +225,7 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 	unsigned char textPalIndex, unsigned char selectedTextPalIndex,
 	int textPalSpan) {
 
-	char* difficultyOptions[4] = {"easy", "medium", "hard", "turbo"};
+	const char* difficultyOptions[4] = {"easy", "medium", "hard", "turbo"};
 	int count, width;
 
 	// Draw graphics statistics

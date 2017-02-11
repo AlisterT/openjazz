@@ -13,7 +13,7 @@
  * 2nd August 2009: Created gamemode.cpp from parts of servergame.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -30,6 +30,13 @@
 
 #include "io/gfx/font.h"
 #include "player/player.h"
+
+
+/**
+ * Destroy game mode
+ */
+GameMode::~GameMode () {
+}
 
 
 /**

@@ -333,7 +333,6 @@ int JJ1Scene::play () {
 	JJ1SceneImage *image;
 	JJ1SceneAnimation* animation = NULL;
 	JJ1SceneFrame* currentFrame = NULL;
-	JJ1SceneFrame* lastFrame = NULL;
 	PaletteEffect* paletteEffect = NULL;
 	int	frameDelay = 0;
 	int prevFrame = 0;
@@ -537,7 +536,6 @@ int JJ1Scene::play () {
 
 				}
 
-				lastFrame = currentFrame;
 				if (prevFrame) currentFrame = currentFrame->prev;
 				else currentFrame = currentFrame->next;
 

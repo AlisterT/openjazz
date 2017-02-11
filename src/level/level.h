@@ -12,7 +12,7 @@
  * 1st August 2012: Renamed baselevel.h to level.h
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -81,8 +81,8 @@ class Sprite;
 class Level {
 
 	private:
-		char*     menuOptions[6];
-		SetupMenu setupMenu; ///< Setup menu to run on the player's command
+		const char* menuOptions[6];
+		SetupMenu   setupMenu; ///< Setup menu to run on the player's command
 
 		int select (bool& menu, int option);
 

@@ -15,7 +15,7 @@
  * 3rd October 2010: Created localgame.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -41,7 +41,7 @@
  * @param firstLevel File name of the first level to play
  * @param gameDifficulty Difficulty setting
  */
-LocalGame::LocalGame (char *firstLevel, int gameDifficulty) {
+LocalGame::LocalGame (const char *firstLevel, int gameDifficulty) {
 
 	levelFile = createString(firstLevel);
 	levelType = getLevelType(firstLevel);

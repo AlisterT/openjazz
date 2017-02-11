@@ -12,7 +12,7 @@
  * 2nd August 2009: Created gamemode.h from parts of game.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -108,7 +108,7 @@ class Game {
 
 		GameMode* createMode (GameModeType modeType);
 
-		LevelType getLevelType (char* fileName);
+		LevelType getLevelType (const char* fileName);
 		int       playLevel    (char *fileName, bool intro, bool checkpoint);
 
 		void addLevelPlayer (Player *player);
@@ -136,7 +136,7 @@ class Game {
 class LocalGame : public Game {
 
 	public:
-		LocalGame  (char *firstLevel, int gameDifficulty);
+		LocalGame  (const char *firstLevel, int gameDifficulty);
 		~LocalGame ();
 
 		int  setLevel      (char *fileName);
