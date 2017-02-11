@@ -50,7 +50,7 @@
 	#ifdef __SYMBIAN32__
 		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
 		#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
-	#elif defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
+	#elif defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO) || defined(PSP)
 		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
 		#define MUSIC_FLAGS 0
 	#else
@@ -138,7 +138,7 @@ void openAudio () {
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
-#if defined(GP2X)
+#if defined(GP2X) || defined(PSP)
 	asDesired.samples = 512;
 #else
 	asDesired.samples = 2048;

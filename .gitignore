@@ -1,4 +1,9 @@
 *.o
 OpenJazz
+
+*.elf
+*.prx
+PARAM.SFO
+EBOOT.PBP
 .DS_Store
 autom4te.cache

@@ -111,6 +111,9 @@ void Video::findMaxResolution () {
 #if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	maxW = 320;
 	maxH = 240;
+#elif defined(PSP)
+	maxW = 480;
+	maxH = 272;
 #else
 	SDL_Rect **resolutions;
 	int count;
@@ -194,6 +197,8 @@ bool Video::resize (int width, int height) {
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
 	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
+#elif defined(PSP)
+	screen = SDL_SetVideoMode(480, 272, 8, FULLSCREEN_FLAGS);
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 #endif
