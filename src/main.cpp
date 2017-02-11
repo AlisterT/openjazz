@@ -257,6 +257,10 @@ Main::Main (int argc, char *argv[]) {
 
 		delete firstPath;
 
+		log("Unable to find game data files. When launching OpenJazz, pass the location");
+		log("of the original game data, eg:");
+		log("  OpenJazz ~/jazz1");
+
 		throw e;
 
 	}
