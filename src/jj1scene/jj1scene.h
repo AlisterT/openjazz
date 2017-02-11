@@ -96,7 +96,7 @@ enum {
 	ESceneTextVAdjust = 0x5f,
 	ESceneAnimationPlayAndContinue = 0xA7,
 	ESceneAnimation = 0xA6,
-	ESceneTextSetting = 0xb1,
+	ESceneBackgroundFade = 0xb1,
 	ESceneTextSomething = 0xd9,
 	ESceneTextShadow = 0xdb
 
@@ -147,7 +147,7 @@ class JJ1ScenePage {
 		int                paletteIndex;
 		int				   askForYesNo;
 		int				   stopMusic;
-
+		int					backgroundFade;
 		JJ1ScenePage  ();
 		~JJ1ScenePage ();
 

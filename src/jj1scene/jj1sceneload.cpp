@@ -79,10 +79,9 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 	fclose(out);*/
 
 	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
-
-		LOG("PL FF frame offset", nextData - frameData);
 		header = *nextData;
 		nextData++;
+		LOG("PL FF frame header", header);
 
 		if ((header & 0x7F) == 0x7F) {
 
@@ -94,78 +93,51 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 
 		} else if (header) {
 
-			fillWidth = header & 0x1F;
+			if(trans) {
+				fillWidth = header;
+				LOG("PL FF SKIP bytes", fillWidth);
+			}
+			else {
+				fillWidth = header & 0x1F;
 
-			switch (header & 0x60) {
+				switch (header & 0x60) {
+				default:
+					break;
 
 				case 0x00:
-
-					if (trans) {
-
-						LOG("PL FF 0x00 SKIP bytes", header);
-
-					} else {
-
-						LOG("PL FF 0x00 Copy bytes", header);
-
-						memcpy(nextPixel, nextData, fillWidth);
-
-						nextData += fillWidth;
-
-					}
-
+					LOG("PL FF 0x00 Copy bytes", header);
+					memcpy(nextPixel, nextData, fillWidth);
+					nextData += fillWidth;
 					break;
 
 				case 0x20:
-
-					LOG("PL FF 0x20 fill next op", fillWidth);
-
+					LOG("PL FF 0x20 copy previous line op", fillWidth);
 					if (nextPixel - 320 >= pixels) memcpy(nextPixel, nextPixel - 320, fillWidth);
-
 					break;
 
 				case 0x40:
-
 					LOG("PL FF 0x40 fillWidth", fillWidth);
-
 					memset(nextPixel, *nextData, fillWidth);
-
 					nextData++;
-
 					break;
 
 				case 0x60:
-
 					LOG("PL FF 0x60 header", header);
-
-					if (nextPixel == pixels) {
-
-						fillWidth = header;
-
-					} else {
-
-						fillWidth = header & 0x7F;
-						nextPixel -= (nextPixel - pixels) % 320;
-
-					}
-
+					fillWidth = header&0x3F;
+					memset(nextPixel, *nextData, fillWidth);
+					nextData++;
 					break;
-
+				}
 			}
-
 		} else {
-
-			LOG("PL FF END OF STREAM", size);
-
+			LOG("PL FF FAULTY END OF STREAM", size);
 			return;
-
 		}
 
 		nextPixel += fillWidth;
 
 		if (header & 0x80) trans = false;
 		else trans = !trans;
-
 	}
 
 	LOG("PL FF pixels", nextPixel - pixels);
@@ -208,7 +180,7 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 
 			fillstart = nextPixel;
 
-			while (fillstart + fillWidth < endpixdata) {
+			while (fillstart + fillWidth <= endpixdata) {
 
 				memset(fillstart, fillColor, fillWidth);
 				fillstart += SW;
@@ -234,7 +206,7 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 
 			fillstart = nextPixel;
 
-			while (fillstart + fillWidth < endpixdata) {
+			while (fillstart + fillWidth <= endpixdata) {
 
 				memset(fillstart, fillColor, fillWidth);
 				fillstart += SW;
@@ -751,12 +723,11 @@ void JJ1Scene::loadScripts (File *f) {
 
 						break;
 
-					case ESceneTextSetting:
+					case ESceneBackgroundFade:
 
 						{
-
-							LOGRESULT("ESceneTextSetting", f->loadShort());
-
+							pages[loop].backgroundFade =  f->loadShort();
+							LOGRESULT("ESceneBackgroundFade", pages[loop].backgroundFade);
 						}
 
 						break;
@@ -887,9 +858,9 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneTime:
 
-						pages[loop].pageTime = f->loadShort() & 255;
+						pages[loop].pageTime = (f->loadShort());
 						LOG("Scene time", pages[loop].pageTime);
-
+						pages[loop].pageTime&=255;
 						break;
 
 					case ESceneBreaker:
