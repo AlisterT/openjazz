@@ -842,6 +842,8 @@ int JJ1Level::play () {
 		if (pmessage && !pmenu)
 			font->showString("pause", (canvasW >> 1) - 44, 32);
 
+		// If paused, silence music
+		pauseMusic(pmessage && !pmenu);
 
 		if (stage == LS_END) {
 

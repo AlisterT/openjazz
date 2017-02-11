@@ -76,6 +76,7 @@ xmp_context xmpC;
 #endif
 
 SDL_AudioSpec  audioSpec;
+bool music_paused = false;
 
 
 /**
@@ -91,17 +92,19 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 	int count;
 
-	// Read the next portion of music into the audio stream
+	if (!music_paused) {
+		// Read the next portion of music into the audio stream
 #if defined(USE_MODPLUG)
 
-	if (musicFile) ModPlug_Read(musicFile, stream, len);
+		if (musicFile) ModPlug_Read(musicFile, stream, len);
 
 #elif defined(USE_XMP)
 
-	if (xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
-		xmp_play_buffer(xmpC, stream, len, 0);
+		if (xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
+			xmp_play_buffer(xmpC, stream, len, 0);
 
 #endif
+	}
 
 	for (count = 0; count < nSounds; count++) {
 
@@ -313,6 +316,14 @@ void playMusic (const char * fileName) {
 
 	return;
 
+}
+
+
+/**
+ * Pauses and Unpauses the current music.
+ */
+void pauseMusic (bool pause) {
+	music_paused = pause;
 }
 
 
