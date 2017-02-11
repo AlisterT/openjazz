@@ -11,7 +11,7 @@
  * 26th July 2009: Renamed graphics.h to video.h
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -37,25 +37,48 @@
 #define SW 320
 #define SH 200
 
+#define MIN_SCALE 1
+#ifdef SCALE
+	#define MAX_SCALE 4
+#else
+	#define MAX_SCALE 1
+#endif
+
 // Maximum screen dimensions
-#define MAX_SW 3840
-#define MAX_SH 2400
+#define MAX_SCREEN_WIDTH (32 * 256 * MAX_SCALE)
+#define MAX_SCREEN_HEIGHT (32 * 64 * MAX_SCALE)
 
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X)
+	#define DEFAULT_SCREEN_WIDTH 320
+	#define DEFAULT_SCREEN_HEIGHT 240
+
+	#define FULLSCREEN_ONLY
+	#define NO_RESIZE
+
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 #elif defined(DINGOO)
+	#define DEFAULT_SCREEN_WIDTH 320
+	#define DEFAULT_SCREEN_HEIGHT 240
+
+	#define FULLSCREEN_ONLY
+	#define NO_RESIZE
+
 	#define FULLSCREEN_FLAGS 0
 #elif defined(PSP)
+	#define DEFAULT_SCREEN_WIDTH 480
+	#define DEFAULT_SCREEN_HEIGHT 272
+
+	#define FULLSCREEN_ONLY
+	#define NO_RESIZE
+
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 #else
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
-#endif
+	#define DEFAULT_SCREEN_WIDTH SW
+	#define DEFAULT_SCREEN_HEIGHT SH
 
-#ifdef SCALE
-	#define MIN_SCALE 1
-	#define MAX_SCALE 4
+	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 #endif
 
 
@@ -89,7 +112,7 @@ class Video {
 
 		bool       init                  (int width, int height, bool startFullscreen);
 
-		bool       resize                (int width, int height);
+		bool       reset                (int width, int height);
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();

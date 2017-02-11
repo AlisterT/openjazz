@@ -12,7 +12,7 @@
  * 13th July 2009: Created controls.cpp from parts of main.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,8 +32,116 @@
 
 #include "loop.h"
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
-#include "platforms/wiz.h"
+#define DEFAULT_KEY_UP              (SDLK_UP)
+#define DEFAULT_KEY_DOWN            (SDLK_DOWN)
+#define DEFAULT_KEY_LEFT            (SDLK_LEFT)
+#define DEFAULT_KEY_RIGHT           (SDLK_RIGHT)
+#if defined (WIN32)
+    #define DEFAULT_KEY_JUMP            (SDLK_RALT)
+    #define DEFAULT_KEY_SWIM            (SDLK_RALT)
+    #define DEFAULT_KEY_FIRE            (SDLK_SPACE)
+    #define DEFAULT_KEY_CHANGE          (SDLK_RCTRL)
+    #define DEFAULT_KEY_ENTER           (SDLK_RETURN)
+    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
+    #define DEFAULT_KEY_STATS           (SDLK_F9)
+    #define DEFAULT_KEY_PAUSE           (SDLK_p)
+    #define DEFAULT_KEY_YES             (SDLK_y)
+    #define DEFAULT_KEY_NO              (SDLK_n)
+#elif defined(DINGOO)
+    #define DEFAULT_KEY_JUMP            (SDLK_LCTRL)
+    #define DEFAULT_KEY_SWIM            (SDLK_LCTRL)
+    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
+    #define DEFAULT_KEY_CHANGE          (SDLK_LSHIFT)
+    #define DEFAULT_KEY_ENTER           (SDLK_LCTRL)
+    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
+    #define DEFAULT_KEY_STATS           (SDLK_TAB)
+    #define DEFAULT_KEY_PAUSE           (SDLK_RETURN)
+    #define DEFAULT_KEY_YES             (SDLK_LCTRL)
+    #define DEFAULT_KEY_NO              (SDLK_LALT)
+#elif defined (ANDROID)
+    #define DEFAULT_KEY_JUMP            (SDLK_SPACE)
+    #define DEFAULT_KEY_SWIM            (SDLK_SPACE)
+    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
+    #define DEFAULT_KEY_CHANGE          (SDLK_RETURN)
+    #define DEFAULT_KEY_ENTER           (SDLK_SPACE)
+    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
+    #define DEFAULT_KEY_STATS           (SDLK_F9)
+    #define DEFAULT_KEY_PAUSE           (SDLK_p)
+    #define DEFAULT_KEY_YES             (SDLK_y)
+    #define DEFAULT_KEY_NO              (SDLK_n)
+#else
+    #define DEFAULT_KEY_JUMP            (SDLK_SPACE)
+    #define DEFAULT_KEY_SWIM            (SDLK_SPACE)
+    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
+    #define DEFAULT_KEY_CHANGE          (SDLK_RCTRL)
+    #define DEFAULT_KEY_ENTER           (SDLK_RETURN)
+    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
+    #define DEFAULT_KEY_STATS           (SDLK_F9)
+    #define DEFAULT_KEY_PAUSE           (SDLK_p)
+    #define DEFAULT_KEY_YES             (SDLK_y)
+    #define DEFAULT_KEY_NO              (SDLK_n)
+#endif
+
+#if defined(GP2X) || defined(WIZ)
+    #define DEFAULT_BUTTON_UP               (0)
+    #define DEFAULT_BUTTON_DOWN             (4)
+    #define DEFAULT_BUTTON_LEFT             (2)
+    #define DEFAULT_BUTTON_RIGHT            (6)
+    #define DEFAULT_BUTTON_JUMP            (12)    /* A */
+    #define DEFAULT_BUTTON_SWIM            (12)    /* A */
+    #define DEFAULT_BUTTON_FIRE            (14)    /* X */
+    #define DEFAULT_BUTTON_CHANGE          (15)    /* Y */
+    #define DEFAULT_BUTTON_ESCAPE          (10)    /* L */
+    #define DEFAULT_BUTTON_ENTER           (11)    /* R */
+    #define DEFAULT_BUTTON_PAUSE            (8)    /* Start */
+    #define DEFAULT_BUTTON_STATS            (9)    /* Select */
+    #define DEFAULT_BUTTON_YES             (-1)
+    #define DEFAULT_BUTTON_NO              (-1)
+#elif defined(CAANOO)
+    #define DEFAULT_BUTTON_UP              (11)    /* Directional dummies for Caanoo (not used) */
+    #define DEFAULT_BUTTON_DOWN            (12)
+    #define DEFAULT_BUTTON_LEFT            (13)
+    #define DEFAULT_BUTTON_RIGHT           (14)
+    #define DEFAULT_BUTTON_JUMP             (0)    /* A? */
+    #define DEFAULT_BUTTON_SWIM             (0)    /* A? */
+    #define DEFAULT_BUTTON_FIRE             (1)    /* X? */
+    #define DEFAULT_BUTTON_CHANGE           (3)    /* Y? */
+    #define DEFAULT_BUTTON_ESCAPE           (6)    /* Home */
+    #define DEFAULT_BUTTON_ENTER            (5)    /* R? */
+    #define DEFAULT_BUTTON_PAUSE            (9)    /* Help 2 */
+    #define DEFAULT_BUTTON_STATS            (8)    /* Help 1 */
+    #define DEFAULT_BUTTON_YES             (-1)
+    #define DEFAULT_BUTTON_NO              (-1)
+#elif defined(PSP)
+    #define DEFAULT_BUTTON_UP               (8)
+    #define DEFAULT_BUTTON_DOWN             (6)
+    #define DEFAULT_BUTTON_LEFT             (7)
+    #define DEFAULT_BUTTON_RIGHT            (9)
+    #define DEFAULT_BUTTON_JUMP             (2)
+    #define DEFAULT_BUTTON_SWIM             (2)
+    #define DEFAULT_BUTTON_FIRE             (3)
+    #define DEFAULT_BUTTON_CHANGE           (0)
+    #define DEFAULT_BUTTON_ENTER            (5)
+    #define DEFAULT_BUTTON_ESCAPE           (4)
+    #define DEFAULT_BUTTON_STATS           (10)
+    #define DEFAULT_BUTTON_PAUSE           (11)
+    #define DEFAULT_BUTTON_YES             (-1)
+    #define DEFAULT_BUTTON_NO              (-1)
+#else
+    #define DEFAULT_BUTTON_UP              (-1)
+    #define DEFAULT_BUTTON_DOWN            (-1)
+    #define DEFAULT_BUTTON_LEFT            (-1)
+    #define DEFAULT_BUTTON_RIGHT           (-1)
+    #define DEFAULT_BUTTON_JUMP             (1)
+    #define DEFAULT_BUTTON_SWIM             (1)
+    #define DEFAULT_BUTTON_FIRE             (0)
+    #define DEFAULT_BUTTON_CHANGE           (3)
+    #define DEFAULT_BUTTON_ENTER            (0)
+    #define DEFAULT_BUTTON_ESCAPE          (-1)
+    #define DEFAULT_BUTTON_STATS           (-1)
+    #define DEFAULT_BUTTON_PAUSE           (-1)
+    #define DEFAULT_BUTTON_YES             (-1)
+    #define DEFAULT_BUTTON_NO              (-1)
 #endif
 
 
@@ -44,84 +152,34 @@ Controls::Controls () {
 
 	int count;
 
-	keys[C_UP].key     = SDLK_UP;
-	keys[C_DOWN].key   = SDLK_DOWN;
-	keys[C_LEFT].key   = SDLK_LEFT;
-	keys[C_RIGHT].key  = SDLK_RIGHT;
-#if defined(DINGOO)
-	keys[C_JUMP].key   = SDLK_LCTRL;
-	keys[C_FIRE].key   = SDLK_LALT;
-	keys[C_CHANGE].key = SDLK_LSHIFT;
-	keys[C_ENTER].key  = SDLK_LCTRL;
-	keys[C_ESCAPE].key = SDLK_ESCAPE;
-	keys[C_STATS].key  = SDLK_TAB;
-	keys[C_PAUSE].key  = SDLK_RETURN;
-	keys[C_YES].key    = SDLK_LCTRL;
-	keys[C_NO].key     = SDLK_LALT;
-#else
-	#ifdef WIN32
-	keys[C_JUMP].key   = SDLK_RALT;
-	keys[C_FIRE].key   = SDLK_SPACE;
-	#else
-	keys[C_JUMP].key   = SDLK_SPACE;
-	keys[C_FIRE].key   = SDLK_LALT;
-	#endif
-	#ifdef ANDROID
-	keys[C_CHANGE].key = SDLK_RETURN;
-	keys[C_ENTER].key  = SDLK_SPACE;
-	#else
-	keys[C_CHANGE].key = SDLK_RCTRL;
-	keys[C_ENTER].key  = SDLK_RETURN;
-	#endif
-	keys[C_ESCAPE].key = SDLK_ESCAPE;
-	keys[C_STATS].key  = SDLK_F9;
-	keys[C_PAUSE].key  = SDLK_p;
-	keys[C_YES].key    = SDLK_y;
-	keys[C_NO].key     = SDLK_n;
-#endif
-	keys[C_SWIM].key   = keys[C_JUMP].key;
+	keys[C_UP].key = DEFAULT_KEY_UP;
+	keys[C_DOWN].key = DEFAULT_KEY_DOWN;
+	keys[C_LEFT].key = DEFAULT_KEY_LEFT;
+	keys[C_RIGHT].key = DEFAULT_KEY_RIGHT;
+	keys[C_JUMP].key = DEFAULT_KEY_JUMP;
+	keys[C_SWIM].key = DEFAULT_KEY_SWIM;
+	keys[C_FIRE].key = DEFAULT_KEY_FIRE;
+	keys[C_CHANGE].key = DEFAULT_KEY_CHANGE;
+	keys[C_ENTER].key = DEFAULT_KEY_ENTER;
+	keys[C_ESCAPE].key = DEFAULT_KEY_ESCAPE;
+	keys[C_STATS].key = DEFAULT_KEY_STATS;
+	keys[C_PAUSE].key = DEFAULT_KEY_PAUSE;
+	keys[C_YES].key = DEFAULT_KEY_YES;
+	keys[C_NO].key = DEFAULT_KEY_NO;
 
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
-	buttons[C_UP].button            = GP2X_BUTTON_UP;
-	buttons[C_DOWN].button          = GP2X_BUTTON_DOWN;
-	buttons[C_LEFT].button          = GP2X_BUTTON_LEFT;
-	buttons[C_RIGHT].button         = GP2X_BUTTON_RIGHT;
-	buttons[C_JUMP].button          = GP2X_BUTTON_A;
-	buttons[C_FIRE].button          = GP2X_BUTTON_X;
-	buttons[C_CHANGE].button        = GP2X_BUTTON_Y;
-	buttons[C_ENTER].button         = GP2X_BUTTON_R;
-	buttons[C_ESCAPE].button        = GP2X_BUTTON_L;
-	buttons[C_STATS].button         = GP2X_BUTTON_SELECT;
-	buttons[C_PAUSE].button         = GP2X_BUTTON_START;
-#elif defined (PSP)
-	buttons[C_UP].button     = 8;
-	buttons[C_DOWN].button   = 6;
-	buttons[C_LEFT].button   = 7;
-	buttons[C_RIGHT].button  = 9;
-	buttons[C_JUMP].button   = 2;
-	buttons[C_FIRE].button   = 3;
-	buttons[C_CHANGE].button = 0;
-	buttons[C_ENTER].button  = 5;
-	buttons[C_ESCAPE].button = 4;
-	buttons[C_STATS].button  = 10;
-	buttons[C_PAUSE].button  = 11;
-#else
-	buttons[C_UP].button = -1;
-	buttons[C_DOWN].button = -1;
-	buttons[C_LEFT].button = -1;
-	buttons[C_RIGHT].button = -1;
-	buttons[C_JUMP].button = 1;
-	buttons[C_FIRE].button = 0;
-	buttons[C_CHANGE].button = 3;
-	buttons[C_ENTER].button = 0;
-	buttons[C_ESCAPE].button = -1;
-	buttons[C_STATS].button = -1;
-	buttons[C_PAUSE].button = -1;
-	buttons[C_YES].button = -1;
-	buttons[C_NO].button = -1;
-#endif
-	buttons[C_SWIM].button = buttons[C_JUMP].button;
+	buttons[C_UP].button = DEFAULT_BUTTON_UP;
+	buttons[C_DOWN].button = DEFAULT_BUTTON_DOWN;
+	buttons[C_LEFT].button = DEFAULT_BUTTON_LEFT;
+	buttons[C_RIGHT].button = DEFAULT_BUTTON_RIGHT;
+	buttons[C_JUMP].button = DEFAULT_BUTTON_JUMP;
+	buttons[C_SWIM].button = DEFAULT_BUTTON_SWIM;
+	buttons[C_FIRE].button = DEFAULT_BUTTON_FIRE;
+	buttons[C_CHANGE].button = DEFAULT_BUTTON_CHANGE;
+	buttons[C_ENTER].button = DEFAULT_BUTTON_ENTER;
+	buttons[C_ESCAPE].button = DEFAULT_BUTTON_ESCAPE;
+	buttons[C_STATS].button = DEFAULT_BUTTON_STATS;
+	buttons[C_PAUSE].button = DEFAULT_BUTTON_PAUSE;
 
 
 	axes[C_UP].axis = 1;

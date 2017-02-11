@@ -14,7 +14,7 @@
  * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -59,9 +59,7 @@
 
 #include <string.h>
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
-	#include "platforms/wiz.h"
-#endif
+#include "platforms/wiz.h"
 
 
 class Main {
@@ -99,8 +97,8 @@ Main::Main (int argc, char *argv[]) {
 	File* file;
 	unsigned char* pixels = NULL;
 	int count;
-	int screenW = SW;
-	int screenH = SH;
+	int screenW = DEFAULT_SCREEN_WIDTH;
+	int screenH = DEFAULT_SCREEN_HEIGHT;
 	int scaleFactor = 1;
 #ifdef FULLSCREEN_ONLY
 	bool fullscreen = true;
@@ -211,11 +209,6 @@ Main::Main (int argc, char *argv[]) {
 	// Load settings from config file
 	setup.load(&screenW, &screenH, &fullscreen, &scaleFactor);
 
-#ifdef PSP
-	// Fix Video size
-	screenH = 272;
-	screenW = 480;
-#endif
 
 	// Get command-line override
 

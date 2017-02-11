@@ -13,7 +13,7 @@
  * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -99,8 +99,8 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 
 	// Read video settings
-	*videoW = file->loadShort(7680);
-	*videoH = file->loadShort(4800);
+	*videoW = file->loadShort(MAX_SCREEN_WIDTH);
+	*videoH = file->loadShort(MAX_SCREEN_HEIGHT);
 	count = file->loadChar();
 #ifndef FULLSCREEN_ONLY
 	*fullscreen = count & 1;

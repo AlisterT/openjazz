@@ -13,7 +13,7 @@
  * 26th July 2009: Renamed graphics.cpp to video.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -108,12 +108,9 @@ Video::Video () {
  */
 void Video::findMaxResolution () {
 
-#if defined(CAANOO) ||defined(WIZ) || defined(GP2X) || defined(DINGOO)
-	maxW = 320;
-	maxH = 240;
-#elif defined(PSP)
-	maxW = 480;
-	maxH = 272;
+#ifdef NO_RESIZE
+	maxW = DEFAULT_SCREEN_WIDTH;
+	maxH = DEFAULT_SCREEN_HEIGHT;
 #else
 	SDL_Rect **resolutions;
 	int count;
@@ -122,8 +119,8 @@ void Video::findMaxResolution () {
 
 	if (resolutions == (SDL_Rect **)(-1)) {
 
-		maxW = MAX_SW;
-		maxH = MAX_SH;
+		maxW = MAX_SCREEN_WIDTH;
+		maxH = MAX_SCREEN_HEIGHT;
 
 	} else {
 
@@ -137,8 +134,8 @@ void Video::findMaxResolution () {
 
 		}
 
-		if (maxW > MAX_SW) maxW = MAX_SW;
-		if (maxH > MAX_SH) maxH = MAX_SH;
+		if (maxW > MAX_SCREEN_WIDTH) maxW = MAX_SCREEN_WIDTH;
+		if (maxH > MAX_SCREEN_HEIGHT) maxH = MAX_SCREEN_HEIGHT;
 	}
 #endif
 
@@ -161,7 +158,7 @@ bool Video::init (int width, int height, bool startFullscreen) {
 
 	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
-	if (!resize(width, height)) {
+	if (!reset(width, height)) {
 
 		logError("Could not set video mode", SDL_GetError());
 
@@ -186,7 +183,7 @@ bool Video::init (int width, int height, bool startFullscreen) {
  *
  * @return Success
  */
-bool Video::resize (int width, int height) {
+bool Video::reset (int width, int height) {
 
 	screenW = width;
 	screenH = height;
@@ -195,10 +192,8 @@ bool Video::resize (int width, int height) {
 	if (canvas != screen) SDL_FreeSurface(canvas);
 #endif
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO)
-	screen = SDL_SetVideoMode(320, 240, 8, FULLSCREEN_FLAGS);
-#elif defined(PSP)
-	screen = SDL_SetVideoMode(480, 272, 8, FULLSCREEN_FLAGS);
+#ifdef NO_RESIZE
+	screen = SDL_SetVideoMode(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 8, FULLSCREEN_FLAGS);
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 #endif
@@ -220,16 +215,15 @@ bool Video::resize (int width, int height) {
 		canvasH = screenH / scaleFactor;
 		canvas = createSurface(NULL, canvasW, canvasH);
 
-	} else {
+	} else
 #endif
+    {
 
 		canvasW = screenW;
 		canvasH = screenH;
 		canvas = screen;
 
-#ifdef SCALE
 	}
-#endif
 
 #if !defined(WIZ) && !defined(GP2X)
 	expose();
@@ -385,7 +379,7 @@ int Video::setScaleFactor (int newScaleFactor) {
 
 		scaleFactor = newScaleFactor;
 
-		if (screen) resize(screenW, screenH);
+		if (screen) reset(screenW, screenH);
 
 	}
 
@@ -428,9 +422,10 @@ void Video::expose () {
  */
 void Video::update (SDL_Event *event) {
 
-#ifndef FULLSCREEN_ONLY
+#if !defined(FULLSCREEN_ONLY) || !defined(NO_RESIZE)
 	switch (event->type) {
 
+	#ifndef FULLSCREEN_ONLY
 		case SDL_KEYDOWN:
 
 			// If Alt + Enter has been pressed, switch between windowed and full-screen mode.
@@ -441,7 +436,7 @@ void Video::update (SDL_Event *event) {
 
 				if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
-				resize(screenW, screenH);
+				reset(screenW, screenH);
 
 				if (!fullscreen) SDL_ShowCursor(SDL_ENABLE);
 
@@ -450,12 +445,15 @@ void Video::update (SDL_Event *event) {
 			}
 
 			break;
+    #endif
 
+    #ifndef NO_RESIZE
 		case SDL_VIDEORESIZE:
 
-			resize(event->resize.w, event->resize.h);
+			reset(event->resize.w, event->resize.h);
 
 			break;
+    #endif
 
 		case SDL_VIDEOEXPOSE:
 

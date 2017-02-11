@@ -13,7 +13,7 @@
  * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -288,11 +288,12 @@ int SetupMenu::setupJoystick () {
  */
 int SetupMenu::setupResolution () {
 
-	int widthOptions[] = {SW, 400, 512, 640, 720, 768, 800, 960, 1024, 1152,
-		1280, 1440, 1600, 1680, 1920, 2048, 2560, 3200, MAX_SW};
-	int heightOptions[] = {SH, 240, 300, 384, 400, 480, 576, 600, 720, 768,
-		800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1536, 1600, 2048,
-		MAX_SH};
+    int widthOptions[] = {SW, 352, 384, 400, 480, 512, 640, 720, 768, 800, 960,
+        1024, 1152, 1280, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3200,
+        3440, 3840, 4096, MAX_SCREEN_WIDTH};
+    int heightOptions[] = {SH, 240, 288, 300, 320, 384, 400, 480, 576, 600, 720,
+        768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
+        2048, 2160, MAX_SCREEN_HEIGHT};
 	int screenW, screenH, x, y, count;
 	bool dimension;
 
@@ -403,7 +404,7 @@ int SetupMenu::setupResolution () {
 		if (count) {
 
 			playSound(S_ORB);
-			video.resize(screenW, screenH);
+			video.reset(screenW, screenH);
 
 		}
 
@@ -644,7 +645,6 @@ int SetupMenu::setupMain () {
 
 #if !defined(DINGOO) && !defined(PSP)
 				if (setupJoystick() == E_QUIT) return E_QUIT;
-
 #else
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
 #endif
@@ -653,7 +653,7 @@ int SetupMenu::setupMain () {
 
 			case 3:
 
-#if !defined(PSP)
+#ifndef NO_RESIZE
 				if (setupResolution() == E_QUIT) return E_QUIT;
 #else
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;

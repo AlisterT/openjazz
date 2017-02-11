@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed sound.c to sound.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -35,7 +35,11 @@
 #include <SDL/SDL_audio.h>
 
 #if defined(USE_MODPLUG)
-	#include <libmodplug/modplug.h>
+    #ifdef WIN32
+        #include <modplug.h>
+    #else
+        #include <libmodplug/modplug.h>
+    #endif
 #elif defined(USE_XMP)
 	#include <xmp.h>
 #endif
