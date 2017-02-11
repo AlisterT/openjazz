@@ -14,8 +14,10 @@ LDFLAGS+=`sdl-config --libs`
 CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
 LDFLAGS += `pkg-config --libs libmodplug`
 
+LDFLAGS += -lm
+
 OpenJazz: $(OBJS)
-	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lstdc++ -lz $(objects)
+	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lstdc++ -lz $(OBJS)
 
 %.o: %.cpp
 	cc $(CXXFLAGS) -Isrc -c $< -o $@
