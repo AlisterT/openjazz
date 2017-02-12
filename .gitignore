@@ -5,5 +5,17 @@ OpenJazz
 *.prx
 PARAM.SFO
 EBOOT.PBP
+
 .DS_Store
+
+.deps/
+.dirstamp
+Makefile.in
+aclocal.m4
 autom4te.cache
+config.log
+config.status
+depcomp
+install-sh
+configure
+missing
