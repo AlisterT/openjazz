@@ -37,6 +37,17 @@
 #include "util.h"
 
 
+#ifdef __SYMBIAN32__
+    #ifdef UIQ3
+        #define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
+    #else
+        #define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
+    #endif
+#else
+    #define CONFIG_FILE "openjazz.cfg"
+#endif
+
+
 /**
  * Create default setup
  */

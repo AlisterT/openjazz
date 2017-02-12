@@ -165,7 +165,7 @@ int JJ2Level::loadSprites () {
 
 	try {
 
-		file = new File(F_ANIMS_J2A, false);
+		file = new File("anims.j2a", false);
 
 	} catch (int e) {
 

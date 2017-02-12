@@ -81,6 +81,9 @@
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 #endif
 
+// Time interval
+#define T_MENU_FRAME 20
+
 
 // Class
 

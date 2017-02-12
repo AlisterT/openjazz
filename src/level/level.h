@@ -40,6 +40,16 @@
 #define TTOI(x) ((x) << 5)
 
 
+// Constants
+
+// Return values
+#define WON  1
+#define LOST 2
+
+// Time interval
+#define T_STEP 16
+
+
 // Enums
 
 /// Level type
@@ -105,7 +115,7 @@ class Level {
 
 		void createLevelPlayers (LevelType levelType, Anim** anims, Anim** flippedAnims, bool checkpoint, unsigned char x, unsigned char y);
 
-		int  playScene     (char* file);
+		int  playScene     (const char* file);
 		void timeCalcs     ();
 		int  getTimeChange ();
 		void drawOverlay   (unsigned char bg, bool menu, int option,

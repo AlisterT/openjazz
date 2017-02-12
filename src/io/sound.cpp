@@ -174,7 +174,7 @@ void openAudio () {
 
 	// Load sounds
 
-	if (loadSounds(F_SOUNDS) != E_NONE) sounds = NULL;
+	if (loadSounds("SOUNDS.000") != E_NONE) sounds = NULL;
 
 	// Start audio for sfx to work
 	SDL_PauseAudio(0);

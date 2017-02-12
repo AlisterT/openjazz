@@ -11,7 +11,7 @@
  * 1st August 2012: Renamed bonus.cpp to jj1bonuslevel.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -58,7 +58,7 @@ int JJ1BonusLevel::loadSprites () {
 
 	try {
 
-		file = new File(F_BONUS, false);
+		file = new File("BONUS.000", false);
 
 	} catch (int e) {
 
@@ -775,7 +775,7 @@ int JJ1BonusLevel::play () {
 
 			if (localPlayer->getJJ1BonusLevelPlayer()->getGems() >= items) {
 
-				//if (playScene(F_BONUS_0SC) == E_QUIT) return E_QUIT;
+				if (playScene("BONUS.0SC") == E_QUIT) return E_QUIT;
 
 				return WON;
 

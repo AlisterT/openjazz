@@ -95,7 +95,7 @@ int SetupMenu::setupKeyboard () {
 		}
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -249,7 +249,7 @@ int SetupMenu::setupJoystick () {
 			controls.wasCursorReleased())) return E_NONE;
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -319,7 +319,7 @@ int SetupMenu::setupResolution () {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -444,7 +444,7 @@ int SetupMenu::setupScaling () {
 			(x >= 32) && (x < 132) && (y >= canvasH - 12) &&
 			controls.wasCursorReleased()) return E_NONE;
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -521,7 +521,7 @@ int SetupMenu::setupSound () {
 		}
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 

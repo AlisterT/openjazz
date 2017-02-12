@@ -12,7 +12,7 @@
  * 26th July 2009: Renamed menugame.cpp to gamemenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -233,7 +233,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -279,8 +279,8 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
 	char* firstLevel;
 	int ret;
 
-	if (levelNum == -1) firstLevel = createFileName(F_BONUSMAP, worldNum);
-	else firstLevel = createFileName(F_LEVEL, levelNum, worldNum);
+	if (levelNum == -1) firstLevel = createFileName("BONUSMAP", worldNum);
+	else firstLevel = createFileName("LEVEL", levelNum, worldNum);
 
 	ret = newGameDifficulty(mode, firstLevel);
 
@@ -350,7 +350,7 @@ int GameMenu::loadGame () {
 		}
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(15);
 
@@ -475,7 +475,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		else if ((count >= 6) && (count < 9)) x = (count + 4) * 3;
 		else x = 50;
 
-		check = createFileName(F_LEVEL, 0, x);
+		check = createFileName("LEVEL", 0, x);
 		exists[count] = fileExists(check);
 		delete[] check;
 
@@ -486,7 +486,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 	if (mode == M_SINGLE) {
 
-		check = createFileName(F_BONUSMAP, 0);
+		check = createFileName("BONUSMAP", 0);
 		exists[10] = fileExists(check);
 		delete[] check;
 
@@ -538,7 +538,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		}
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 

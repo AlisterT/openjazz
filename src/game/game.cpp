@@ -231,7 +231,7 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 			JJ1Planet *planet;
 			char *planetFileName = NULL;
 
-			planetFileName = createFileName(F_PLANET, level->getWorld());
+			planetFileName = createFileName("PLANET", level->getWorld());
 
 			try {
 
@@ -288,7 +288,7 @@ LevelType Game::getLevelType (const char* fileName) {
 	length = strlen(fileName);
 
 	if ((length > 4) && !strcasecmp(fileName + length - 4, ".j2l")) return LT_JJ2;
-	if (!strncasecmp(fileName, F_BONUSMAP, 8)) return LT_JJ1BONUS;
+	if (!strncasecmp(fileName, "BONUSMAP", 8)) return LT_JJ1BONUS;
 	return LT_JJ1;
 
 }
@@ -336,14 +336,14 @@ int Game::play () {
 
 		if (ret <= 0) return ret;
 
-		if (levelFile && !strncasecmp(levelFile, F_BONUSMAP, 8)) {
+		if (levelFile && !strncasecmp(levelFile, "BONUSMAP", 8)) {
 
 			if (ret == WON) {
 
 				char *fileName;
 
 				// Go to next level
-				fileName = createFileName(F_BONUSMAP, (levelFile[10] * 10) + levelFile[11] - 527);
+				fileName = createFileName("BONUSMAP", (levelFile[10] * 10) + levelFile[11] - 527);
 				setLevel(fileName);
 				delete[] fileName;
 

@@ -11,7 +11,7 @@
  * 1st August 2012: Renamed planet.cpp to jj1planet.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -145,7 +145,7 @@ int JJ1Planet::play () {
 
 		if (controls.release(C_ESCAPE) || controls.wasCursorReleased()) return E_NONE;
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 

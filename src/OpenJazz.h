@@ -22,7 +22,7 @@
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -66,49 +66,6 @@
 #define F160 163840
 #define F192 196608
 
-// Files
-#ifdef __SYMBIAN32__
-#ifdef UIQ3
-#define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
-#else
-#define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
-#endif
-#else
-#define CONFIG_FILE "openjazz.cfg"
-#endif
-#define LOGO_FILE   "openjazz.000"
-#define LEVEL_FILE  "openjazz.tmp"
-
-#define F_FONTS        "FONTS.000"
-#define F_MAINCHAR     "MAINCHAR.000"
-#define F_MENU         "MENU.000"
-#define F_PANEL        "PANEL.000"
-#define F_SOUNDS       "SOUNDS.000"
-#define F_BONUS        "BONUS.000"
-#define F_ANIMS_J2A    "ANIMS.J2A"
-
-#define F_BONUS_0SC    "BONUS.0SC"
-#define F_END_0SC      "END.0SC"
-#define F_INSTRUCT_0SC "INSTRUCT.0SC"
-#define F_ORDER_0SC    "ORDER.0SC"
-#define F_STARTUP_0SC  "STARTUP.0SC"
-
-#define F_MACRO        "MACRO.1"
-
-#define F_FONT2_0FN    "FONT2.0FN"
-#define F_FONTBIG_0FN  "FONTBIG.0FN"
-#define F_FONTINY_0FN  "FONTINY.0FN"
-#define F_FONTMN1_0FN  "FONTMN1.0FN"
-#define F_FONTMN2_0FN  "FONTMN2.0FN"
-
-// File path prefixes
-#define F_BLOCKS       "BLOCKS"
-#define F_BONUSMAP     "BONUSMAP"
-#define F_LEVEL        "LEVEL"
-#define F_PLANET       "PLANET"
-#define F_SPRITES      "SPRITES"
-
-
 // Standard string length
 #define STRING_LENGTH 32
 
@@ -131,17 +88,6 @@
 
 #define E_NONE       0
 
-#define WON          1
-#define LOST         2
-#define JOYSTICKB    0x100
-#define JOYSTICKANEG 0x200
-#define JOYSTICKAPOS 0x300
-
-// Time intervals
-#define T_FRAME        20
-#define T_ACTIVE_FRAME 4
-#define T_STEP         16
-
 
 // Macros
 
@@ -155,12 +101,6 @@
 // Datatype
 
 typedef int fixed;
-
-
-// Variable
-
-EXTERN unsigned int globalTicks;
-
 
 #endif
 

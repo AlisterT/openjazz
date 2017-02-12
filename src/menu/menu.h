@@ -11,7 +11,7 @@
  * 21st July 2013: Created setup.h from parts of menu.h
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -31,8 +31,6 @@
 #include "io/file.h"
 
 #include "OpenJazz.h"
-
-#include <SDL/SDL.h>
 
 
 // Constants

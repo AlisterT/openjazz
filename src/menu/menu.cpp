@@ -16,7 +16,7 @@
  * 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -73,7 +73,7 @@ int Menu::message (const char* text) {
 		if (controls.release(C_ENTER) || controls.release(C_ESCAPE) || controls.wasCursorReleased())
 			return E_NONE;
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(15);
 
@@ -143,7 +143,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
@@ -252,7 +252,7 @@ int Menu::textInput (const char* request, char*& text) {
 		}
 
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(15);
 

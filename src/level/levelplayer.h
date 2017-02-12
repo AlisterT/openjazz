@@ -16,7 +16,7 @@
  *                  jj1bonuslevelplayer.h and jj2levelplayer.h
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,9 +32,8 @@
 #define _LEVELPLAYER_H
 
 
+#include "io/gfx/video.h"
 #include "level/movable.h"
-
-#include <SDL/SDL.h>
 
 
 // Classes

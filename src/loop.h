@@ -10,7 +10,7 @@
  * 30th April 2010: Created loop.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -27,6 +27,19 @@
 
 
 #include "io/gfx/paletteeffects.h"
+
+
+// Constants
+
+// Return values
+#define JOYSTICKB    0x100
+#define JOYSTICKANEG 0x200
+#define JOYSTICKAPOS 0x300
+
+
+// Variable
+
+EXTERN unsigned int globalTicks;
 
 
 // Enum

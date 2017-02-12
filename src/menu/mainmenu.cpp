@@ -12,7 +12,7 @@
  * 26th July 2009: Renamed menumain.cpp to mainmenu.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -54,7 +54,7 @@ MainMenu::MainMenu () {
 
 	try {
 
-		file = new File(LOGO_FILE, false);
+		file = new File("openjazz.000", false);
 
 	} catch (int e) {
 
@@ -71,7 +71,7 @@ MainMenu::MainMenu () {
 
 	try {
 
-		file = new File(F_MENU, false);
+		file = new File("MENU.000", false);
 
 	} catch (int e) {
 
@@ -178,7 +178,7 @@ int MainMenu::select (int option) {
 
 			try {
 
-				scene = new JJ1Scene(F_INSTRUCT_0SC);
+				scene = new JJ1Scene("INSTRUCT.0SC");
 
 			} catch (int e) {
 
@@ -210,7 +210,7 @@ int MainMenu::select (int option) {
 
 			try {
 
-				scene = new JJ1Scene(F_ORDER_0SC);
+				scene = new JJ1Scene("ORDER.0SC");
 
 			} catch (int e) {
 
@@ -280,7 +280,7 @@ int MainMenu::main () {
 
 	// Check for demo macros
 
-	fileName = createString(F_MACRO);
+	fileName = createString("MACRO.1");
 
 	for (macro = 0; macro < 4; macro++)
 	{
@@ -388,7 +388,7 @@ int MainMenu::main () {
 
 				if (macro != x) {
 
-					fileName = createString(F_MACRO);
+					fileName = createString("MACRO.1");
 					fileName[6] += macro;
 
 					if (game->playLevel(fileName) == E_QUIT) {
@@ -418,7 +418,7 @@ int MainMenu::main () {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 
 		//as long as we're drawing plasma, we don't need to clear the screen.

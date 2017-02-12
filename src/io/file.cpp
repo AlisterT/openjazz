@@ -12,7 +12,7 @@
  * 3rd February 2009: Created file.cpp from parts of util.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -36,51 +36,34 @@
 #include <zlib.h>
 
 
+#ifndef WIN32
+    #define UPPERCASE_FILENAMES
+    #defined LOWERCASE_FILENAMES
+#endif
+
+
 /**
- * Try opening a file from the available paths. If the file is
- * not found, try a second time with the path upcased. This helps
- * find files extracted from a DOS zip file on modern, case-
- * sensitive filesystems.
+ * Try opening a file from the available paths.
  *
  * @param name File name
  * @param write Whether or not the file can be written to
  */
 File::File (const char* name, bool write) {
-	char uppercase_name[64];
+
 	Path* path;
 
-	while (1)
-	{
-		path = firstPath;
+	path = firstPath;
 
-		while (path) {
+	while (path) {
 
-			if (open(path->path, name, write)) return;
-			path = path->next;
+		if (open(path->path, name, write)) return;
+		path = path->next;
 
-		}
-
-		log("Could not open file", name);
-
-		if (name == uppercase_name) {
-
-			// Have already tried uppercase version of filename.
-			throw E_FILE;
-
-		} else {
-
-			// Upcase filename, to see if that matches on case-sensitive filesystems.
-			int pos = 0;
-			while(name[pos]) {
-				uppercase_name[pos] = toupper(name[pos]);
-				pos++;
-			}
-			uppercase_name[pos] = '\0';
-			name = uppercase_name;
-
-		}
 	}
 
+	log("Could not open file", name);
+
+	throw E_FILE;
 
 }
 
@@ -119,30 +102,44 @@ bool File::open (const char* path, const char* name, bool write) {
 	// Create the file path for the given directory
 	filePath = createString(path, name);
 
-#ifdef UPPERCASE_FILENAMES
-	for (count = strlen(path); filePath[count]; count++) {
-
-		if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
-
-	}
-#endif
-
-#ifdef LOWERCASE_FILENAMES
-	for (count = strlen(path); filePath[count]; count++) {
-
-		if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
-
-	}
-#endif
-
 	// Open the file from the path
 	file = fopen(filePath, write ? "wb": "rb");
 
+#ifdef UPPERCASE_FILENAMES
+    if (!file) {
+
+        // Convert the file name to upper case
+        for (count = strlen(path); filePath[count]; count++) {
+
+            if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
+
+        }
+
+        // Open the file from the path
+        file = fopen(filePath, write ? "wb": "rb");
+
+    }
+#endif
+
+#ifdef LOWERCASE_FILENAMES
+    if (!file) {
+
+        // Convert the file name to lower case
+        for (count = strlen(path); filePath[count]; count++) {
+
+            if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
+
+        }
+
+        // Open the file from the path
+        file = fopen(filePath, write ? "wb": "rb");
+
+    }
+#endif
+
 	if (file) {
 
-#ifdef VERBOSE
-		log("Opened file", filePath);
-#endif
+        LOG("Opened file", filePath);
 
 		return true;
 
