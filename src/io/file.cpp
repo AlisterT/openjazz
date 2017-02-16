@@ -33,12 +33,17 @@
 #include "util.h"
 
 #include <string.h>
-#include <zlib.h>
 
+#ifdef _3DS
+#define MINIZ_HEADER_FILE_ONLY
+#include "miniz.c"
+#else
+#include <zlib.h>
+#endif
 
 #ifndef WIN32
     #define UPPERCASE_FILENAMES
-    #defined LOWERCASE_FILENAMES
+    #define LOWERCASE_FILENAMES
 #endif
 
 
