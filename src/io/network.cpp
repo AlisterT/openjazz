@@ -12,7 +12,7 @@
  * 3rd June 2009: Created network.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2011 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -235,7 +235,7 @@ int Network::join (char *address) {
 		FD_ZERO(&writefds);
 		FD_SET(sock, &writefds);
 		timeouttv.tv_sec = 0;
-		timeouttv.tv_usec = T_FRAME;
+		timeouttv.tv_usec = T_MENU_FRAME;
 		con = select(sock + 1, NULL, &writefds, NULL, &timeouttv);
 
 		if (con == -1) {

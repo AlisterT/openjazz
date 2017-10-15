@@ -12,7 +12,7 @@
  * 18th July 2009: Created clientgame.cpp from parts of game.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -81,7 +81,7 @@ ClientGame::ClientGame (char* address) {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 		fontmn2->showString("WAITING FOR REPLY", canvasW >> 2, (canvasH >> 1) - 16);
@@ -274,7 +274,7 @@ int ClientGame::setLevel (char* fileName) {
 
 		if (controls.release(C_ESCAPE)) return E_RETURN;
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 		fontmn2->showString("WAITING FOR SERVER", canvasW >> 2, (canvasH >> 1) - 16);
@@ -292,7 +292,7 @@ int ClientGame::setLevel (char* fileName) {
 
 		if (controls.release(C_ESCAPE)) return E_RETURN;
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 		fontmn2->showString("downloaded", canvasW >> 2, (canvasH >> 1) - 16);

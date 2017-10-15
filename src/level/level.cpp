@@ -124,7 +124,7 @@ void Level::createLevelPlayers (LevelType levelType, Anim** anims,
  *
  * @return Error code
  */
-int Level::playScene (char* file) {
+int Level::playScene (const char* file) {
 
 	JJ1Scene* scene;
 	int ret;

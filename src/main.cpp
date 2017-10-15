@@ -55,22 +55,13 @@
 	#include <pspdebug.h>
 	#include <psputility.h>
 	#include <pspdisplay.h>
+#elif defined(_3DS)
+	#include <3ds.h>
 #endif
 
 #include <string.h>
 
 #include "platforms/wiz.h"
-
-
-class Main {
-
-	public:
-		Main  (int argc, char *argv[]);
-		~Main ();
-
-		int play ();
-
-};
 
 
 #ifdef __SYMBIAN32__
@@ -90,9 +81,9 @@ extern float sinf (float);
  * the game window and loads required data.
  *
  * @param argc Number of arguments, as passed to main function
- * @param argv Array of argument strings, as apsse to main function
+ * @param argv Array of argument strings, as passed to main function
  */
-Main::Main (int argc, char *argv[]) {
+void startUp (int argc, char *argv[]) {
 
 	File* file;
 	unsigned char* pixels = NULL;
@@ -257,7 +248,7 @@ Main::Main (int argc, char *argv[]) {
 
 	try {
 
-		file = new File(F_PANEL, false);
+		file = new File("PANEL.000", false);
 
 	} catch (int e) {
 
@@ -288,11 +279,11 @@ Main::Main (int argc, char *argv[]) {
 
 		panelBigFont = new Font(pixels + (40 * 320), true);
 		panelSmallFont = new Font(pixels + (48 * 320), false);
-		font2 = new Font(F_FONT2_0FN);
-		fontbig = new Font(F_FONTBIG_0FN);
-		fontiny = new Font(F_FONTINY_0FN);
-		fontmn1 = new Font(F_FONTMN1_0FN);
-		fontmn2 = new Font(F_FONTMN2_0FN);
+		font2 = new Font("FONT2.0FN");
+		fontbig = new Font("FONTBIG.0FN");
+		fontiny = new Font("FONTINY.0FN");
+		fontmn1 = new Font("FONTMN1.0FN");
+		fontmn2 = new Font("FONTMN2.0FN");
 
 	} catch (int e) {
 
@@ -340,7 +331,7 @@ Main::Main (int argc, char *argv[]) {
  *
  * Frees data, writes configuration, and shuts down SDL.
  */
-Main::~Main () {
+void shutDown () {
 
 	delete net;
 
@@ -373,7 +364,7 @@ Main::~Main () {
  *
  * @return Error code
  */
-int Main::play () {
+int play () {
 
 	MainMenu *mainMenu = NULL;
 	JJ1Scene *scene = NULL;
@@ -382,7 +373,7 @@ int Main::play () {
 
 	try {
 
-		scene = new JJ1Scene(F_STARTUP_0SC);
+		scene = new JJ1Scene("STARTUP.0SC");
 
 	} catch (int e) {
 
@@ -428,7 +419,7 @@ int Main::play () {
 
 	try {
 
-		scene = new JJ1Scene(F_END_0SC);
+		scene = new JJ1Scene("END.0SC");
 
 	} catch (int e) {
 
@@ -466,10 +457,10 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 	prevTicks = globalTicks;
 	globalTicks = SDL_GetTicks();
 
-	if (globalTicks - prevTicks < T_ACTIVE_FRAME) {
+	if (globalTicks - prevTicks < 4) {
 
 		// Limit framerate
-		SDL_Delay(T_ACTIVE_FRAME + prevTicks - globalTicks);
+		SDL_Delay(4 + prevTicks - globalTicks);
 		globalTicks = SDL_GetTicks();
 
 	}
@@ -536,7 +527,6 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
  */
 int main(int argc, char *argv[]) {
 
-	Main* mainObj;
 	int ret;
 
 #ifdef PSP
@@ -544,10 +534,14 @@ int main(int argc, char *argv[]) {
 	atexit(sceKernelExitGame);
 	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
 #endif
+	//gfxInit(GSP_RGBA8_OES, GSP_BGR8_OES, false);
+	//consoleInit(GFX_BOTTOM, NULL);
+	//printf("\n\nOJ 3DS\n\n");
 
 	// Initialise SDL
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER) < 0) {
+	// SDL_INIT_JOYSTICK crashes the 3ds
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
 
 		logError("Could not start SDL", SDL_GetError());
 
@@ -560,7 +554,7 @@ int main(int argc, char *argv[]) {
 
 	try {
 
-		mainObj = new Main(argc, argv);
+		startUp(argc, argv);
 
 	} catch (int e) {
 
@@ -573,12 +567,12 @@ int main(int argc, char *argv[]) {
 
 	// Play the opening cutscene, run the main menu, etc.
 
-	ret = mainObj->play();
+	ret = play();
 
 
 	// Save configuration and shut down
 
-	delete mainObj;
+	shutDown();
 
 	SDL_Quit();
 

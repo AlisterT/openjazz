@@ -15,7 +15,7 @@
  * 1st August 2012: Renamed level.h to jj1level.h
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -39,8 +39,6 @@
 #include "level/level.h"
 #include "io/gfx/anim.h"
 #include "OpenJazz.h"
-
-#include <SDL/SDL.h>
 
 
 // Constants

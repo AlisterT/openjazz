@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 
-AM_CPPFLAGS = -DUSE_MODPLUG -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
-              ${libSDL_CFLAGS} ${libmodplug_CFLAGS}
+AM_CPPFLAGS = -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
+              ${libSDL_CFLAGS} ${libmodplug_CFLAGS} ${libxmp_CFLAGS} ${zlib_CFLAGS}
 AM_CFLAGS   = -Wall
 AM_CXXFLAGS = -Wall
 
@@ -40,4 +40,4 @@ openjazz_SOURCES = \
 	src/menu/plasma.cpp src/menu/setupmenu.cpp \
 	src/player/player.cpp \
 	src/main.cpp src/setup.cpp src/util.cpp
-openjazz_LDADD = -lz ${libSDL_LIBS} ${libmodplug_LIBS}
+openjazz_LDADD = ${libSDL_LIBS} ${libmodplug_LIBS} ${libxmp_LIBS} ${zlib_LIBS}

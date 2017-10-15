@@ -10,7 +10,7 @@
  * 1st August 2012: Renamed planet.h to jj1planet.h
  *
  * @section Licence
- * Copyright (c) 2009-2012 Alister Thomson
+ * Copyright (c) 2009-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -27,8 +27,6 @@
 
 
 #include "io/gfx/sprite.h"
-
-#include <SDL/SDL.h>
 
 
 // Class

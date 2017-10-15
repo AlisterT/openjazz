@@ -13,7 +13,7 @@
  * 1st August 2012: Renamed scene.cpp to jj1scene.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -376,7 +376,7 @@ int JJ1Scene::play () {
 
 		}
 
-		SDL_Delay(T_FRAME);
+		SDL_Delay(T_MENU_FRAME);
 
 
 		if(pages[sceneIndex].askForYesNo) {

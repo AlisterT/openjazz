@@ -10,7 +10,7 @@
  * 3rd February 2009: Renamed font.c to font.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -237,7 +237,7 @@ Font::Font (bool bonus) {
 
 	try {
 
-		file = new File(bonus? F_BONUS: F_FONTS, false);
+		file = new File(bonus? "BONUS.000": "FONTS.000", false);
 
 	} catch (int e) {
 

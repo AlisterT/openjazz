@@ -73,7 +73,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 	// Level file to load
 	lNum = file->loadShort(9);
 	wNum = file->loadShort(999);
-	levelFile = createFileName(F_LEVEL, lNum, wNum);
+	levelFile = createFileName("LEVEL", lNum, wNum);
 
 	// Difficulty
 	file->loadShort();

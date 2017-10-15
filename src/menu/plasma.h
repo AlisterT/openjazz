@@ -23,8 +23,6 @@
 #ifndef _PLASMA_H
 #define _PLASMA_H
 
-#include <SDL/SDL.h>
-
 /// Main menu background plasma effect
 class Plasma {
 

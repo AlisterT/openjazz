@@ -16,7 +16,7 @@
  * 1st August 2012: Renamed levelload.cpp to jj1levelload.cpp
  *
  * @section Licence
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -66,7 +66,7 @@ int JJ1Level::loadPanel () {
 
 	try {
 
-		file = new File(F_PANEL, false);
+		file = new File("PANEL.000", false);
 
 	} catch (int e) {
 
@@ -201,7 +201,7 @@ int JJ1Level::loadSprites (char * fileName) {
 	// This function loads all the sprites, not just those in fileName
 	try {
 
-		mainFile = new File(F_MAINCHAR, false);
+		mainFile = new File("MAINCHAR.000", false);
 
 	} catch (int e) {
 
@@ -459,7 +459,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		// Load the planet's name from the planet.### file
 
-		string = createFileName(F_PLANET, fileName + strlen(fileName) - 3);
+		string = createFileName("PLANET", fileName + strlen(fileName) - 3);
 
 		try {
 
@@ -583,8 +583,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	ext = file->loadString();
 
 	// Create tile set file name
-	if (!strcmp(ext, "999")) string = createFileName(F_BLOCKS, worldNum);
-	else string = createFileName(F_BLOCKS, ext);
+	if (!strcmp(ext, "999")) string = createFileName("BLOCKS", worldNum);
+	else string = createFileName("BLOCKS", ext);
 
 	delete[] ext;
 
@@ -605,7 +605,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	// Load sprite set from corresponding Sprites.###
 
-	string = createFileName(F_SPRITES, worldNum);
+	string = createFileName("SPRITES", worldNum);
 
 	count = loadSprites(string);
 

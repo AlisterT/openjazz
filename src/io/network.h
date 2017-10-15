@@ -10,7 +10,7 @@
  * 3rd June 2009: Created network.h from parts of OpenJazz.h
  *
  * @section Licence
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -46,6 +46,9 @@
 
 // Client limit
 #define MAX_CLIENTS   31
+
+// Level file
+#define LEVEL_FILE  "openjazz.tmp"
 
 
 // Class

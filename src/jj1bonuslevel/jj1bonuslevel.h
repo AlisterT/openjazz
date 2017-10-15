@@ -10,7 +10,7 @@
  * 1st August 2012: Renamed bonus.h to jj1bonuslevel.h
  *
  * @section Licence
- * Copyright (c) 2009-2010 Alister Thomson
+ * Copyright (c) 2009-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -25,11 +25,8 @@
 #ifndef _BONUS_H
 #define _BONUS_H
 
-#include "level/level.h"
-
 #include "io/gfx/anim.h"
-
-#include <SDL/SDL.h>
+#include "level/level.h"
 
 
 // Constants
