@@ -5,17 +5,17 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp and level.c to level.cpp,
  *                    created player.cpp
- * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
- * 24th June 2010: Created levelplayer.cpp from parts of player.cpp
- * 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
- * 1st August 2012: Renamed levelplayer.cpp to jj1levelplayer.cpp
+ * - 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * - 24th June 2010: Created levelplayer.cpp from parts of player.cpp
+ * - 29th June 2010: Created jj2levelplayer.cpp from parts of levelplayer.cpp
+ * - 1st August 2012: Renamed levelplayer.cpp to jj1levelplayer.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -25,7 +25,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the creation and destruction of players in levels, and their
  * interactions with other level objects.
  *
@@ -153,7 +153,7 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	dx = 0;
 	dy = 0;
 
-	event = JJ1PE_NONE;
+	eventType = JJ1PE_NONE;
 	energy = 4;
 	flying = false;
 	facing = true;
@@ -193,7 +193,7 @@ void JJ1LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	// If the location matches, clear the event
 
-	if ((gridX == eventX) && (gridY == eventY)) event = JJ1PE_NONE;
+	if ((gridX == eventX) && (gridY == eventY)) eventType = JJ1PE_NONE;
 
 	return;
 
@@ -444,7 +444,7 @@ JJ1PlayerReaction JJ1LevelPlayer::reacted (unsigned int ticks) {
  */
 void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY, fixed shiftX, fixed newY) {
 
-	event = JJ1PE_PLATFORM;
+	eventType = JJ1PE_PLATFORM;
 	eventX = gridX;
 	eventY = gridY;
 
@@ -465,19 +465,20 @@ void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY, fixe
 /**
  * Take the event from the given tile.
  *
+ * @param event Event type
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  * @param ticks Time
  *
  * @return Whether or not the event should be destroyed.
  */
-bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
+bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
-	switch (set->modifier) {
+	switch (event->modifier) {
 
 		case 41: // Bonus level
 
-			if (energy) level->setNext(set->multiA, set->multiB);
+			if (energy) level->setNext(event->multiA, event->multiB);
 
 			// The lack of a break statement is intentional
 
@@ -666,13 +667,13 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned
 
 	}
 
-	player->addScore(set->points * 10);
+	player->addScore(event->points * 10);
 
 	// Add to player's enemy/item tally
 	// If the event hurts and can be killed, it is an enemy
 	// Anything else that scores is an item
-	if ((set->modifier == 0) && set->strength) enemies++;
-	else if (set->points) items++;
+	if ((event->modifier == 0) && event->strength) enemies++;
+	else if (event->points) items++;
 
 	return true;
 
@@ -682,41 +683,42 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* set, unsigned char gridX, unsigned
 /**
  * Called when the player has touched the event from the given tile.
  *
+ * @param event Event type
  * @param gridX X-coordinate of the tile
  * @param gridY Y-coordinate of the tile
  * @param ticks Time
  *
  * @return Whether or not the event should be destroyed.
  */
-bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
+bool JJ1LevelPlayer::touchEvent (JJ1EventType* event, unsigned char gridX, unsigned char gridY, unsigned int ticks) {
 
-	if ((set->movement == 37) || (set->movement == 38)) {
+	if ((event->movement == 37) || (event->movement == 38)) {
 
 		// Repel
 
-		if (set->multiB) {
+		if (event->multiB) {
 
-			if (set->multiA > 0) {
+			if (event->multiA > 0) {
 
-				udx = (set->magnitude < 0 ? -ITOF(240): ITOF(240));
+				udx = (event->magnitude < 0 ? -ITOF(240): ITOF(240));
 
-				event = JJ1PE_REPELUP;
-				targetY = TTOF(gridY) - ITOF(set->multiA * 3);
+				eventType = JJ1PE_REPELUP;
+				targetY = TTOF(gridY) - ITOF(event->multiA * 3);
 
 			} else {
 
-				event = JJ1PE_REPELDOWN;
+				eventType = JJ1PE_REPELDOWN;
 
 			}
 
 			eventX = gridX;
 			eventY = gridY;
 
-			dy = set->multiA * -F24;
+			dy = event->multiA * -F24;
 
 		} else {
 
-			event = JJ1PE_REPELH;
+			eventType = JJ1PE_REPELH;
 			eventX = gridX;
 			eventY = gridY;
 
@@ -724,12 +726,12 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 	}
 
-	switch (set->modifier) {
+	switch (event->modifier) {
 
 		case 0: // Hurt
 		case 8: // Boss
 
-			if ((set->movement < 37) || (set->movement > 44)) {
+			if ((event->movement < 37) || (event->movement > 44)) {
 
 				if (reaction != PR_SHIELDED) hit(NULL, ticks);
 
@@ -753,8 +755,8 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 			if (!warpTime) {
 
-				warpX = set->multiA;
-				warpY = set->multiB;
+				warpX = event->multiA;
+				warpY = event->multiB;
 				warpTime = ticks + T_WARP;
 
 				// White flash
@@ -766,15 +768,15 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 		case 28: // Belt
 
-			if (set->magnitude < 0) {
+			if (event->magnitude < 0) {
 
-				if (!level->checkMaskDown(x + PXO_L + (set->magnitude * 64), y + PYO_MID))
-					x += set->magnitude * 64;
+				if (!level->checkMaskDown(x + PXO_L + (event->magnitude * 64), y + PYO_MID))
+					x += event->magnitude * 64;
 
 			} else {
 
-				if (!level->checkMaskDown(x + PXO_R + (set->magnitude * 64), y + PYO_MID))
-					x += set->magnitude * 64;
+				if (!level->checkMaskDown(x + PXO_R + (event->magnitude * 64), y + PYO_MID))
+					x += event->magnitude * 64;
 
 			}
 
@@ -782,12 +784,12 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 		case 29: // Upwards spring
 
-			event = JJ1PE_SPRING;
+			eventType = JJ1PE_SPRING;
 			eventX = gridX;
 			eventY = gridY;
-			targetY = TTOF(gridY) + (set->magnitude * ITOF(21));
+			targetY = TTOF(gridY) + (event->magnitude * ITOF(21));
 
-			level->playSound(set->sound);
+			level->playSound(event->sound);
 
 			break;
 
@@ -799,16 +801,16 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 		case 32: // Float up / sideways
 
-			if (set->multiB) {
+			if (event->multiB) {
 
-				event = JJ1PE_FLOAT;
+				eventType = JJ1PE_FLOAT;
 				eventX = gridX;
 				eventY = gridY;
-				targetY = TTOF(gridY) - (set->multiA * ITOF(17));
+				targetY = TTOF(gridY) - (event->multiA * ITOF(17));
 
 			} else {
 
-				event = JJ1PE_FLOATH;
+				eventType = JJ1PE_FLOATH;
 				eventX = gridX;
 				eventY = gridY;
 
@@ -824,7 +826,7 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* set, unsigned char gridX, unsigne
 
 		default:
 
-			if (!set->strength) return takeEvent(set, gridX, gridY, ticks);
+			if (!event->strength) return takeEvent(event, gridX, gridY, ticks);
 
 			break;
 

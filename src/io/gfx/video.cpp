@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created main.c
- * 22nd July 2008: Created util.c from parts of main.c
- * 3rd February 2009: Renamed util.c to util.cpp
- * 13th July 2009: Created graphics.cpp from parts of util.cpp
- * 26th July 2009: Renamed graphics.cpp to video.cpp
+ * @par History:
+ * - 23rd August 2005: Created main.c
+ * - 22nd July 2008: Created util.c from parts of main.c
+ * - 3rd February 2009: Renamed util.c to util.cpp
+ * - 13th July 2009: Created graphics.cpp from parts of util.cpp
+ * - 26th July 2009: Renamed graphics.cpp to video.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Contains graphics utility functions.
  *
  */

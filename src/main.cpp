@@ -5,15 +5,15 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created main.c
- * 22nd July 2008: Created util.c from parts of main.c
- * 3rd February 2009: Renamed main.c to main.cpp
- * 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
- * 13th July 2009: Created controls.cpp from parts of main.cpp
- * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
+ * @par History:
+ * - 23rd August 2005: Created main.c
+ * - 22nd July 2008: Created util.c from parts of main.c
+ * - 3rd February 2009: Renamed main.c to main.cpp
+ * - 4th February 2009: Created palette.cpp from parts of main.cpp and util.cpp
+ * - 13th July 2009: Created controls.cpp from parts of main.cpp
+ * - 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -23,7 +23,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Contains the main function.
  *
  */
@@ -125,7 +125,7 @@ void startUp (int argc, char *argv[]) {
 		// If it isn't an option, it should be a path
 		if (argv[count][0] != '-') {
 
-#ifdef WIN32
+#ifdef _WIN32
 			if (argv[count][strlen(argv[count]) - 1] != '\\') {
 
 				firstPath = new Path(firstPath, createString(argv[count], "\\"));
@@ -151,7 +151,7 @@ void startUp (int argc, char *argv[]) {
 	count = strlen(argv[0]) - 1;
 
 	// Search for directory separator
-#ifdef WIN32
+#ifdef _WIN32
 	while ((argv[0][count] != '\\') && (count >= 0)) count--;
 #else
 	while ((argv[0][count] != '/') && (count >= 0)) count--;
@@ -170,7 +170,7 @@ void startUp (int argc, char *argv[]) {
 	// Use the user's home directory, if available
 
 #ifdef HOMEDIR
-	#ifdef WIN32
+	#ifdef _WIN32
 	firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
 	#else
 	firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));

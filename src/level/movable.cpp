@@ -5,10 +5,10 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 15th January 2010: Created movable.cpp
+ * @par History:
+ * - 15th January 2010: Created movable.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2010-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Contains the base class for all movable objects.
  *
  */

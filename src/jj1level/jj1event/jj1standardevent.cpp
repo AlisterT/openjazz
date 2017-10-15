@@ -5,18 +5,18 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp
- * 19th July 2009: Created eventframe.cpp from parts of events.cpp
- * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
- * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
- * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
- * 5th February 2011: Renamed eventframe.cpp to standardevent.cpp
- * 1st August 2012: Renamed standardevent.cpp to jj1standardevent.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp
+ * - 19th July 2009: Created eventframe.cpp from parts of events.cpp
+ * - 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
+ * - 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
+ * - 5th February 2011: Moved parts of eventframe.cpp to event.cpp
+ * - 5th February 2011: Renamed eventframe.cpp to standardevent.cpp
+ * - 1st August 2012: Renamed standardevent.cpp to jj1standardevent.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -26,7 +26,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Provides the once-per-frame functions of ordinary events.
  *
  */
@@ -48,8 +48,11 @@
 /**
  * Create standard event.
  *
- * @param gX X-coordinate
- * @param gY Y-coordinate
+ * @param event The event type
+ * @param gX The grid X-coordinate of the origin of the event
+ * @param gY The grid Y-coordinate of the origin of the event
+ * @param startX The initial X-coordinate of the event
+ * @param startY The initial Y-coordinate of the event
  */
 JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsigned char gY, fixed startX, fixed startY) : JJ1Event(gX, gY) {
 

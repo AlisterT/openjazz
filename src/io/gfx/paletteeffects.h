@@ -5,12 +5,12 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 4th February 2009: Created palette.h from parts of OpenJazz.h
- * 1st August 2009: Renamed palette.h to paletteeffects.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 4th February 2009: Created palette.h from parts of OpenJazz.h
+ * - 1st August 2009: Renamed palette.h to paletteeffects.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp
- * 11th February 2009: Created bullet.cpp from parts of events.cpp
- * 1st August 2012: Renamed bullet.cpp to jj1bullet.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp
+ * - 11th February 2009: Created bullet.cpp from parts of events.cpp
+ * - 1st August 2012: Renamed bullet.cpp to jj1bullet.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -46,7 +46,7 @@
  * @param startX The starting x-coordinate of the bullet
  * @param startY The starting y-coordinate of the bullet
  * @param bullet Type
- * @param direction The direction of the bullet
+ * @param newDirection The direction of the bullet
  * @param ticks Time
  */
 JJ1Bullet::JJ1Bullet (JJ1Bullet* nextBullet, JJ1LevelPlayer* sourcePlayer, fixed startX, fixed startY, signed char* bullet, int newDirection, unsigned int ticks) {

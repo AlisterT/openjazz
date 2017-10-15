@@ -5,16 +5,16 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 31st January 2006: Created level.h from parts of OpenJazz.h
- * 4th February 2009: Created events.h from parts of level.h
- * 19th March 2009: Created sprite.h from parts of level.h
- * 30th March 2010: Created baselevel.h from parts of level.h
- * 29th June 2010: Created jj2level.h from parts of level.h
- * 1st August 2012: Renamed level.h to jj1level.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 31st January 2006: Created level.h from parts of OpenJazz.h
+ * - 4th February 2009: Created events.h from parts of level.h
+ * - 19th March 2009: Created sprite.h from parts of level.h
+ * - 30th March 2010: Created baselevel.h from parts of level.h
+ * - 29th June 2010: Created jj2level.h from parts of level.h
+ * - 1st August 2012: Renamed level.h to jj1level.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 31st January 2006: Created level.h from parts of OpenJazz.h
- * 29th June 2010: Created jj2level.h from parts of level.h
- * 2nd July 2010: Created jj2event.h from parts of jj2level.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 31st January 2006: Created level.h from parts of OpenJazz.h
+ * - 29th June 2010: Created jj2level.h from parts of level.h
+ * - 2nd July 2010: Created jj2event.h from parts of jj2level.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

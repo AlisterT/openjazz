@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd of August 2005: Created main.c and menu.c
- * 3rd of February 2009: Renamed main.c to main.cpp and menu.c to menu.cpp
- * 18th July 2009: Created menusetup.cpp from parts of menu.cpp
- * 26th July 2009: Renamed menusetup.cpp to setupmenu.cpp
- * 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
+ * @par History:
+ * - 23rd of August 2005: Created main.c and menu.c
+ * - 3rd of February 2009: Renamed main.c to main.cpp and menu.c to menu.cpp
+ * - 18th July 2009: Created menusetup.cpp from parts of menu.cpp
+ * - 26th July 2009: Renamed menusetup.cpp to setupmenu.cpp
+ * - 21st July 2013: Created setup.cpp from parts of main.cpp and setupmenu.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the running of setup menus.
  *
  */

@@ -5,10 +5,10 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd June 2010: Created plasma.cpp
+ * @par History:
+ * - 23rd June 2010: Created plasma.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2010 Alireza Nejati
  *
  * OpenJazz is distributed under the terms of
@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Cool plasma effects for the main menu.
  *
  */

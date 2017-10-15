@@ -5,23 +5,23 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 22nd July 2008: Created levelload.c from parts of level.c
- * 3rd February 2009: Renamed level.c to level.cpp
- * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
- * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 22nd July 2008: Created levelload.c from parts of level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp
+ * - 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 18th July 2009: Created demolevel.cpp from parts of level.cpp and
  *                 levelload.cpp
- * 19th July 2009: Created levelframe.cpp from parts of level.cpp
- * 19th July 2009: Added parts of levelload.cpp to level.cpp
- * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
+ * - 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * - 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * - 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
- * 29th June 2010: Created jj2level.cpp from parts of level.cpp
- * 1st August 2012: Renamed level.cpp to jj1level.cpp
+ * - 29th June 2010: Created jj2level.cpp from parts of level.cpp
+ * - 1st August 2012: Renamed level.cpp to jj1level.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -31,7 +31,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the creating, playing and freeing of levels.
  *
  */
@@ -573,14 +573,13 @@ fixed JJ1Level::getWaterLevel () {
  * Create new bullet(s) (or event(s), if applicable)
  *
  * @param sourcePlayer The player that fired the bullet (if any)
- * @param gridX The grid x-coordinate of the event that fired the bullet (if any)
- * @param gridY The grid y-coordinate of the event that fired the bullet (if any)
- * @param xStart The x-coordinate of the bullet
- * @param yStart The y-coordinate of the bullet
+ * @param gridX The grid X-coordinate of the origin of the event that fired the bullet (if any)
+ * @param gridY The grid Y-coordinate of the origin of the event that fired the bullet (if any)
+ * @param startX The initial X-coordinate of the bullet
+ * @param startY The initial Y-coordinate of the bullet
  * @param bullet Type
- * @param lower Indicates if this the second of two bullets to be created
  * @param facing The direction of the bullet
- * @param ticks Time
+ * @param time Time
  */
 void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time) {
 

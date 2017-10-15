@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 3rd February 2009: Renamed level.c to level.cpp
- * 19th July 2009: Created levelframe.cpp from parts of level.cpp
- * 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
- * 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp
+ * - 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * - 29th June 2010: Created jj2levelframe.cpp from parts of levelframe.cpp
+ * - 30th June 2010: Created jj2layer.cpp from parts of jj2levelframe.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Provides the once-per-frame functions for levels.
  *
  */

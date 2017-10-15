@@ -5,10 +5,10 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 5th August 2012: Created levelplayer.cpp
+ * @par History:
+ * - 5th August 2012: Created levelplayer.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the creation and destruction of players in levels, and their
  * interactions with other level objects.
  *

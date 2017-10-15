@@ -5,10 +5,10 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd June 2010: Created plasma.h
+ * @par History:
+ * - 23rd June 2010: Created plasma.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2010 Alireza Nejati
  *
  * OpenJazz is distributed under the terms of

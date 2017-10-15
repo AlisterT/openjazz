@@ -5,12 +5,12 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created bonus.c
- * 3rd February 2009: Renamed bonus.c to bonus.cpp
- * 1st August 2012: Renamed bonus.cpp to jj1bonuslevel.cpp
+ * @par History:
+ * - 23rd August 2005: Created bonus.c
+ * - 3rd February 2009: Renamed bonus.c to bonus.cpp
+ * - 1st August 2012: Renamed bonus.cpp to jj1bonuslevel.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading, running and freeing of bonus levels.
  *
  */

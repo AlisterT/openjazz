@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created main.c
- * 22nd July 2008: Created util.c from parts of main.c
- * 3rd February 2009: Renamed main.c to main.cpp
- * 13th July 2009: Created controls.cpp from parts of main.cpp
+ * @par History:
+ * - 23rd August 2005: Created main.c
+ * - 22nd July 2008: Created util.c from parts of main.c
+ * - 3rd February 2009: Renamed main.c to main.cpp
+ * - 13th July 2009: Created controls.cpp from parts of main.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with input.
  *
  */
@@ -36,7 +36,7 @@
 #define DEFAULT_KEY_DOWN            (SDLK_DOWN)
 #define DEFAULT_KEY_LEFT            (SDLK_LEFT)
 #define DEFAULT_KEY_RIGHT           (SDLK_RIGHT)
-#if defined (WIN32)
+#if defined (_WIN32)
     #define DEFAULT_KEY_JUMP            (SDLK_RALT)
     #define DEFAULT_KEY_SWIM            (SDLK_RALT)
     #define DEFAULT_KEY_FIRE            (SDLK_SPACE)

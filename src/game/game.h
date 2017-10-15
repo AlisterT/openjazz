@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 2nd March 2009: Created network.h from parts of OpenJazz.h
- * 9th February 2009: Renamed network.h to game.h
- * 2nd August 2009: Created gamemode.h from parts of game.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 2nd March 2009: Created network.h from parts of OpenJazz.h
+ * - 9th February 2009: Renamed network.h to game.h
+ * - 2nd August 2009: Created gamemode.h from parts of game.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -92,6 +92,8 @@ class Game {
 
 	private:
 		int planetId; ///< ID of last planet approach sequence
+
+		bool isFileType (const char *fileName, const char *type, int typeLength);
 
 	protected:
 		GameMode*      mode; ///< Mode-specific management

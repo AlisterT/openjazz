@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp
- * 1st March 2009: Created bird.cpp from parts of events.cpp
- * 1st August 2012: Renamed bird.cpp to jj1bird.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp
+ * - 1st March 2009: Created bird.cpp from parts of events.cpp
+ * - 1st August 2012: Renamed bird.cpp to jj1bird.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

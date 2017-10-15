@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created scene.c
- * 3rd February 2009: Created scene.h from parts of scene.c
- * 3rd February 2009: Renamed scene.c to scene.cpp
- * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
- * 1st August 2012: Renamed scene.cpp to jj1scene.cpp
+ * @par History:
+ * - 23rd August 2005: Created scene.c
+ * - 3rd February 2009: Created scene.h from parts of scene.c
+ * - 3rd February 2009: Renamed scene.c to scene.cpp
+ * - 27th March 2010: Created sceneload.cpp from parts of scene.cpp
+ * - 1st August 2012: Renamed scene.cpp to jj1scene.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the displaying and freeing of the cutscenes.
  *
  */
@@ -44,16 +44,16 @@
 /**
  * Create a JJ1 cutscne frame.
  *
- * @param frameType The type of the frame
- * @param frameData The frame's data buffer
- * @param frameSize The size of the frame's data buffer
+ * @param newFrameType The type of the frame
+ * @param newFrameData The frame's data buffer
+ * @param newFrameSize The size of the frame's data buffer
  */
-JJ1SceneFrame::JJ1SceneFrame(int frameType, unsigned char* frameData, int frameSize) {
+JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int newFrameSize) {
 
 	soundId = -1;
-	this->frameData = frameData;
-	this->frameType = frameType;
-	this->frameSize = frameSize;
+	frameData = newFrameData;
+	frameType = newFrameType;
+	frameSize = newFrameSize;
 	prev = NULL;
 	next = NULL;
 
@@ -522,11 +522,11 @@ int JJ1Scene::play () {
 					LOG("PLAY SOUND NAME",animation->soundNames[currentFrame->soundId-1]);
 
 					// Search for matching sound
-					for (int y = 0; y < nSounds ; y++) {
+					for (int sound = 0; sound < nSounds ; sound++) {
 
-						if (!strcmp(animation->soundNames[currentFrame->soundId-1], sounds[y].name)) {
+						if (!strcmp(animation->soundNames[currentFrame->soundId - 1], sounds[sound].name)) {
 
-							playSound(y);
+							playSound(sound);
 
 							break;
 

@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created scene.c
- * 3rd February 2009: Created scene.h from parts of scene.c
- * 3rd February 2009: Renamed scene.c to scene.cpp
- * 27th March 2010: Created sceneload.cpp from parts of scene.cpp
- * 1st August 2012: Renamed sceneload.cpp to jj1sceneload.cpp
+ * @par History:
+ * - 23rd August 2005: Created scene.c
+ * - 3rd February 2009: Created scene.h from parts of scene.c
+ * - 3rd February 2009: Renamed scene.c to scene.cpp
+ * - 27th March 2010: Created sceneload.cpp from parts of scene.cpp
+ * - 1st August 2012: Renamed sceneload.cpp to jj1sceneload.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading of cutscene data.
  *
  */
@@ -790,21 +790,21 @@ void JJ1Scene::loadScripts (File *f) {
 								f->seek(-1, false);
 
 								// Convert number placeholders
-								for (int pos = 1; pos < datalen; pos++) {
+								for (int textPos = 1; textPos < datalen; textPos++) {
 
-									if (text->text[pos] == 0x8B) {
+									if (text->text[textPos] == 0x8B) {
 
 										if (loop >= 9)
-											text->text[pos - 1] = ((loop + 1) / 10) + 53;
+											text->text[textPos - 1] = ((loop + 1) / 10) + 53;
 
-										text->text[pos] = ((loop + 1) % 10) + 53;
+										text->text[textPos] = ((loop + 1) % 10) + 53;
 
-									} else if (text->text[pos] == 0x8A) {
+									} else if (text->text[textPos] == 0x8A) {
 
 										if (scriptItems >= 10)
-											text->text[pos - 1] = (scriptItems / 10) + 53;
+											text->text[textPos - 1] = (scriptItems / 10) + 53;
 
-										text->text[pos] = (scriptItems % 10) + 53;
+										text->text[textPos] = (scriptItems % 10) + 53;
 
 									}
 

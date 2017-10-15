@@ -5,12 +5,12 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created planet.c
- * 3rd February 2009: Renamed planet.c to planet.cpp
- * 1st August 2012: Renamed planet.cpp to jj1planet.cpp
+ * @par History:
+ * - 23rd August 2005: Created planet.c
+ * - 3rd February 2009: Renamed planet.c to planet.cpp
+ * - 1st August 2012: Renamed planet.cpp to jj1planet.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading, displaying and freeing of the planet landing
  * sequence.
  *

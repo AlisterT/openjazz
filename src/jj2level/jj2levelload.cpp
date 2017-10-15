@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 22nd July 2008: Created levelload.c from parts of level.c
- * 3rd February 2009: Renamed levelload.c to levelload.cpp
- * 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
- * 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 22nd July 2008: Created levelload.c from parts of level.c
+ * - 3rd February 2009: Renamed levelload.c to levelload.cpp
+ * - 28th June 2010: Created levelloadjj2.cpp from parts of levelload.cpp
+ * - 29th June 2010: Renamed levelloadjj2.cpp to jj2levelload.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -22,7 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading of JJ2 level data.
  *
  */
@@ -157,7 +157,7 @@ int JJ2Level::loadSprites () {
 	int* setOffsets;
 	int aCLength, bCLength, cCLength;
 	int aLength, bLength, cLength;
-	int setAnims, sprites, animSprites;
+	int setAnims, nSprites, animSprites;
 	int set, anim, sprite, setSprite;
 
 	// Thanks to Neobeo for working out the .j2a format
@@ -184,25 +184,25 @@ int JJ2Level::loadSprites () {
 
 	// Count number of sprites
 
-	sprites = 0;
+	nSprites = 0;
 
 	for (set = 0; set < nAnimSets; set++) {
 
 		file->seek(setOffsets[set] + 6, true);
 
-		sprites += file->loadShort();
+		nSprites += file->loadShort();
 
 	}
 
-	spriteSet = new Sprite[sprites];
-	flippedSpriteSet = new Sprite[sprites];
+	spriteSet = new Sprite[nSprites];
+	flippedSpriteSet = new Sprite[nSprites];
 	animSets = new Anim *[nAnimSets];
 	flippedAnimSets = new Anim *[nAnimSets];
 
 
 	// Load animations and sprites
 
-	sprites = 0;
+	nSprites = 0;
 
 	for (set = 0; set < nAnimSets; set++) {
 
@@ -251,15 +251,15 @@ int JJ2Level::loadSprites () {
 
 			for (sprite = 0; sprite < animSprites; sprite++) {
 
-				loadSprite(bBuffer + (setSprite * 24), cBuffer, spriteSet + sprites, flippedSpriteSet + sprites);
+				loadSprite(bBuffer + (setSprite * 24), cBuffer, spriteSet + nSprites, flippedSpriteSet + nSprites);
 
 				animSets[set][anim].setFrame(sprite, false);
-				animSets[set][anim].setFrameData(spriteSet + sprites, 0, 0);
+				animSets[set][anim].setFrameData(spriteSet + nSprites, 0, 0);
 				flippedAnimSets[set][anim].setFrame(sprite, false);
-				flippedAnimSets[set][anim].setFrameData(flippedSpriteSet + sprites, 0, 0);
+				flippedAnimSets[set][anim].setFrameData(flippedSpriteSet + nSprites, 0, 0);
 
 				setSprite++;
-				sprites++;
+				nSprites++;
 
 			}
 

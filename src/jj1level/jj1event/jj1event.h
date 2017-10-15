@@ -5,17 +5,17 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 31st January 2006: Created level.h from parts of OpenJazz.h
- * 4th February 2009: Created events.h from parts of level.h
- * 11th February 2009: Created bullet.h from parts of events.h
- * 1st March 2009: Created bird.h from parts of events.h
- * 19th July 2009: Renamed events.h to event.h
- * 2nd March 2010: Created guardians.h from parts of event.h
- * 1st August 2012: Renamed event.h to jj1event.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 31st January 2006: Created level.h from parts of OpenJazz.h
+ * - 4th February 2009: Created events.h from parts of level.h
+ * - 11th February 2009: Created bullet.h from parts of events.h
+ * - 1st March 2009: Created bird.h from parts of events.h
+ * - 19th July 2009: Renamed events.h to event.h
+ * - 2nd March 2010: Created guardians.h from parts of event.h
+ * - 1st August 2012: Renamed event.h to jj1event.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -97,7 +97,7 @@ class JJ1Event : public Movable {
 		bool           hit            (JJ1LevelPlayer *source, int hits, unsigned int ticks);
 		bool           isEnemy        ();
 		bool           isFrom         (unsigned char gX, unsigned char gY);
-		bool           overlap        (fixed left, fixed top, fixed width, fixed height);
+		bool           overlap        (fixed areaX, fixed areaY, fixed areaWidth, fixed areaHeight);
 
 		virtual JJ1Event* step        (unsigned int ticks) = 0;
 		virtual void      draw        (unsigned int ticks, int change) = 0;

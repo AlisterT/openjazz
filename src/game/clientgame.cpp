@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c and menu.c
- * 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
- * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * 18th July 2009: Created clientgame.cpp from parts of game.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c and menu.c
+ * - 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 18th July 2009: Created clientgame.cpp from parts of game.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

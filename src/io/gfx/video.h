@@ -5,12 +5,12 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 13th July 2009: Created graphics.h from parts of OpenJazz.h
- * 26th July 2009: Renamed graphics.h to video.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 13th July 2009: Created graphics.h from parts of OpenJazz.h
+ * - 26th July 2009: Renamed graphics.h to video.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

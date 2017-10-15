@@ -5,23 +5,23 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp
- * 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
- * 11th February 2009: Created bullet.cpp from parts of events.cpp
- * 1st March 2009: Created bird.cpp from parts of events.cpp
- * 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
- * 19th July 2009: Created eventframe.cpp from parts of events.cpp
- * 19th July 2009: Renamed events.cpp to event.cpp
- * 2nd March 2010: Created guardians.cpp from parts of event.cpp and
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp
+ * - 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * - 11th February 2009: Created bullet.cpp from parts of events.cpp
+ * - 1st March 2009: Created bird.cpp from parts of events.cpp
+ * - 19th March 2009: Created sprite.cpp from parts of event.cpp and player.cpp
+ * - 19th July 2009: Created eventframe.cpp from parts of events.cpp
+ * - 19th July 2009: Renamed events.cpp to event.cpp
+ * - 2nd March 2010: Created guardians.cpp from parts of event.cpp and
  *                 eventframe.cpp
- * 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
- * 5th February 2011: Moved parts of eventframe.cpp to event.cpp
- * 1st August 2012: Renamed event.cpp to jj1event.cpp
+ * - 2nd March 2010: Created bridge.cpp from parts of event.cpp and eventframe.cpp
+ * - 5th February 2011: Moved parts of eventframe.cpp to event.cpp
+ * - 1st August 2012: Renamed event.cpp to jj1event.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -31,7 +31,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with events in ordinary levels.
  *
  */
@@ -233,19 +233,19 @@ void JJ1Event::calcDimensions () {
 /**
  * Determine whether or not the event is overlapping the given area
  *
- * @param left The x-coordinate of the left of the area
- * @param top The y-coordinate of the top of the area
- * @param width The width of the area
- * @param height The height of the area
+ * @param areaX The x-coordinate of the left of the area
+ * @param areaY The y-coordinate of the top of the area
+ * @param areaWidth The width of the area
+ * @param areaHeight The height of the area
  *
  * @return Whether or not there is an overlap
  */
-bool JJ1Event::overlap (fixed left, fixed top, fixed width, fixed height) {
+bool JJ1Event::overlap (fixed areaX, fixed areaY, fixed areaWidth, fixed areaHeight) {
 
-	return (drawnX + this->width >= left) &&
-		(drawnX < left + width) &&
-		(drawnY + this->height >= top) &&
-		(drawnY < top + height);
+	return (drawnX + width >= areaX) &&
+		(drawnX < areaX + areaWidth) &&
+		(drawnY + height >= areaY) &&
+		(drawnY < areaY + areaHeight);
 
 }
 

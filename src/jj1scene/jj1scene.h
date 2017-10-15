@@ -5,12 +5,12 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created scene.c
- * 3rd February 2009: Created scene.h from parts of scene.c
- * 1st August 2012: Renamed scene.h to jj1scene.h
+ * @par History:
+ * - 23rd August 2005: Created scene.c
+ * - 3rd February 2009: Created scene.h from parts of scene.c
+ * - 1st August 2012: Renamed scene.h to jj1scene.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

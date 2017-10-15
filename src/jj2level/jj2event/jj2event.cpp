@@ -5,15 +5,15 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 22nd July 2008: Created levelload.c from parts of level.c
- * 3rd February 2009: Renamed level.c to level.cpp
- * 19th July 2009: Added parts of levelload.cpp to level.cpp
- * 29th June 2010: Created jj2level.cpp from parts of level.cpp
- * 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 22nd July 2008: Created levelload.c from parts of level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp
+ * - 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * - 29th June 2010: Created jj2level.cpp from parts of level.cpp
+ * - 2nd July 2010: Created jj2event.cpp from parts of jj2level.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -23,7 +23,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the creating and freeing of JJ2 events.
  *
  */

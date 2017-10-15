@@ -5,16 +5,16 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 22nd July 2008: Created levelload.c from parts of level.c
- * 3rd February 2009: Renamed level.c to level.cpp and levelload.c to
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 22nd July 2008: Created levelload.c from parts of level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp and levelload.c to
  *                    levelload.cpp
- * 18th July 2009: Created demolevel.cpp from parts of level.cpp and
+ * - 18th July 2009: Created demolevel.cpp from parts of level.cpp and
  *                 levelload.cpp
- * 1st August 2012: Renamed demolevel.cpp to jj1demolevel.cpp
+ * - 1st August 2012: Renamed demolevel.cpp to jj1demolevel.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -24,7 +24,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading and playing of demo levels.
  *
  */

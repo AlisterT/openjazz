@@ -5,10 +5,10 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 15th January 2010: Created movable.h
+ * @par History:
+ * - 15th January 2010: Created movable.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2010 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

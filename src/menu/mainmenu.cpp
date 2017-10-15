@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd of August 2005: Created menu.c
- * 3rd of February 2009: Renamed menu.c to menu.cpp
- * 19th July 2009: Created menumain.cpp from parts of menu.cpp
- * 26th July 2009: Renamed menumain.cpp to mainmenu.cpp
+ * @par History:
+ * - 23rd of August 2005: Created menu.c
+ * - 3rd of February 2009: Renamed menu.c to menu.cpp
+ * - 19th July 2009: Created menumain.cpp from parts of menu.cpp
+ * - 26th July 2009: Renamed menumain.cpp to mainmenu.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the running of the main menu and its generic sub-menus.
  *
  */

@@ -5,16 +5,16 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 3rd February 2009: Renamed level.c to level.cpp
- * 19th July 2009: Created levelframe.cpp from parts of level.cpp
- * 19th July 2009: Added parts of levelload.cpp to level.cpp
- * 30th March 2010: Created baselevel.cpp from parts of level.cpp and
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp
+ * - 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * - 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * - 30th March 2010: Created baselevel.cpp from parts of level.cpp and
  *                  levelframe.cpp
- * 1st August 2012: Renamed baselevel.cpp to level.cpp
+ * - 1st August 2012: Renamed baselevel.cpp to level.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -24,7 +24,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with functionality common to ordinary levels and bonus levels.
  *
  */
@@ -450,7 +450,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 		}
 
 	}
-#if !(ANDROID)
+#if !defined(ANDROID)
 	else {
 
 		if (controls.wasCursorReleased()) menu = true;

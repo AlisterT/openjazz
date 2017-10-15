@@ -5,17 +5,17 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd of August 2005: Created menu.c
- * 3rd of February 2009: Renamed menu.c to menu.cpp
- * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * 18th July 2009: Created menugame.cpp from parts of menu.cpp
- * 18th July 2009: Created menuutil.cpp from parts of menu.cpp
- * 18th July 2009: Created menusetup.cpp from parts of menu.cpp
- * 19th July 2009: Created menumain.cpp from parts of menu.cpp
- * 23rd June 2010: Merged menuutil.cpp into menu.cpp
+ * @par History:
+ * - 23rd of August 2005: Created menu.c
+ * - 3rd of February 2009: Renamed menu.c to menu.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 18th July 2009: Created menugame.cpp from parts of menu.cpp
+ * - 18th July 2009: Created menuutil.cpp from parts of menu.cpp
+ * - 18th July 2009: Created menusetup.cpp from parts of menu.cpp
+ * - 19th July 2009: Created menumain.cpp from parts of menu.cpp
+ * - 23rd June 2010: Merged menuutil.cpp into menu.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -25,7 +25,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Provides various generic menus.
  *
  */

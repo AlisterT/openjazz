@@ -5,16 +5,16 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c and menu.c
- * 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
- * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * 3rd June 2009: Created network.cpp from parts of game.cpp
- * 18th July 2009: Created servergame.cpp from parts of game.cpp
- * 18th July 2009: Created clientgame.cpp from parts of game.cpp
- * 3rd October 2010: Created localgame.cpp from parts of game.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c and menu.c
+ * - 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 3rd June 2009: Created network.cpp from parts of game.cpp
+ * - 18th July 2009: Created servergame.cpp from parts of game.cpp
+ * - 18th July 2009: Created clientgame.cpp from parts of game.cpp
+ * - 3rd October 2010: Created localgame.cpp from parts of game.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -70,6 +70,29 @@ Game::~Game () {
 
 	return;
 
+}
+
+
+/**
+ * Check the if a file name corresponds to a type
+ *
+ * @param fileName The name of the file
+ * @param type The type identifier in lower case characters
+ * @param typeLength The length of the type identifier string
+ *
+ * @return Whether or not the file name corresponds to the type
+ */
+bool Game::isFileType (const char *fileName, const char *type, int typeLength) {
+
+	int i;
+
+	for (i = 0; i < typeLength; i++) {
+
+		if ((fileName[i] != type[i]) && (fileName[i] != type[i] - 32)) return false;
+
+	}
+
+	return true;
 }
 
 
@@ -159,7 +182,7 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 	multiplayer = (mode->getMode() != M_SINGLE);
 
-	if (!strncasecmp(fileName, "MACRO", 5)) {
+	if (isFileType(fileName, "macro", 5)) {
 
 		// Load and play the level
 
@@ -287,8 +310,8 @@ LevelType Game::getLevelType (const char* fileName) {
 
 	length = strlen(fileName);
 
-	if ((length > 4) && !strcasecmp(fileName + length - 4, ".j2l")) return LT_JJ2;
-	if (!strncasecmp(fileName, "BONUSMAP", 8)) return LT_JJ1BONUS;
+	if ((length > 4) && isFileType(fileName + length - 4, ".j2l", 4)) return LT_JJ2;
+	if (isFileType(fileName, "bonusmap", 8)) return LT_JJ1BONUS;
 	return LT_JJ1;
 
 }
@@ -336,7 +359,7 @@ int Game::play () {
 
 		if (ret <= 0) return ret;
 
-		if (levelFile && !strncasecmp(levelFile, "BONUSMAP", 8)) {
+		if (levelFile && isFileType(levelFile, "bonusmap", 8)) {
 
 			if (ret == WON) {
 

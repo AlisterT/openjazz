@@ -11,18 +11,12 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details. 
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#if !HAVE_GETOPT
 
 /* This source is extracted from the DJGPP LIBC library */
 
@@ -108,6 +102,4 @@ int getopt(int nargc, char *const nargv[], char *ostr)
   }
   return optopt; /* dump back option letter */
 }
-
-#endif
 

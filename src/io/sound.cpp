@@ -5,11 +5,11 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created sound.c
- * 3rd February 2009: Renamed sound.c to sound.cpp
+ * @par History:
+ * - 23rd August 2005: Created sound.c
+ * - 3rd February 2009: Renamed sound.c to sound.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with the loading, playing and freeing of music and sound effects.
  *
  * For music, USE_MODPLUG or USE_XMP must be defined.
@@ -35,7 +35,7 @@
 #include <SDL/SDL_audio.h>
 
 #if defined(USE_MODPLUG)
-    #ifdef WIN32
+    #ifdef _WIN32
         #include <modplug.h>
     #else
         #include <libmodplug/modplug.h>

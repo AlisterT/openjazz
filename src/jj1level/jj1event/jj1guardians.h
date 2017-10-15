@@ -5,15 +5,15 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 31st January 2006: Created level.h from parts of OpenJazz.h
- * 4th February 2009: Created events.h from parts of level.h
- * 19th July 2009: Renamed events.h to event.h
- * 2nd March 2010: Created guardians.h from parts of event.h
- * 1st August 2012: Renamed guardians.h to jj1guardians.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 31st January 2006: Created level.h from parts of OpenJazz.h
+ * - 4th February 2009: Created events.h from parts of level.h
+ * - 19th July 2009: Renamed events.h to event.h
+ * - 2nd March 2010: Created guardians.h from parts of event.h
+ * - 1st August 2012: Renamed guardians.h to jj1guardians.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

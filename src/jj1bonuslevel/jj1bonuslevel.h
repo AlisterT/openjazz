@@ -5,11 +5,11 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 3rd February 2009: Created bonus.h
- * 1st August 2012: Renamed bonus.h to jj1bonuslevel.h
+ * @par History:
+ * - 3rd February 2009: Created bonus.h
+ * - 1st August 2012: Renamed bonus.h to jj1bonuslevel.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2009-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of

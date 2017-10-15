@@ -5,14 +5,14 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created OpenJazz.h
- * 31st January 2006: Created player.h from parts of OpenJazz.h
- * 24th June 2010: Created levelplayer.h from parts of player.h
- * 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
- * 1st August 2012: Renamed levelplayer.h to jj1levelplayer.h
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 31st January 2006: Created player.h from parts of OpenJazz.h
+ * - 24th June 2010: Created levelplayer.h from parts of player.h
+ * - 29th June 2010: Created jj2levelplayer.h from parts of levelplayer.h
+ * - 1st August 2012: Renamed levelplayer.h to jj1levelplayer.h
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -143,7 +143,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		unsigned char     animType; ///< Current animation
 		unsigned char     eventX; ///< X-coordinate (in tiles) of an event (spring, platform, bridge)
 		unsigned char     eventY; ///< Y-coordinate (in tiles) of an event (spring, platform, bridge)
-		JJ1PlayerEvent    event; ///< Event type
+		JJ1PlayerEvent    eventType; ///< Event type
 		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
 		JJ1PlayerReaction reaction; ///< Reaction type
 		unsigned int      reactionTime; ///< Time reaction will end

@@ -5,13 +5,13 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c and menu.c
- * 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
- * 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * 3rd June 2009: Created network.cpp from parts of game.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c and menu.c
+ * - 3rd of February 2009: Renamed level.c to level.cpp and menu.c to menu.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 3rd June 2009: Created network.cpp from parts of game.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Deals with a platform-specific networking API.
  *
  * On most platforms, USE_SOCKETS should be defined.
@@ -38,7 +38,7 @@
 #include "util.h"
 
 #ifdef USE_SOCKETS
-	#ifdef WIN32
+	#ifdef _WIN32
 		#include <winsock.h>
 		#define ioctl ioctlsocket
 		#define socklen_t int
@@ -67,7 +67,7 @@
 Network::Network () {
 
 #ifdef USE_SOCKETS
-	#ifdef WIN32
+	#ifdef _WIN32
 	WSADATA WSAData;
 
 	// Start Windows Sockets
@@ -88,7 +88,7 @@ Network::Network () {
 Network::~Network () {
 
 #ifdef USE_SOCKETS
-	#ifdef WIN32
+	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
 	#endif
@@ -193,7 +193,7 @@ int Network::join (char *address) {
 	sockAddr.sin_family = AF_INET;
 	sockAddr.sin_port = htons(NET_PORT);
 
-	#ifdef WIN32
+	#ifdef _WIN32
 	sockAddr.sin_addr.s_addr = inet_addr(address);
 	#else
 	if (inet_aton(address, &(sockAddr.sin_addr)) == 0) return E_N_ADDRESS;
@@ -324,7 +324,7 @@ int Network::accept (int sock) {
 void Network::close (int sock) {
 
 #ifdef USE_SOCKETS
-	#ifdef WIN32
+	#ifdef _WIN32
 	closesocket(sock);
 	#else
 	::close(sock);
@@ -416,7 +416,7 @@ bool Network::isConnected (int sock) {
 int Network::getError () {
 
 #ifdef USE_SOCKETS
-	#ifdef WIN32
+	#ifdef _WIN32
 	return WSAGetLastError();
 	#else
 	return errno;

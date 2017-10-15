@@ -5,16 +5,16 @@
  *
  * Part of the OpenJazz project
  *
- * @section History
- * 23rd August 2005: Created level.c
- * 1st January 2006: Created events.c from parts of level.c
- * 3rd February 2009: Renamed events.c to events.cpp
- * 19th July 2009: Created eventframe.cpp from parts of events.cpp
- * 19th July 2009: Renamed events.cpp to event.cpp
- * 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
- * 1st August 2012: Renamed guardians.cpp to jj1guardians.cpp
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 3rd February 2009: Renamed events.c to events.cpp
+ * - 19th July 2009: Created eventframe.cpp from parts of events.cpp
+ * - 19th July 2009: Renamed events.cpp to event.cpp
+ * - 2nd March 2010: Created guardians.cpp from parts of event.cpp and eventframe.cpp
+ * - 1st August 2012: Renamed guardians.cpp to jj1guardians.cpp
  *
- * @section Licence
+ * @par Licence:
  * Copyright (c) 2005-2013 Alister Thomson
  *
  * OpenJazz is distributed under the terms of
@@ -24,7 +24,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @section Description
+ * @par Description:
  * Provides the functions of guardian events.
  *
  */
@@ -132,7 +132,7 @@ JJ1Event* DeckGuardian::step (unsigned int ticks) {
  */
 void DeckGuardian::draw (unsigned int ticks, int change) {
 
-	Anim* anim;
+	Anim* unitAnim;
 
 
 	if (next) next->draw(ticks, change);
@@ -148,7 +148,7 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 
 		// Draw unit
 
-		anim = level->getAnim(29 + stage);
+		unitAnim = level->getAnim(29 + stage);
 
 		if (stage == 0) {
 
@@ -170,13 +170,13 @@ void DeckGuardian::draw (unsigned int ticks, int change) {
 		drawnY = y + F32;
 		height = F32;
 
-		if (ticks < flashTime) anim->flashPalette(0);
+		if (ticks < flashTime) unitAnim->flashPalette(0);
 
-		if (stage == 0) anim->draw(getDrawX(change) - F64, getDrawY(change) + F32);
-		else if (stage == 1) anim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F32);
-		else anim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
+		if (stage == 0) unitAnim->draw(getDrawX(change) - F64, getDrawY(change) + F32);
+		else if (stage == 1) unitAnim->draw(getDrawX(change) + F32 - F8 - F4, getDrawY(change) + F32);
+		else unitAnim->draw(getDrawX(change) + F8 - F64, getDrawY(change) + F32);
 
-		if (ticks < flashTime) anim->restorePalette();
+		if (ticks < flashTime) unitAnim->restorePalette();
 
 	}
 
