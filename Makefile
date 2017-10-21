@@ -1,32 +1,44 @@
 # OpenJazz makefile
-prefix=/usr/local
-
 include openjazz.mk
 
-CXXFLAGS += -g -Wall -O2 -DSCALE
+# Sane defaults
+CXX ?= g++
+CXXFLAGS ?= -g -Wall -O2
+
+CXXFLAGS += -DSCALE
+
+# Network support
 CXXFLAGS += -DUSE_SOCKETS
+# Needed under Windows
+#LIBS += -lws2_32
 
-# SDL flags
-CXXFLAGS+=`sdl-config --cflags`
-LDFLAGS+=`sdl-config --libs`
+# SDL
+CXXFLAGS += $(shell sdl-config --cflags)
+LIBS += $(shell sdl-config --libs)
 
-# Enable modplug music
-CXXFLAGS += -DUSE_MODPLUG `pkg-config --cflags libmodplug`
-LDFLAGS += `pkg-config --libs libmodplug`
+# modplug
+MODPLUG_CFLAGS ?= $(shell pkg-config --silence-errors --cflags libmodplug)
+MODPLUG_LIBS ?= $(shell pkg-config --silence-errors --libs libmodplug)
+ifneq ($(MODPLUG_LIBS),)
+	CXXFLAGS += -DUSE_MODPLUG $(MODPLUG_CFLAGS)
+	LIBS += $(MODPLUG_LIBS)
+endif
 
-LDFLAGS += -lm
+# xmp
+XMP_CFLAGS ?= $(shell pkg-config --silence-errors --cflags libxmp)
+XMP_LIBS ?= $(shell pkg-config --silence-errors --libs libxmp)
+ifneq ($(XMP_LIBS),)
+	CXXFLAGS += -DUSE_XMP $(XMP_CFLAGS)
+	LIBS += $(XMP_LIBS)
+endif
+
+LIBS += -lm
 
 OpenJazz: $(OBJS)
-	cc $(CXXFLAGS) -o OpenJazz $(LDFLAGS) -lstdc++ -lz $(OBJS)
+	$(CXX) $(LDFLAGS) -lz $(LIBS) $(OBJS) -o OpenJazz
 
 %.o: %.cpp
-	cc $(CXXFLAGS) -Isrc -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
 
 clean:
 	rm -f OpenJazz $(OBJS)
-
-install: OpenJazz
-	install -m 0755 OpenJazz $(prefix)/bin
-	install -m 0644 openjazz.000 $(prefix)/bin
-
-.PHONY: install
