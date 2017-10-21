@@ -1,13 +1,20 @@
 *.o
 OpenJazz
+openjazz.cfg
 
+# psp
 *.elf
 *.prx
 PARAM.SFO
 EBOOT.PBP
 
+# 3ds
+*.3dsx
+*.smdh
+
 .DS_Store
 
+# autotools
 .deps/
 .dirstamp
 Makefile.in
