@@ -114,7 +114,15 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 		// Read the next portion of music into the audio stream
 #if defined(USE_MODPLUG)
 
-		if (musicFile) ModPlug_Read(musicFile, stream, len);
+		if (musicFile) {
+			int bytes_read = ModPlug_Read(musicFile, stream, len);
+
+			// poor mans loop (so modplug needs no patching)
+			if (bytes_read < len) {
+				ModPlug_Seek(musicFile, 0);
+				ModPlug_Read(musicFile, stream + bytes_read, len - bytes_read);
+			}
+		}
 
 #elif defined(USE_XMP)
 
