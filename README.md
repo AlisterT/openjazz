@@ -73,8 +73,9 @@ platform which natively provides sockets or use SDL_net, then either define
 `USE_SOCKETS` or `USE_SDL_NET` in the Makefile. On the Windows platform, the
 socket library (`-lws2_32`) is needed while linking. For music support, you
 either need ModPlug or xmp. Then define `USE_MODPLUG` or `USE_XMP` in the
-Makefile. ModPlug needs to be patched to support looping tracks, otherwise half
-of the level will be silent, xmp does not have this problem.
+Makefile. ModPlug needs to be patched to properly support looping tracks,
+otherwise there will be a small gap in the playback, xmp does not have this
+problem (no patching needed).
 
 For UNIX systems also an autoconf script is provided, used like this:
 
