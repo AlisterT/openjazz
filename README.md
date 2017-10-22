@@ -63,10 +63,10 @@ library (https://www.libsdl.org/projects/SDL_net/), then either define
 socket library (`-lws2_32`) is needed.
 
 For music support, you need to define `USE_MODPLUG` in the Makefile and the
-Modplug library (http://modplug-xmms.sourceforge.net/). This library needs to
-be patched to support looping tracks, otherwise half of the level will be
-silent. Alternatively, the xmp library (http://xmp.sourceforge.net/) may be
-used, then define `USE_XMP` in the Makefile. This does not need patching.
+Modplug library (http://modplug-xmms.sourceforge.net/). The library needs to be
+patched to properly support looping tracks, otherwise there will be a small gap
+in the playback. Alternatively, the xmp library (http://xmp.sourceforge.net/)
+may be used, then define `USE_XMP` in the Makefile (no patching needed).
 
 Further (partly outdated) instructions are available at:
 http://www.alister.eu/jazz/oj/build.php
