@@ -534,14 +534,9 @@ int main(int argc, char *argv[]) {
 	atexit(sceKernelExitGame);
 	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
 #endif
-	//gfxInit(GSP_RGBA8_OES, GSP_BGR8_OES, false);
-	//consoleInit(GFX_BOTTOM, NULL);
-	//printf("\n\nOJ 3DS\n\n");
-
 	// Initialise SDL
 
-	// SDL_INIT_JOYSTICK crashes the 3ds
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
 
 		logError("Could not start SDL", SDL_GetError());
 

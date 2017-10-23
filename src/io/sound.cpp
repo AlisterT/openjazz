@@ -45,7 +45,7 @@
 #endif
 
 
-#ifdef __SYMBIAN32__
+#if defined(__SYMBIAN32__) || defined(_3DS)
 	#define SOUND_FREQ 22050
 #else
 	#define SOUND_FREQ 44100
@@ -68,8 +68,12 @@ ModPlugFile   *musicFile;
 
 #elif defined(USE_XMP)
 
+#  ifdef _3DS
+	#define MUSIC_INTERPOLATION XMP_INTERP_NEAREST
+#  else
 	#define MUSIC_INTERPOLATION XMP_INTERP_SPLINE
 	#define MUSIC_EFFECTS XMP_DSP_ALL
+#  endif
 
 xmp_context xmpC;
 
@@ -163,7 +167,7 @@ void openAudio () {
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
-#if defined(GP2X) || defined(PSP)
+#if defined(GP2X) || defined(PSP) || defined(_3DS)
 	asDesired.samples = 512;
 #else
 	asDesired.samples = 2048;
@@ -307,7 +311,9 @@ void playMusic (const char * fileName) {
 
 	xmp_start_player(xmpC, audioSpec.freq, playerFlags);
 	xmp_set_player(xmpC, XMP_PLAYER_INTERP, MUSIC_INTERPOLATION);
+#  ifdef MUSIC_EFFECTS
 	xmp_set_player(xmpC, XMP_PLAYER_DSP, MUSIC_EFFECTS);
+#  endif
 
 #endif
 

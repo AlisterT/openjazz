@@ -11,6 +11,8 @@ EBOOT.PBP
 # 3ds
 *.3dsx
 *.smdh
+*.d
+/build/
 
 .DS_Store
 

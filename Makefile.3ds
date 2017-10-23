@@ -37,6 +37,9 @@ SOURCES		:=	src src/game src/io src/io/gfx src/jj1bonuslevel \
 DATA		:=	data
 INCLUDES	:=	src
 #ROMFS		:=	romfs
+APP_TITLE	:= OpenJazz
+#APP_DESCRIPTION:=
+APP_AUTHOR	:= AlisterT & carstene1ns
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -47,20 +50,20 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DDATAPATH=\"sdmc:/3ds/OJ/\"
+CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DUSE_XMP -DDATAPATH=\"sdmc:/3ds/OJ/\"
 
 CXXFLAGS	:= $(CFLAGS) -frtti -fexceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lSDL -lcitro3d -lctru -lm
+LIBS	:= -lSDL -lxmp -lcitro3d -lctru -lz -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CTRULIB) $(CURDIR)/SDL
+LIBDIRS	:= $(CTRULIB) $(CURDIR)/deps
 
 
 #---------------------------------------------------------------------------------
