@@ -1,4 +1,5 @@
 *.o
+openjazz
 OpenJazz
 openjazz.cfg
 
@@ -28,3 +29,6 @@ depcomp
 install-sh
 configure
 missing
+
+openjazz-*.tar.*
+OpenJazz-*.zip

@@ -61,8 +61,9 @@
 
 #include <string.h>
 
-#include "platforms/wiz.h"
-
+#if defined(WIZ) || defined(GP2X)
+	#include "platforms/wiz.h"
+#endif
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
