@@ -33,6 +33,7 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
+#include "io/sound.h"
 #include "util.h"
 
 #include <string.h>
@@ -275,13 +276,13 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 		if (type == ESoundListAniHeader) { // SL
 
 			/*unsigned short int offset =*/ f->loadShort();
-			animations->noSounds = f->loadChar();
+			unsigned char nSounds = f->loadChar();
 
-			for(loop = 0;loop<animations->noSounds;loop++) {
+			for(loop = 0; loop < nSounds; loop++) {
 
 				char* soundName = f->loadString();
 				LOG("Soundname ", soundName);
-				strcpy(animations->soundNames[loop], soundName);
+				resampleSound(loop, soundName, 11025);
 				delete[] soundName;
 
 			}

@@ -186,7 +186,6 @@ class JJ1Level : public Level {
 		JJ1EventType  eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
 		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
-		int           soundMap[32]; ///< Maps event sound effect numbers to actual sound effect indices
 		SDL_Color     skyPalette[256]; ///< Full palette for sky background
 		bool          sky; ///< Whether or not to use sky background
 		unsigned char skyOrb; ///< The tile to use as the background sun/moon/etc.
@@ -244,7 +243,6 @@ class JJ1Level : public Level {
 		void          createBullet  (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time);
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
-		void          playSound     (int sound);
 		void          flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
 		void          receive       (unsigned char* buffer);
 		virtual int   play          ();

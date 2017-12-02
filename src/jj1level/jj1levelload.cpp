@@ -410,6 +410,7 @@ int JJ1Level::loadTiles (char* fileName) {
 int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	Anim* pAnims[JJ1PANIMS];
+	unsigned short int soundRates[32];
 	File* file;
 	unsigned char* buffer;
 	const char* ext;
@@ -816,11 +817,13 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Like another one of those pesky RLE blocks
 	file->skipRLE();
 
-	// And 217 bytes of DOOM
-	file->seek(217, false);
+	// And 153 bytes of DOOM
+	file->seek(153, false);
 
 
 	// Load sound map
+
+	for (count = 0; count < 32; count++) soundRates[count] = file->loadShort();
 
 	x = file->tell();
 
@@ -830,15 +833,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		string = file->loadString();
 
-		soundMap[count] = -1;
-
-		// Search for matching sound
-
-		for (y = 0; (y < nSounds) && (soundMap[count] == -1); y++) {
-
-			if (!strcmp(string, sounds[y].name)) soundMap[count] = y;
-
-		}
+		resampleSound(count, string, soundRates[count]);
 
 		delete[] string;
 

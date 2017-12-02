@@ -31,38 +31,47 @@
 // Constants
 
 // Sound effects
-#define S_INVULN   0
-#define S_MACHGUN  1
-#define S_BOOM     2
-#define S_OW       3
-#define S_YUM      4
-#define S_FIRE     5
-#define S_UPLOOP   6
-#define S_1UP      7
-#define S_PHOTON   8
-#define S_WAIT     9
-#define S_ORB     10
-#define S_JUMPA   11
-#define S_GODLIKE 12
-#define S_YEAHOO  13
-#define S_BIRDY   14
-#define S_FLAMER  15
-#define S_ELECTR  16
-#define S_SPRING  17
-#define S_ROCKET  18
-#define S_STOP    19
-#define S_BLOCK   20
+#define S_INVULN   1
+#define S_MACHGUN  2
+#define S_BOOM     3
+#define S_OW       4
+#define S_YUM      5
+#define S_FIRE     6
+#define S_UPLOOP   7
+#define S_1UP      8
+#define S_PHOTON   9
+#define S_WAIT    10
+#define S_ORB     11
+#define S_JUMPA   12
+#define S_GODLIKE 13
+#define S_YEAHOO  14
+#define S_BIRDY   15
+#define S_FLAMER  16
+#define S_ELECTR  17
+#define S_SPRING  18
+#define S_ROCKET  19
+#define S_STOP    20
+#define S_BLOCK   21
 
 #define MAX_VOLUME 100
 
 
 // Datatype
 
-/// Sound effect
+/// Raw sound effect data
 typedef struct {
 
 	unsigned char *data;
 	char          *name;
+	int            length;
+
+} RawSound;
+
+
+/// Resampled sound effect data
+typedef struct {
+
+	unsigned char *data;
 	int            length;
 	int            position;
 
@@ -71,8 +80,10 @@ typedef struct {
 
 // Variables
 
-EXTERN Sound *sounds;
-EXTERN int    nSounds;
+EXTERN RawSound *rawSounds;
+EXTERN int       nRawSounds;
+EXTERN Sound    *sounds;
+
 EXTERN char   soundsVolume;
 
 #if defined(WIZ) || defined(GP2X)
@@ -83,14 +94,16 @@ EXTERN int volume_direction;
 
 // Functions
 
-EXTERN void openAudio  ();
-EXTERN void closeAudio ();
-EXTERN void playMusic  (const char *fileName);
-EXTERN void pauseMusic (bool pause);
-EXTERN void stopMusic  ();
-EXTERN int  loadSounds (const char *fileName);
-EXTERN void freeSounds ();
-EXTERN void playSound  (int sound);
+EXTERN void openAudio      ();
+EXTERN void closeAudio     ();
+EXTERN void playMusic      (const char *fileName);
+EXTERN void pauseMusic     (bool pause);
+EXTERN void stopMusic      ();
+EXTERN int  loadSounds     (const char *fileName);
+EXTERN void resampleSound  (char index, const char* name, int rate);
+EXTERN void resampleSounds ();
+EXTERN void freeSounds     ();
+EXTERN void playSound      (char index);
 
 #endif
 

@@ -50,7 +50,7 @@
  */
 JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int newFrameSize) {
 
-	soundId = -1;
+	soundId = 0;
 	frameData = newFrameData;
 	frameType = newFrameType;
 	frameSize = newFrameSize;
@@ -517,24 +517,7 @@ int JJ1Scene::play () {
 				dst.y = (canvasH - SH) >> 1;
 				SDL_BlitSurface(animation->background, NULL, canvas, &dst);
 
-				if (currentFrame->soundId != -1 && animation->noSounds > 0) {
-
-					LOG("PLAY SOUND NAME",animation->soundNames[currentFrame->soundId-1]);
-
-					// Search for matching sound
-					for (int sound = 0; sound < nSounds ; sound++) {
-
-						if (!strcmp(animation->soundNames[currentFrame->soundId - 1], sounds[sound].name)) {
-
-							playSound(sound);
-
-							break;
-
-						}
-
-					}
-
-				}
+				playSound(currentFrame->soundId);
 
 				if (prevFrame) currentFrame = currentFrame->prev;
 				else currentFrame = currentFrame->next;

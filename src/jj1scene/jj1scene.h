@@ -195,7 +195,7 @@ class JJ1SceneFrame {
 		unsigned char* frameData;
 		int            frameSize;
 		unsigned int   frameType;
-		int            soundId;
+		unsigned char  soundId;
 
 		JJ1SceneFrame  (int frameType, unsigned char* frameData, int frameSize);
 		~JJ1SceneFrame ();
@@ -212,8 +212,6 @@ class JJ1SceneAnimation {
 
 		SDL_Surface*       background;
 		int id;
-		int noSounds;
-		char soundNames[16][10];
 		int frames;
 		int reverseAnimation;
 

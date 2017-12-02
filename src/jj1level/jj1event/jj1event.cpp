@@ -136,7 +136,7 @@ void JJ1Event::destroy (unsigned int ticks) {
 
 	level->setEventTime(gridX, gridY, ticks);
 
-	level->playSound(set->sound);
+	playSound(set->sound);
 
 	return;
 

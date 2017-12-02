@@ -336,7 +336,7 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	}
 
-	playSound(S_OW);
+	playSound(7);
 
 	if (energy) {
 
@@ -789,7 +789,7 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* event, unsigned char gridX, unsig
 			eventY = gridY;
 			targetY = TTOF(gridY) + (event->magnitude * ITOF(21));
 
-			level->playSound(event->sound);
+			playSound(event->sound);
 
 			break;
 

@@ -34,6 +34,7 @@
 #include "game/game.h"
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
+#include "io/sound.h"
 
 #include <stdlib.h>
 
@@ -194,7 +195,7 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks) {
 	// If the scenery has been hit and this is not a bouncer, destroy the bullet
 	if (level->checkMaskUp(x, y) && (set[B_BEHAVIOUR] != 4)) {
 
-		level->playSound(set[B_FINISHSOUND]);
+		playSound(set[B_FINISHSOUND]);
 
 		return remove();
 

@@ -145,6 +145,8 @@ JJ1Level::~JJ1Level () {
 
 	delete font;
 
+	resampleSounds();
+
 	return;
 
 }
@@ -618,23 +620,9 @@ void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, 
 
 		}
 
-		level->playSound(set[B_STARTSOUND]);
+		playSound(set[B_STARTSOUND]);
 
 	}
-
-	return;
-
-}
-
-
-/**
- * Play a sound.
- *
- * @param sound Number of the sound to play
- */
-void JJ1Level::playSound (int sound) {
-
-	if (sound > 0) ::playSound(soundMap[sound - 1]);
 
 	return;
 
@@ -879,7 +867,7 @@ int JJ1Level::play () {
 
 					returnTime = ticks + T_END;
 					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
-					::playSound(S_UPLOOP);
+					playSound(11);
 
 				}
 
