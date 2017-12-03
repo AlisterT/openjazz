@@ -438,7 +438,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 					0,
 					x + anims[animType]->getShootX(),
 					y - ITOF(lookTime? 5: 10),
-					player->getAmmo(false) + 1,
+					player->getAmmoType() + 1,
 					facing,
 					ticks);
 

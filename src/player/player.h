@@ -123,7 +123,8 @@ class Player {
 		void            addLife           ();
 		void            addScore          (int addedScore);
 		bool            endOfLevel        (int gridX, int gridY);
-		int             getAmmo           (bool amount);
+		int             getAmmoType       ();
+		int             getAmmo           ();
 		unsigned char*  getCols           ();
 		bool            getControl        (int control);
 		int             getLives          ();

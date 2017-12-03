@@ -183,12 +183,12 @@ void JJ2Level::draw () {
 
 
 	// Show ammo
-	if (localPlayer->getAmmo(false) == -1) {
+	if (localPlayer->getAmmoType() == -1) {
 
 		panelSmallFont->showString(":", canvasW - 24, canvasH - 16);
 		panelSmallFont->showString(";", canvasW - 16, canvasH - 16);
 
-	} else panelSmallFont->showNumber(localPlayer->getAmmo(true), canvasW - 8, canvasH - 16);
+	} else panelSmallFont->showNumber(localPlayer->getAmmo(), canvasW - 8, canvasH - 16);
 
 
 	return;

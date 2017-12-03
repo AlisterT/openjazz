@@ -153,7 +153,7 @@ int JJ1Level::step () {
 
 	// Handle change in ammo selection
 
-	x = localPlayer->getAmmo(false) + 1;
+	x = localPlayer->getAmmoType() + 1;
 
 	if (x != ammoType) {
 
@@ -451,12 +451,26 @@ void JJ1Level::draw () {
 	panelSmallFont->showNumber(levelNum + 1, 196, canvasH - 13);
 
 	// Show ammo
-	if (localPlayer->getAmmo(false) == -1) {
+	if (localPlayer->getAmmoType() == -1) {
 
 		panelSmallFont->showString(":", 225, canvasH - 13);
 		panelSmallFont->showString(";", 233, canvasH - 13);
 
-	} else panelSmallFont->showNumber(localPlayer->getAmmo(true), 245, canvasH - 13);
+	} else {
+
+		x = localPlayer->getAmmo();
+
+		// Trailing 0s
+		if (x < 100) {
+
+			panelSmallFont->showNumber(0, 229, canvasH - 13);
+			if (x < 10) panelSmallFont->showNumber(0, 237, canvasH - 13);
+
+		}
+
+		panelSmallFont->showNumber(x > 999? 999: x, 245, canvasH - 13);
+
+	}
 
 
 	// Draw the health bar

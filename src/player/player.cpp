@@ -385,15 +385,25 @@ void Player::addAmmo (int type, int amount) {
 
 
 /**
- * Get the type of ammo or the total amount of ammo of the current type.
+ * Get the current type of ammo.
  *
- * @param amount False for type, true for amount
- *
- * @return The requested value
+ * @return The type of ammo
  */
-int Player::getAmmo (bool amount) {
+int Player::getAmmoType () {
 
-	return amount? ammo[ammoType]: ammoType;
+	return ammoType;
+
+}
+
+
+/**
+ * Get the total amount of ammo of the current type.
+ *
+ * @return The amount of ammo
+ */
+int Player::getAmmo () {
+
+	return ammo[ammoType];
 
 }
 
