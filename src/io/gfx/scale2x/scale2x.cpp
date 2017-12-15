@@ -48,6 +48,8 @@
  */
 /* #define USE_SCALE_RANDOMWRITE */
 
+#ifdef USE_SCALE_RANDOMWRITE
+
 static inline void scale2x_8_def_whole(scale2x_uint8* restrict dst0, scale2x_uint8* restrict dst1, const scale2x_uint8* restrict src0, const scale2x_uint8* restrict src1, const scale2x_uint8* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -106,6 +108,8 @@ static inline void scale2x_8_def_whole(scale2x_uint8* restrict dst0, scale2x_uin
 		dst1[1] = src1[0];
 	}
 }
+
+#endif
 
 static inline void scale2x_8_def_border(scale2x_uint8* restrict dst, const scale2x_uint8* restrict src0, const scale2x_uint8* restrict src1, const scale2x_uint8* restrict src2, unsigned count)
 {
@@ -197,6 +201,8 @@ static inline void scale2x_8_def_center(scale2x_uint8* restrict dst, const scale
 	}
 }
 
+#ifdef USE_SCALE_RANDOMWRITE
+
 static inline void scale2x_16_def_whole(scale2x_uint16* restrict dst0, scale2x_uint16* restrict dst1, const scale2x_uint16* restrict src0, const scale2x_uint16* restrict src1, const scale2x_uint16* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -255,6 +261,8 @@ static inline void scale2x_16_def_whole(scale2x_uint16* restrict dst0, scale2x_u
 		dst1[1] = src1[0];
 	}
 }
+
+#endif
 
 static inline void scale2x_16_def_border(scale2x_uint16* restrict dst, const scale2x_uint16* restrict src0, const scale2x_uint16* restrict src1, const scale2x_uint16* restrict src2, unsigned count)
 {
@@ -346,6 +354,8 @@ static inline void scale2x_16_def_center(scale2x_uint16* restrict dst, const sca
 	}
 }
 
+#ifdef USE_SCALE_RANDOMWRITE
+
 static inline void scale2x_32_def_whole(scale2x_uint32* restrict dst0, scale2x_uint32* restrict dst1, const scale2x_uint32* restrict src0, const scale2x_uint32* restrict src1, const scale2x_uint32* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -404,6 +414,8 @@ static inline void scale2x_32_def_whole(scale2x_uint32* restrict dst0, scale2x_u
 		dst1[1] = src1[0];
 	}
 }
+
+#endif
 
 static inline void scale2x_32_def_border(scale2x_uint32* restrict dst, const scale2x_uint32* restrict src0, const scale2x_uint32* restrict src1, const scale2x_uint32* restrict src2, unsigned count)
 {
