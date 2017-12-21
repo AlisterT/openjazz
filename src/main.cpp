@@ -57,6 +57,10 @@
 	#include <pspdisplay.h>
 #elif defined(_3DS)
 	#include <3ds.h>
+#elif defined(__HAIKU__)
+	#include <Alert.h>
+	#include <FindDirectory.h>
+	#include <fs_info.h>
 #endif
 
 #include <string.h>
@@ -107,6 +111,22 @@ void startUp (int argc, char *argv[]) {
 	firstPath = new Path(NULL, createString(DATAPATH));
 #else
 	firstPath = NULL;
+#endif
+
+#ifdef __HAIKU__
+	dev_t volume = dev_for_path("/boot");
+	char buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
+	status_t result;
+
+	result = find_directory(B_SYSTEM_DATA_DIRECTORY,
+		volume, false, buffer, sizeof(buffer));
+	strncat(buffer, "/openjazz/", sizeof(buffer));
+	firstPath = new Path(firstPath, createString(buffer));
+
+	result = find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY,
+		volume, false, buffer, sizeof(buffer));
+	strncat(buffer, "/openjazz/", sizeof(buffer));
+	firstPath = new Path(firstPath, createString(buffer));
 #endif
 
 #ifdef __SYMBIAN32__
@@ -260,6 +280,16 @@ void startUp (int argc, char *argv[]) {
 		log("Unable to find game data files. When launching OpenJazz, pass the location");
 		log("of the original game data, eg:");
 		log("  OpenJazz ~/jazz1");
+
+#ifdef __HAIKU__
+		char alertBuffer[100+B_PATH_NAME_LENGTH+B_FILE_NAME_LENGTH];
+		strcpy(alertBuffer, "Unable to find game data files!\n"
+			"Put the data into the folder:\n");
+		strncat(alertBuffer, buffer, sizeof(alertBuffer));
+		BAlert* alert = new BAlert("OpenJazz", alertBuffer, "Exit", NULL, NULL,
+			B_WIDTH_AS_USUAL, B_STOP_ALERT);
+		alert->Go();
+#endif
 
 		throw e;
 
