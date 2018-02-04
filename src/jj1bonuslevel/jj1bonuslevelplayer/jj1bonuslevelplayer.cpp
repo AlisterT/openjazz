@@ -111,6 +111,8 @@ void JJ1BonusLevelPlayer::reset (int startX, int startY) {
 
 	gems = 0;
 
+	animType = PA_WALK;
+
 	return;
 
 }
