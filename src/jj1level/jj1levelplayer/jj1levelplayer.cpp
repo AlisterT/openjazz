@@ -343,17 +343,9 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 		reaction = PR_HURT;
 		reactionTime = ticks + PRT_HURT;
 
-		if (dx < 0) {
-
-			dx = PXS_RUN;
-			dy = PYS_JUMP;
-
-		} else {
-
-			dx = -PXS_RUN;
-			dy = PYS_JUMP;
-
-		}
+		if (dx < 0) dx = PXS_RUN;
+		else dx = -PXS_RUN;
+		dy = PYS_JUMP;
 
 	} else {
 

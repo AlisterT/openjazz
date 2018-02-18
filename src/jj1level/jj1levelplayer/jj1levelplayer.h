@@ -85,7 +85,7 @@
 #define PXS_RUN   ITOF(325)
 #define PYS_FALL  ITOF(350)
 #define PYS_SINK  ITOF(150)
-#define PYS_JUMP  ITOF(-350)
+#define PYS_JUMP  -ITOF(350)
 
 // Player accelerations
 #define PXA_REVERSE ITOF(28)

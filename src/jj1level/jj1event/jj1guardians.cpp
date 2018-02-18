@@ -325,7 +325,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks) {
 			if (y > startPos) {
 
 				dx = 0;
-				dy = ITOF(-2);
+				dy = -ITOF(2);
 
 			}
 			else direction = 7;
@@ -377,7 +377,7 @@ JJ1Event* MedGuardian::step(unsigned int ticks) {
 		if (direction == 9) {
 
 			// Shake a bit
-			dx = (FTOI(x) % 2) ? ITOF(1) : ITOF(-1);
+			dx = (FTOI(x) % 2) ? ITOF(1) : -ITOF(1);
 			dy = 0;
 
 			// Remove the tile

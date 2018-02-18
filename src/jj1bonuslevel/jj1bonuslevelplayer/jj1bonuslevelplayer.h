@@ -46,13 +46,13 @@
 #define BPANIMS  7
 
 // Player speeds
-#define PRS_CRASH   ITOF(-60)
-#define PRS_REVERSE ITOF(-30)
+#define PRS_CRASH   -ITOF(60)
+#define PRS_REVERSE -ITOF(30)
 #define PRS_JUMP    ITOF(40)
 #define PRS_WALK    ITOF(40)
 #define PRS_RUN     ITOF(80)
 #define PAS_TURN    384
-#define PZS_FALL    ITOF(-2)
+#define PZS_FALL    -ITOF(2)
 #define PZS_JUMP    ITOF(3)
 
 // Player accelerations

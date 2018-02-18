@@ -303,17 +303,9 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 		reaction = JJ2PR_HURT;
 		reactionTime = ticks + JJ2PRT_HURT;
 
-		if (dx < 0) {
-
-			dx = JJ2PXS_RUN;
-			dy = JJ2PYS_JUMP;
-
-		} else {
-
-			dx = -JJ2PXS_RUN;
-			dy = JJ2PYS_JUMP;
-
-		}
+		if (dx < 0) dx = JJ2PXS_RUN;
+		else dx = -JJ2PXS_RUN;
+		dy = JJ2PYS_JUMP;
 
 	} else {
 

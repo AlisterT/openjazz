@@ -103,11 +103,11 @@
 #define JJ2PXS_FFRUN ITOF(500)
 #define JJ2PYS_FALL  ITOF(350)
 #define JJ2PYS_SINK  ITOF(150)
-#define JJ2PYS_JUMP  ITOF(-350)
+#define JJ2PYS_JUMP  -ITOF(350)
 
 #define JJ2PXS_POLE   ITOF(500)
 #define JJ2PYS_POLE   ITOF(500)
-#define JJ2PYS_SPRING ITOF(-500)
+#define JJ2PYS_SPRING -ITOF(500)
 
 // Player accelerations
 #define JJ2PXA_REVERSE 900

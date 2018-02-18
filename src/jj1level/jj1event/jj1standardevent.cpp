@@ -1127,7 +1127,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 			}
 
-			if (offset == 0) offset = ITOF(1 - TTOI(1));
+			if (offset == 0) offset = -ITOF(TTOI(1) - 1);
 
 		}
 
