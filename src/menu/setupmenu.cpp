@@ -498,6 +498,9 @@ int SetupMenu::setupScaling () {
 int SetupMenu::setupSound () {
 
 	int x, y;
+	bool soundActive;
+
+	soundActive = false;
 
 	while (true) {
 
@@ -514,29 +517,39 @@ int SetupMenu::setupSound () {
 			x -= (canvasW >> 2) + 128;
 			y -= canvasH >> 1;
 
-			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11)) soundsVolume = x << 1;
+			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11)) setMusicVolume(x << 1);
+			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 16) && (y < 27)) setSoundVolume(x << 1);
 
 			if (controls.wasCursorReleased()) playSound(S_ORB);
 
 		}
 
-
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
 
-
-		// Volume
-		fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("effect volume", canvasW >> 2, canvasH >> 1);
+		// Music Volume
+		if (!soundActive) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("music volume", canvasW >> 2, canvasH >> 1);
 		fontmn2->restorePalette();
 
-		drawRect((canvasW >> 2) + 128, canvasH >> 1, soundsVolume >> 1, 11, 175);
+		drawRect((canvasW >> 2) + 128, canvasH >> 1, getMusicVolume() >> 1, 11, 175);
+
+		// Sound Volume
+		if (soundActive) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("effect volume", canvasW >> 2, (canvasH >> 1) + 16);
+		fontmn2->restorePalette();
+
+		drawRect((canvasW >> 2) + 128, (canvasH >> 1) + 16, getSoundVolume() >> 1, 11, 175);
+
+		if (controls.release(C_UP)) soundActive = !soundActive;
+
+		if (controls.release(C_DOWN)) soundActive = !soundActive;
 
 		if (controls.release(C_LEFT)) {
 
-			if (soundsVolume - 4 < 0) soundsVolume = 0;
-			else soundsVolume -= 4;
+			if (soundActive) setSoundVolume(getSoundVolume() - 4);
+			else setMusicVolume(getMusicVolume() - 4);
 
 			playSound(S_ORB);
 
@@ -544,8 +557,8 @@ int SetupMenu::setupSound () {
 
 		if (controls.release(C_RIGHT)) {
 
-			if (soundsVolume + 4 > MAX_VOLUME) soundsVolume = MAX_VOLUME;
-			else soundsVolume += 4;
+			if (soundActive) setSoundVolume(getSoundVolume() + 4);
+			else setMusicVolume(getMusicVolume() + 4);
 
 			playSound(S_ORB);
 

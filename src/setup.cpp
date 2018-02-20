@@ -144,9 +144,9 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	setup.characterCols[2] = file->loadChar();
 	setup.characterCols[3] = file->loadChar();
 
-	// Read the sound effect volume
-	soundsVolume = file->loadChar();
-	if (soundsVolume > MAX_VOLUME) soundsVolume = MAX_VOLUME;
+	// Read the music and sound effect volume
+	setMusicVolume(file->loadChar());
+	setSoundVolume(file->loadChar());
 
 	// Read gameplay options
 	count = file->loadChar();
@@ -236,8 +236,9 @@ void Setup::save () {
 	file->storeChar(setup.characterCols[2]);
 	file->storeChar(setup.characterCols[3]);
 
-	// Write the sound effect volume
-	file->storeChar(soundsVolume);
+	// Write the music and sound effect volume
+	file->storeChar(getMusicVolume());
+	file->storeChar(getSoundVolume());
 
 	// Write gameplay options
 

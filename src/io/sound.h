@@ -84,8 +84,6 @@ EXTERN RawSound *rawSounds;
 EXTERN int       nRawSounds;
 EXTERN Sound    *sounds;
 
-EXTERN char   soundsVolume;
-
 #if defined(WIZ) || defined(GP2X)
 EXTERN int volume;
 EXTERN int volume_direction;
@@ -99,11 +97,15 @@ EXTERN void closeAudio     ();
 EXTERN void playMusic      (const char *fileName);
 EXTERN void pauseMusic     (bool pause);
 EXTERN void stopMusic      ();
+EXTERN int  getMusicVolume ();
+EXTERN void setMusicVolume (int volume);
 EXTERN int  loadSounds     (const char *fileName);
 EXTERN void resampleSound  (char index, const char* name, int rate);
 EXTERN void resampleSounds ();
 EXTERN void freeSounds     ();
 EXTERN void playSound      (char index);
+EXTERN int  getSoundVolume ();
+EXTERN void setSoundVolume (int volume);
 
 #endif
 

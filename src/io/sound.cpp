@@ -80,7 +80,9 @@ xmp_context xmpC;
 #endif
 
 SDL_AudioSpec  audioSpec;
-bool music_paused = false;
+bool musicPaused = false;
+int musicVolume = MAX_VOLUME >> 1; // 50%
+int soundVolume = MAX_VOLUME >> 2; // 25%
 
 
 /**
@@ -96,7 +98,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 	int count;
 
-	if (!music_paused) {
+	if (!musicPaused) {
 		// Read the next portion of music into the audio stream
 #if defined(USE_MODPLUG)
 
@@ -122,7 +124,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position, len,
-					soundsVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+					soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
 
 				sounds[count].position += len;
 
@@ -133,7 +135,7 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 				SDL_MixAudio(stream,
 					sounds[count].data + sounds[count].position,
 					sounds[count].length - sounds[count].position,
-					soundsVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+					soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
 
 				sounds[count].position = -1;
 
@@ -337,8 +339,12 @@ void playMusic (const char * fileName) {
 
 #endif
 
+	// Re-apply volume setting
+	setMusicVolume(musicVolume);
+
 	// Start the audio playing
 	SDL_PauseAudio(0);
+	musicPaused = false;
 
 	return;
 
@@ -347,9 +353,11 @@ void playMusic (const char * fileName) {
 
 /**
  * Pauses and Unpauses the current music.
+ *
+ * @param pause set to true to pause
  */
 void pauseMusic (bool pause) {
-	music_paused = pause;
+	musicPaused = pause;
 }
 
 
@@ -386,6 +394,40 @@ void stopMusic () {
 
 	return;
 
+}
+
+
+/**
+ * Gets the current music volume
+ *
+ * @return music volume (0-100)
+ */
+int getMusicVolume () {
+	return musicVolume;
+}
+
+
+/**
+ * Sets the music volume
+ *
+ * @param volume new volume (0-100)
+ */
+void setMusicVolume (int volume) {
+	musicVolume = volume;
+	if (volume < 1) musicVolume = 0;
+	if (volume > MAX_VOLUME) musicVolume = MAX_VOLUME;
+
+	// do not access music player settings when not playing
+#if defined(USE_MODPLUG)
+
+	if (musicFile) ModPlug_SetMasterVolume(musicFile, musicVolume * 5.12);
+
+#elif defined(USE_XMP)
+
+	if (xmpC && xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
+		xmp_set_player(xmpC, XMP_PLAYER_VOLUME, musicVolume);
+
+#endif
 }
 
 
@@ -555,3 +597,23 @@ void playSound (char index) {
 }
 
 
+/**
+ * Gets the current sound effect volume
+ *
+ * @return sound volume (0-100)
+ */
+int getSoundVolume () {
+	return soundVolume;
+}
+
+
+/**
+ * Sets the sound effect volume
+ *
+ * @param volume new volume (0-100)
+ */
+void setSoundVolume (int volume) {
+	soundVolume = volume;
+	if (volume < 1) soundVolume = 0;
+	if (volume > MAX_VOLUME) soundVolume = MAX_VOLUME;
+}

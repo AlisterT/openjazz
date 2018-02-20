@@ -211,8 +211,6 @@ void startUp (int argc, char *argv[]) {
 #if defined(WIZ) || defined(GP2X)
 	volume = 40;
 #endif
-	soundsVolume = MAX_VOLUME >> 2;
-
 
 	// Create the network address
 	netAddress = createString(NET_ADDRESS);
@@ -223,19 +221,22 @@ void startUp (int argc, char *argv[]) {
 
 
 	// Get command-line override
-
-#ifndef FULLSCREEN_ONLY
 	for (count = 1; count < argc; count++) {
 
 		// If there's a hyphen, it should be an option
 		if (argv[count][0] == '-') {
 
+#ifndef FULLSCREEN_ONLY
 			if (argv[count][1] == 'f') fullscreen = true;
+#endif
+			if (argv[count][1] == 'm') {
+				setMusicVolume(0);
+				setSoundVolume(0);
+			}
 
 		}
 
 	}
-#endif
 
 
 	// Create the game's window
