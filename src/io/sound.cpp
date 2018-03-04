@@ -45,7 +45,7 @@
 #endif
 
 
-#if defined(__SYMBIAN32__) || defined(_3DS)
+#if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP)
 	#define SOUND_FREQ 22050
 #else
 	#define SOUND_FREQ 44100
@@ -68,7 +68,7 @@ ModPlugFile   *musicFile;
 
 #elif defined(USE_XMP)
 
-#  ifdef _3DS
+#  if defined(_3DS) || defined(PSP)
 	#define MUSIC_INTERPOLATION XMP_INTERP_NEAREST
 #  else
 	#define MUSIC_INTERPOLATION XMP_INTERP_SPLINE

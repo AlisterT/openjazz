@@ -548,7 +548,6 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 #ifdef PSP
 	PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
 	PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
-	//PSP_HEAP_SIZE_MAX();
 	PSP_HEAP_SIZE_KB(-2048);
 #endif
 
