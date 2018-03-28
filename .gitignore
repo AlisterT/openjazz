@@ -2,6 +2,7 @@
 openjazz
 OpenJazz
 openjazz.cfg
+*.exe
 
 # psp
 *.elf
@@ -18,17 +19,16 @@ EBOOT.PBP
 .DS_Store
 
 # autotools
+/build-aux/
 .deps/
 .dirstamp
 Makefile.in
 aclocal.m4
-autom4te.cache
+/autom4te.cache/
 config.log
 config.status
-depcomp
-install-sh
 configure
-missing
 
+# distribution
 openjazz-*.tar.*
 OpenJazz-*.zip
