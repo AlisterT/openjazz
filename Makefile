@@ -16,26 +16,19 @@ CXXFLAGS += -DUSE_SOCKETS
 CXXFLAGS += $(shell sdl-config --cflags)
 LIBS += $(shell sdl-config --libs)
 
-# modplug
-MODPLUG_CFLAGS ?= $(shell pkg-config --silence-errors --cflags libmodplug)
-MODPLUG_LIBS ?= $(shell pkg-config --silence-errors --libs libmodplug)
-ifneq ($(MODPLUG_LIBS),)
-	CXXFLAGS += -DUSE_MODPLUG $(MODPLUG_CFLAGS)
-	LIBS += $(MODPLUG_LIBS)
-endif
-
-# xmp
-XMP_CFLAGS ?= $(shell pkg-config --silence-errors --cflags libxmp)
-XMP_LIBS ?= $(shell pkg-config --silence-errors --libs libxmp)
-ifneq ($(XMP_LIBS),)
-	CXXFLAGS += -DUSE_XMP $(XMP_CFLAGS)
-	LIBS += $(XMP_LIBS)
+# music library: modplug, xmp
+MUSICLIB ?= modplug
+MUSICLIB_CFLAGS ?= $(shell pkg-config --silence-errors --cflags lib$(MUSICLIB))
+MUSICLIB_LIBS ?= $(shell pkg-config --silence-errors --libs lib$(MUSICLIB))
+ifneq ($(MUSICLIB_LIBS),)
+	CXXFLAGS += -DUSE_$(MUSICLIB) $(MUSICLIB_CFLAGS)
+	LIBS += $(MUSICLIB_LIBS)
 endif
 
 LIBS += -lm
 
 OpenJazz: $(OBJS)
-	$(CXX) $(LDFLAGS) -lz $(LIBS) $(OBJS) -o OpenJazz
+	$(CXX) $(LDFLAGS) $(LIBS) -lz $(OBJS) -o OpenJazz
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@

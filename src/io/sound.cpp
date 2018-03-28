@@ -34,16 +34,28 @@
 
 #include <SDL/SDL_audio.h>
 
+// support for the default Makefile
+#ifdef USE_modplug
+	#define USE_MODPLUG
+#endif
+#ifdef USE_xmp
+	#define USE_XMP
+#endif
+
+// make sure we only have one music library available
+#if defined(USE_MODPLUG) && defined(USE_XMP)
+	#error "You can either use libxmp or libmodplug, not both!"
+#endif
+
 #if defined(USE_MODPLUG)
-    #ifdef _WIN32
-        #include <modplug.h>
-    #else
-        #include <libmodplug/modplug.h>
-    #endif
+	#ifdef _WIN32
+		#include <modplug.h>
+	#else
+		#include <libmodplug/modplug.h>
+	#endif
 #elif defined(USE_XMP)
 	#include <xmp.h>
 #endif
-
 
 #if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP)
 	#define SOUND_FREQ 22050
