@@ -1,11 +1,10 @@
-# -*- Makefile -*-
-
 AM_CPPFLAGS = -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
-              ${libSDL_CFLAGS} ${libmodplug_CFLAGS} ${libxmp_CFLAGS} ${zlib_CFLAGS}
+              ${SDL_CFLAGS} ${LIBMODPLUG_CFLAGS} ${LIBXMP_CFLAGS} ${ZLIB_CFLAGS}
 AM_CFLAGS   = -Wall
 AM_CXXFLAGS = -Wall
 
 dist_pkgdata_DATA = openjazz.000
+EXTRA_DIST = gpl.txt licenses.txt README.md
 
 bin_PROGRAMS = openjazz
 openjazz_SOURCES = \
@@ -106,4 +105,4 @@ openjazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-openjazz_LDADD = ${libSDL_LIBS} ${libmodplug_LIBS} ${libxmp_LIBS} ${zlib_LIBS}
+openjazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS}
