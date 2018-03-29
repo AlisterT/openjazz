@@ -8,7 +8,8 @@
 is a free, open-source version of the classic Jazz Jackrabbit™ games.
 
 OpenJazz can be compiled on a wide range of operating systems, including
-Windows, macOS, GNU/Linux and *BSD.
+Windows, macOS, GNU/Linux and *BSD. Also ports are available for some
+homebrew platforms, for example Wii and PSP.
 
 To play, you will need the files from one of the original games.
 
@@ -53,20 +54,32 @@ By default, the controls are as follows:
 - Under Linux, the `Space bar` to jump and `left Alt` to shoot.
 - `Right Ctrl` to change weapon.
 
+Additionally, most game controllers and joysticks that SDL recognizes can be
+used. However, not all axes or buttons may be available.
+
 ## Building
 
-You will need the SDL 1.2.x library (https://libsdl.org/).
+Needed:
+- SDL 1.2.x library (https://libsdl.org/).
 
-For network play, you need a platform which provides sockets or use the SDL_net
-library (https://www.libsdl.org/projects/SDL_net/), then either define
+Optional:
+- SDL_net 1.2.x library (https://www.libsdl.org/projects/SDL_net/)
+- xmp 4.x.x library (http://xmp.sourceforge.net/)
+- ModPlug library (http://modplug-xmms.sourceforge.net/)
+
+OpenJazz ships a basic Makefile that may be used and adapted to the specific
+needs of the user or platform where it shall run. For network play, you need a
+platform which natively provides sockets or use SDL_net, then either define
 `USE_SOCKETS` or `USE_SDL_NET` in the Makefile. On the Windows platform, the
-socket library (`-lws2_32`) is needed.
+socket library (`-lws2_32`) is needed while linking. For music support, you
+either need ModPlug or xmp. Then define `USE_MODPLUG` or `USE_XMP` in the
+Makefile. ModPlug needs to be patched to support looping tracks, otherwise half
+of the level will be silent, xmp does not have this problem.
 
-For music support, you need to define `USE_MODPLUG` in the Makefile and the
-Modplug library (http://modplug-xmms.sourceforge.net/). This library needs to
-be patched to support looping tracks, otherwise half of the level will be
-silent. Alternatively, the xmp library (http://xmp.sourceforge.net/) may be
-used, then define `USE_XMP` in the Makefile. This does not need patching.
+For UNIX systems also an autoconf script is provided, used like this:
+
+    ./configure # `--help` lists options
+    make [install]
 
 Further (partly outdated) instructions are available at:
 http://www.alister.eu/jazz/oj/build.php
@@ -78,12 +91,11 @@ http://www.alister.eu/jazz/oj/build.php
 - `SCALE` - enable scaling of the video output (i.e. Scale2X...)
 - `FULLSCREEN_ONLY` - disable window mode, useful for console ports
 
-Please see the provided Makefiles for reference.
-
 ## Running
 
 Execute `OpenJazz`, depending on the platform and compile time options, the
-data files are expected to be under different paths (see above).
+data files are expected to be under different paths (see above). You can
+also specifiy a game folder as command line argument.
 
 ## Author
 
