@@ -28,7 +28,7 @@
 
 #include "paletteeffects.h"
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 
 // Constants

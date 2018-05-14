@@ -32,7 +32,7 @@
 
 #include "util.h"
 
-#include <SDL/SDL_audio.h>
+#include <SDL_audio.h>
 
 // support for the default Makefile
 #ifdef USE_modplug

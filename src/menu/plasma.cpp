@@ -29,7 +29,7 @@
 #include "level/level.h"
 #include "util.h"
 #include "io/gfx/video.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 #ifdef SCALE
 	#include "io/gfx/scale2x/scalebit.h"
