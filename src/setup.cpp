@@ -131,7 +131,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 	for (count = 0; count < CONTROLS; count++) {
 
-		long int a, d;
+		int a, d;
 
 		a = file->loadInt();
 		d = file->loadInt();

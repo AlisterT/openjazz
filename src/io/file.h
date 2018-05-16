@@ -55,8 +55,8 @@ class File {
 		unsigned short int loadShort   ();
 		unsigned short int loadShort   (unsigned short int max);
 		void               storeShort  (unsigned short int val);
-		signed long int    loadInt     ();
-		void               storeInt    (signed long int val);
+		signed int         loadInt     ();
+		void               storeInt    (signed int val);
 		unsigned char*     loadBlock   (int length);
 		unsigned char*     loadRLE     (int length);
 		void               skipRLE     ();

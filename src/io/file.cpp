@@ -273,29 +273,29 @@ void File::storeShort (unsigned short int val) {
 
 
 /**
- * Load a signed long int from the file.
+ * Load a signed int from the file.
  *
  * @return The value read
  */
-signed long int File::loadInt () {
+signed int File::loadInt () {
 
-	unsigned long int val;
+	unsigned int val;
 
 	val = fgetc(file);
 	val += fgetc(file) << 8;
 	val += fgetc(file) << 16;
 	val += fgetc(file) << 24;
 
-	return *((signed long int *)&val);
+	return *((signed int *)&val);
 
 }
 
 
-void File::storeInt (signed long int val) {
+void File::storeInt (signed int val) {
 
-	unsigned long int uval;
+	unsigned int uval;
 
-	uval = *((unsigned long int *)&val);
+	uval = *((unsigned int *)&val);
 
 	fputc(uval & 255, file);
 	fputc((uval >> 8) & 255, file);
