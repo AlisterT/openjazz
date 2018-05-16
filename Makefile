@@ -28,7 +28,7 @@ endif
 LIBS += -lm -lz
 
 OpenJazz: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o OpenJazz $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
