@@ -166,7 +166,7 @@ int SetupMenu::setupJoystick () {
 					controls.setButton(progress, control & 0xFF);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -196,7 +196,7 @@ int SetupMenu::setupJoystick () {
 					controls.setAxis(progress, control & 0xFF, false);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -226,7 +226,7 @@ int SetupMenu::setupJoystick () {
 					controls.setAxis(progress, control & 0xFF, true);
 					progress++;
 
-					if (progress == 7) {
+					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
 
@@ -253,7 +253,7 @@ int SetupMenu::setupJoystick () {
 
 		video.clearScreen(0);
 
-		for (count = 0; count < 7; count++) {
+		for (count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
 				fontmn2->showString("okay", (canvasW >> 2) + 176, (canvasH >> 1) + (count << 4) - 56);

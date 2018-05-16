@@ -129,8 +129,15 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	for (count = 0; count < CONTROLS; count++)
 		controls.setButton(count, file->loadInt());
 
-	for (count = 0; count < CONTROLS; count++)
-		controls.setAxis(count, file->loadInt(), file->loadInt());
+	for (count = 0; count < CONTROLS; count++) {
+
+		int a, d;
+
+		a = file->loadInt();
+		d = file->loadInt();
+		controls.setAxis(count, a, d);
+
+	}
 
 	// Read the player's name
 	for (count = 0; count < STRING_LENGTH; count++)
