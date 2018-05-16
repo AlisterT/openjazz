@@ -6,8 +6,15 @@ AM_CXXFLAGS = -Wall
 dist_pkgdata_DATA = openjazz.000
 EXTRA_DIST = gpl.txt licenses.txt README.md
 
-bin_PROGRAMS = openjazz
-openjazz_SOURCES = \
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = unix/OpenJazz.desktop
+appicondir = $(datadir)/icons/hicolor/scalable/apps
+dist_appicon_DATA = unix/OpenJazz.svg
+appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
+dist_appicon_fallback_DATA = unix/OpenJazz.png
+
+bin_PROGRAMS = OpenJazz
+OpenJazz_SOURCES = \
 	src/game/clientgame.cpp \
 	src/game/game.cpp \
 	src/game/game.h \
@@ -105,4 +112,4 @@ openjazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-openjazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS}
+OpenJazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS}

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=OpenJazz
+Comment=Jazz Jackrabbit™ game engine reimplementation
+Icon=OpenJazz
+Exec=OpenJazz
+Categories=Game;ActionGame;
+Terminal=false
+StartupNotify=false
