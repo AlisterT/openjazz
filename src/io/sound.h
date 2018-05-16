@@ -100,7 +100,7 @@ EXTERN void stopMusic      ();
 EXTERN int  getMusicVolume ();
 EXTERN void setMusicVolume (int volume);
 EXTERN int  loadSounds     (const char *fileName);
-EXTERN void resampleSound  (char index, const char* name, int rate);
+EXTERN void resampleSound  (int index, const char* name, int rate);
 EXTERN void resampleSounds ();
 EXTERN void freeSounds     ();
 EXTERN void playSound      (char index);
