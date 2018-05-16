@@ -513,9 +513,9 @@ int loadSounds (const char *fileName) {
 /**
  * Resample sound clip data.
  */
-void resampleSound (char index, const char* name, int rate) {
+void resampleSound (int index, const char* name, int rate) {
 
-	int count, rsFactor, sample, sourceSample;
+	int count, rsFactor, sample;
 
     if (sounds[index].data) {
 
