@@ -25,10 +25,10 @@ ifneq ($(MUSICLIB_LIBS),)
 	LIBS += $(MUSICLIB_LIBS)
 endif
 
-LIBS += -lm
+LIBS += -lm -lz
 
 OpenJazz: $(OBJS)
-	$(CXX) $(LDFLAGS) $(LIBS) -lz $(OBJS) -o OpenJazz
+	$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
