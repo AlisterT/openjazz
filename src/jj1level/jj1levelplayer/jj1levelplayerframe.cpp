@@ -844,6 +844,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	int frame;
 	fixed drawX, drawY;
 	fixed xOffset, yOffset;
+	fixed angle;
 
 	// The current frame for animations
 	if (reaction == PR_KILLED) frame = (ticks + PRT_KILLED - reactionTime) / 75;
@@ -938,18 +939,42 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 		// Show the 4-hit shield
 
-		xOffset = fCos(ticks) * 20;
-		yOffset = fSin(ticks) * 20;
-
 		an = level->getMiscAnim(MA_4SHIELD);
 
-		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+		if (shield == 4) {
 
-		if (shield > 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+			// triangle based
 
-		if (shield > 3) an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+			for (int i = 0; i < 3; i++) {
 
-		if (shield > 4) an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+				angle = -(i * 341 + ticks);
+
+				xOffset = fSin(angle) * 20;
+				yOffset = fCos(angle) * 20;
+
+				an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+
+			}
+
+		} else {
+
+			// rectangle based
+
+			xOffset = fCos(ticks) * 20;
+			yOffset = fSin(ticks) * 20;
+
+			an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
+
+			if (shield > 2) an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
+
+			if (shield > 4) {
+
+				an->draw(drawX + yOffset, drawY + PYO_TOP - xOffset);
+				an->draw(drawX - yOffset, drawY + PYO_TOP + xOffset);
+
+			}
+
+		}
 
 	} else if (shield) {
 
