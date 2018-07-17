@@ -542,6 +542,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 		case 12: // Rapid fire
 
 			player->fireSpeed++;
+			fireTime = 0;
 
 			break;
 
