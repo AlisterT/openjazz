@@ -941,7 +941,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		xOffset = fCos(ticks) * 20;
 		yOffset = fSin(ticks) * 20;
 
-		an = level->getAnim(59);
+		an = level->getMiscAnim(MA_4SHIELD);
 
 		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 
@@ -958,7 +958,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		xOffset = fCos(ticks) * 20;
 		yOffset = fSin(ticks) * 20;
 
-		an = level->getAnim(50);
+		an = level->getMiscAnim(MA_1SHIELD);
 
 		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 		an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);

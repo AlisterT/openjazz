@@ -312,7 +312,7 @@ void JJ1Bird::draw (unsigned int ticks, int change) {
 
 	if (next) next->draw(ticks, change);
 
-	anim = level->getAnim((player->getFacing() || fleeing)? BIRD_RIGHTANIM: BIRD_LEFTANIM);
+	anim = level->getMiscAnim((player->getFacing() || fleeing)? MA_RBIRD: MA_LBIRD);
 	anim->setFrame(ticks / 80, true);
 
 	anim->draw(getDrawX(change), getDrawY(change));

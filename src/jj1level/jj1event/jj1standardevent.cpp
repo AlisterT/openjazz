@@ -1148,7 +1148,7 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 	// If the event has been destroyed, draw an explosion
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
-		miscAnim = level->getMiscAnim(MA_EXPLOSION);
+		miscAnim = level->getMiscAnim(MA_EXPLOSION1);
 		miscAnim->setFrame((ticks - level->getEventTime(gridX, gridY)) >> 3, false);
 		miscAnim->draw(changeX, changeY);
 

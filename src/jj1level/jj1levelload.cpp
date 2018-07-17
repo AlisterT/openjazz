@@ -648,7 +648,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] buffer;
 
-	// A mysterious block of mystery
+	// Ignore tile transparency settings (FIXME: needed for sun tiles at least)
 	file->skipRLE();
 
 
@@ -776,7 +776,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	delete[] buffer;
 
 
-	// Yet more doubtless essential data
+	// Skip (usually empty) event names
 	file->skipRLE();
 
 
@@ -809,17 +809,11 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] buffer;
 
-
-	// At general data
-
-	// There's a a whole load of unknown data around here
-
-	// Like another one of those pesky RLE blocks
+	// Skip (usually empty) animation names
 	file->skipRLE();
 
-	// And 153 bytes of DOOM
+	// Skip level block names
 	file->seek(153, false);
-
 
 	// Load sound map
 
@@ -844,13 +838,15 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Music file
 	musicFile = file->loadString();
 
-	// 26 bytes of undiscovered usefulness, less the music file name
+
+	// Skip (usually empty) level start cutscene
 	file->seek(x + 314, true);
 
 	// End of episode cutscene
 	sceneFile = file->loadString();
 
-	// 52 bytes of undiscovered usefulness, less the cutscene file name
+
+	// Skip blank bytes
 	file->seek(x + 366, true);
 
 
@@ -865,21 +861,21 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	setNext(x, y);
 
 
-	// Thanks to Doubble Dutch for the water level bytes
+	// Skip jump height (FIXME) and some unknown level
 	file->seek(4, false);
+
+	// Thanks to Doubble Dutch for the water level bytes
 	waterLevelTarget = ITOF(file->loadShort() + 17);
 	waterLevel = waterLevelTarget - F8;
 	waterLevelSpeed = -80000;
 
+	// Skip Jazz animation speed(FIXME) and an unknown value (end marker?)
+	file->seek(3, false);
+
 
 	// Thanks to Feline and the JCS94 team for the next bits:
 
-	file->seek(3, false);
-
-	// Now at "Section 15"
-
-
-	// Load player's animation set references
+	// Load player's animation set references (always left + right)
 
 	buffer = file->loadRLE(JJ1PANIMS * 2);
 	string = new char[MTL_P_ANIMS + JJ1PANIMS];
@@ -889,7 +885,6 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 		playerAnims[x] = buffer[x << 1];
 		pAnims[x] = animSet + playerAnims[x];
 		string[MTL_P_ANIMS + x] = playerAnims[x];
-
 	}
 
 	delete[] buffer;
@@ -910,10 +905,10 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Load miscellaneous animations
-	miscAnims[0] = file->loadChar();
-	miscAnims[1] = file->loadChar();
-	miscAnims[2] = file->loadChar();
-	miscAnims[3] = file->loadChar();
+	miscAnims[MA_SPARKLE] = file->loadChar();
+	miscAnims[MA_DEVHEAD] = file->loadChar();
+	miscAnims[MA_EXPLOSION1] = file->loadChar();
+	miscAnims[MA_EXPLOSION2] = file->loadChar();
 
 
 	// Load bullet set
@@ -928,11 +923,10 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	delete[] buffer;
 
 
-	// Now at "Section 18." More skippability.
+	// Skip (usually empty) attack names
 	file->skipRLE();
 
-
-	// Now at "Section 19," THE MAGIC SECTION
+	// Load level properties (magic)
 
 	// First byte is the background palette effect type
 	type = file->loadChar();
@@ -1016,17 +1010,33 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Check if a sun/star/distant planet, etc. is visible
 	skyOrb = file->loadChar();
 
-	// If so, find out which tile it uses
+	// If so, find out which tile it uses or skip it
 	if (skyOrb) skyOrb = file->loadChar();
 	else file->loadChar();
 
 
-	file->seek(15, false);
+	// Skip some sound effects and empty animations
+	file->seek(14, false);
 
-	// Board animations
+	// 4 shield gem
+	miscAnims[MA_4SHIELD] = file->loadChar();
+
+	// Board
 	miscAnims[MA_LBOARD] = file->loadChar();
 	miscAnims[MA_RBOARD] = file->loadChar();
 
+	// Bird
+	miscAnims[MA_LBIRD] = file->loadChar();
+	miscAnims[MA_RBIRD] = file->loadChar();
+
+	// Skip unknown animation
+	file->seek(1, false);
+
+	// Shiver and slide: 2, only shiver: 1
+	miscAnims[MA_ICY] = file->loadChar();
+
+	// 1 shield gem
+	miscAnims[MA_1SHIELD] = file->loadChar();
 
 	// And that's us done!
 

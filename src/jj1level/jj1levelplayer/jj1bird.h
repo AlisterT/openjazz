@@ -35,10 +35,6 @@
 
 // Constants
 
-// Animations
-#define BIRD_LEFTANIM  51
-#define BIRD_RIGHTANIM 52
-
 // Time interval
 #define T_BIRD_FIRE 500
 
