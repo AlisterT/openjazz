@@ -70,7 +70,7 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 		case 4: // Walk from side to side and down hills
 
 			setAnimType(E_LEFTANIM);
-			onlyRAnimOffset = true;
+			onlyLAnimOffset = true;
 
 			break;
 
@@ -99,7 +99,7 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 		case 26: // Flip animation
 
 			setAnimType(E_RIGHTANIM);
-			onlyLAnimOffset = true;
+			onlyRAnimOffset = true;
 
 			break;
 
