@@ -748,15 +748,8 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 			else if ((udx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
-			!level->checkMaskDown(x + PXO_L, y + F2) &&
-			(eventType != JJ1PE_PLATFORM))
-			animType = PA_LEDGE;
-
-		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
-			!level->checkMaskDown(x + PXO_R, y + F2) &&
-			(eventType != JJ1PE_PLATFORM))
-			animType = PA_REDGE;
+		} else if (player->pcontrols[C_FIRE])
+			animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))
 			animType = PA_LOOKUP;
@@ -768,8 +761,15 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 
 		}
 
-		else if (player->pcontrols[C_FIRE])
-			animType = facing? PA_RSHOOT: PA_LSHOOT;
+		else if (!level->checkMaskDown(x + PXO_ML, y + F20) &&
+			!level->checkMaskDown(x + PXO_L, y + F2) &&
+			(eventType != JJ1PE_PLATFORM))
+			animType = facing? PA_RSTAND: PA_LEDGE;
+
+		else if (!level->checkMaskDown(x + PXO_MR, y + F20) &&
+			!level->checkMaskDown(x + PXO_R, y + F2) &&
+			(eventType != JJ1PE_PLATFORM))
+			animType = facing? PA_REDGE: PA_LSTAND;
 
 		else
 			animType = facing? PA_RSTAND: PA_LSTAND;
