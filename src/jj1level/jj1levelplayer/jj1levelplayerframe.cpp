@@ -444,9 +444,18 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			}
 
-			// Set when the next bullet can be fired
-			if (player->fireSpeed) fireTime = ticks + (1000 / player->fireSpeed);
-			else fireTime = 0x7FFFFFFF;
+			// Set when the next bullet can be fired and length of shoot animation
+			if (player->fireSpeed) {
+
+				fireTime = ticks + (1000 / player->fireSpeed);
+				fireAnimTime = ticks + 1000;
+
+			} else {
+
+				fireTime = 0x7FFFFFFF;
+				fireAnimTime = ticks + T_FIRING;
+
+			}
 
 			// Remove the bullet from the arsenal
 			if (player->ammoType != -1) player->ammo[player->ammoType]--;
@@ -748,7 +757,7 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 			else if ((udx > 0) && !facing) animType = PA_RSTOP;
 			else animType = facing? PA_RWALK: PA_LWALK;
 
-		} else if (player->pcontrols[C_FIRE])
+		} else if ((player->pcontrols[C_FIRE]) && (ticks < fireAnimTime))
 			animType = facing? PA_RSHOOT: PA_LSHOOT;
 
 		else if ((lookTime < 0) && ((int)ticks > 1000 - lookTime))

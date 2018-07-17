@@ -69,6 +69,7 @@
 // Other time periods
 #define T_FASTFEET 25000
 #define T_WARP     1000
+#define T_FIRING   150
 
 // Player offsets
 #define PXO_MID F16
@@ -146,8 +147,9 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1PlayerEvent    eventType; ///< Event type
 		int               lookTime; ///< Negative if looking up, positive if looking down, 0 if neither
 		JJ1PlayerReaction reaction; ///< Reaction type
-		unsigned int      reactionTime; ///< Time reaction will end
+		unsigned int      reactionTime; ///< Time the reaction will end
 		unsigned int      fireTime; ///< The next time the player can fire
+		unsigned int      fireAnimTime; ///< Time the firing animation will end
 		fixed             jumpHeight; ///< The height the player can reach when jumping
 		fixed             targetY; ///< Having been propelled, the y-coordinate the player could reach
 		unsigned int      fastFeetTime; ///< Time fast feet will expire

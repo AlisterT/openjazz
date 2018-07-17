@@ -165,6 +165,8 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	targetY = TTOF(LH);
 	fastFeetTime = 0;
 	warpTime = 0;
+	fireTime = 0;
+	fireAnimTime = 0;
 
 	return;
 
