@@ -34,10 +34,10 @@
 // Macros
 
 // For converting between tile positions and int/fixed values
-#define FTOT(x) ((x) >> 15)
-#define TTOF(x) ((x) << 15)
-#define ITOT(x) ((x) >> 5)
-#define TTOI(x) ((x) << 5)
+#define FTOT(x) ((x) >> 15) ///< Fixed to Tile
+#define TTOF(x) ((x) << 15) ///< Tile to Fixed
+#define ITOT(x) ((x) >> 5)  ///< Int to Tile
+#define TTOI(x) ((x) << 5)  ///< Tile to Int
 
 
 // Constants

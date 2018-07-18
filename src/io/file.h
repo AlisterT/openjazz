@@ -84,8 +84,7 @@ class Path {
 
 // Variable
 
-// Paths to files
-EXTERN Path* firstPath;
+EXTERN Path* firstPath; ///< Paths to files
 
 #endif
 
