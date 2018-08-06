@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
+AM_CPPFLAGS = ${HOST_CFLAGS} -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
               ${SDL_CFLAGS} ${LIBMODPLUG_CFLAGS} ${LIBXMP_CFLAGS} ${ZLIB_CFLAGS}
 AM_CFLAGS   = -Wall
 AM_CXXFLAGS = -Wall
@@ -112,4 +112,4 @@ OpenJazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-OpenJazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS}
+OpenJazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS} ${HOST_LIBS}

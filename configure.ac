@@ -12,7 +12,11 @@ PKG_CHECK_MODULES([LIBXMP], [libxmp], [AC_DEFINE(USE_XMP, [1], [Enable XMP Music
 	])
 ])
 PKG_CHECK_MODULES([ZLIB], [zlib])
-AS_CASE([$host], [*-*-mingw*], [NET_LIBS="-lws2_32"])
+AS_CASE([$host],
+	[*-*-mingw*], [NET_LIBS="-lws2_32"],
+	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork"])
+AC_SUBST(HOST_CFLAGS)
+AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
