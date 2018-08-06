@@ -105,6 +105,8 @@ OpenJazz_SOURCES = \
 	src/menu/plasma.h \
 	src/menu/setupmenu.cpp \
 	src/OpenJazz.h \
+	src/platforms/wiz.cpp \
+	src/platforms/wiz.h \
 	src/player/player.cpp \
 	src/player/player.h \
 	src/setup.cpp \

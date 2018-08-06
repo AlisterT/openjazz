@@ -14,7 +14,12 @@ PKG_CHECK_MODULES([LIBXMP], [libxmp], [AC_DEFINE(USE_XMP, [1], [Enable XMP Music
 PKG_CHECK_MODULES([ZLIB], [zlib])
 AS_CASE([$host],
 	[*-*-mingw*], [NET_LIBS="-lws2_32"],
-	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork"])
+	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork"],
+	[arm-none-linux-gnueabi], [HOST_CFLAGS="-DPANDORA -fsigned-char" HOST_LIBS="-lts"],
+	[arm-gph-linux-gnueabi], [HOST_CFLAGS="-DCAANOO -fsigned-char"],
+	[arm-openwiz-linux-gnu], [HOST_CFLAGS="-DWIZ -fsigned-char"],
+	[arm-open2x-linux], [HOST_CFLAGS="-DGP2X -fsigned-char"],
+	[mipsel-linux*], [HOST_CFLAGS="-DDINGOO"])
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
