@@ -35,3 +35,4 @@ OpenJazz-*.zip
 
 # generated documentation
 /doc/html
+/unix/OpenJazz.6

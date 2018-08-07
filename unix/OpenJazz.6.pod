@@ -1,0 +1,156 @@
+=encoding utf8
+
+=head1 NAME
+
+OpenJazz - Jack Jazzrabbit 1 game engine reimplementation
+
+=head1 SYNOPSIS
+
+B<OpenJazz> [options] <I<game directory>>
+
+=head1 DESCRIPTION
+
+OpenJazz is a free, open-source version of the classic Jazz Jackrabbit PC
+platform games. To play, you will need original data files.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f>
+
+Start in full-screen mode
+
+=item B<-m>
+
+Start with muted audio
+
+=back
+
+=head1 FILES
+
+=head2 F<openjazz.cfg>
+
+The engine configuration file.
+
+B<Note:> Command line parameters will take precedence over values in the
+configuration file
+
+=head2 Game Data
+
+OpenJazz should be compatible with all released versions of Jazz Jackrabbit 1,
+this includes the Shareware Episodes, "Holiday Hare" and "Holiday Hare '95",
+the "Jazz Jackrabbit CD" with "The Lost Episodes" and the "Complete" edition.
+
+=head1 INGAME CONTROLS
+
+=head2 Fixed Controls
+
+=over 4
+
+=item C<Enter> to choose a menu option
+
+=item C<Escape> to go back to the previous menu
+
+=item C<F9> to view in-game statistics (e.g. FPS)
+
+=item C<P> to pause the game
+
+=item C<Alt> + C<Enter> switches between full-screen and windowed mode
+
+=back
+
+=head2 Configurable Controls
+
+These are configurable via the "setup options" menu. Default settings:
+
+=over 4
+
+=item C<Left> and C<Right> arrow keys to move left and right
+
+=item C<Space bar> to jump
+
+=item C<left Alt> to shoot
+
+=item C<right Ctrl> to change weapon
+
+=back
+
+=head2 Game Controllers
+
+Most game controllers and joysticks that SDL recognizes can be used. However,
+not all axes or buttons may be available. Needs manual settings.
+
+=head1 REPORTING BUGS
+
+Bugs can be reported at the
+L<issue tracker|https://github.com/AlisterT/OpenJazz/issues>.
+
+=head1 SEE ALSO
+
+B<J1E> - level editor by Newspaz,
+B<JJ1MOD> - graphic editor by Doubble Dutch
+
+The L<OpenJazz Homepage|http://www.alister.eu/jazz/oj/>.
+
+=head1 AUTHORS
+
+=over 4
+
+=item Alister Thomson (AlisterT)
+
+Engine, project lead
+
+=item Alireza Nejati
+
+Menu plasma effect
+
+=item newspaz
+
+Bug fixes, enemy improvements
+
+=item Carsten Teibes (carstene1ns)
+
+Maintenance, bug fixes, documentation
+
+=item Lars Persson (anotherguest)
+
+Movie playback fixes
+
+=item Scott Smith (Pickle)
+
+GP2X/WIZ, Canoo, Pandora ports
+
+=item Przemysław Buczkowski (przemub)
+
+Android, Haiku ports
+
+=item Matthieu Milan (usineur)
+
+PSVita port
+
+=item deniska
+
+PSP port
+
+=item tehpola
+
+Wii port
+
+=item pocketinsanity
+
+PocketPC port
+
+=item Ricerind
+
+Mac OS X port
+
+=item Slaanesh
+
+GP32 port
+
+=item GPF
+
+Dreamcast port
+
+=back
