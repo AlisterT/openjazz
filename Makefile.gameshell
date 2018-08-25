@@ -12,6 +12,10 @@ CXX ?= g++
 CXXFLAGS ?= -g -Wall -O2
 
 CXXFLAGS += -DGAMESHELL -DFULLSCREEN_ONLY
+
+# to enable libmodplug install the dev package
+# apt-get update
+# apt-get install libmodplug-dev
 CXXFLAGS += -DUSE_MODPLUG -I$(INCLUDE)/libmodplug
 LDFLAGS  += $(LIBRARY)/libmodplug.so
 
