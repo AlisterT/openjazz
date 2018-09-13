@@ -1,0 +1,35 @@
+PREFIX	= /usr
+TOOLS	= bin
+TARGET	=
+INCLUDE	= $(PREFIX)/include
+LIBRARY	= $(PREFIX)/lib/arm-linux-gnueabihf
+
+# OpenJazz makefile
+include openjazz.mk
+
+# Sane defaults
+CXX ?= g++
+CXXFLAGS ?= -g -Wall -O2
+
+CXXFLAGS += -DGAMESHELL
+
+# to enable libmodplug install the dev package
+# apt-get update
+# apt-get install libmodplug-dev
+CXXFLAGS += -DUSE_MODPLUG -I$(INCLUDE)/libmodplug
+LDFLAGS  += $(LIBRARY)/libmodplug.so
+
+# SDL
+CXXFLAGS += $(shell sdl-config --cflags)
+LIBS += $(shell sdl-config --libs)
+
+LIBS += -lm -lz
+
+OpenJazz: $(OBJS)
+	$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
+
+clean:
+	rm -f OpenJazz $(OBJS)

@@ -80,6 +80,17 @@
     #define DEFAULT_KEY_PAUSE           (SDLK_r)
     #define DEFAULT_KEY_YES             (SDLK_y)
     #define DEFAULT_KEY_NO              (SDLK_n)
+#elif defined(GAMESHELL)
+    #define DEFAULT_KEY_JUMP            (SDLK_j) /* A button */
+    #define DEFAULT_KEY_SWIM            (SDLK_j) /* A button */
+    #define DEFAULT_KEY_FIRE            (SDLK_k) /* B button */
+    #define DEFAULT_KEY_CHANGE          (SDLK_o) /* Y button */
+    #define DEFAULT_KEY_ENTER           (SDLK_RETURN) /* START button */
+    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE) /* MENU button */
+    #define DEFAULT_KEY_STATS           (SDLK_SPACE) /* SELECT button */
+    #define DEFAULT_KEY_PAUSE           (SDLK_p)
+    #define DEFAULT_KEY_YES             (SDLK_y)
+    #define DEFAULT_KEY_NO              (SDLK_n)
 #else
     #define DEFAULT_KEY_JUMP            (SDLK_SPACE)
     #define DEFAULT_KEY_SWIM            (SDLK_SPACE)
