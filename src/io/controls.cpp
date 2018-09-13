@@ -148,7 +148,7 @@
     #define DEFAULT_BUTTON_STATS           (10)
     #define DEFAULT_BUTTON_PAUSE           (11)
     #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)	
+    #define DEFAULT_BUTTON_NO              (-1)
 #else
     #define DEFAULT_BUTTON_UP              (-1)
     #define DEFAULT_BUTTON_DOWN            (-1)
