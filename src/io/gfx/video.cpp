@@ -530,7 +530,7 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
  */
 void Video::clearScreen (int index) {
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	// always 240 lines cleared to black
 	memset(video.screen->pixels, index, 320*240);
 #else

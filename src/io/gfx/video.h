@@ -50,7 +50,7 @@
 
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X)
+#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	#define DEFAULT_SCREEN_WIDTH 320
 	#define DEFAULT_SCREEN_HEIGHT 240
 

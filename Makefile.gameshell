@@ -11,7 +11,7 @@ include openjazz.mk
 CXX ?= g++
 CXXFLAGS ?= -g -Wall -O2
 
-CXXFLAGS += -DGAMESHELL -DFULLSCREEN_ONLY
+CXXFLAGS += -DGAMESHELL
 
 # to enable libmodplug install the dev package
 # apt-get update
