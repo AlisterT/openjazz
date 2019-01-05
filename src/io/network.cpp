@@ -59,7 +59,9 @@
 #elif defined USE_SDL_NET
 	#include <arpa/inet.h>
 #endif
-
+#ifdef __HAIKU__
+	#include <sys/select.h>
+#endif
 
 /**
  * Initialise networking.
