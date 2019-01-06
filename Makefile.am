@@ -1,8 +1,3 @@
-AM_CPPFLAGS = ${HOST_CFLAGS} -DUSE_SOCKETS -DSCALE -I${top_srcdir}/src \
-              ${SDL_CFLAGS} ${LIBMODPLUG_CFLAGS} ${LIBXMP_CFLAGS} ${ZLIB_CFLAGS}
-AM_CFLAGS   = -Wall
-AM_CXXFLAGS = -Wall
-
 dist_pkgdata_DATA = openjazz.000
 EXTRA_DIST = gpl.txt licenses.txt README.md
 
@@ -14,6 +9,23 @@ appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
 dist_appicon_fallback_DATA = unix/OpenJazz.png
 
 bin_PROGRAMS = OpenJazz
+OpenJazz_CPPFLAGS = \
+	-DUSE_SOCKETS \
+	-DSCALE \
+	-I${srcdir}/src
+OpenJazz_CXXFLAGS = \
+	${HOST_CFLAGS} \
+	${SDL_CFLAGS} \
+	${LIBMODPLUG_CFLAGS} \
+	${LIBXMP_CFLAGS} \
+	${ZLIB_CFLAGS}
+OpenJazz_LDADD = \
+	${SDL_LIBS} \
+	${LIBMODPLUG_LIBS} \
+	${LIBXMP_LIBS} \
+	${ZLIB_LIBS} \
+	${NET_LIBS} \
+	${HOST_LIBS}
 OpenJazz_SOURCES = \
 	src/game/clientgame.cpp \
 	src/game/game.cpp \
@@ -113,5 +125,3 @@ OpenJazz_SOURCES = \
 	src/setup.h \
 	src/util.cpp \
 	src/util.h
-
-OpenJazz_LDADD = ${SDL_LIBS} ${LIBMODPLUG_LIBS} ${LIBXMP_LIBS} ${ZLIB_LIBS} ${NET_LIBS} ${HOST_LIBS}
