@@ -10,7 +10,6 @@ dist_appicon_fallback_DATA = unix/OpenJazz.png
 
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
-	-DUSE_SOCKETS \
 	-DSCALE \
 	-I${srcdir}/src
 OpenJazz_CXXFLAGS = \
@@ -117,6 +116,8 @@ OpenJazz_SOURCES = \
 	src/menu/plasma.h \
 	src/menu/setupmenu.cpp \
 	src/OpenJazz.h \
+	src/platforms/wii.cpp \
+	src/platforms/wii.h \
 	src/platforms/wiz.cpp \
 	src/platforms/wiz.h \
 	src/player/player.cpp \
@@ -125,3 +126,21 @@ OpenJazz_SOURCES = \
 	src/setup.h \
 	src/util.cpp \
 	src/util.h
+
+if OJ_WII
+
+OpenJazz_CPPFLAGS += -DUSE_SDL_NET
+
+boot.dol: OpenJazz$(EXEEXT)
+	$(AM_V_GEN) elf2dol OpenJazz$(EXEEXT) boot.dol
+
+all-local: boot.dol
+
+clean-local:
+	rm -f boot.dol
+
+else
+
+OpenJazz_CPPFLAGS += -DUSE_SOCKETS
+
+endif

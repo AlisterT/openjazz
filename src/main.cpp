@@ -57,6 +57,10 @@
 	#include <pspdisplay.h>
 #elif defined(_3DS)
 	#include <3ds.h>
+#elif defined(WII)
+	#include <unistd.h>
+	#include <fat.h>
+	#include "platforms/wii.h"
 #elif defined(__HAIKU__)
 	#include <Alert.h>
 	#include <FindDirectory.h>
@@ -166,9 +170,10 @@ void startUp (int argc, char *argv[]) {
 
 	}
 
+	// Use the path of the program, but not on Wii as this does crash in
+	// dolphin emulator. Also is not needed, because CWD is used there
 
-	// Use the path of the program
-
+#ifndef WII
 	count = strlen(argv[0]) - 1;
 
 	// Search for directory separator
@@ -186,6 +191,7 @@ void startUp (int argc, char *argv[]) {
 		firstPath->path[count + 1] = 0;
 
 	}
+#endif
 
 
 	// Use the user's home directory, if available
@@ -560,11 +566,17 @@ int main(int argc, char *argv[]) {
 
 	int ret;
 
+	// Early platform init
+
 #ifdef PSP
 	pspDebugScreenInit();
 	atexit(sceKernelExitGame);
 	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
+#elif defined(WII)
+	fatInitDefault();
+	Wii_SetConsole();
 #endif
+
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {

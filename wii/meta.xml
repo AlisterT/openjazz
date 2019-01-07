@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+	<name>OpenJazz</name>
+	<version>20190101000000</version>
+	<coder>AlisterT, tehpola, carstene1ns</coder>
+	<short_description>Open source Jazz Jackrabbit engine</short_description>
+	<long_description>
+	OpenJazz by Alister Thomson (http://www.alister.eu/jazz/oj/).
+
+	Default Controls (hold the Wiimote sideways):
+		Arrows: move
+		2: shoot
+		1: jump
+		A: switch weapons
+		Home: Esc
+		+: Pause
+
+	Special thanks to the developers of SDL-Wii for making this a breeze to port.
+
+	TODO:
+	* Network games don't work yet.
+
+	Enjoy!
+	</long_description>
+</app>

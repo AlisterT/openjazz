@@ -25,10 +25,12 @@ AS_CASE([$host],
 	[arm-openwiz-linux-gnu], [HOST_CFLAGS="-DWIZ -fsigned-char" OJ_HOST="GP2X Wiz"],
 	[arm-open2x-linux], [HOST_CFLAGS="-DGP2X -fsigned-char" OJ_HOST="GP2X"],
 	[mipsel-linux*], [HOST_CFLAGS="-DDINGOO" OJ_HOST="Dingoo"],
-	[armv7l-unknown-linux-gnueabihf], [HOST_CFLAGS="-DGAMESHELL" OJ_HOST="GameShell"])
+	[armv7l-unknown-linux-gnueabihf], [HOST_CFLAGS="-DGAMESHELL" OJ_HOST="GameShell"],
+	[powerpc-eabi], [HOST_CFLAGS="-DWII" NET_LIBS="-lSDL_net" OJ_HOST="Wii"])
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
+AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

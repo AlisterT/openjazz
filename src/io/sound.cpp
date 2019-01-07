@@ -132,6 +132,8 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 #endif
 	}
 
+	if (!sounds) return;
+
 	for (count = 0; count < 32; count++) {
 
 		if (sounds[count].data && (sounds[count].position >= 0)) {

@@ -56,6 +56,8 @@
 	#ifdef __APPLE__
 		#define MSG_NOSIGNAL 0
 	#endif
+#elif defined(WII)
+	#include <network.h>
 #elif defined USE_SDL_NET
 	#include <arpa/inet.h>
 #endif
@@ -76,6 +78,12 @@ Network::Network () {
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
 	#endif
 #elif defined USE_SDL_NET
+#  ifdef WII
+	char ip[16];
+
+	// Initialize Wii networking (using dhcp)
+	if_config(ip, NULL, NULL, true, 20);
+#  endif
 	SDLNet_Init();
 #endif
 
@@ -96,6 +104,9 @@ Network::~Network () {
 	#endif
 #elif defined USE_SDL_NET
 	SDLNet_Quit();
+#  ifdef WII
+	net_deinit();
+#  endif
 #endif
 
 	return;
