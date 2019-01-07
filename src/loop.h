@@ -35,6 +35,10 @@
 #define JOYSTICKB    0x100
 #define JOYSTICKANEG 0x200
 #define JOYSTICKAPOS 0x300
+#define JOYSTICKHUP  0x400
+#define JOYSTICKHLFT 0x500
+#define JOYSTICKHRHT 0x600
+#define JOYSTICKHDWN 0x700
 
 
 // Variable

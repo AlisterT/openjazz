@@ -239,11 +239,32 @@ Controls::Controls () {
 	axes[C_NO].axis = -1;
 
 
+	hats[C_UP].hat = 0;
+	hats[C_UP].direction = SDL_HAT_UP;
+	hats[C_DOWN].hat = 0;
+	hats[C_DOWN].direction = SDL_HAT_DOWN;
+	hats[C_LEFT].hat = 0;
+	hats[C_LEFT].direction = SDL_HAT_LEFT;
+	hats[C_RIGHT].hat = 0;
+	hats[C_RIGHT].direction = SDL_HAT_RIGHT;
+	hats[C_JUMP].hat = -1;
+	hats[C_SWIM].hat = -1;
+	hats[C_FIRE].hat = -1;
+	hats[C_CHANGE].hat = -1;
+	hats[C_ENTER].hat = -1;
+	hats[C_ESCAPE].hat = -1;
+	hats[C_STATS].hat = -1;
+	hats[C_PAUSE].hat = -1;
+	hats[C_YES].hat = -1;
+	hats[C_NO].hat = -1;
+
+
 	for (count = 0; count < CONTROLS; count++) {
 
 		keys[count].pressed = false;
 		buttons[count].pressed = false;
 		axes[count].pressed = false;
+		hats[count].pressed = false;
 
 		controls[count].time = 0;
 		controls[count].state = false;
@@ -309,6 +330,24 @@ void Controls::setAxis (int control, int axis, bool direction) {
 
 
 /**
+ * Set the hat and direction to use for the specified control.
+ *
+ * @param control The control
+ * @param hat The hat to use
+ * @param direction The direction to use
+ */
+void Controls::setHat (int control, int hat, int direction) {
+
+	hats[control].hat = hat;
+	hats[control].direction = direction;
+	hats[control].pressed = false;
+
+	return;
+
+}
+
+
+/**
  * Get the key being used for the specified control.
  *
  * @param control The control
@@ -360,6 +399,34 @@ int Controls::getAxis (int control) {
 int Controls::getAxisDirection (int control) {
 
 	return axes[control].direction;
+
+}
+
+
+/**
+ * Get the hat being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return The hat being used
+ */
+int Controls::getHat (int control) {
+
+	return hats[control].hat;
+
+}
+
+
+/**
+ * Get the direction of the hat being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return hat direction
+ */
+int Controls::getHatDirection (int control) {
+
+	return hats[control].direction;
 
 }
 
@@ -462,6 +529,34 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 			break;
 
+		case SDL_JOYHATMOTION:
+
+			if (type == SET_JOYSTICK_LOOP) {
+
+				switch(event->jhat.value) {
+					case SDL_HAT_UP:
+						return JOYSTICKHUP  | event->jhat.hat;
+					case SDL_HAT_LEFT:
+						return JOYSTICKHLFT | event->jhat.hat;
+					case SDL_HAT_RIGHT:
+						return JOYSTICKHRHT | event->jhat.hat;
+					case SDL_HAT_DOWN:
+						return JOYSTICKHDWN | event->jhat.hat;
+				}
+			}
+
+			for(count = 0; count < CONTROLS; count++)
+				if (event->jhat.hat == hats[count].hat) {
+
+					if (hats[count].direction & event->jhat.value)
+						hats[count].pressed = true;
+					else
+						hats[count].pressed = false;
+
+				}
+
+			break;
+
 		case SDL_MOUSEMOTION:
 
 			if (event->motion.state & SDL_BUTTON(1)) {
@@ -519,7 +614,8 @@ void Controls::loop () {
 	// Apply controls to universal control tracking
 	for (count = 0; count < CONTROLS; count++)
 		controls[count].state = (controls[count].time < globalTicks) &&
-			(keys[count].pressed || buttons[count].pressed || axes[count].pressed);
+			(keys[count].pressed || buttons[count].pressed ||
+			axes[count].pressed || hats[count].pressed);
 
 	if (wheelUp) {
 

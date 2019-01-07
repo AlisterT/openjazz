@@ -85,6 +85,14 @@ class Controls {
 
 		struct {
 
+			int  hat; ///< Joystick hat
+			int  direction; ///< Hat direction
+			bool pressed; ///< Whether or not the hat is pressed in the given direction
+
+		} hats[CONTROLS];
+
+		struct {
+
 			unsigned int time; ///< The time from which the control will respond to being pressed
 			bool         state; ///< Whether or not the control is being used
 
@@ -105,10 +113,13 @@ class Controls {
 		void setKey           (int control, int key);
 		void setButton        (int control, int button);
 		void setAxis          (int control, int axis, bool direction);
+		void setHat           (int control, int hat, int direction);
 		int  getKey           (int control);
 		int  getButton        (int control);
 		int  getAxis          (int control);
 		int  getAxisDirection (int control);
+		int  getHat           (int control);
+		int  getHatDirection  (int control);
 
 		int  update           (SDL_Event *event, LoopType type);
 		void loop             ();

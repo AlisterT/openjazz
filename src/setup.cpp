@@ -100,7 +100,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	}
 
 	// Check that the config file has the correct version
-	if (file->loadChar() != 3) {
+	if (file->loadChar() != 4) {
 
 		log("Valid configuration file not found.");
 		delete file;
@@ -137,6 +137,16 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 		a = file->loadInt();
 		d = file->loadInt();
 		controls.setAxis(count, a, d);
+
+	}
+
+	for (count = 0; count < CONTROLS; count++) {
+
+		int h, d;
+
+		h = file->loadInt();
+		d = file->loadInt();
+		controls.setHat(count, h, d);
 
 	}
 
@@ -203,7 +213,7 @@ void Setup::save () {
 
 
 	// Write the version number
-	file->storeChar(3);
+	file->storeChar(4);
 
 	// Write video settings
 	file->storeShort(video.getWidth());
@@ -231,6 +241,13 @@ void Setup::save () {
 
 		file->storeInt(controls.getAxis(count));
 		file->storeInt(controls.getAxisDirection(count));
+
+	}
+
+	for (count = 0; count < CONTROLS; count++) {
+
+		file->storeInt(controls.getHat(count));
+		file->storeInt(controls.getHatDirection(count));
 
 	}
 

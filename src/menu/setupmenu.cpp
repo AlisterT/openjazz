@@ -138,7 +138,7 @@ int SetupMenu::setupKeyboard () {
 int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, control, x, y, count;
+	int progress, control, direction, x, y, count;
 
 	progress = 0;
 
@@ -224,6 +224,47 @@ int SetupMenu::setupJoystick () {
 					((controls.getAxis(C_ENTER) != (control & 0xFF)) || !controls.getAxisDirection(C_ENTER)))) {
 
 					controls.setAxis(progress, control & 0xFF, true);
+					progress++;
+
+					if (progress == PCONTROLS) {
+
+						// If all controls have been assigned, return
+
+						playSound(S_ORB);
+
+						return E_NONE;
+
+					}
+
+				}
+
+				break;
+
+			case JOYSTICKHUP:
+			case JOYSTICKHLFT:
+			case JOYSTICKHRHT:
+			case JOYSTICKHDWN:
+
+				direction = 0;
+				switch(control & 0xF00) {
+					case JOYSTICKHUP:  direction = SDL_HAT_UP;    break;
+					case JOYSTICKHLFT: direction = SDL_HAT_LEFT;  break;
+					case JOYSTICKHRHT: direction = SDL_HAT_RIGHT; break;
+					case JOYSTICKHDWN: direction = SDL_HAT_DOWN;  break;
+				}
+
+				// If this is a navigation controls (up, down, or enter),
+				// make sure it's not the same as other navigation controls
+
+				if (((progress != C_UP) &&
+					(progress != C_DOWN) &&
+					(progress != C_ENTER)) ||
+					((controls.getHat(progress) == (control & 0xFF)) && (controls.getHatDirection(progress) == direction)) ||
+					(((controls.getHat(C_UP) != (control & 0xFF)) || (controls.getHatDirection(C_UP) != direction)) &&
+					((controls.getHat(C_DOWN) != (control & 0xFF)) || (controls.getHatDirection(C_DOWN) != direction)) &&
+					((controls.getHat(C_ENTER) != (control & 0xFF)) || (controls.getHatDirection(C_ENTER) != direction)))) {
+
+					controls.setHat(progress, control & 0xFF, direction);
 					progress++;
 
 					if (progress == PCONTROLS) {
