@@ -3,6 +3,7 @@ openjazz
 OpenJazz
 openjazz.cfg
 *.exe
+*.a
 
 # psp
 *.elf
