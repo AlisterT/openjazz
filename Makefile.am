@@ -7,20 +7,33 @@ dist_appicon_DATA = unix/OpenJazz.svg
 appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
 dist_appicon_fallback_DATA = unix/OpenJazz.png
 
+noinst_LIBRARIES = libpsmplug.a
+libpsmplug_a_SOURCES = \
+	ext/psmplug/fastmix.cpp \
+	ext/psmplug/load_psm.cpp \
+	ext/psmplug/psmplug.cpp \
+	ext/psmplug/psmplug.h \
+	ext/psmplug/snd_dsp.cpp \
+	ext/psmplug/sndfile.cpp \
+	ext/psmplug/sndfile.h \
+	ext/psmplug/snd_flt.cpp \
+	ext/psmplug/snd_fx.cpp \
+	ext/psmplug/sndmix.cpp \
+	ext/psmplug/stdafx.h \
+	ext/psmplug/tables.h
+
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
 	-DSCALE \
-	-I${srcdir}/src
+	-I${srcdir}/src \
+	-I${srcdir}/ext/psmplug -DUSE_PSMPLUG
 OpenJazz_CXXFLAGS = \
 	${HOST_CFLAGS} \
 	${SDL_CFLAGS} \
-	${LIBMODPLUG_CFLAGS} \
-	${LIBXMP_CFLAGS} \
 	${ZLIB_CFLAGS}
 OpenJazz_LDADD = \
 	${SDL_LIBS} \
-	${LIBMODPLUG_LIBS} \
-	${LIBXMP_LIBS} \
+	libpsmplug.a \
 	${ZLIB_LIBS} \
 	${NET_LIBS} \
 	${HOST_LIBS}

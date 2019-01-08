@@ -48,11 +48,14 @@
 #endif
 
 #if defined(USE_MODPLUG)
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		#include <modplug.h>
 	#else
 		#include <libmodplug/modplug.h>
 	#endif
+#elif defined(USE_PSMPLUG)
+	#include <modplug.h>
+	#define USE_MODPLUG
 #elif defined(USE_XMP)
 	#include <xmp.h>
 #endif
