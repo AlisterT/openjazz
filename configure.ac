@@ -14,7 +14,6 @@ AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG
 
 PKG_CHECK_MODULES([SDL], [sdl])
-PKG_CHECK_MODULES([ZLIB], [zlib])
 
 AS_CASE([$host],
 	[*-*-mingw*], [

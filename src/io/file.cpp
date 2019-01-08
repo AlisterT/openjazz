@@ -33,7 +33,7 @@
 #include "util.h"
 
 #include <string.h>
-#include <zlib.h>
+#include <miniz.h>
 
 #ifndef _WIN32
     #define UPPERCASE_FILENAMES
