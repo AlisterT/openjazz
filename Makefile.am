@@ -7,7 +7,7 @@ dist_appicon_DATA = unix/OpenJazz.svg
 appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
 dist_appicon_fallback_DATA = unix/OpenJazz.png
 
-noinst_LIBRARIES = libpsmplug.a libminiz.a
+noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a
 libpsmplug_a_SOURCES = \
 	ext/psmplug/fastmix.cpp \
 	ext/psmplug/load_psm.cpp \
@@ -24,11 +24,20 @@ libpsmplug_a_SOURCES = \
 libminiz_a_SOURCES = \
 	ext/miniz/miniz.cpp \
 	ext/miniz/miniz.h
+libscale2x_a_SOURCES = \
+	ext/scale2x/scale2x.cpp \
+	ext/scale2x/scale2x.h \
+	ext/scale2x/scale3x.cpp \
+	ext/scale2x/scale3x.h \
+	ext/scale2x/scalebit.cpp \
+	ext/scale2x/scalebit.h \
+	ext/scale2x/simple2x.cpp
 
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
-	-DSCALE \
 	-I${srcdir}/src \
+	-DSCALE \
+	-I${srcdir}/ext/scale2x \
 	-I${srcdir}/ext/psmplug \
 	-I${srcdir}/ext/miniz
 OpenJazz_CXXFLAGS = \
@@ -38,6 +47,7 @@ OpenJazz_LDADD = \
 	${SDL_LIBS} \
 	libpsmplug.a \
 	libminiz.a \
+	libscale2x.a \
 	${NET_LIBS} \
 	${HOST_LIBS}
 OpenJazz_SOURCES = \
@@ -58,17 +68,6 @@ OpenJazz_SOURCES = \
 	src/io/gfx/font.h \
 	src/io/gfx/paletteeffects.cpp \
 	src/io/gfx/paletteeffects.h \
-	src/io/gfx/scale2x/getopt.cpp \
-	src/io/gfx/scale2x/pixel.cpp \
-	src/io/gfx/scale2x/pixel.h \
-	src/io/gfx/scale2x/portable.h \
-	src/io/gfx/scale2x/scale2x.cpp \
-	src/io/gfx/scale2x/scale2x.h \
-	src/io/gfx/scale2x/scale3x.cpp \
-	src/io/gfx/scale2x/scale3x.h \
-	src/io/gfx/scale2x/scalebit.cpp \
-	src/io/gfx/scale2x/scalebit.h \
-	src/io/gfx/scale2x/simple2x.cpp \
 	src/io/gfx/sprite.cpp \
 	src/io/gfx/sprite.h \
 	src/io/gfx/video.cpp \

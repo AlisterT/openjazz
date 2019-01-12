@@ -31,10 +31,6 @@
 #include "io/gfx/video.h"
 #include <SDL.h>
 
-#ifdef SCALE
-	#include "io/gfx/scale2x/scalebit.h"
-#endif
-
 
 /**
  * Create the plasma.

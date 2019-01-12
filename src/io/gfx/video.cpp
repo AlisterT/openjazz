@@ -32,7 +32,7 @@
 #include "video.h"
 
 #ifdef SCALE
-	#include "io/gfx/scale2x/scalebit.h"
+	#include <scalebit.h>
 #endif
 
 #include "util.h"

@@ -12,16 +12,15 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #ifndef __SCALE3X_H
 #define __SCALE3X_H
 
+// OpenJazz modification
+#ifndef restrict
 #define restrict
+#endif
 
 typedef unsigned char scale3x_uint8;
 typedef unsigned short scale3x_uint16;
