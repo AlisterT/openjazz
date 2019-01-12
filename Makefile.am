@@ -200,7 +200,6 @@ OpenJazz_SOURCES += windows/OpenJazz.rc
 endif
 
 EXTRA_DIST = \
-	gpl.txt \
 	licenses.txt \
 	README.md \
 	doc/Doxyfile \
