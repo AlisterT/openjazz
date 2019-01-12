@@ -22,43 +22,15 @@
  * @par Description:
  * Deals with the loading, playing and freeing of music and sound effects.
  *
- * For music, USE_MODPLUG or USE_XMP must be defined.
- *
  */
 
 
 #include "file.h"
 #include "sound.h"
-
 #include "util.h"
 
 #include <SDL_audio.h>
-
-// support for the default Makefile
-#ifdef USE_modplug
-	#define USE_MODPLUG
-#endif
-#ifdef USE_xmp
-	#define USE_XMP
-#endif
-
-// make sure we only have one music library available
-#if defined(USE_MODPLUG) && defined(USE_XMP)
-	#error "You can either use libxmp or libmodplug, not both!"
-#endif
-
-#if defined(USE_MODPLUG)
-	#if defined(_WIN32)
-		#include <modplug.h>
-	#else
-		#include <libmodplug/modplug.h>
-	#endif
-#elif defined(USE_PSMPLUG)
-	#include <modplug.h>
-	#define USE_MODPLUG
-#elif defined(USE_XMP)
-	#include <xmp.h>
-#endif
+#include <psmplug.h>
 
 #if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP)
 	#define SOUND_FREQ 22050
@@ -66,34 +38,24 @@
 	#define SOUND_FREQ 44100
 #endif
 
-#if defined(USE_MODPLUG)
-
-	#ifdef __SYMBIAN32__
-		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-		#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
-	#elif defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO) || defined(PSP)
-		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-		#define MUSIC_FLAGS 0
-	#else
-		#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
-		#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
-	#endif
-
-ModPlugFile   *musicFile;
-
-#elif defined(USE_XMP)
-
-#  if defined(_3DS) || defined(PSP)
-	#define MUSIC_INTERPOLATION XMP_INTERP_NEAREST
-#  else
-	#define MUSIC_INTERPOLATION XMP_INTERP_SPLINE
-	#define MUSIC_EFFECTS XMP_DSP_ALL
-#  endif
-
-xmp_context xmpC;
-
+#if defined(GP2X) || defined(PSP) || defined(_3DS)
+	#define SOUND_SAMPLES 512
+#else
+	#define SOUND_SAMPLES 2048
 #endif
 
+#ifdef __SYMBIAN32__
+	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+	#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
+#elif defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO) || defined(PSP)
+	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+	#define MUSIC_FLAGS 0
+#else
+	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
+	#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
+#endif
+
+ModPlugFile *musicFile;
 SDL_AudioSpec  audioSpec;
 bool musicPaused = false;
 int musicVolume = MAX_VOLUME >> 1; // 50%
@@ -115,25 +77,11 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 	int count;
 
 	if (!musicPaused) {
+
 		// Read the next portion of music into the audio stream
-#if defined(USE_MODPLUG)
 
-		if (musicFile) {
-			int bytes_read = ModPlug_Read(musicFile, stream, len);
+		if (musicFile) ModPlug_Read(musicFile, stream, len);
 
-			// poor mans loop (so modplug needs no patching)
-			if (bytes_read < len) {
-				ModPlug_Seek(musicFile, 0);
-				ModPlug_Read(musicFile, stream + bytes_read, len - bytes_read);
-			}
-		}
-
-#elif defined(USE_XMP)
-
-		if (xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
-			xmp_play_buffer(xmpC, stream, len, 0);
-
-#endif
 	}
 
 	if (!sounds) return;
@@ -182,24 +130,14 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 void openAudio () {
 
 	SDL_AudioSpec asDesired;
-
-#if defined(USE_MODPLUG)
 	musicFile = NULL;
-#elif defined(USE_XMP)
-	xmpC = xmp_create_context();
-#endif
-
 
 	// Set up SDL audio
 
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
-#if defined(GP2X) || defined(PSP) || defined(_3DS)
-	asDesired.samples = 512;
-#else
-	asDesired.samples = 2048;
-#endif
+	asDesired.samples = SOUND_SAMPLES;
 	asDesired.callback = audioCallback;
 	asDesired.userdata = NULL;
 
@@ -212,7 +150,9 @@ void openAudio () {
 	if (loadSounds("SOUNDS.000") != E_NONE) sounds = NULL;
 
 	// Start audio for sfx to work
+
 	SDL_PauseAudio(0);
+
 	return;
 
 }
@@ -226,10 +166,6 @@ void closeAudio () {
 	int count;
 
 	stopMusic();
-
-#ifdef USE_XMP
-	xmp_free_context(xmpC);
-#endif
 
 	SDL_CloseAudio();
 
@@ -270,10 +206,7 @@ void playMusic (const char * fileName, bool restart) {
 	unsigned char *psmData;
 	int size;
 	bool loadOk = false;
-
-#ifdef USE_MODPLUG
 	ModPlug_Settings settings;
-#endif
 
 	/* Only stop any existing music playing, if a different file
 	   should be played or a restart has been requested. */
@@ -308,10 +241,7 @@ void playMusic (const char * fileName, bool restart) {
 
 	delete file;
 
-
-#ifdef USE_MODPLUG
-
-	// Set up libmodplug
+	// Set up libpsmplug
 
 	settings.mFlags = MUSIC_FLAGS;
 	settings.mChannels = audioSpec.channels;
@@ -328,6 +258,8 @@ void playMusic (const char * fileName, bool restart) {
 	settings.mBassRange = 10;
 	settings.mSurroundDepth = 50;
 	settings.mSurroundDelay = 40;
+
+	// unlimited looping
 	settings.mLoopCount = -1;
 
 	ModPlug_SetSettings(&settings);
@@ -335,13 +267,6 @@ void playMusic (const char * fileName, bool restart) {
 	// Load the file into libmodplug
 	musicFile = ModPlug_Load(psmData, size);
 	loadOk = (musicFile != NULL);
-
-#elif defined(USE_XMP)
-
-	// Load the file into libxmp
-	loadOk = (xmp_load_module_from_memory(xmpC, psmData, size) == 0);
-
-#endif
 
 	delete[] psmData;
 
@@ -352,27 +277,6 @@ void playMusic (const char * fileName, bool restart) {
 		return;
 
 	}
-
-#ifdef USE_XMP
-	int playerFlags = 0;
-
-	if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
-		playerFlags = playerFlags & XMP_FORMAT_8BIT;
-
-	if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_U16)
-		|| (audioSpec.format == AUDIO_U16MSB) || (audioSpec.format == AUDIO_U16LSB))
-		playerFlags = playerFlags & XMP_FORMAT_UNSIGNED;
-
-	if (audioSpec.channels == 1)
-		playerFlags = playerFlags & XMP_FORMAT_MONO;
-
-	xmp_start_player(xmpC, audioSpec.freq, playerFlags);
-	xmp_set_player(xmpC, XMP_PLAYER_INTERP, MUSIC_INTERPOLATION);
-#  ifdef MUSIC_EFFECTS
-	xmp_set_player(xmpC, XMP_PLAYER_DSP, MUSIC_EFFECTS);
-#  endif
-
-#endif
 
 	// Re-apply volume setting
 	setMusicVolume(musicVolume);
@@ -414,26 +318,12 @@ void stopMusic () {
 
 	}
 
-#if defined(USE_MODPLUG)
-
 	if (musicFile) {
 
 		ModPlug_Unload(musicFile);
 		musicFile = NULL;
 
 	}
-
-#elif defined(USE_XMP)
-
-	int state = xmp_get_player(xmpC, XMP_PLAYER_STATE);
-	if (state == XMP_STATE_LOADED || state == XMP_STATE_PLAYING) {
-
-		xmp_end_player(xmpC);
-		xmp_release_module(xmpC);
-
-	}
-
-#endif
 
 	SDL_PauseAudio(0);
 
@@ -448,7 +338,9 @@ void stopMusic () {
  * @return music volume (0-100)
  */
 int getMusicVolume () {
+
 	return musicVolume;
+
 }
 
 
@@ -458,21 +350,15 @@ int getMusicVolume () {
  * @param volume new volume (0-100)
  */
 void setMusicVolume (int volume) {
+
 	musicVolume = volume;
 	if (volume < 1) musicVolume = 0;
 	if (volume > MAX_VOLUME) musicVolume = MAX_VOLUME;
 
 	// do not access music player settings when not playing
-#if defined(USE_MODPLUG)
 
 	if (musicFile) ModPlug_SetMasterVolume(musicFile, musicVolume * 5.12);
 
-#elif defined(USE_XMP)
-
-	if (xmpC && xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
-		xmp_set_player(xmpC, XMP_PLAYER_VOLUME, musicVolume);
-
-#endif
 }
 
 
@@ -648,7 +534,9 @@ void playSound (char index) {
  * @return sound volume (0-100)
  */
 int getSoundVolume () {
+
 	return soundVolume;
+
 }
 
 
@@ -658,7 +546,9 @@ int getSoundVolume () {
  * @param volume new volume (0-100)
  */
 void setSoundVolume (int volume) {
+
 	soundVolume = volume;
 	if (volume < 1) soundVolume = 0;
 	if (volume > MAX_VOLUME) soundVolume = MAX_VOLUME;
+
 }

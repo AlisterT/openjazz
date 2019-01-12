@@ -26,7 +26,7 @@ bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
 	-DSCALE \
 	-I${srcdir}/src \
-	-I${srcdir}/ext/psmplug -DUSE_PSMPLUG
+	-I${srcdir}/ext/psmplug
 OpenJazz_CXXFLAGS = \
 	${HOST_CFLAGS} \
 	${SDL_CFLAGS} \

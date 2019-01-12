@@ -64,18 +64,12 @@ Needed:
 
 Optional:
 - SDL_net 1.2.x library (https://www.libsdl.org/projects/SDL_net/)
-- xmp 4.x.x library (http://xmp.sourceforge.net/)
-- ModPlug library (http://modplug-xmms.sourceforge.net/)
 
 OpenJazz ships a basic Makefile that may be used and adapted to the specific
 needs of the user or platform where it shall run. For network play, you need a
 platform which natively provides sockets or use SDL_net, then either define
 `USE_SOCKETS` or `USE_SDL_NET` in the Makefile. On the Windows platform, the
-socket library (`-lws2_32`) is needed while linking. For music support, you
-either need ModPlug or xmp. Then define `USE_MODPLUG` or `USE_XMP` in the
-Makefile. ModPlug needs to be patched to properly support looping tracks,
-otherwise there will be a small gap in the playback, xmp does not have this
-problem (no patching needed).
+socket library (`-lws2_32`) is needed while linking.
 
 For UNIX systems also an autoconf script is provided, used like this:
 
