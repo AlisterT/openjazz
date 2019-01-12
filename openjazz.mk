@@ -4,9 +4,6 @@ OBJS = \
 	src/game/localgame.o src/game/servergame.o \
 	src/io/gfx/anim.o src/io/gfx/font.o src/io/gfx/paletteeffects.o \
 	src/io/gfx/sprite.o src/io/gfx/video.o \
-	src/io/gfx/scale2x/getopt.o src/io/gfx/scale2x/pixel.o \
-	src/io/gfx/scale2x/scale2x.o src/io/gfx/scale2x/scale3x.o \
-	src/io/gfx/scale2x/scalebit.o src/io/gfx/scale2x/simple2x.o \
 	src/io/controls.o src/io/file.o src/io/network.o src/io/sound.o \
 	src/jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.o \
 	src/jj1bonuslevel/jj1bonuslevel.o \
@@ -30,4 +27,10 @@ OBJS = \
 	src/menu/gamemenu.o src/menu/mainmenu.o src/menu/menu.o \
 	src/menu/plasma.o src/menu/setupmenu.o \
 	src/player/player.o \
-	src/main.o src/setup.o src/util.o
+	src/main.o src/setup.o src/util.o \
+	ext/psmplug/fastmix.o ext/psmplug/load_psm.o ext/psmplug/psmplug.o \
+	ext/psmplug/snd_dsp.o ext/psmplug/sndfile.o ext/psmplug/snd_flt.o \
+	ext/psmplug/snd_fx.o ext/psmplug/sndmix.o \
+	ext/miniz/miniz.o \
+	ext/scale2x/scale2x.o ext/scale2x/scale3x.o \
+	ext/scale2x/scalebit.o ext/scale2x/simple2x.o

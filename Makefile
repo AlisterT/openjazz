@@ -4,8 +4,7 @@ include openjazz.mk
 # Sane defaults
 CXX ?= g++
 CXXFLAGS ?= -g -Wall -O2
-
-CXXFLAGS += -DSCALE
+CPPFLAGS = -Isrc -DSCALE -Iext/scale2x -Iext/psmplug -Iext/miniz
 
 # Network support
 CXXFLAGS += -DUSE_SOCKETS
@@ -16,22 +15,13 @@ CXXFLAGS += -DUSE_SOCKETS
 CXXFLAGS += $(shell sdl-config --cflags)
 LIBS += $(shell sdl-config --libs)
 
-# music library: modplug, xmp
-MUSICLIB ?= modplug
-MUSICLIB_CFLAGS ?= $(shell pkg-config --silence-errors --cflags lib$(MUSICLIB))
-MUSICLIB_LIBS ?= $(shell pkg-config --silence-errors --libs lib$(MUSICLIB))
-ifneq ($(MUSICLIB_LIBS),)
-	CXXFLAGS += -DUSE_$(MUSICLIB) $(MUSICLIB_CFLAGS)
-	LIBS += $(MUSICLIB_LIBS)
-endif
-
 LIBS += -lm -lz
 
 OpenJazz: $(OBJS)
 	$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Isrc -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f OpenJazz $(OBJS)
