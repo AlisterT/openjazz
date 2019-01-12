@@ -455,10 +455,10 @@ int ServerGame::step (unsigned int ticks) {
 
 						// If necessary, move more recent players
 						for (pcount = clientPlayer[count]; pcount < nPlayers; pcount++)
-							memcpy(players + pcount, players + pcount + 1, sizeof(Player));
+							memcpy(static_cast<void*>(players + pcount), players + pcount + 1, sizeof(Player));
 
 						// Clear duplicate pointers
-						memset(players + nPlayers, 0, sizeof(Player));
+						memset(static_cast<void*>(players + nPlayers), 0, sizeof(Player));
 
 						// Inform remaining clients that the player has left
 						sendBuffer[0] = MTL_G_PQUIT;

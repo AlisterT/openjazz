@@ -327,6 +327,8 @@ int Level::select (bool& menu, int option) {
 
 			menu = false;
 
+			break;
+
 		case 1: // Change difficulty
 
 			if (!multiplayer) game->setDifficulty((game->getDifficulty() + 1) & 3);

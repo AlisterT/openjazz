@@ -474,7 +474,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 
 			if (energy) level->setNext(event->multiA, event->multiB);
 
-			// The lack of a break statement is intentional
+			// FALLTHROUGH
 
 		case 8: // Boss
 		case 27: // End of level

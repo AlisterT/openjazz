@@ -103,6 +103,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	if (file->loadChar() != 3) {
 
 		log("Valid configuration file not found.");
+		delete file;
 
 		return;
 
