@@ -142,6 +142,17 @@ void ModPlug_SetMasterVolume(ModPlugFile* file,unsigned int cvol)
 	return ;
 }
 
+unsigned int ModPlug_GetMusicTempoFactor(ModPlugFile* file)
+{
+	return file->mSoundFile.m_nTempoFactor;
+}
+
+void ModPlug_SetMusicTempoFactor(ModPlugFile* file, unsigned int ctemp)
+{
+	(void)file->mSoundFile.SetTempoFactor((UINT)ctemp);
+	return;
+}
+
 int ModPlug_GetCurrentSpeed(ModPlugFile* file)
 {
 	return file->mSoundFile.m_nMusicSpeed;

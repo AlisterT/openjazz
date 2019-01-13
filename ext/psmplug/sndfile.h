@@ -591,8 +591,10 @@ public:
 	UINT GetType() const { return m_nType; }
 	UINT GetNumChannels() const;
 	UINT GetLogicalChannels() const { return m_nChannels; }
-	BOOL SetMasterVolume(UINT vol, BOOL bAdjustAGC=FALSE);
+	BOOL SetMasterVolume(UINT nVol, BOOL bAdjustAGC=FALSE);
 	UINT GetMasterVolume() const { return m_nMasterVolume; }
+	BOOL SetTempoFactor(UINT nTemp);
+	UINT GetTempoFactor() const { return m_nTempoFactor; }
 	UINT GetNumPatterns() const;
 	UINT GetNumInstruments() const;
 	UINT GetNumSamples() const { return m_nSamples; }

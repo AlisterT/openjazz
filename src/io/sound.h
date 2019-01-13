@@ -49,7 +49,9 @@
 #define S_STOP    20
 #define S_BLOCK   21
 
-#define MAX_VOLUME 100
+#define MAX_VOLUME   100
+#define MUSIC_NORMAL   0
+#define MUSIC_FAST     1
 
 
 // Datatype
@@ -95,6 +97,8 @@ EXTERN void pauseMusic     (bool pause);
 EXTERN void stopMusic      ();
 EXTERN int  getMusicVolume ();
 EXTERN void setMusicVolume (int volume);
+EXTERN int  getMusicTempo  ();
+EXTERN void setMusicTempo  (int tempo);
 EXTERN int  loadSounds     (const char *fileName);
 EXTERN void resampleSound  (int index, const char* name, int rate);
 EXTERN void resampleSounds ();

@@ -587,6 +587,10 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 			// Sky blue flash
 			level->flash(135, 206, 235, 320);
 
+			// Speed up music
+
+			setMusicTempo(MUSIC_FAST);
+
 			break;
 
 		case 30: // TNT

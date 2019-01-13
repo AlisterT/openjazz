@@ -549,6 +549,11 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 		pdx = (udx * 3) >> 7;
 		pdy = (dy * 3) >> 7;
 
+		// reset music speed before running shoes wear off
+
+		if (fastFeetTime - ticks < T_FASTFEET >> 2)
+			setMusicTempo(MUSIC_NORMAL);
+
 	} else {
 
 		pdx = udx >> 6;

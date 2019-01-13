@@ -57,6 +57,7 @@ bool musicPaused = false;
 int musicVolume = MAX_VOLUME >> 1; // 50%
 int soundVolume = MAX_VOLUME >> 2; // 25%
 char *currentMusic = NULL;
+int musicTempo = MUSIC_NORMAL;
 
 
 /**
@@ -353,7 +354,45 @@ void setMusicVolume (int volume) {
 
 	// do not access music player settings when not playing
 
-	if (musicFile) ModPlug_SetMasterVolume(musicFile, musicVolume * 5.12);
+	if (musicFile) ModPlug_SetMasterVolume(musicFile, musicVolume * 2.56);
+
+}
+
+
+/**
+ * Gets the current music tempo
+ *
+ * @return music tempo (MUSIC_NORMAL, MUSIC_FAST)
+ */
+int getMusicTempo () {
+
+	return musicTempo;
+
+}
+
+
+/**
+ * Sets the music tempo
+ *
+ * @param tempo new tempo (MUSIC_NORMAL, MUSIC_FAST)
+ */
+void setMusicTempo (int tempo) {
+
+	if ((tempo != MUSIC_FAST) && (tempo != MUSIC_NORMAL))
+		musicTempo = MUSIC_NORMAL;
+	else
+		musicTempo = tempo;
+
+	// do not access music player settings when not playing
+
+	if (musicFile) {
+
+		if (musicTempo == MUSIC_FAST)
+			ModPlug_SetMusicTempoFactor(musicFile, 80);
+		else
+			ModPlug_SetMusicTempoFactor(musicFile, 128);
+
+	}
 
 }
 

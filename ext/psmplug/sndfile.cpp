@@ -474,6 +474,17 @@ BOOL CSoundFile::SetMasterVolume(UINT nVol, BOOL bAdjustAGC)
 	return TRUE;
 }
 
+BOOL CSoundFile::SetTempoFactor(UINT nTemp)
+//----------------------------------------------------------
+{
+	if (nTemp < 1) nTemp = 1;
+	if (nTemp > 0x100) nTemp = 0x100;
+
+	m_nTempoFactor = nTemp;
+
+	return TRUE;
+}
+
 UINT CSoundFile::GetNumPatterns() const
 //-------------------------------------
 {
