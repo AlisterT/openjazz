@@ -147,12 +147,12 @@ endif
 
 if OJ_RISCOS
 
-!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
+riscos/!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
 	$(AM_V_GEN) elf2aif $< $@
 
-all-local: !OpenJazz/OpenJazz,ff8
+all-local: riscos/!OpenJazz/OpenJazz,ff8
 
 clean-local:
-	$(RM) !OpenJazz/OpenJazz,ff8
+	$(RM) riscos/!OpenJazz/OpenJazz,ff8
 
 endif
