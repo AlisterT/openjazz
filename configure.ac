@@ -20,6 +20,7 @@ PKG_CHECK_MODULES([ZLIB], [zlib])
 AS_CASE([$host],
 	[*-*-mingw*], [NET_LIBS="-lws2_32" OJ_HOST="MinGW (Windows)"],
 	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork" OJ_HOST="Haiku"],
+	[*-riscos*], [HOST_LIBS="-static" OJ_HOST="RISC OS"],
 	[arm-none-linux-gnueabi], [HOST_CFLAGS="-DPANDORA -fsigned-char" HOST_LIBS="-lts" OJ_HOST="Pandora"],
 	[arm-gph-linux-gnueabi], [HOST_CFLAGS="-DCAANOO -fsigned-char" OJ_HOST="GP2X Caanoo"],
 	[arm-openwiz-linux-gnu], [HOST_CFLAGS="-DWIZ -fsigned-char" OJ_HOST="GP2X Wiz"],
@@ -31,6 +32,7 @@ AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
 AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
+AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_HOST" = "xRISC OS"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
