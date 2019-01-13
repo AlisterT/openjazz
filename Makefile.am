@@ -1,5 +1,4 @@
 dist_pkgdata_DATA = openjazz.000
-EXTRA_DIST = gpl.txt licenses.txt README.md
 
 desktopdir = $(datadir)/applications
 dist_desktop_DATA = unix/OpenJazz.desktop
@@ -131,13 +130,13 @@ if OJ_WII
 
 OpenJazz_CPPFLAGS += -DUSE_SDL_NET
 
-boot.dol: OpenJazz$(EXEEXT)
-	$(AM_V_GEN) elf2dol OpenJazz$(EXEEXT) boot.dol
+wii/boot.dol: OpenJazz$(EXEEXT)
+	$(AM_V_GEN) elf2dol $< $@
 
-all-local: boot.dol
+all-local: wii/boot.dol
 
 clean-local:
-	rm -f boot.dol
+	-rm -f wii/boot.dol
 
 else
 
@@ -156,3 +155,16 @@ clean-local:
 	$(RM) riscos/!OpenJazz/OpenJazz,ff8
 
 endif
+
+EXTRA_DIST = \
+	gpl.txt \
+	licenses.txt \
+	README.md \
+	doc/Doxyfile \
+	doc/OpenJazz.png \
+	wii/icon.png \
+	wii/meta.xml \
+	wii/READMII.txt \
+	riscos/!OpenJazz/!Run,feb \
+	riscos/!OpenJazz/!Boot,feb \
+	riscos/!OpenJazz/!Sprites,ff9
