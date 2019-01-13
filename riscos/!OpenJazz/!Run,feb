@@ -1,0 +1,9 @@
+Set OpenJazz$Dir <Obey$Dir>
+
+CDir <Choices$Write>.OpenJazz
+
+If "%*0"<>"" Then Set OpenJazz$DataDir %*0
+If "<OpenJazz$DataDir>"="" Then Set OpenJazz$DataDir <Obey$Dir>.data
+IfThere <OpenJazz$DataDir>.PANEL/000 Then Else Error 0 Unable to find game data files. Put the data into the "data" directory inside the !OpenJazz application. 
+
+Run <OpenJazz$Dir>.OpenJazz /<OpenJazz$DataDir> >null: 2>null:

@@ -16,6 +16,12 @@ EBOOT.PBP
 *.d
 /build/
 
+# RISC OS
+riscos/\!OpenJazz/data/*
+riscos/\!OpenJazz/openjazz.000
+*,ff8
+*,e1f
+
 .DS_Store
 
 # autotools

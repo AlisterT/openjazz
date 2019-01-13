@@ -43,6 +43,8 @@
     #else
         #define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
     #endif
+#elif defined(__riscos__)
+    #define CONFIG_FILE "/<Choices$Write>/OpenJazz/openjazz.cfg"
 #else
     #define CONFIG_FILE "openjazz.cfg"
 #endif
