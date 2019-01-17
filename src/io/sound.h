@@ -94,7 +94,7 @@ EXTERN int volume_direction;
 
 EXTERN void openAudio      ();
 EXTERN void closeAudio     ();
-EXTERN void playMusic      (const char *fileName);
+EXTERN void playMusic      (const char *fileName, bool restart = false);
 EXTERN void pauseMusic     (bool pause);
 EXTERN void stopMusic      ();
 EXTERN int  getMusicVolume ();

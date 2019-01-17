@@ -181,7 +181,6 @@ class JJ1Level : public Level {
 		SDL_Surface*  panelAmmo[6]; ///< HUD ammo type images
 		JJ1Event*     events; ///< Active events
 		JJ1Bullet*    bullets; ///< Active bullets
-		char*         musicFile; ///< Music file name
 		char*         sceneFile; ///< File name of cutscene to play when level has been completed
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
@@ -215,6 +214,7 @@ class JJ1Level : public Level {
 
 	protected:
 		Font* font; ///< On-screen message font
+		char* musicFile; ///< Music file name
 
 		JJ1Level (Game* owner);
 

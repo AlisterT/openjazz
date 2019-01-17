@@ -39,6 +39,7 @@
 #include "io/file.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
+#include "io/sound.h"
 #include "loop.h"
 #include "util.h"
 
@@ -128,6 +129,8 @@ int JJ1DemoLevel::play () {
 	steps = 0;
 
 	video.setPalette(palette);
+
+	playMusic(musicFile);
 
 	while (true) {
 

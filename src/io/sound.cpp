@@ -95,6 +95,7 @@ SDL_AudioSpec  audioSpec;
 bool musicPaused = false;
 int musicVolume = MAX_VOLUME >> 1; // 50%
 int soundVolume = MAX_VOLUME >> 2; // 25%
+char *currentMusic = NULL;
 
 
 /**
@@ -258,8 +259,9 @@ void closeAudio () {
  * Play music from the specified file.
  *
  * @param fileName Name of a file containing music data.
+ * @param restart Restart music when same file is played.
  */
-void playMusic (const char * fileName) {
+void playMusic (const char * fileName, bool restart) {
 
 	File *file;
 	unsigned char *psmData;
@@ -270,9 +272,12 @@ void playMusic (const char * fileName) {
 	ModPlug_Settings settings;
 #endif
 
-	// Stop any existing music playing
-	stopMusic();
+	/* Only stop any existing music playing, if a different file
+	   should be played or a restart has been requested. */
+	if ((currentMusic && (strcmp(fileName, currentMusic) == 0)) && !restart)
+		return;
 
+	stopMusic();
 
 	// Load the music file
 
@@ -285,6 +290,11 @@ void playMusic (const char * fileName) {
 		return;
 
 	}
+
+	// Save current music filename
+
+	if (currentMusic) delete[] currentMusic;
+	currentMusic = createString(fileName);
 
 	// Find the size of the file
 	size = file->getSize();
@@ -389,7 +399,17 @@ void pauseMusic (bool pause) {
 void stopMusic () {
 
 	// Stop the music playing
+
 	SDL_PauseAudio(~0);
+
+	// Cleanup
+
+	if (currentMusic) {
+
+		delete[] currentMusic;
+		currentMusic = NULL;
+
+	}
 
 #if defined(USE_MODPLUG)
 

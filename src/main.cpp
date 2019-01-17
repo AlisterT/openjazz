@@ -407,6 +407,10 @@ int play () {
 	MainMenu *mainMenu = NULL;
 	JJ1Scene *scene = NULL;
 
+	// Start the opening music
+
+	playMusic("MENUSNG.PSM");
+
 	// Load and play the startup cutscene
 
 	try {

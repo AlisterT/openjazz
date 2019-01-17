@@ -272,7 +272,7 @@ int MainMenu::main () {
 
 	video.setPalette(palette);
 
-	playMusic("menusng.psm");
+	playMusic("MENUSNG.PSM");
 
 
 	// Demo timeout
@@ -407,7 +407,7 @@ int MainMenu::main () {
 
 				delete game;
 
-				playMusic("menusng.psm");
+				playMusic("MENUSNG.PSM");
 
 				// Restore the main menu palette
 				video.setPalette(palette);
