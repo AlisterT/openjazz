@@ -293,6 +293,14 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		for (count = 0; count < 6; count++) {
 
+			// Gray out Save and Load options, as they are unimplemented
+
+			if (count == 2 || count == 3) {
+
+				drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
+
+			}
+
 			if (count == option) fontmn2->mapPalette(240, 8, selectedTextPalIndex, textPalSpan);
 			else fontmn2->mapPalette(240, 8, textPalIndex, textPalSpan);
 
@@ -337,9 +345,11 @@ int Level::select (bool& menu, int option) {
 
 		case 2: // Save
 
-			break;
+			// FALLTHROUGH
 
 		case 3: // Load
+
+			playSound(S_WAIT);
 
 			break;
 
