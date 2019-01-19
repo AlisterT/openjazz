@@ -18,7 +18,11 @@ PKG_CHECK_MODULES([LIBXMP], [libxmp], [AC_DEFINE(USE_XMP, [1], [Enable XMP Music
 PKG_CHECK_MODULES([ZLIB], [zlib])
 
 AS_CASE([$host],
-	[*-*-mingw*], [NET_LIBS="-lws2_32" OJ_HOST="MinGW (Windows)"],
+	[*-*-mingw*], [
+		NET_LIBS="-lws2_32"
+		OJ_HOST="MinGW (Windows)"
+		AC_CHECK_TOOLS(WINDRES, [windres])
+	],
 	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork" OJ_HOST="Haiku"],
 	[*-riscos*], [HOST_LIBS="-static" OJ_HOST="RISC OS"],
 	[arm-none-linux-gnueabi], [HOST_CFLAGS="-DPANDORA -fsigned-char" HOST_LIBS="-lts" OJ_HOST="Pandora"],
@@ -33,12 +37,11 @@ AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
 AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
 AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_HOST" = "xRISC OS"])
+AM_CONDITIONAL([OJ_MINGW], [test "x$WINDRES" != "x"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AS_IF([test "x$OJ_HOST" != "x"],[
-	echo ""
-	echo "Detected Platform: $OJ_HOST. If this is wrong, please open a bug report!"
-	echo ""
+	AS_BOX([Detected Platform: $OJ_HOST. If this is wrong, please open a bug report!], [ ])
 ])

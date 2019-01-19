@@ -156,6 +156,16 @@ clean-local:
 
 endif
 
+if OJ_MINGW
+
+.rc.o:
+	@if ! $(AM_V_P); then echo "  RC       $@"; fi
+	$(AM_V_at)$(WINDRES) -o $@ $<
+
+OpenJazz_SOURCES += windows/OpenJazz.rc
+
+endif
+
 EXTRA_DIST = \
 	gpl.txt \
 	licenses.txt \
@@ -167,4 +177,6 @@ EXTRA_DIST = \
 	wii/READMII.txt \
 	riscos/!OpenJazz/!Run,feb \
 	riscos/!OpenJazz/!Boot,feb \
-	riscos/!OpenJazz/!Sprites,ff9
+	riscos/!OpenJazz/!Sprites,ff9 \
+	windows/OpenJazz.ico \
+	windows/OpenJazz.rc
