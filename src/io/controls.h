@@ -34,22 +34,27 @@
 // Constants
 
 // Indexes for the keys / buttons / axes player controls arrays
-#define C_UP      0
-#define C_DOWN    1
-#define C_LEFT    2
-#define C_RIGHT   3
-#define C_JUMP    4
-#define C_SWIM    5
-#define C_FIRE    6
-#define C_CHANGE  7 /* Change weapon */
-#define C_ENTER   8
-#define C_ESCAPE  9
-#define C_STATS  10
-#define C_PAUSE  11
-#define C_YES    12
-#define C_NO     13
+#define C_UP       0
+#define C_DOWN     1
+#define C_LEFT     2
+#define C_RIGHT    3
+#define C_JUMP     4
+#define C_SWIM     5
+#define C_FIRE     6
+#define C_CHANGE   7 /* Change weapon */
+#define C_ENTER    8
+#define C_ESCAPE   9
+#define C_BLASTER 10
+#define C_TOASTER 11
+#define C_MISSILE 12
+#define C_BOUNCER 13
+#define C_TNT     14
+#define C_STATS   15
+#define C_PAUSE   16
+#define C_YES     17
+#define C_NO      18
 // Size of those arrays
-#define CONTROLS 14
+#define CONTROLS  19
 
 // Time interval
 #define T_KEY   200

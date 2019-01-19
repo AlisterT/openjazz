@@ -102,7 +102,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	}
 
 	// Check that the config file has the correct version
-	if (file->loadChar() != 4) {
+	if (file->loadChar() != 5) {
 
 		log("Valid configuration file not found.");
 		delete file;
@@ -215,7 +215,7 @@ void Setup::save () {
 
 
 	// Write the version number
-	file->storeChar(4);
+	file->storeChar(5);
 
 	// Write video settings
 	file->storeShort(video.getWidth());

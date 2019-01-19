@@ -97,6 +97,31 @@ void JJ1LevelPlayer::ground () {
 
 
 /**
+ * Tries to switch ammo to specific type, with fallback
+ *
+ * @param type Type
+ * @param fallback Whether to go backwards in weapon list
+ */
+void JJ1LevelPlayer::changeAmmo (int type, bool fallback) {
+
+	// Type 3 is unknown, skip it and use TNT instead
+
+	if (type == 3) player->ammoType = 4;
+	else player->ammoType = type;
+
+	// If there is no ammo of this type, go to the next type that has ammo
+
+	while ((player->ammoType > -1) && !player->ammo[player->ammoType]) {
+
+		if (fallback) player->ammoType--;
+		else player->ammoType = ((player->ammoType + 2) % 6) - 1;
+
+	}
+
+}
+
+
+/**
  * Respond to controls, unless the player has been killed.
  *
  * @param ticks Time
@@ -105,6 +130,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	fixed speed;
 	bool platform;
+	int count;
 
 
 	// If the player has been killed, drop but otherwise do not move
@@ -474,11 +500,18 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 		if (player == localPlayer) controls.release(C_CHANGE);
 
-		player->ammoType = ((player->ammoType + 2) % 6) - 1;
+		changeAmmo(((player->ammoType + 2) % 6) - 1);
 
-		// If there is no ammo of this type, go to the next type that has ammo
-		while ((player->ammoType > -1) && !player->ammo[player->ammoType])
-			player->ammoType = ((player->ammoType + 2) % 6) - 1;
+	}
+	for (count = 0; count < 5; count++) {
+
+		if (controls.getState(count + C_BLASTER)) {
+
+			if (player == localPlayer) controls.release(count + C_BLASTER);
+
+			changeAmmo(count - 1, true);
+
+		}
 
 	}
 

@@ -192,6 +192,7 @@ class JJ1LevelPlayer : public LevelPlayer {
 		void           send        (unsigned char* buffer);
 		void           receive     (unsigned char* buffer);
 
+		void           changeAmmo  (int type, bool fallback = false);
 		void           control     (unsigned int ticks);
 		void           move        (unsigned int ticks);
 		void           view        (unsigned int ticks, int mspf, int change);

@@ -32,10 +32,10 @@
 
 #include "loop.h"
 
-#define DEFAULT_KEY_UP              (SDLK_UP)
-#define DEFAULT_KEY_DOWN            (SDLK_DOWN)
-#define DEFAULT_KEY_LEFT            (SDLK_LEFT)
-#define DEFAULT_KEY_RIGHT           (SDLK_RIGHT)
+#define DEFAULT_KEY_UP                  (SDLK_UP)
+#define DEFAULT_KEY_DOWN                (SDLK_DOWN)
+#define DEFAULT_KEY_LEFT                (SDLK_LEFT)
+#define DEFAULT_KEY_RIGHT               (SDLK_RIGHT)
 #if defined (_WIN32)
     #define DEFAULT_KEY_JUMP            (SDLK_RALT)
     #define DEFAULT_KEY_SWIM            (SDLK_RALT)
@@ -81,13 +81,13 @@
     #define DEFAULT_KEY_YES             (SDLK_y)
     #define DEFAULT_KEY_NO              (SDLK_n)
 #elif defined(GAMESHELL)
-    #define DEFAULT_KEY_JUMP            (SDLK_j) /* A button */
-    #define DEFAULT_KEY_SWIM            (SDLK_j) /* A button */
-    #define DEFAULT_KEY_FIRE            (SDLK_k) /* B button */
-    #define DEFAULT_KEY_CHANGE          (SDLK_o) /* Y button */
+    #define DEFAULT_KEY_JUMP            (SDLK_j)      /* A button */
+    #define DEFAULT_KEY_SWIM            (SDLK_j)      /* A button */
+    #define DEFAULT_KEY_FIRE            (SDLK_k)      /* B button */
+    #define DEFAULT_KEY_CHANGE          (SDLK_o)      /* Y button */
     #define DEFAULT_KEY_ENTER           (SDLK_RETURN) /* START button */
     #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE) /* MENU button */
-    #define DEFAULT_KEY_STATS           (SDLK_SPACE) /* SELECT button */
+    #define DEFAULT_KEY_STATS           (SDLK_SPACE)  /* SELECT button */
     #define DEFAULT_KEY_PAUSE           (SDLK_p)
     #define DEFAULT_KEY_YES             (SDLK_y)
     #define DEFAULT_KEY_NO              (SDLK_n)
@@ -104,81 +104,88 @@
     #define DEFAULT_KEY_NO              (SDLK_n)
 #endif
 
+/* These are optional */
+#define DEFAULT_KEY_BLASTER             (SDLK_1)
+#define DEFAULT_KEY_TOASTER             (SDLK_2)
+#define DEFAULT_KEY_MISSILE             (SDLK_3)
+#define DEFAULT_KEY_BOUNCER             (SDLK_4)
+#define DEFAULT_KEY_TNT                 (SDLK_5)
+
 #if defined(GP2X) || defined(WIZ)
-    #define DEFAULT_BUTTON_UP               (0)
-    #define DEFAULT_BUTTON_DOWN             (4)
-    #define DEFAULT_BUTTON_LEFT             (2)
-    #define DEFAULT_BUTTON_RIGHT            (6)
-    #define DEFAULT_BUTTON_JUMP            (12)    /* A */
-    #define DEFAULT_BUTTON_SWIM            (12)    /* A */
-    #define DEFAULT_BUTTON_FIRE            (14)    /* X */
-    #define DEFAULT_BUTTON_CHANGE          (15)    /* Y */
-    #define DEFAULT_BUTTON_ESCAPE          (10)    /* L */
-    #define DEFAULT_BUTTON_ENTER           (11)    /* R */
-    #define DEFAULT_BUTTON_PAUSE            (8)    /* Start */
-    #define DEFAULT_BUTTON_STATS            (9)    /* Select */
-    #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)
+    #define DEFAULT_BUTTON_UP           (0)
+    #define DEFAULT_BUTTON_DOWN         (4)
+    #define DEFAULT_BUTTON_LEFT         (2)
+    #define DEFAULT_BUTTON_RIGHT        (6)
+    #define DEFAULT_BUTTON_JUMP         (12)    /* A */
+    #define DEFAULT_BUTTON_SWIM         (12)    /* A */
+    #define DEFAULT_BUTTON_FIRE         (14)    /* X */
+    #define DEFAULT_BUTTON_CHANGE       (15)    /* Y */
+    #define DEFAULT_BUTTON_ESCAPE       (10)    /* L */
+    #define DEFAULT_BUTTON_ENTER        (11)    /* R */
+    #define DEFAULT_BUTTON_PAUSE        (8)     /* Start */
+    #define DEFAULT_BUTTON_STATS        (9)     /* Select */
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #elif defined(CAANOO)
-    #define DEFAULT_BUTTON_UP              (11)    /* Directional dummies for Caanoo (not used) */
-    #define DEFAULT_BUTTON_DOWN            (12)
-    #define DEFAULT_BUTTON_LEFT            (13)
-    #define DEFAULT_BUTTON_RIGHT           (14)
-    #define DEFAULT_BUTTON_JUMP             (0)    /* A? */
-    #define DEFAULT_BUTTON_SWIM             (0)    /* A? */
-    #define DEFAULT_BUTTON_FIRE             (1)    /* X? */
-    #define DEFAULT_BUTTON_CHANGE           (3)    /* Y? */
-    #define DEFAULT_BUTTON_ESCAPE           (6)    /* Home */
-    #define DEFAULT_BUTTON_ENTER            (5)    /* R? */
-    #define DEFAULT_BUTTON_PAUSE            (9)    /* Help 2 */
-    #define DEFAULT_BUTTON_STATS            (8)    /* Help 1 */
-    #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)
+    #define DEFAULT_BUTTON_UP           (-1)
+    #define DEFAULT_BUTTON_DOWN         (-1)
+    #define DEFAULT_BUTTON_LEFT         (-1)
+    #define DEFAULT_BUTTON_RIGHT        (-1)
+    #define DEFAULT_BUTTON_JUMP         (0)     /* A? */
+    #define DEFAULT_BUTTON_SWIM         (0)     /* A? */
+    #define DEFAULT_BUTTON_FIRE         (1)     /* X? */
+    #define DEFAULT_BUTTON_CHANGE       (3)     /* Y? */
+    #define DEFAULT_BUTTON_ESCAPE       (6)     /* Home */
+    #define DEFAULT_BUTTON_ENTER        (5)     /* R? */
+    #define DEFAULT_BUTTON_PAUSE        (9)     /* Help 2 */
+    #define DEFAULT_BUTTON_STATS        (8)     /* Help 1 */
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #elif defined(PSP)
-    #define DEFAULT_BUTTON_UP               (8)
-    #define DEFAULT_BUTTON_DOWN             (6)
-    #define DEFAULT_BUTTON_LEFT             (7)
-    #define DEFAULT_BUTTON_RIGHT            (9)
-    #define DEFAULT_BUTTON_JUMP             (2)
-    #define DEFAULT_BUTTON_SWIM             (2)
-    #define DEFAULT_BUTTON_FIRE             (3)
-    #define DEFAULT_BUTTON_CHANGE           (0)
-    #define DEFAULT_BUTTON_ENTER            (5)
-    #define DEFAULT_BUTTON_ESCAPE           (4)
-    #define DEFAULT_BUTTON_STATS           (10)
-    #define DEFAULT_BUTTON_PAUSE           (11)
-    #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)
+    #define DEFAULT_BUTTON_UP           (8)
+    #define DEFAULT_BUTTON_DOWN         (6)
+    #define DEFAULT_BUTTON_LEFT         (7)
+    #define DEFAULT_BUTTON_RIGHT        (9)
+    #define DEFAULT_BUTTON_JUMP         (2)
+    #define DEFAULT_BUTTON_SWIM         (2)
+    #define DEFAULT_BUTTON_FIRE         (3)
+    #define DEFAULT_BUTTON_CHANGE       (0)
+    #define DEFAULT_BUTTON_ENTER        (5)
+    #define DEFAULT_BUTTON_ESCAPE       (4)
+    #define DEFAULT_BUTTON_STATS        (10)
+    #define DEFAULT_BUTTON_PAUSE        (11)
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #elif defined(WII)
-    #define DEFAULT_BUTTON_UP              (-1)
-    #define DEFAULT_BUTTON_DOWN            (-1)
-    #define DEFAULT_BUTTON_LEFT            (-1)
-    #define DEFAULT_BUTTON_RIGHT           (-1)
-    #define DEFAULT_BUTTON_JUMP             (2)
-    #define DEFAULT_BUTTON_SWIM             (2)
-    #define DEFAULT_BUTTON_FIRE             (3)
-    #define DEFAULT_BUTTON_CHANGE           (0)
-    #define DEFAULT_BUTTON_ENTER            (3)
-    #define DEFAULT_BUTTON_ESCAPE           (6)
-    #define DEFAULT_BUTTON_STATS            (4)
-    #define DEFAULT_BUTTON_PAUSE            (5)
-    #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)
+    #define DEFAULT_BUTTON_UP           (-1)
+    #define DEFAULT_BUTTON_DOWN         (-1)
+    #define DEFAULT_BUTTON_LEFT         (-1)
+    #define DEFAULT_BUTTON_RIGHT        (-1)
+    #define DEFAULT_BUTTON_JUMP         (2)
+    #define DEFAULT_BUTTON_SWIM         (2)
+    #define DEFAULT_BUTTON_FIRE         (3)
+    #define DEFAULT_BUTTON_CHANGE       (0)
+    #define DEFAULT_BUTTON_ENTER        (3)
+    #define DEFAULT_BUTTON_ESCAPE       (6)
+    #define DEFAULT_BUTTON_STATS        (4)
+    #define DEFAULT_BUTTON_PAUSE        (5)
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #else
-    #define DEFAULT_BUTTON_UP              (-1)
-    #define DEFAULT_BUTTON_DOWN            (-1)
-    #define DEFAULT_BUTTON_LEFT            (-1)
-    #define DEFAULT_BUTTON_RIGHT           (-1)
-    #define DEFAULT_BUTTON_JUMP             (1)
-    #define DEFAULT_BUTTON_SWIM             (1)
-    #define DEFAULT_BUTTON_FIRE             (0)
-    #define DEFAULT_BUTTON_CHANGE           (3)
-    #define DEFAULT_BUTTON_ENTER            (0)
-    #define DEFAULT_BUTTON_ESCAPE          (-1)
-    #define DEFAULT_BUTTON_STATS           (-1)
-    #define DEFAULT_BUTTON_PAUSE           (-1)
-    #define DEFAULT_BUTTON_YES             (-1)
-    #define DEFAULT_BUTTON_NO              (-1)
+    #define DEFAULT_BUTTON_UP           (-1)
+    #define DEFAULT_BUTTON_DOWN         (-1)
+    #define DEFAULT_BUTTON_LEFT         (-1)
+    #define DEFAULT_BUTTON_RIGHT        (-1)
+    #define DEFAULT_BUTTON_JUMP         (1)
+    #define DEFAULT_BUTTON_SWIM         (1)
+    #define DEFAULT_BUTTON_FIRE         (0)
+    #define DEFAULT_BUTTON_CHANGE       (3)
+    #define DEFAULT_BUTTON_ENTER        (0)
+    #define DEFAULT_BUTTON_ESCAPE       (5)
+    #define DEFAULT_BUTTON_STATS        (-1)
+    #define DEFAULT_BUTTON_PAUSE        (4)
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #endif
 
 
@@ -199,6 +206,11 @@ Controls::Controls () {
 	keys[C_CHANGE].key = DEFAULT_KEY_CHANGE;
 	keys[C_ENTER].key = DEFAULT_KEY_ENTER;
 	keys[C_ESCAPE].key = DEFAULT_KEY_ESCAPE;
+	keys[C_BLASTER].key = DEFAULT_KEY_BLASTER;
+	keys[C_TOASTER].key = DEFAULT_KEY_TOASTER;
+	keys[C_MISSILE].key = DEFAULT_KEY_MISSILE;
+	keys[C_BOUNCER].key = DEFAULT_KEY_BOUNCER;
+	keys[C_TNT].key = DEFAULT_KEY_TNT;
 	keys[C_STATS].key = DEFAULT_KEY_STATS;
 	keys[C_PAUSE].key = DEFAULT_KEY_PAUSE;
 	keys[C_YES].key = DEFAULT_KEY_YES;
@@ -215,8 +227,15 @@ Controls::Controls () {
 	buttons[C_CHANGE].button = DEFAULT_BUTTON_CHANGE;
 	buttons[C_ENTER].button = DEFAULT_BUTTON_ENTER;
 	buttons[C_ESCAPE].button = DEFAULT_BUTTON_ESCAPE;
+	buttons[C_BLASTER].button = -1;
+	buttons[C_TOASTER].button = -1;
+	buttons[C_MISSILE].button = -1;
+	buttons[C_BOUNCER].button = -1;
+	buttons[C_TNT].button = -1;
 	buttons[C_STATS].button = DEFAULT_BUTTON_STATS;
 	buttons[C_PAUSE].button = DEFAULT_BUTTON_PAUSE;
+	buttons[C_YES].button = DEFAULT_BUTTON_YES;
+	buttons[C_NO].button = DEFAULT_BUTTON_NO;
 
 
 	axes[C_UP].axis = 1;
@@ -233,6 +252,11 @@ Controls::Controls () {
 	axes[C_CHANGE].axis = -1;
 	axes[C_ENTER].axis = -1;
 	axes[C_ESCAPE].axis = -1;
+	axes[C_BLASTER].axis = -1;
+	axes[C_TOASTER].axis = -1;
+	axes[C_MISSILE].axis = -1;
+	axes[C_BOUNCER].axis = -1;
+	axes[C_TNT].axis = -1;
 	axes[C_STATS].axis = -1;
 	axes[C_PAUSE].axis = -1;
 	axes[C_YES].axis = -1;
@@ -253,6 +277,11 @@ Controls::Controls () {
 	hats[C_CHANGE].hat = -1;
 	hats[C_ENTER].hat = -1;
 	hats[C_ESCAPE].hat = -1;
+	hats[C_BLASTER].hat = -1;
+	hats[C_TOASTER].hat = -1;
+	hats[C_MISSILE].hat = -1;
+	hats[C_BOUNCER].hat = -1;
+	hats[C_TNT].hat = -1;
 	hats[C_STATS].hat = -1;
 	hats[C_PAUSE].hat = -1;
 	hats[C_YES].hat = -1;
