@@ -588,6 +588,9 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 
 			fastFeetTime = ticks + T_FASTFEET;
 
+			// Sky blue flash
+			level->flash(135, 206, 235, 320);
+
 			break;
 
 		case 30: // TNT
