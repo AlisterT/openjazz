@@ -338,7 +338,7 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	}
 
-	playSound(7);
+	playSound(S_UPLOOP);
 
 	if (energy) {
 

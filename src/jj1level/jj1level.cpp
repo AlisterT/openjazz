@@ -872,7 +872,7 @@ int JJ1Level::play () {
 
 					returnTime = ticks + T_END;
 					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
-					playSound(11);
+					playSound(S_ORB);
 
 				}
 

@@ -344,7 +344,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			eventType = JJ1PE_NONE;
 
-			playSound(9);
+			playSound(S_PHOTON);
 
 		} else if (((eventType == JJ1PE_NONE) || (eventType == JJ1PE_PLATFORM)) &&
 			!player->pcontrols[C_JUMP]) {
