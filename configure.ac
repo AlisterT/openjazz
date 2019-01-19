@@ -39,6 +39,12 @@ AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
 AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_HOST" = "xRISC OS"])
 AM_CONDITIONAL([OJ_MINGW], [test "x$WINDRES" != "x"])
 
+AC_CHECK_PROGS([POD2MAN], [pod2man])
+AM_CONDITIONAL([HAVE_POD2MAN], [test "x$POD2MAN" != "x"])
+AS_IF([test "x$POD2MAN" = "x" && test ! -f "${srcdir}/unix/OpenJazz.6"],
+	AC_MSG_WARN([pod2man is required to create the manual page]))
+AM_CONDITIONAL([HAVE_MANUAL], [test -f "${srcdir}/unix/OpenJazz.6"])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

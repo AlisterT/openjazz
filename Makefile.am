@@ -126,6 +126,24 @@ OpenJazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
+if HAVE_POD2MAN
+
+unix/OpenJazz.6: unix/OpenJazz.6.pod
+	$(AM_V_GEN)$(POD2MAN) -c "OpenJazz Manual" -n OpenJazz -r "OpenJazz $(PACKAGE_VERSION)" $< $@
+
+dist_man6_MANS = unix/OpenJazz.6
+MOSTLYCLEANFILES = unix/OpenJazz.6
+
+else
+
+if HAVE_MANUAL
+
+dist_man6_MANS = unix/OpenJazz.6
+
+endif
+
+endif
+
 if OJ_WII
 
 OpenJazz_CPPFLAGS += -DUSE_SDL_NET
@@ -179,4 +197,5 @@ EXTRA_DIST = \
 	riscos/!OpenJazz/!Boot,feb \
 	riscos/!OpenJazz/!Sprites,ff9 \
 	windows/OpenJazz.ico \
-	windows/OpenJazz.rc
+	windows/OpenJazz.rc \
+	unix/OpenJazz.6.pod

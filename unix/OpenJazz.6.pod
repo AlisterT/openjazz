@@ -153,4 +153,8 @@ GP32 port
 
 Dreamcast port
 
+=item Cameron Cawley (ccawley2011)
+
+RISC OS port
+
 =back
