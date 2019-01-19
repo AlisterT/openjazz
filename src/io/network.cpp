@@ -48,7 +48,9 @@
 		#include <sys/types.h>
 		#include <sys/socket.h>
 		#include <arpa/inet.h>
+		#include <sys/select.h>
 		#include <sys/ioctl.h>
+		#include <netinet/in.h>
 		#include <unistd.h>
 		#include <errno.h>
 		#include <string.h>
@@ -58,12 +60,10 @@
 	#endif
 #elif defined(WII)
 	#include <network.h>
-#elif defined USE_SDL_NET
+#elif defined(USE_SDL_NET)
 	#include <arpa/inet.h>
 #endif
-#ifdef __HAIKU__
-	#include <sys/select.h>
-#endif
+
 
 /**
  * Initialise networking.
