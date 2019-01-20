@@ -482,10 +482,11 @@ int play () {
  *
  * @param type Type of loop. Normal, typing, or input configuration
  * @param paletteEffects Palette effects to apply to video output
+ * @param effectsStopped Whether the effects should be applied without advancing
  *
  * @return Error code
  */
-int loop (LoopType type, PaletteEffect* paletteEffects) {
+int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 
 	SDL_Event event;
 	int prevTicks, ret;
@@ -504,7 +505,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects) {
 	}
 
 	// Show what has been drawn
-	video.flip(globalTicks - prevTicks, paletteEffects);
+	video.flip(globalTicks - prevTicks, paletteEffects, effectsStopped);
 
 
 	// Process system events

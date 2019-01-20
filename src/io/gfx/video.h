@@ -147,7 +147,7 @@ class Video {
 #endif
 
 		void       update                (SDL_Event *event);
-		void       flip                  (int mspf, PaletteEffect* paletteEffects);
+		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
 
 		void       clearScreen           (int index);
 

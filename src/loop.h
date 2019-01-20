@@ -57,7 +57,7 @@ enum LoopType {
 
 // Function in main.cpp
 
-EXTERN int loop (LoopType type, PaletteEffect* paletteEffects = NULL);
+EXTERN int loop (LoopType type, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
 
 #endif
 

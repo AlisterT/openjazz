@@ -251,7 +251,7 @@ void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
 	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
-	flip(0, NULL);
+	flip(0);
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
 	currentPalette = palette;
@@ -470,8 +470,9 @@ void Video::update (SDL_Event *event) {
  *
  * @param mspf Ticks per frame
  * @param paletteEffects Palette effects to use
+ * @param effectsStopped Whether the effects should be applied without advancing
  */
-void Video::flip (int mspf, PaletteEffect* paletteEffects) {
+void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) {
 
 	SDL_Color shownPalette[256];
 
@@ -499,13 +500,13 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects) {
 
 			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
 
-			paletteEffects->apply(shownPalette, false, mspf);
+			paletteEffects->apply(shownPalette, false, mspf, effectsStopped);
 
 			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
 
 		} else {
 
-			paletteEffects->apply(shownPalette, true, mspf);
+			paletteEffects->apply(shownPalette, true, mspf, effectsStopped);
 
 		}
 

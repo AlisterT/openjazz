@@ -64,11 +64,12 @@ PaletteEffect::~PaletteEffect () {
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void PaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	return;
 
@@ -98,20 +99,20 @@ WhiteInPaletteEffect::WhiteInPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	if (whiteness > F1) {
 
 		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
 
-		whiteness -= ITOF(mspf) / duration;
+		if (!isStatic) whiteness -= ITOF(mspf) / duration;
 
 	} else if (whiteness > 0) {
 
@@ -126,7 +127,7 @@ void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 
 		}
 
-		whiteness -= ITOF(mspf) / duration;
+		if (!isStatic) whiteness -= ITOF(mspf) / duration;
 
 	}
 
@@ -160,20 +161,21 @@ FadeInPaletteEffect::FadeInPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 
 	if (blackness > F1) {
 
 		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
-		blackness -= ITOF(mspf) / duration;
+		if (!isStatic) blackness -= ITOF(mspf) / duration;
 
 	} else if (blackness > 0) {
 
@@ -188,7 +190,7 @@ void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf)
 
 		}
 
-		blackness -= ITOF(mspf) / duration;
+		if (!isStatic) blackness -= ITOF(mspf) / duration;
 
 	}
 
@@ -222,35 +224,39 @@ WhiteOutPaletteEffect::WhiteOutPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 
 	if (whiteness > F1) {
 
 		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
 
-	} else if (whiteness > 0) {
+	} else {
 
-		for (count = 0; count < 256; count++) {
+		if (whiteness > 0) {
 
-			shownPalette[count].r = 255 -
-				FTOI((255 - shownPalette[count].r) * (F1 - whiteness));
-			shownPalette[count].g = 255 -
-				FTOI((255 - shownPalette[count].g) * (F1 - whiteness));
-			shownPalette[count].b = 255 -
-				FTOI((255 - shownPalette[count].b) * (F1 - whiteness));
+			for (count = 0; count < 256; count++) {
 
+				shownPalette[count].r = 255 -
+					FTOI((255 - shownPalette[count].r) * (F1 - whiteness));
+				shownPalette[count].g = 255 -
+					FTOI((255 - shownPalette[count].g) * (F1 - whiteness));
+				shownPalette[count].b = 255 -
+					FTOI((255 - shownPalette[count].b) * (F1 - whiteness));
+
+			}
 		}
 
-		whiteness += ITOF(mspf) / duration;
+		if (!isStatic) whiteness += ITOF(mspf) / duration;
 
-	} else whiteness += ITOF(mspf) / duration;
+	}
 
 	if (direct) video.changePalette(shownPalette, 0, 256);
 
@@ -282,34 +288,39 @@ FadeOutPaletteEffect::FadeOutPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	if (blackness > F1) {
 
 		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
 
-	} else if (blackness > 0) {
+	} else {
 
-		for (count = 0; count < 256; count++) {
+		if (blackness > 0) {
 
-			shownPalette[count].r =
-				FTOI(shownPalette[count].r * (F1 - blackness));
-			shownPalette[count].g =
-				FTOI(shownPalette[count].g * (F1 - blackness));
-			shownPalette[count].b =
-				FTOI(shownPalette[count].b * (F1 - blackness));
+			for (count = 0; count < 256; count++) {
+
+				shownPalette[count].r =
+					FTOI(shownPalette[count].r * (F1 - blackness));
+				shownPalette[count].g =
+					FTOI(shownPalette[count].g * (F1 - blackness));
+				shownPalette[count].b =
+					FTOI(shownPalette[count].b * (F1 - blackness));
+
+			}
 
 		}
 
-		blackness += ITOF(mspf) / duration;
+		if (!isStatic) blackness += ITOF(mspf) / duration;
 
-	} else blackness += ITOF(mspf) / duration;
+	}
 
 	if (direct) video.changePalette(shownPalette, 0, 256);
 
@@ -349,13 +360,14 @@ FlashPaletteEffect::FlashPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	if (progress < 0) {
 
@@ -370,7 +382,7 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 
 		}
 
-		progress += ITOF(mspf) / duration;
+		if (!isStatic) progress += ITOF(mspf) / duration;
 
 	} else if (progress < F1) {
 
@@ -385,7 +397,7 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 
 		}
 
-		progress += ITOF(mspf) / duration;
+		if (!isStatic) progress += ITOF(mspf) / duration;
 
 	}
 
@@ -424,15 +436,15 @@ RotatePaletteEffect::RotatePaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	SDL_Color* currentPalette;
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	currentPalette = video.getPalette();
 
@@ -444,8 +456,12 @@ void RotatePaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf)
 
 	}
 
-	position -= (mspf * speed) >> 10;
-	while (position < 0) position += ITOF(amount);
+	if (!isStatic) {
+
+		position -= (mspf * speed) >> 10;
+		while (position < 0) position += ITOF(amount);
+
+	}
 
 	if (direct) video.changePalette(shownPalette + first, first, amount);
 
@@ -484,14 +500,14 @@ SkyPaletteEffect::SkyPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void SkyPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void SkyPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	int position, count, y;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	position = viewY + ((canvasH - 33) << 9) - F4;
 	y = ((canvasH - 34) / 100) + 1;
@@ -560,15 +576,15 @@ P2DPaletteEffect::P2DPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void P2DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void P2DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	SDL_Color* currentPalette;
 	int count, x, y, j;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	currentPalette = video.getPalette();
 	x = FTOI(((256 * 32) - FTOI(viewX)) * speed);
@@ -620,16 +636,16 @@ P1DPaletteEffect::P1DPaletteEffect
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void P1DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void P1DPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	SDL_Color* currentPalette;
 	fixed position;
 	int count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	currentPalette = video.getPalette();
 	position = viewX + viewY;
@@ -672,15 +688,15 @@ WaterPaletteEffect::WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE)
  * @param shownPalette The palette the effect will be applied to
  * @param direct Whether or not to apply the effect directly
  * @param mspf Ticks per frame
+ * @param isStatic Whether the effect should advance after applying
  */
-void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) {
+void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) {
 
 	SDL_Color* currentPalette;
 	int position, count;
 
 	// Apply the next palette effect
-	if (next) next->apply(shownPalette, direct, mspf);
-
+	if (next) next->apply(shownPalette, direct, mspf, isStatic);
 
 	currentPalette = video.getPalette();
 
@@ -710,5 +726,3 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf) 
 	return;
 
 }
-
-

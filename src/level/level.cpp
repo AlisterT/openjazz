@@ -401,8 +401,7 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 
 	// Main loop
-	if (::loop(NORMAL_LOOP, paused ? NULL : paletteEffects) == E_QUIT)
-		return E_QUIT;
+	if (::loop(NORMAL_LOOP, paletteEffects, paused) == E_QUIT) return E_QUIT;
 
 
 	if (controls.release(C_ESCAPE)) {
