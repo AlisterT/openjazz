@@ -995,6 +995,8 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 				xOffset = fSin(angle) * 20;
 				yOffset = fCos(angle) * 20;
 
+				if (!facing) yOffset = -yOffset;
+
 				an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 
 			}
@@ -1005,6 +1007,8 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 			xOffset = fCos(ticks) * 20;
 			yOffset = fSin(ticks) * 20;
+
+			if (!facing) yOffset = -yOffset;
 
 			an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 
@@ -1027,6 +1031,8 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		yOffset = fSin(ticks) * 20;
 
 		an = level->getMiscAnim(MA_1SHIELD);
+
+		if (!facing) yOffset = -yOffset;
 
 		an->draw(drawX + xOffset, drawY + PYO_TOP + yOffset);
 		an->draw(drawX - xOffset, drawY + PYO_TOP - yOffset);
