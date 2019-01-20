@@ -11,6 +11,7 @@
  *
  */
 
+#ifdef __SYMBIAN32__
 
 #include <eikenv.h>
 #include <eikapp.h>
@@ -135,6 +136,8 @@ float sinf(float value)
 	Math::Sin(ret, value);
 	return ret;
 }
+
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
