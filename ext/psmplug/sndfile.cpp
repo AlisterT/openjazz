@@ -9,23 +9,6 @@
 #include "stdafx.h"
 #include "sndfile.h"
 
-#define MAX_PACK_TABLES		3
-
-
-// Compression table
-static const signed char UnpackTable[MAX_PACK_TABLES][16] =
-//--------------------------------------------
-{
-	// CPU-generated dynamic table
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	// u-Law table
-	{0, 1, 2, 4, 8, 16, 32, 64,
-	-1, -2, -4, -8, -16, -32, -48, -64},
-	// Linear table
-	{0, 1, 2, 3, 5, 7, 12, 19,
-	-1, -2, -3, -5, -7, -12, -19, -31}
-};
-
 
 //////////////////////////////////////////////////////////
 // CSoundFile
