@@ -215,4 +215,6 @@ EXTRA_DIST = \
 	riscos/!OpenJazz/!Sprites,ff9 \
 	windows/OpenJazz.ico \
 	windows/OpenJazz.rc \
-	unix/OpenJazz.6.pod
+	unix/OpenJazz.6.pod \
+	psp/Makefile \
+	psp/icon.png

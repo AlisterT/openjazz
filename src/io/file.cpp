@@ -31,7 +31,7 @@
 #include <string.h>
 #include <miniz.h>
 
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(WII) || defined(PSP))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
 #endif
