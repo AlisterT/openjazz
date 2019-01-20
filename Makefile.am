@@ -202,6 +202,9 @@ endif
 EXTRA_DIST = \
 	licenses.txt \
 	README.md \
+	ext/miniz/LICENSE \
+	ext/psmplug/LICENSE \
+	ext/scale2x/COPYING \
 	doc/Doxyfile \
 	doc/OpenJazz.png \
 	wii/icon.png \

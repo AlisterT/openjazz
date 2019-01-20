@@ -15,7 +15,7 @@ CXXFLAGS += -DUSE_SOCKETS
 CXXFLAGS += $(shell sdl-config --cflags)
 LIBS += $(shell sdl-config --libs)
 
-LIBS += -lm -lz
+LIBS += -lm
 
 OpenJazz: $(OBJS)
 	$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
