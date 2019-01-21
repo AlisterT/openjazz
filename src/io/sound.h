@@ -104,6 +104,7 @@ EXTERN void resampleSound  (int index, const char* name, int rate);
 EXTERN void resampleSounds ();
 EXTERN void freeSounds     ();
 EXTERN void playSound      (char index);
+EXTERN bool isSoundPlaying (char index);
 EXTERN int  getSoundVolume ();
 EXTERN void setSoundVolume (int volume);
 

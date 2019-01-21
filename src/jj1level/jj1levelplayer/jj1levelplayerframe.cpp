@@ -516,6 +516,11 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	if (birds) birds = birds->step(ticks);
 
+	// Replay sound effect before invincibility wears off
+
+	if ((reaction == PR_INVINCIBLE) && (reactionTime < ticks + 2200))
+		if (!isSoundPlaying(S_INVULN)) playSound(S_INVULN);
+
 
 	return;
 
@@ -1053,5 +1058,3 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	return;
 
 }
-
-

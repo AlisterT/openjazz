@@ -564,6 +564,23 @@ void playSound (char index) {
 
 
 /**
+ * Check if a sound clip is playing.
+ *
+ * @param index Number of the sound to check plus one
+ *
+ * @return Whether the sound is playing
+ */
+bool isSoundPlaying (char index) {
+
+	if (!sounds || (index <= 0) || (index > 32))
+		return false;
+
+	return (sounds[index - 1].position > 0);
+
+}
+
+
+/**
  * Gets the current sound effect volume
  *
  * @return sound volume (0-100)
