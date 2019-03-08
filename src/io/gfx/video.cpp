@@ -34,8 +34,10 @@
 #include "setup.h"
 #include "util.h"
 #include "io/log.h"
+#include "io/file.h"
 
 #include <string.h>
+#include <miniz.h>
 
 
 /**
@@ -623,6 +625,10 @@ void Video::update (SDL_Event *event) {
 
 			}
 
+			// If F12 has been pressed, save a screenshot
+			if (event->key.keysym.sym == SDLK_F12)
+				saveScreenShot();
+
 			break;
 	#endif
 
@@ -831,6 +837,54 @@ void setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int
 		LOG_WARN("Could not change palette on surface without palette.");
 #else
 	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
+#endif
+
+}
+
+/**
+ * Save a screenshot to numbered file
+ */
+void Video::saveScreenShot () {
+
+#if OJ_SDL2
+	char check[] = "OpenJazz_000.png";
+	bool ok = false;
+
+	for (int i = 1; i <= 100; i++) {
+		snprintf(check, sizeof(check), "OpenJazz_%03d.png", i);
+
+		if (!fileExists(check, PATH_TYPE_TEMP))
+			break;
+	}
+
+	SDL_Surface *rgbShot = SDL_CreateRGBSurfaceWithFormat(0,
+		canvasW, canvasH, 32, SDL_PIXELFORMAT_RGB24);
+	if (rgbShot) {
+		SDL_Rect src = { 0, 0, canvasW, canvasH };
+		if (SDL_BlitSurface(screen, &src, rgbShot, nullptr) == 0) {
+			size_t length = 0;
+			char *pngImage = (char *)tdefl_write_image_to_png_file_in_memory(
+				rgbShot->pixels, rgbShot->w, rgbShot->h, 3, &length);
+			if (pngImage != nullptr) {
+				try {
+					FilePtr pngFile = std::make_unique<File>(check, PATH_TYPE_TEMP, true);
+					pngFile->storeData(pngImage, length);
+					ok = true;
+				} catch (int e) {
+					//
+				}
+				mz_free(pngImage);
+			}
+		}
+
+		SDL_FreeSurface(rgbShot);
+	}
+
+	if (!ok) {
+		LOG_WARN("Could not save screenshot %s.", check);
+	}
+#else
+	LOG_WARN("Sorry, screenshot support is SDL2-only.");
 #endif
 
 }

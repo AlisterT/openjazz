@@ -183,6 +183,7 @@ class Video {
 		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
 
 		void       clearScreen           (int index);
+		void       saveScreenShot        ();
 
 };
 
