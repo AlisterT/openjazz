@@ -58,6 +58,9 @@ the "Jazz Jackrabbit CD" with "The Lost Episodes" and the "Complete" edition.
 
 =item C<Alt> + C<Enter> switches between full-screen and windowed mode
 
+=item C<1-5> switches weapon to Blaster, Toaster, Missile,
+Bouncer or TNT respectively. If the desired weapon is not available, try next.
+
 =back
 
 =head2 Configurable Controls
@@ -68,7 +71,7 @@ These are configurable via the "setup options" menu. Default settings:
 
 =item C<Left> and C<Right> arrow keys to move left and right
 
-=item C<Space bar> to jump
+=item C<Space bar> to jump/swim upwards
 
 =item C<left Alt> to shoot
 
