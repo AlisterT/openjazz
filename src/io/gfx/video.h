@@ -127,7 +127,7 @@ class Video {
 
 		bool       init                  (int width, int height, bool startFullscreen);
 
-		bool       reset                (int width, int height);
+		bool       reset                 (int width, int height);
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();
@@ -138,6 +138,7 @@ class Video {
 		int        getMaxHeight          ();
 		int        getWidth              ();
 		int        getHeight             ();
+		void       setTitle              (const char *title);
 #ifdef SCALE
 		int        getScaleFactor        ();
 		int        setScaleFactor        (int newScaleFactor);

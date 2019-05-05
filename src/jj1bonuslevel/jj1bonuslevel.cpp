@@ -374,6 +374,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	multiplayer = multi;
 
+	video.setTitle("BONUS LEVEL");
 
 	return;
 
@@ -393,6 +394,8 @@ JJ1BonusLevel::~JJ1BonusLevel () {
 	delete[] spriteSet;
 
 	delete font;
+
+	video.setTitle(NULL);
 
 	return;
 

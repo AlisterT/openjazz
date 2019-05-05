@@ -162,7 +162,7 @@ bool Video::init (int width, int height, bool startFullscreen) {
 
 	}
 
-	SDL_WM_SetCaption("OpenJazz", NULL);
+	setTitle(NULL);
 
 	findMaxResolution();
 
@@ -347,6 +347,41 @@ int Video::getWidth () {
 int Video::getHeight () {
 
 	return screenH;
+
+}
+
+
+/**
+ * Sets the window title.
+ *
+ * @param the title or NULL, to use default
+ */
+void Video::setTitle (const char *title) {
+
+	const char titleBase[] = "OpenJazz";
+	char *windowTitle = NULL;
+	int titleLen = strlen(titleBase) + 1;
+
+	if (title != NULL) {
+
+		titleLen = strlen(titleBase) + 3 + strlen(title) + 1;
+
+	}
+
+	windowTitle = new char[titleLen];
+
+	strcpy(windowTitle, titleBase);
+
+	if (title != NULL) {
+
+		strcat(windowTitle, " - ");
+		strcat(windowTitle, title);
+
+	}
+
+	SDL_WM_SetCaption(windowTitle, NULL);
+
+	delete[] windowTitle;
 
 }
 

@@ -411,6 +411,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	unsigned char* buffer;
 	const char* ext;
 	char* string = NULL;
+	char* levelname = NULL;
 	int tiles;
 	int count, x, y, type;
 	unsigned char startX, startY;
@@ -485,6 +486,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	}
 
+	levelname = new char[strlen(string) + 14];
+	strcpy(levelname, string);
+
 	switch (fileName[5]) {
 
 		case '0':
@@ -503,6 +507,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 			string[0] = 0;
 			ext = "SECRET LEVEL";
+			strcat(levelname, " ");
 
 			break;
 
@@ -514,9 +519,13 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	}
 
-	video.setPalette(menuPalette);
+	strcat(levelname, ext);
 
+	video.setPalette(menuPalette);
 	video.clearScreen(0);
+	video.setTitle(levelname);
+
+	delete[] levelname;
 
 	x = (canvasW >> 1) - ((strlen(string) + strlen(ext)) << 2);
 	x = fontmn2->showString("LOADING ", x - 60, (canvasH >> 1) - 16);

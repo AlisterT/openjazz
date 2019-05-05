@@ -143,6 +143,8 @@ JJ1Level::~JJ1Level () {
 
 	resampleSounds();
 
+	video.setTitle(NULL);
+
 	return;
 
 }
