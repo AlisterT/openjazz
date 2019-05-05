@@ -17,11 +17,16 @@ LIBS += $(shell sdl-config --libs)
 
 LIBS += -lm
 
+.PHONY: clean
+
 OpenJazz: $(OBJS)
-	$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
+	@-echo [LD] $@
+	@$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
 
 %.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	@-echo [CXX] $<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f OpenJazz $(OBJS)
+	@-echo Cleaning...
+	@rm -f OpenJazz $(OBJS)
