@@ -166,28 +166,31 @@ void startUp (int argc, char *argv[]) {
 
 	}
 
-	// Use the path of the program, but not on Wii as this does crash in
-	// dolphin emulator. Also is not needed, because CWD is used there
 
-#ifndef WII
-	count = strlen(argv[0]) - 1;
+	// Use the path of the program, but check before, since it is not always available
+	// At least crashes in Dolphin emulator (Wii) and 3DS (.cia build)
 
-	// Search for directory separator
+	if (argc > 0) {
+
+		count = strlen(argv[0]) - 1;
+
+		// Search for directory separator
 #ifdef _WIN32
-	while ((argv[0][count] != '\\') && (count >= 0)) count--;
+		while ((argv[0][count] != '\\') && (count >= 0)) count--;
 #else
-	while ((argv[0][count] != '/') && (count >= 0)) count--;
+		while ((argv[0][count] != '/') && (count >= 0)) count--;
 #endif
 
-	// If a directory was found, copy it to the path
-	if (count > 0) {
+		// If a directory was found, copy it to the path
+		if (count > 0) {
 
-		firstPath = new Path(firstPath, new char[count + 2]);
-		memcpy(firstPath->path, argv[0], count + 1);
-		firstPath->path[count + 1] = 0;
+			firstPath = new Path(firstPath, new char[count + 2]);
+			memcpy(firstPath->path, argv[0], count + 1);
+			firstPath->path[count + 1] = 0;
+
+		}
 
 	}
-#endif
 
 
 	// Use the user's home directory, if available
