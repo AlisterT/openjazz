@@ -15,7 +15,7 @@ INCLUDES	:= src ext/miniz ext/psmplug
 APP_TITLE	:= OpenJazz
 APP_DESCRIPTION	:=
 APP_AUTHOR	:= AlisterT & carstene1ns
-ICON		:= ../unix/OpenJazz.png
+ICON		:= OpenJazz.png
 
 # include all source files
 include $(TOPDIR)/../openjazz.mk
