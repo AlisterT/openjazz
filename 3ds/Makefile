@@ -21,6 +21,8 @@ ICON		:= OpenJazz.png
 include $(TOPDIR)/../openjazz.mk
 # disable scaling
 OBJS := $(filter-out ext/scale2x/%.o,$(OBJS))
+# add 3ds specific source
+OBJS += src/platforms/3ds.o
 
 #---------------------------------------------------------------------------------
 ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft

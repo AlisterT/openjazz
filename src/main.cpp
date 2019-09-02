@@ -53,6 +53,7 @@
 	#include <pspdisplay.h>
 #elif defined(_3DS)
 	#include <3ds.h>
+	#include "platforms/3ds.h"
 #elif defined(WII)
 	#include <unistd.h>
 	#include <fat.h>
@@ -61,13 +62,11 @@
 	#include <Alert.h>
 	#include <FindDirectory.h>
 	#include <fs_info.h>
+#elif defined(WIZ) || defined(GP2X)
+	#include "platforms/wiz.h"
 #endif
 
 #include <string.h>
-
-#if defined(WIZ) || defined(GP2X)
-	#include "platforms/wiz.h"
-#endif
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
@@ -579,6 +578,8 @@ int main(int argc, char *argv[]) {
 #elif defined(WII)
 	fatInitDefault();
 	Wii_SetConsole();
+#elif defined(_3DS)
+	N3DS_SetKeyMap();
 #endif
 
 	// Initialise SDL
