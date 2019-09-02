@@ -29,7 +29,7 @@ ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 CFLAGS	:= -g -Wall -O2 -mword-relocations \
            -fomit-frame-pointer -ffunction-sections -fdata-sections \
            $(ARCH)
-CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DDATAPATH=\"sdmc:/3ds/OpenJazz/\"
+CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DDATAPATH=\"sdmc:/3ds/OpenJazz/\" -DUSE_SOCKETS
 CXXFLAGS:= $(CFLAGS) -frtti -fexceptions
 ASFLAGS	:= -g $(ARCH)
 LDFLAGS	=  -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
