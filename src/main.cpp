@@ -137,6 +137,10 @@ void startUp (int argc, char *argv[]) {
 	firstPath = new Path(firstPath, createString(KOpenJazzPath));
 #endif
 
+#ifdef _3DS
+	firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
+	firstPath = new Path(firstPath, createString("romfs:/"));
+#endif
 
 	// Use any provided paths, appending a directory separator as necessary
 
@@ -579,6 +583,7 @@ int main(int argc, char *argv[]) {
 	fatInitDefault();
 	Wii_SetConsole();
 #elif defined(_3DS)
+	romfsInit();
 	N3DS_SetKeyMap();
 #endif
 
@@ -616,6 +621,10 @@ int main(int argc, char *argv[]) {
 	// Save configuration and shut down
 
 	shutDown();
+
+#ifdef _3DS
+	romfsExit();
+#endif
 
 	SDL_Quit();
 

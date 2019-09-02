@@ -29,7 +29,7 @@ ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 CFLAGS	:= -g -Wall -O2 -mword-relocations \
            -fomit-frame-pointer -ffunction-sections -fdata-sections \
            $(ARCH)
-CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DDATAPATH=\"sdmc:/3ds/OpenJazz/\" -DUSE_SOCKETS
+CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DUSE_SOCKETS
 CXXFLAGS:= $(CFLAGS) -frtti -fexceptions
 ASFLAGS	:= -g $(ARCH)
 LDFLAGS	=  -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -51,15 +51,19 @@ export INCLUDE	:= $(foreach dir,$(INCLUDES),-I$(CURDIR)/../$(dir)) \
                    -I$(CURDIR)/$(BUILD)
 export LIBPATHS	:= $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 export APP_ICON := $(TOPDIR)/$(ICON)
-export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
+export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh --romfs=$(CURDIR)/romfs
 
-.PHONY: all clean
+.PHONY: all clean romfs
 
-all: $(BUILD) $(DEPSDIR)
+all: $(BUILD) $(DEPSDIR) romfs
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 $(BUILD):
 	@mkdir -p $@
+
+romfs:
+	@mkdir -p romfs
+	@cp -up ../openjazz.000 romfs/
 
 ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):
@@ -69,6 +73,8 @@ endif
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
+	@rm -f romfs/openjazz.000
+	@rmdir --ignore-fail-on-non-empty romfs
 
 #---------------------------------------------------------------------------------
 else
