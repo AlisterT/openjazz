@@ -196,7 +196,7 @@ void startUp (int argc, char *argv[]) {
 	#ifdef _WIN32
 	firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
 	#else
-	firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
+	firstPath = new Path(firstPath, createString(getenv("HOME"), "/.openjazz/"));
 	#endif
 #endif
 
