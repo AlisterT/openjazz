@@ -53,6 +53,7 @@
 	#include <pspdisplay.h>
 #elif defined(_3DS)
 	#include <3ds.h>
+	#include "platforms/3ds.h"
 #elif defined(WII)
 	#include <unistd.h>
 	#include <fat.h>
@@ -61,13 +62,11 @@
 	#include <Alert.h>
 	#include <FindDirectory.h>
 	#include <fs_info.h>
+#elif defined(WIZ) || defined(GP2X)
+	#include "platforms/wiz.h"
 #endif
 
 #include <string.h>
-
-#if defined(WIZ) || defined(GP2X)
-	#include "platforms/wiz.h"
-#endif
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
@@ -138,6 +137,10 @@ void startUp (int argc, char *argv[]) {
 	firstPath = new Path(firstPath, createString(KOpenJazzPath));
 #endif
 
+#ifdef _3DS
+	firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
+	firstPath = new Path(firstPath, createString("romfs:/"));
+#endif
 
 	// Use any provided paths, appending a directory separator as necessary
 
@@ -166,28 +169,31 @@ void startUp (int argc, char *argv[]) {
 
 	}
 
-	// Use the path of the program, but not on Wii as this does crash in
-	// dolphin emulator. Also is not needed, because CWD is used there
 
-#ifndef WII
-	count = strlen(argv[0]) - 1;
+	// Use the path of the program, but check before, since it is not always available
+	// At least crashes in Dolphin emulator (Wii) and 3DS (.cia build)
 
-	// Search for directory separator
+	if (argc > 0) {
+
+		count = strlen(argv[0]) - 1;
+
+		// Search for directory separator
 #ifdef _WIN32
-	while ((argv[0][count] != '\\') && (count >= 0)) count--;
+		while ((argv[0][count] != '\\') && (count >= 0)) count--;
 #else
-	while ((argv[0][count] != '/') && (count >= 0)) count--;
+		while ((argv[0][count] != '/') && (count >= 0)) count--;
 #endif
 
-	// If a directory was found, copy it to the path
-	if (count > 0) {
+		// If a directory was found, copy it to the path
+		if (count > 0) {
 
-		firstPath = new Path(firstPath, new char[count + 2]);
-		memcpy(firstPath->path, argv[0], count + 1);
-		firstPath->path[count + 1] = 0;
+			firstPath = new Path(firstPath, new char[count + 2]);
+			memcpy(firstPath->path, argv[0], count + 1);
+			firstPath->path[count + 1] = 0;
+
+		}
 
 	}
-#endif
 
 
 	// Use the user's home directory, if available
@@ -576,6 +582,9 @@ int main(int argc, char *argv[]) {
 #elif defined(WII)
 	fatInitDefault();
 	Wii_SetConsole();
+#elif defined(_3DS)
+	romfsInit();
+	N3DS_SetKeyMap();
 #endif
 
 	// Initialise SDL
@@ -612,6 +621,10 @@ int main(int argc, char *argv[]) {
 	// Save configuration and shut down
 
 	shutDown();
+
+#ifdef _3DS
+	romfsExit();
+#endif
 
 	SDL_Quit();
 

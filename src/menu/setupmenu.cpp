@@ -683,7 +683,7 @@ int SetupMenu::setupMain () {
 
 			case 1:
 
-#if !defined(CAANOO) && !defined(WIZ) && !defined(GP2X) && !defined(PSP)
+#if !(defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(PSP) || defined(_3DS))
 				if (setupKeyboard() == E_QUIT) return E_QUIT;
 #else
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;

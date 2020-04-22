@@ -54,6 +54,12 @@
 	#ifdef __APPLE__
 		#define MSG_NOSIGNAL 0
 	#endif
+	#ifdef _3DS
+		#include <3ds.h>
+		#include <malloc.h>
+		static u32* socBuffer = NULL;
+		#define SOC_BUFFERSIZE 0x100000
+	#endif
 #elif defined(WII)
 	#include <network.h>
 #elif defined(USE_SDL_NET)
@@ -72,6 +78,9 @@ Network::Network () {
 
 	// Start Windows Sockets
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
+	#elif defined(_3DS)
+	socBuffer = (u32*)memalign(0x1000, SOC_BUFFERSIZE);
+	socInit(socBuffer, SOC_BUFFERSIZE);
 	#endif
 #elif defined USE_SDL_NET
 #  ifdef WII
@@ -97,6 +106,9 @@ Network::~Network () {
 	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
+	#elif defined(_3DS)
+	socExit();
+	free(socBuffer);
 	#endif
 #elif defined USE_SDL_NET
 	SDLNet_Quit();

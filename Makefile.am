@@ -217,4 +217,8 @@ EXTRA_DIST = \
 	windows/OpenJazz.rc \
 	unix/OpenJazz.6.pod \
 	psp/Makefile \
-	psp/icon.png
+	psp/icon.png \
+	3ds/Makefile \
+	3ds/OpenJazz.png \
+	src/platforms/3ds.cpp \
+	src/platforms/3ds.h
