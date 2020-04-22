@@ -44,13 +44,7 @@
 #include "util.h"
 
 #ifdef PSP
-	#include <pspsdk.h>
-	#include <pspkernel.h>
-	#include <pspthreadman.h>
-	#include <pspmoduleinfo.h>
-	#include <pspdebug.h>
-	#include <psputility.h>
-	#include <pspdisplay.h>
+	#include "platforms/psp.h"
 #elif defined(_3DS)
 	#include <3ds.h>
 	#include "platforms/3ds.h"
@@ -298,6 +292,8 @@ void startUp (int argc, char *argv[]) {
 		BAlert* alert = new BAlert("OpenJazz", alertBuffer, "Exit", NULL, NULL,
 			B_WIDTH_AS_USUAL, B_STOP_ALERT);
 		alert->Go();
+#elif defined(PSP)
+		PSP_ErrorNoDatafiles();
 #endif
 
 		throw e;
@@ -549,20 +545,15 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 
 	controls.loop();
 
-
-#if defined(WIZ) || defined(GP2X)
+#ifdef PSP
+	if (PSP_WantsExit()) return E_QUIT;
+#elif defined(WIZ) || defined(GP2X)
 	WIZ_AdjustVolume( volume_direction );
 #endif
 
 	return E_NONE;
 
 }
-
-#ifdef PSP
-	PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
-	PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
-	PSP_HEAP_SIZE_KB(-2048);
-#endif
 
 /**
  * Main.
@@ -576,9 +567,7 @@ int main(int argc, char *argv[]) {
 	// Early platform init
 
 #ifdef PSP
-	pspDebugScreenInit();
-	atexit(sceKernelExitGame);
-	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
+	PSP_PrepareSystem();
 #elif defined(WII)
 	fatInitDefault();
 	Wii_SetConsole();
