@@ -52,15 +52,16 @@ MainMenu::MainMenu () {
 
 		file = new File("openjazz.000", false);
 
+		logo = file->loadSurface(64, 40);
+
+		delete file;
+
 	} catch (int e) {
 
-		throw e;
+		logo = NULL;
 
 	}
 
-	logo = file->loadSurface(64, 40);
-
-	delete file;
 
 
 	// Load the menu graphics
@@ -71,7 +72,7 @@ MainMenu::MainMenu () {
 
 	} catch (int e) {
 
-		SDL_FreeSurface(logo);
+		if (logo) SDL_FreeSurface(logo);
 
 		throw e;
 
@@ -115,7 +116,7 @@ MainMenu::MainMenu () {
 
 	SDL_SetColorKey(background, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(highlight, SDL_SRCCOLORKEY, 0);
-	SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
+	if (logo) SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
 
 	gameMenu = new GameMenu(file);
 
@@ -133,7 +134,7 @@ MainMenu::~MainMenu () {
 
 	SDL_FreeSurface(background);
 	SDL_FreeSurface(highlight);
-	SDL_FreeSurface(logo);
+	if (logo) SDL_FreeSurface(logo);
 
 	delete gameMenu;
 
@@ -423,9 +424,12 @@ int MainMenu::main () {
 		plasma.draw();
 
 
-		dst.x = (canvasW >> 2) - 72;
-		dst.y = canvasH - (canvasH >> 2);
-		SDL_BlitSurface(logo, NULL, canvas, &dst);
+		if (logo)
+		{
+			dst.x = (canvasW >> 2) - 72;
+			dst.y = canvasH - (canvasH >> 2);
+			SDL_BlitSurface(logo, NULL, canvas, &dst);
+		}
 
 		dst.x = (canvasW - SW) >> 1;
 		dst.y = (canvasH - SH) >> 1;
