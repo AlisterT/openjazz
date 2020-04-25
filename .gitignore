@@ -15,7 +15,8 @@ EBOOT.PBP
 *.3dsx
 *.smdh
 *.d
-/build/
+/3ds/build
+/3ds/romfs
 
 # RISC OS
 riscos/\!OpenJazz/data/*

@@ -13,7 +13,7 @@ TARGET		:= OpenJazz
 BUILD		:= build
 INCLUDES	:= src ext/miniz ext/psmplug
 APP_TITLE	:= OpenJazz
-APP_DESCRIPTION	:=
+APP_DESCRIPTION	:= Jack Jazzrabbit 1 game engine reimplementation
 APP_AUTHOR	:= AlisterT & carstene1ns
 ICON		:= OpenJazz.png
 
@@ -26,11 +26,11 @@ OBJS += src/platforms/3ds.o
 
 #---------------------------------------------------------------------------------
 ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-CFLAGS	:= -g -Wall -O2 -mword-relocations \
+CFLAGS	:= -g -Wall -O2 -fno-math-errno -mword-relocations \
            -fomit-frame-pointer -ffunction-sections -fdata-sections \
            $(ARCH)
 CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DUSE_SOCKETS
-CXXFLAGS:= $(CFLAGS) -frtti -fexceptions
+CXXFLAGS:= $(CFLAGS)
 ASFLAGS	:= -g $(ARCH)
 LDFLAGS	=  -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 LIBS	:= -lSDL -lcitro3d -lctru -lm
