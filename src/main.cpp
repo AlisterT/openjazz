@@ -73,6 +73,7 @@ extern float sinf (float);
 
 #define PI 3.141592f
 
+int loadLevel = -1, loadWorld = -1;
 
 /**
  * Initialises OpenJazz.
@@ -236,6 +237,12 @@ void startUp (int argc, char *argv[]) {
 			if (argv[count][1] == 'm') {
 				setMusicVolume(0);
 				setSoundVolume(0);
+			}
+
+			if (argv[count][1] == 'l' && argc > count + 2) {
+				loadWorld = strtol(argv[count+1], NULL , 10);
+				loadLevel = strtol(argv[count+2], NULL , 10);
+				count+=2;
 			}
 
 		}
@@ -410,6 +417,31 @@ int play () {
 	// Start the opening music
 
 	playMusic("MENUSNG.PSM");
+
+	// Try loading the user-specified level
+
+	if (loadLevel > -1 && loadWorld > -1) {
+
+		try {
+
+			mainMenu = new MainMenu();
+
+		} catch (int e) {
+
+			return e;
+
+		}
+
+		if (mainMenu->skip(loadLevel, loadWorld) == E_QUIT) {
+
+			delete mainMenu;
+
+		}
+
+		return E_NONE;
+
+	}
+
 
 	// Load and play the startup cutscene
 

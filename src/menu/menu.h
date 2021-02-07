@@ -75,6 +75,7 @@ class GameMenu : public Menu {
 
 		int newGame  ();
 		int loadGame ();
+		int loadGame (int levelNum, int worldNum);
 
 };
 
@@ -112,6 +113,7 @@ class MainMenu : public Menu {
 		~MainMenu ();
 
 		int main ();
+		int skip (int levelNum, int worldNum);
 
 };
 

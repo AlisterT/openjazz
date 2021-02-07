@@ -25,6 +25,10 @@ Start in full-screen mode
 
 Start with muted audio
 
+=item B<-l> <I<World>> <I<Level>>
+
+Directly load specific world/level
+
 =back
 
 =head1 FILES

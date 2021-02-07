@@ -373,6 +373,20 @@ int GameMenu::loadGame () {
 
 
 /**
+ * Directly load level.
+ *
+ * @return Error code
+ */
+int GameMenu::loadGame (int levelNum, int worldNum) {
+
+	if (newGameDifficulty(M_SINGLE, levelNum, worldNum) == E_QUIT) return E_QUIT;
+
+	return E_NONE;
+
+}
+
+
+/**
  * Run the new game level selection menu.
  *
  * @param mode Game mode
