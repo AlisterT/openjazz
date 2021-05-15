@@ -56,6 +56,7 @@
 	#endif
 	#ifdef _3DS
 		#include <3ds.h>
+		#include <fcntl.h>
 		#include <malloc.h>
 		static u32* socBuffer = NULL;
 		#define SOC_BUFFERSIZE 0x100000
@@ -141,7 +142,11 @@ int Network::host () {
 
 	// Make the socket non-blocking
 	nonblock = 1;
+#ifdef _3DS
+	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
+#else
 	ioctl(sock, FIONBIO, (u_long *)&nonblock);
+#endif
 
 	memset(&sockAddr, 0, sizeof(sockaddr_in));
 	sockAddr.sin_family = AF_INET;
@@ -204,9 +209,12 @@ int Network::join (char *address) {
 	if (sock == -1) return E_N_SOCKET;
 
 	// Make socket non-blocking
+#ifdef _3DS
+	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
+#else
 	con = 1;
 	ioctl(sock, FIONBIO, (u_long *)&con);
-
+#endif
 
 	// Connect to server
 
@@ -318,8 +326,12 @@ int Network::accept (int sock) {
 	if (clientSocket != -1) {
 
 		// Make the socket non-blocking
+#ifdef _3DS
+		fcntl(clientSocket, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
+#else
 		length = 1;
 		ioctl(clientSocket, FIONBIO, (u_long *)&length);
+#endif
 
 	}
 

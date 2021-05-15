@@ -589,7 +589,7 @@ int GameMenu::joinGame () {
 	Game* game;
 	int ret;
 
-	ret = textInput("ip address:", netAddress);
+	ret = textInput("ip address:", netAddress, true);
 
 	if (ret < 0) return ret;
 

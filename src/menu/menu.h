@@ -46,7 +46,7 @@ class Menu {
 		void showEscString ();
 		int  message       (const char* text);
 		int  generic       (const char** optionNames, int options, int& chosen);
-		int  textInput     (const char* request, char*& text);
+		int  textInput     (const char* request, char*& text, bool ip = false);
 
 };
 

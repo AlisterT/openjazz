@@ -35,6 +35,9 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
+#ifdef _3DS
+	#include "platforms/3ds.h"
+#endif
 
 #include <string.h>
 
@@ -171,10 +174,33 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
  *
  * @return Error code
  */
-int Menu::textInput (const char* request, char*& text) {
+int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	char *input;
-	int count, terminate, character, x, y;
+
+#ifdef _3DS
+
+	int res;
+
+	if (ip)
+		res = N3DS_InputIP(text, input);
+	else
+		res = N3DS_InputString(request, text, input);
+
+	if (res) {
+
+		playSound(S_ORB);
+
+		delete[] text;
+		text = input;
+
+		return E_NONE;
+
+	}
+
+#else
+
+	int count, terminate, character, added, x, y;
 	unsigned int cursor;
 
 	video.setPalette(menuPalette);
@@ -203,17 +229,35 @@ int Menu::textInput (const char* request, char*& text) {
 
 			// If the character is valid, add it to the input string
 
-			if ((character == ' ') || (character == '.') ||
-				((character >= '0') && (character <= '9')) ||
-				((character >= 'a') && (character <= 'z'))) {
+			added = 0;
+
+			if (!ip) {
+
+				if (((character >= 'a') && (character <= 'z'))
+					|| (character == ' ')) {
+
+					input[cursor] = character;
+					added = 1;
+
+				} else if ((character >= 'A') && (character <= 'Z')) {
+
+					input[cursor] = character | 32;
+					added = 1;
+
+				}
+
+			}
+
+			if (((character >= '0') && (character <= '9'))
+				|| (character == '.')) {
 
 				input[cursor] = character;
-				cursor++;
-				if (terminate) input[cursor] = 0;
+				added = 1;
 
-			} else if ((character >= 'A') && (character <= 'Z')) {
+			}
 
-				input[cursor] = character | 32;
+			if (added) {
+
 				cursor++;
 				if (terminate) input[cursor] = 0;
 
@@ -291,6 +335,8 @@ int Menu::textInput (const char* request, char*& text) {
 	}
 
 	delete[] input;
+
+#endif
 
 	return E_RETURN;
 
