@@ -6,6 +6,8 @@ OBJS:=$(patsubst %,../%,$(OBJS))
 
 # disable scaling
 OBJS:=$(filter-out ../ext/scale2x/%.o,$(OBJS))
+# add psp specific source
+OBJS += ../src/platforms/psp.o
 
 PSPSDK=$(shell psp-config --pspsdk-path)
 PSPPREFIX=$(shell psp-config --psp-prefix)

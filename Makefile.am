@@ -221,4 +221,6 @@ EXTRA_DIST = \
 	3ds/Makefile \
 	3ds/OpenJazz.png \
 	src/platforms/3ds.cpp \
-	src/platforms/3ds.h
+	src/platforms/3ds.h \
+	src/platforms/psp.cpp \
+	src/platforms/psp.h
