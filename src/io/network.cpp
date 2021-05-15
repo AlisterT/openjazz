@@ -38,8 +38,9 @@
 		#include <winsock.h>
 		#define ioctl ioctlsocket
 		#define socklen_t int
-		#define EWOULDBLOCK WSAEWOULDBLOCK
-		#define MSG_NOSIGNAL 0
+		#ifndef EWOULDBLOCK
+			#define EWOULDBLOCK WSAEWOULDBLOCK
+		#endif
 	#else
 		#include <sys/types.h>
 		#include <sys/socket.h>
@@ -51,7 +52,7 @@
 		#include <errno.h>
 		#include <string.h>
 	#endif
-	#ifdef __APPLE__
+	#ifndef MSG_NOSIGNAL
 		#define MSG_NOSIGNAL 0
 	#endif
 	#ifdef _3DS
