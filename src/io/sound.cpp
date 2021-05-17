@@ -28,13 +28,13 @@
 #include <SDL_audio.h>
 #include <psmplug.h>
 
-#if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP)
+#if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP) || defined(__vita__)
 	#define SOUND_FREQ 22050
 #else
 	#define SOUND_FREQ 44100
 #endif
 
-#if defined(GP2X) || defined(PSP) || defined(_3DS)
+#if defined(GP2X) || defined(PSP) || defined(_3DS) || defined(__vita__)
 	#define SOUND_SAMPLES 512
 #else
 	#define SOUND_SAMPLES 2048

@@ -52,6 +52,8 @@
 	#include <unistd.h>
 	#include <fat.h>
 	#include "platforms/wii.h"
+#elif defined(__vita__)
+	#include "platforms/psvita.h"
 #elif defined(__HAIKU__)
 	#include <Alert.h>
 	#include <FindDirectory.h>
@@ -574,6 +576,8 @@ int main(int argc, char *argv[]) {
 #elif defined(_3DS)
 	romfsInit();
 	N3DS_SetKeyMap();
+#elif __vita__
+	PSVITA_InitControls();
 #endif
 
 	// Initialise SDL

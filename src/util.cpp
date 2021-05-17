@@ -31,6 +31,12 @@
 
 #include <string.h>
 
+// FIXME: Remove this when there is a custom logger
+#ifdef __vita__
+	#include <psp2/kernel/clib.h>
+	#define printf sceClibPrintf
+#endif
+
 
 /**
  * Check if a file exists.

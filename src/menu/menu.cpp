@@ -37,6 +37,8 @@
 #include "util.h"
 #ifdef _3DS
 	#include "platforms/3ds.h"
+#elif defined(__vita__)
+	#include "platforms/psvita.h"
 #endif
 
 #include <string.h>
@@ -188,6 +190,19 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 		res = N3DS_InputString(request, text, input);
 
 	if (res) {
+
+		playSound(S_ORB);
+
+		delete[] text;
+		text = input;
+
+		return E_NONE;
+
+	}
+
+#elif defined(__vita__)
+
+	if (PSVITA_InputString(request, text, input)) {
 
 		playSound(S_ORB);
 
