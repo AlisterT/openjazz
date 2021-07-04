@@ -29,7 +29,7 @@ ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 CFLAGS	:= -g -Wall -O2 -fno-math-errno -mword-relocations \
            -fomit-frame-pointer -ffunction-sections -fdata-sections \
            $(ARCH)
-CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -DUSE_SOCKETS
+CFLAGS	+= $(INCLUDE) -DARM11 -D_3DS -D__3DS__ -DUSE_SOCKETS
 CXXFLAGS:= $(CFLAGS)
 ASFLAGS	:= -g $(ARCH)
 LDFLAGS	=  -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)

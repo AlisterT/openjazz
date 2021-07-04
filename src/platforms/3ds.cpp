@@ -17,21 +17,6 @@
 #ifdef _3DS
 
 #include <3ds.h>
-#include <SDL.h>
-
-void N3DS_SetKeyMap() {
-
-	// reset mapping
-	for (int i = 0; i < 32; i++)
-		SDL_N3DSKeyBind(1 << i, SDLK_UNKNOWN);
-
-	// only add direction keys for d-pad
-	SDL_N3DSKeyBind(KEY_DUP, SDLK_UP);
-	SDL_N3DSKeyBind(KEY_DDOWN, SDLK_DOWN);
-	SDL_N3DSKeyBind(KEY_DLEFT, SDLK_LEFT);
-	SDL_N3DSKeyBind(KEY_DRIGHT, SDLK_RIGHT);
-
-}
 
 int N3DS_InputIP(char*& current_ip, char*& new_ip) {
 
