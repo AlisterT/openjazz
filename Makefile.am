@@ -164,7 +164,8 @@ if OJ_WII
 OpenJazz_CPPFLAGS += -DUSE_SDL_NET
 
 builds/wii/boot.dol: OpenJazz$(EXEEXT)
-	$(AM_V_GEN) elf2dol $< $@
+	@if ! $(AM_V_P); then echo "  ELF2DOL  $@"; fi
+	$(AM_V_at)$(ELF2DOL) $< $@
 
 all-local: builds/wii/boot.dol
 
@@ -180,7 +181,8 @@ endif
 if OJ_RISCOS
 
 builds/riscos/!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
-	$(AM_V_GEN) elf2aif $< $@
+	@if ! $(AM_V_P); then echo "  ELF2AIF  $@"; fi
+	$(AM_V_at)$(ELF2AIF) $< $@
 
 all-local: builds/riscos/!OpenJazz/OpenJazz,ff8
 
