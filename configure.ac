@@ -1,6 +1,6 @@
 AC_INIT([openjazz], [0], [https://github.com/AlisterT/openjazz/issues], [openjazz], [http://www.alister.eu/jazz/oj/])
 
-AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_AUX_DIR([builds/autotools])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects tar-pax no-dist-gzip dist-xz])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -40,9 +40,9 @@ AM_CONDITIONAL([OJ_MINGW], [test "x$WINDRES" != "x"])
 
 AC_CHECK_PROGS([POD2MAN], [pod2man])
 AM_CONDITIONAL([HAVE_POD2MAN], [test "x$POD2MAN" != "x"])
-AS_IF([test "x$POD2MAN" = "x" && test ! -f "${srcdir}/unix/OpenJazz.6"],
+AS_IF([test "x$POD2MAN" = "x" && test ! -f "${srcdir}/builds/unix/OpenJazz.6"],
 	AC_MSG_WARN([pod2man is required to create the manual page]))
-AM_CONDITIONAL([HAVE_MANUAL], [test -f "${srcdir}/unix/OpenJazz.6"])
+AM_CONDITIONAL([HAVE_MANUAL], [test -f "${srcdir}/builds/unix/OpenJazz.6"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

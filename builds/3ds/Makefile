@@ -18,7 +18,7 @@ APP_AUTHOR	:= AlisterT & carstene1ns
 ICON		:= OpenJazz.png
 
 # include all source files
-include $(TOPDIR)/../openjazz.mk
+include $(TOPDIR)/../../openjazz.mk
 # disable scaling
 OBJS := $(filter-out ext/scale2x/%.o,$(OBJS))
 # add 3ds specific source
@@ -41,11 +41,11 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 
 export OUTPUT	:= $(CURDIR)/$(TARGET)
 export TOPDIR	:= $(CURDIR)
-export VPATH	:= $(sort $(foreach obj,$(OBJS),$(CURDIR)/../$(dir $(obj))))
+export VPATH	:= $(sort $(foreach obj,$(OBJS),$(CURDIR)/../../$(dir $(obj))))
 export DEPSDIR	:= $(CURDIR)/$(BUILD)
 export LD	:= $(CXX)
 export OFILES	:= $(foreach obj,$(OBJS),$(notdir $(obj)))
-export INCLUDE	:= $(foreach dir,$(INCLUDES),-I$(CURDIR)/../$(dir)) \
+export INCLUDE	:= $(foreach dir,$(INCLUDES),-I$(CURDIR)/../../$(dir)) \
                    $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
                    -I$(PORTLIBS)/include/SDL \
                    -I$(CURDIR)/$(BUILD)
@@ -63,7 +63,7 @@ $(BUILD):
 
 romfs:
 	@mkdir -p romfs
-	@cp -up ../openjazz.000 romfs/
+	@cp -up ../../openjazz.000 romfs/
 
 ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):

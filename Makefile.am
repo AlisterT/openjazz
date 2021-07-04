@@ -1,11 +1,11 @@
 dist_pkgdata_DATA = openjazz.000
 
 desktopdir = $(datadir)/applications
-dist_desktop_DATA = unix/OpenJazz.desktop
+dist_desktop_DATA = builds/unix/OpenJazz.desktop
 appicondir = $(datadir)/icons/hicolor/scalable/apps
-dist_appicon_DATA = unix/OpenJazz.svg
+dist_appicon_DATA = builds/unix/OpenJazz.svg
 appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
-dist_appicon_fallback_DATA = unix/OpenJazz.png
+dist_appicon_fallback_DATA = builds/unix/OpenJazz.png
 
 noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a
 libpsmplug_a_SOURCES = \
@@ -143,17 +143,17 @@ OpenJazz_SOURCES = \
 
 if HAVE_POD2MAN
 
-unix/OpenJazz.6: unix/OpenJazz.6.pod
+builds/unix/OpenJazz.6: builds/unix/OpenJazz.6.pod
 	$(AM_V_GEN)$(POD2MAN) -c "OpenJazz Manual" -n OpenJazz -r "OpenJazz $(PACKAGE_VERSION)" $< $@
 
-dist_man6_MANS = unix/OpenJazz.6
-MOSTLYCLEANFILES = unix/OpenJazz.6
+dist_man6_MANS = builds/unix/OpenJazz.6
+MOSTLYCLEANFILES = builds/unix/OpenJazz.6
 
 else
 
 if HAVE_MANUAL
 
-dist_man6_MANS = unix/OpenJazz.6
+dist_man6_MANS = builds/unix/OpenJazz.6
 
 endif
 
@@ -163,13 +163,13 @@ if OJ_WII
 
 OpenJazz_CPPFLAGS += -DUSE_SDL_NET
 
-wii/boot.dol: OpenJazz$(EXEEXT)
+builds/wii/boot.dol: OpenJazz$(EXEEXT)
 	$(AM_V_GEN) elf2dol $< $@
 
-all-local: wii/boot.dol
+all-local: builds/wii/boot.dol
 
 clean-local:
-	-rm -f wii/boot.dol
+	-rm -f builds/wii/boot.dol
 
 else
 
@@ -179,13 +179,13 @@ endif
 
 if OJ_RISCOS
 
-riscos/!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
+builds/riscos/!OpenJazz/OpenJazz,ff8: OpenJazz$(EXEEXT)
 	$(AM_V_GEN) elf2aif $< $@
 
-all-local: riscos/!OpenJazz/OpenJazz,ff8
+all-local: builds/riscos/!OpenJazz/OpenJazz,ff8
 
 clean-local:
-	$(RM) riscos/!OpenJazz/OpenJazz,ff8
+	$(RM) builds/riscos/!OpenJazz/OpenJazz,ff8
 
 endif
 
@@ -195,7 +195,7 @@ if OJ_MINGW
 	@if ! $(AM_V_P); then echo "  RC       $@"; fi
 	$(AM_V_at)$(WINDRES) -o $@ $<
 
-OpenJazz_SOURCES += windows/OpenJazz.rc
+OpenJazz_SOURCES += builds/windows/OpenJazz.rc
 
 endif
 
@@ -207,19 +207,19 @@ EXTRA_DIST = \
 	ext/scale2x/COPYING \
 	doc/Doxyfile \
 	doc/OpenJazz.png \
-	wii/icon.png \
-	wii/meta.xml \
-	wii/READMII.txt \
-	riscos/!OpenJazz/!Run,feb \
-	riscos/!OpenJazz/!Boot,feb \
-	riscos/!OpenJazz/!Sprites,ff9 \
-	windows/OpenJazz.ico \
-	windows/OpenJazz.rc \
-	unix/OpenJazz.6.pod \
-	psp/Makefile \
-	psp/icon.png \
-	3ds/Makefile \
-	3ds/OpenJazz.png \
+	builds/wii/icon.png \
+	builds/wii/meta.xml \
+	builds/wii/READMII.txt \
+	builds/riscos/!OpenJazz/!Run,feb \
+	builds/riscos/!OpenJazz/!Boot,feb \
+	builds/riscos/!OpenJazz/!Sprites,ff9 \
+	builds/windows/OpenJazz.ico \
+	builds/windows/OpenJazz.rc \
+	builds/unix/OpenJazz.6.pod \
+	builds/psp/Makefile \
+	builds/psp/icon.png \
+	builds/3ds/Makefile \
+	builds/3ds/OpenJazz.png \
 	src/platforms/3ds.cpp \
 	src/platforms/3ds.h \
 	src/platforms/psp.cpp \

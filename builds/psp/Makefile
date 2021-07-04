@@ -1,19 +1,19 @@
 # OpenJazz PSP Port Makefile
 
 TARGET = OpenJazz
-include ../openjazz.mk
-OBJS:=$(patsubst %,../%,$(OBJS))
+include ../../openjazz.mk
+OBJS:=$(patsubst %,../../%,$(OBJS))
 
 # disable scaling
-OBJS:=$(filter-out ../ext/scale2x/%.o,$(OBJS))
+OBJS:=$(filter-out ../../ext/scale2x/%.o,$(OBJS))
 # add psp specific source
-OBJS += ../src/platforms/psp.o
+OBJS += ../../src/platforms/psp.o
 
 PSPSDK=$(shell psp-config --pspsdk-path)
 PSPPREFIX=$(shell psp-config --psp-prefix)
 
 CXXFLAGS = -g -O2 -G0 -Wall -DPSP
-INCDIR = $(PSPPREFIX)/include/SDL ../ext/psmplug ../ext/miniz ../src
+INCDIR = $(PSPPREFIX)/include/SDL ../../ext/psmplug ../../ext/miniz ../../src
 LIBS = -lSDL -lGL -lm -lstdc++ \
        -lpspdebug -lpspgu -lpspctrl -lpspge -lpspdisplay -lpsphprm \
        -lpspvfpu -lpsprtc -lpspaudio -lpsputility -lpspirkeyb -lpsppower
