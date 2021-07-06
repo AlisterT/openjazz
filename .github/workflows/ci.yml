@@ -57,7 +57,7 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l unix/OpenJazz.6.pod Manual.txt
+          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
           cp OpenJazz openjazz.000 README.md COPYING *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
@@ -95,7 +95,7 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l unix/OpenJazz.6.pod Manual.txt
+          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt

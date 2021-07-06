@@ -573,7 +573,6 @@ int main(int argc, char *argv[]) {
 	Wii_SetConsole();
 #elif defined(_3DS)
 	romfsInit();
-	N3DS_SetKeyMap();
 #endif
 
 	// Initialise SDL
