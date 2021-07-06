@@ -41,6 +41,8 @@
     #endif
 #elif defined(__riscos__)
     #define CONFIG_FILE "/<Choices$Write>/OpenJazz/openjazz.cfg"
+#elif __vita__
+    #define CONFIG_FILE "ux0:data/jazz/openjazz.cfg"
 #else
     #define CONFIG_FILE "openjazz.cfg"
 #endif

@@ -235,4 +235,6 @@ EXTRA_DIST = \
 	src/platforms/3ds.cpp \
 	src/platforms/3ds.h \
 	src/platforms/psp.cpp \
-	src/platforms/psp.h
+	src/platforms/psp.h \
+	src/platforms/psvita.cpp \
+	src/platforms/psvita.h
