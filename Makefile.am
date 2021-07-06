@@ -44,11 +44,10 @@ OpenJazz_CXXFLAGS = \
 	${HOST_CFLAGS} \
 	${SDL_CFLAGS}
 OpenJazz_LDADD = \
-	${SDL_LIBS} \
 	libpsmplug.a \
 	libminiz.a \
 	libscale2x.a \
-	${NET_LIBS} \
+	${SDL_LIBS} \
 	${HOST_LIBS}
 OpenJazz_SOURCES = \
 	src/game/clientgame.cpp \
@@ -159,9 +158,24 @@ endif
 
 endif
 
-if OJ_WII
+if HAVE_SOCKETS
+
+OpenJazz_CPPFLAGS += -DUSE_SOCKETS
+OpenJazz_LDADD += ${NET_LIBS}
+
+else
+
+if HAVE_SDL_NET
 
 OpenJazz_CPPFLAGS += -DUSE_SDL_NET
+OpenJazz_CXXFLAGS += ${SDL_NET_CFLAGS}
+OpenJazz_LDADD += ${SDL_NET_LIBS}
+
+endif
+
+endif
+
+if OJ_WII
 
 builds/wii/boot.dol: OpenJazz$(EXEEXT)
 	@if ! $(AM_V_P); then echo "  ELF2DOL  $@"; fi
@@ -171,10 +185,6 @@ all-local: builds/wii/boot.dol
 
 clean-local:
 	-rm -f builds/wii/boot.dol
-
-else
-
-OpenJazz_CPPFLAGS += -DUSE_SOCKETS
 
 endif
 

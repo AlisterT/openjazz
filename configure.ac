@@ -16,13 +16,22 @@ AC_C_RESTRICT
 
 PKG_CHECK_MODULES([SDL], [sdl])
 
+# network
+AC_CHECK_HEADER([sys/socket.h], [HAVE_SOCKETS=1])
+AS_IF([test "x$HAVE_SOCKETS" = "x"],
+	[PKG_CHECK_MODULES([SDL_NET], [SDL_net], [HAVE_SDL_NET=1] ,
+		[AC_MSG_WARN([sockets and SDL_net unavailable, disabling network support.])])])
+AM_CONDITIONAL([HAVE_SOCKETS], [test "x$HAVE_SOCKETS" != "x"])
+AM_CONDITIONAL([HAVE_SDL_NET], [test "x$HAVE_SDL_NET" != "x"])
+
+# platform
 AS_CASE([$host],
 	[*-*-mingw*], [
 		NET_LIBS="-lws2_32"
 		OJ_HOST="MinGW (Windows)"
 		AC_CHECK_TOOLS(WINDRES, [windres])
 		AS_IF([test "x$WINDRES" = "x"],
-			AC_MSG_ERROR([windres is required to embed the executable icon]))
+			[AC_MSG_ERROR([windres is required to embed the executable icon])])
 	],
 	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork" OJ_HOST="Haiku"],
 	[*-riscos*], [
@@ -30,7 +39,7 @@ AS_CASE([$host],
 		OJ_HOST="RISC OS"
 		AC_CHECK_PROGS(ELF2AIF, [elf2aif])
 		AS_IF([test "x$ELF2AIF" = "x"],
-			AC_MSG_ERROR([elf2aif is required to create the executable]))
+			[AC_MSG_ERROR([elf2aif is required to create the executable])])
 	],
 	[arm-none-linux-gnueabi], [HOST_CFLAGS="-DPANDORA -fsigned-char" HOST_LIBS="-lts" OJ_HOST="Pandora"],
 	[arm-gph-linux-gnueabi], [HOST_CFLAGS="-DCAANOO -fsigned-char" OJ_HOST="GP2X Caanoo"],
@@ -40,11 +49,10 @@ AS_CASE([$host],
 	[armv7l-unknown-linux-gnueabihf], [HOST_CFLAGS="-DGAMESHELL" OJ_HOST="GameShell"],
 	[powerpc-unknown-eabi], [
 		HOST_CFLAGS="-DWII"
-		NET_LIBS="-lSDL_net"
 		OJ_HOST="Wii"
 		AC_CHECK_PROGS(ELF2DOL, [elf2dol])
 		AS_IF([test "x$ELF2DOL" = "x"],
-			AC_MSG_ERROR([elf2dol is required to create the executable]))
+			[AC_MSG_ERROR([elf2dol is required to create the executable])])
 	])
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LIBS)
@@ -53,15 +61,15 @@ AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
 AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_HOST" = "xRISC OS"])
 AM_CONDITIONAL([OJ_MINGW], [test "x$OJ_HOST" = "MinGW (Windows)"])
 
+# manual
 AC_CHECK_PROGS([POD2MAN], [pod2man])
 AM_CONDITIONAL([HAVE_POD2MAN], [test "x$POD2MAN" != "x"])
 AS_IF([test "x$POD2MAN" = "x" && test ! -f "${srcdir}/builds/unix/OpenJazz.6"],
-	AC_MSG_WARN([pod2man is required to create the manual page]))
+	[AC_MSG_WARN([pod2man is required to create the manual page])])
 AM_CONDITIONAL([HAVE_MANUAL], [test -f "${srcdir}/builds/unix/OpenJazz.6"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
-AS_IF([test "x$OJ_HOST" != "x"],[
-	AS_BOX([Detected Platform: $OJ_HOST. If this is wrong, please open a bug report!], [ ])
-])
+AS_IF([test "x$OJ_HOST" != "x"],
+	[AS_BOX([Detected Platform: $OJ_HOST. If this is wrong, please open a bug report!], [ ])])
