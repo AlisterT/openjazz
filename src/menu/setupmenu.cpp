@@ -331,14 +331,14 @@ int SetupMenu::setupResolution () {
     int heightOptions[] = {SH, 240, 288, 300, 320, 384, 400, 480, 576, 600, 720,
         768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
         2048, 2160, MAX_SCREEN_HEIGHT};
-	int screenW, screenH, x, y, count;
-	bool dimension;
+	int screenW, screenH, oldscreenW, oldscreenH, x, y, count;
+	bool dimension, resOK;
 
-	screenW = video.getWidth();
-	screenH = video.getHeight();
+	screenW = oldscreenW = video.getWidth();
+	screenH = oldscreenH = video.getHeight();
 
 	dimension = false;
-
+	resOK = true;
 
 	while (true) {
 
@@ -346,11 +346,11 @@ int SetupMenu::setupResolution () {
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
-		if (controls.release(C_ENTER)) return E_NONE;
-
 		if (controls.getCursor(x, y)) {
 
-			if ((x >= 32) && (x < 132) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
+			if ((x >= 32) && (x < 132) && (y >= canvasH - 12)
+				&& controls.wasCursorReleased())
+				return E_NONE;
 
 			dimension = (x >= (canvasW >> 2) + 44);
 
@@ -409,41 +409,65 @@ int SetupMenu::setupResolution () {
 
 			}
 
+			resOK = true;
+
 		}
 
 		if (controls.release(C_DOWN)) {
 
-			if ((!dimension) && (screenW > SW)) {
+			if ((!dimension) && (screenW > video.getMinWidth())) {
 
-				count = 18;
+				count = sizeof(widthOptions)/sizeof(widthOptions[0]) - 1;
 
 				while (screenW <= widthOptions[count]) count--;
 
 				screenW = widthOptions[count];
-				count = -1;
 
 			}
 
-			if (dimension && (screenH > SH)) {
+			if (dimension && (screenH > video.getMinHeight())) {
 
-				count = 22;
+				count = sizeof(heightOptions)/sizeof(heightOptions[0]) - 1;
 
 				while (screenH <= heightOptions[count]) count--;
 
 				screenH = heightOptions[count];
-				count = -1;
+
+			}
+
+			resOK = true;
+
+		}
+
+		// Check for a resolution change
+		if (screenH != oldscreenH || screenW != oldscreenW) {
+
+			fontmn2->showString(resOK ? "press enter to apply" : "invalid resolution!",
+				(canvasW >> 2) - 32, (canvasH >> 1) + 16);
+
+		}
+
+		// Apply resolution change
+		if (controls.release(C_ENTER)) {
+
+			playSound(S_ORB);
+
+			if (video.reset(screenW, screenH)) {
+
+				// New resolution is ok
+				oldscreenW = screenW;
+				oldscreenH = screenH;
+
+			} else {
+
+				// It failed, reset to sanity
+				video.reset(oldscreenW, oldscreenH);
+				resOK = false;
 
 			}
 
 		}
 
-		// Check for a resolution change
-		if (count) {
-
-			playSound(S_ORB);
-			video.reset(screenW, screenH);
-
-		}
 
 		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
 
