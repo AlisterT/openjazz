@@ -88,6 +88,8 @@ jobs:
 
       - name: Build OpenJazz
         run: |
+          export LDFLAGS="-static"
+          export PKG_CONFIG="pkg-config --static"
           autoreconf -if
           ./configure --disable-dependency-tracking
           make
