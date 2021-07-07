@@ -16,17 +16,10 @@ AC_C_RESTRICT
 
 PKG_CHECK_MODULES([SDL], [sdl])
 
-# network
-AC_CHECK_HEADER([sys/socket.h], [HAVE_SOCKETS=1])
-AS_IF([test "x$HAVE_SOCKETS" = "x"],
-	[PKG_CHECK_MODULES([SDL_NET], [SDL_net], [HAVE_SDL_NET=1] ,
-		[AC_MSG_WARN([sockets and SDL_net unavailable, disabling network support.])])])
-AM_CONDITIONAL([HAVE_SOCKETS], [test "x$HAVE_SOCKETS" != "x"])
-AM_CONDITIONAL([HAVE_SDL_NET], [test "x$HAVE_SDL_NET" != "x"])
-
 # platform
 AS_CASE([$host],
 	[*-*-mingw*], [
+		OJ_MINGW=1
 		NET_LIBS="-lws2_32"
 		OJ_HOST="MinGW (Windows)"
 		AC_CHECK_TOOLS(WINDRES, [windres])
@@ -35,6 +28,7 @@ AS_CASE([$host],
 	],
 	[*-haiku*], [HOST_CFLAGS="-D_BSD_SOURCE" HOST_LIBS="-lbe" NET_LIBS="-lnetwork" OJ_HOST="Haiku"],
 	[*-riscos*], [
+		OJ_RISCOS=1
 		HOST_LIBS="-static"
 		OJ_HOST="RISC OS"
 		AC_CHECK_PROGS(ELF2AIF, [elf2aif])
@@ -48,6 +42,7 @@ AS_CASE([$host],
 	[mipsel-linux*], [HOST_CFLAGS="-DDINGOO" OJ_HOST="Dingoo"],
 	[armv7l-unknown-linux-gnueabihf], [HOST_CFLAGS="-DGAMESHELL" OJ_HOST="GameShell"],
 	[powerpc-unknown-eabi], [
+		OJ_WII=1
 		HOST_CFLAGS="-DWII"
 		OJ_HOST="Wii"
 		AC_CHECK_PROGS(ELF2DOL, [elf2dol])
@@ -57,9 +52,17 @@ AS_CASE([$host],
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LIBS)
 AC_SUBST(NET_LIBS)
-AM_CONDITIONAL([OJ_WII], [test "x$OJ_HOST" = "xWii"])
-AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_HOST" = "xRISC OS"])
-AM_CONDITIONAL([OJ_MINGW], [test "x$OJ_HOST" = "MinGW (Windows)"])
+AM_CONDITIONAL([OJ_MINGW], [test "x$OJ_MINGW" != "x"])
+AM_CONDITIONAL([OJ_RISCOS], [test "x$OJ_RISCOS" != "x"])
+AM_CONDITIONAL([OJ_WII], [test "x$OJ_WII" != "x"])
+
+# network
+AC_CHECK_HEADER([sys/socket.h], [HAVE_SOCKETS=1])
+AS_IF([test "x$HAVE_SOCKETS" = "x" && test "x$OJ_MINGW" = "x"],
+	[PKG_CHECK_MODULES([SDL_NET], [SDL_net], [HAVE_SDL_NET=1] ,
+		[AC_MSG_WARN([sockets and SDL_net unavailable, disabling network support.])])])
+AM_CONDITIONAL([HAVE_SOCKETS], [test "x$HAVE_SOCKETS" != "x" || test "x$OJ_MINGW" != "x"])
+AM_CONDITIONAL([HAVE_SDL_NET], [test "x$HAVE_SDL_NET" != "x"])
 
 # manual
 AC_CHECK_PROGS([POD2MAN], [pod2man])
