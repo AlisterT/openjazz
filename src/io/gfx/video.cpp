@@ -31,6 +31,7 @@
 	#include <scalebit.h>
 #endif
 
+#include "setup.h"
 #include "util.h"
 
 #include <string.h>
@@ -555,13 +556,16 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	SDL_Color shownPalette[256];
 
 #ifdef SCALE
-	if (canvas != screen) {
+	if (canvas != NULL && canvas != screen) {
 
 		// Copy everything that has been drawn so far
-		scale(scaleFactor,
-			screen->pixels, screen->pitch,
-			canvas->pixels, canvas->pitch,
-			screen->format->BytesPerPixel, canvas->w, canvas->h);
+		if (setup.scale2x)
+			scale(scaleFactor,
+				screen->pixels, screen->pitch,
+				canvas->pixels, canvas->pitch,
+				screen->format->BytesPerPixel, canvas->w, canvas->h);
+		else
+			SDL_SoftStretch(canvas, NULL, screen, NULL);
 
 	}
 #endif
