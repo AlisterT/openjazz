@@ -30,8 +30,7 @@ libscale2x_a_SOURCES = \
 	ext/scale2x/scale3x.cpp \
 	ext/scale2x/scale3x.h \
 	ext/scale2x/scalebit.cpp \
-	ext/scale2x/scalebit.h \
-	ext/scale2x/simple2x.cpp
+	ext/scale2x/scalebit.h
 
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
