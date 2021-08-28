@@ -31,6 +31,7 @@
 	#include <scalebit.h>
 #endif
 
+#include "setup.h"
 #include "util.h"
 
 #include <string.h>
@@ -100,38 +101,51 @@ Video::Video () {
 
 
 /**
- * Find the maximum horizontal and vertical resolutions.
+ * Find the minimum and maximum horizontal and vertical resolutions.
  */
-void Video::findMaxResolution () {
+void Video::findResolutions () {
 
 #ifdef NO_RESIZE
-	maxW = DEFAULT_SCREEN_WIDTH;
-	maxH = DEFAULT_SCREEN_HEIGHT;
+	minW = maxW = DEFAULT_SCREEN_WIDTH;
+	minH = maxH = DEFAULT_SCREEN_HEIGHT;
 #else
 	SDL_Rect **resolutions;
 	int count;
 
 	resolutions = SDL_ListModes(NULL, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 
+	// All resolutions available, set to arbitrary limit
 	if (resolutions == (SDL_Rect **)(-1)) {
 
+		minW = SW;
+		minH = SH;
 		maxW = MAX_SCREEN_WIDTH;
 		maxH = MAX_SCREEN_HEIGHT;
 
 	} else {
 
-		maxW = SW;
-		maxH = SH;
-
 		for (count = 0; resolutions[count] != NULL; count++) {
 
-			if (resolutions[count]->w > maxW) maxW = resolutions[count]->w;
-			if (resolutions[count]->h > maxH) maxH = resolutions[count]->h;
+			// Save largest resolution
+			if (count == 0) {
+				maxW = resolutions[count]->w;
+				maxH = resolutions[count]->h;
+			}
+
+			// Save smallest resolution
+			if (resolutions[count + 1] == NULL) {
+				minW = resolutions[count]->w;
+				minH = resolutions[count]->h;
+			}
 
 		}
 
+		// Sanitize
+		if (minW < SW) minW = SW;
+		if (minH < SH) minH = SH;
 		if (maxW > MAX_SCREEN_WIDTH) maxW = MAX_SCREEN_WIDTH;
 		if (maxH > MAX_SCREEN_HEIGHT) maxH = MAX_SCREEN_HEIGHT;
+
 	}
 #endif
 
@@ -154,6 +168,8 @@ bool Video::init (int width, int height, bool startFullscreen) {
 
 	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
+	findResolutions();
+
 	if (!reset(width, height)) {
 
 		logError("Could not set video mode", SDL_GetError());
@@ -163,8 +179,6 @@ bool Video::init (int width, int height, bool startFullscreen) {
 	}
 
 	setTitle(NULL);
-
-	findMaxResolution();
 
 	return true;
 
@@ -189,10 +203,18 @@ bool Video::reset (int width, int height) {
 #endif
 
 #ifdef NO_RESIZE
-	screen = SDL_SetVideoMode(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, 8, FULLSCREEN_FLAGS);
-#else
-	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
+	screenW = DEFAULT_SCREEN_WIDTH;
+	screenH = DEFAULT_SCREEN_HEIGHT;
+	fullscreen = true;
 #endif
+
+	// If video mode is not valid reset to low default
+	if (screenW < minW || screenW > maxW || screenH< minH || screenH > maxH) {
+		screenW = minW;
+		screenH = minH;
+	}
+
+	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 
 	if (!screen) return false;
 
@@ -304,6 +326,17 @@ void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
 
 /**
+ * Returns the minimum possible screen width.
+ *
+ * @return The minimum width
+ */
+int Video::getMinWidth () {
+
+	return minW;
+
+}
+
+/**
  * Returns the maximum possible screen width.
  *
  * @return The maximum width
@@ -311,6 +344,17 @@ void Video::restoreSurfacePalette (SDL_Surface* surface) {
 int Video::getMaxWidth () {
 
 	return maxW;
+
+}
+
+/**
+ * Returns the minimum possible screen height.
+ *
+ * @return The minimum height
+ */
+int Video::getMinHeight () {
+
+	return minH;
 
 }
 
@@ -467,11 +511,11 @@ void Video::update (SDL_Event *event) {
 
 				if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
+				findResolutions();
+
 				reset(screenW, screenH);
 
 				if (!fullscreen) SDL_ShowCursor(SDL_ENABLE);
-
-				findMaxResolution();
 
 			}
 
@@ -512,13 +556,16 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	SDL_Color shownPalette[256];
 
 #ifdef SCALE
-	if (canvas != screen) {
+	if (canvas != NULL && canvas != screen) {
 
 		// Copy everything that has been drawn so far
-		scale(scaleFactor,
-			screen->pixels, screen->pitch,
-			canvas->pixels, canvas->pitch,
-			screen->format->BytesPerPixel, canvas->w, canvas->h);
+		if (setup.scale2x)
+			scale(scaleFactor,
+				screen->pixels, screen->pitch,
+				canvas->pixels, canvas->pitch,
+				screen->format->BytesPerPixel, canvas->w, canvas->h);
+		else
+			SDL_SoftStretch(canvas, NULL, screen, NULL);
 
 	}
 #endif

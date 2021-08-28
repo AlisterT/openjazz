@@ -118,7 +118,9 @@ class Video {
 		SDL_Color    logicalPalette[256]; ///< Logical palette (greyscale)
 		bool         fakePalette; ///< Whether or not the palette mode is being emulated
 
+		int          minW; ///< Smallest possible width
 		int          maxW; ///< Largest possible width
+		int          minH; ///< SMallest possible height
 		int          maxH; ///< Largest possible height
 		int          screenW; ///< Real width
 		int          screenH; ///< Real height
@@ -127,8 +129,8 @@ class Video {
 #endif
 		bool         fullscreen; ///< Full-screen mode
 
-		void findMaxResolution ();
-		void expose            ();
+		void findResolutions ();
+		void expose          ();
 
 	public:
 		Video ();
@@ -142,7 +144,9 @@ class Video {
 		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
 		void       restoreSurfacePalette (SDL_Surface *surface);
 
+		int        getMinWidth           ();
 		int        getMaxWidth           ();
+		int        getMinHeight          ();
 		int        getMaxHeight          ();
 		int        getWidth              ();
 		int        getHeight             ();

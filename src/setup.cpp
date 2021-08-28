@@ -62,6 +62,9 @@ Setup::Setup () {
 	characterCols[2] = CHAR_GUN;
 	characterCols[3] = CHAR_WBAND;
 
+	// scale2x by default
+	scale2x = true;
+
 	return;
 
 }
@@ -100,7 +103,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	}
 
 	// Check that the config file has the correct version
-	if (file->loadChar() != 5) {
+	if (file->loadChar() != 6) {
 
 		log("Valid configuration file not found.");
 		delete file;
@@ -168,9 +171,10 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 	// Read gameplay options
 	count = file->loadChar();
-	setup.slowMotion = ((count & 4) != 0);
 	setup.manyBirds = ((count & 1) != 0);
 	setup.leaveUnneeded = ((count & 2) != 0);
+	setup.slowMotion = ((count & 4) != 0);
+	setup.scale2x = ((count & 8) == 0);
 
 
 	delete file;
@@ -213,7 +217,7 @@ void Setup::save () {
 
 
 	// Write the version number
-	file->storeChar(5);
+	file->storeChar(6);
 
 	// Write video settings
 	file->storeShort(video.getWidth());
@@ -269,9 +273,10 @@ void Setup::save () {
 
 	count = 0;
 
-	if (setup.slowMotion) count |= 4;
 	if (setup.manyBirds) count |= 1;
 	if (setup.leaveUnneeded) count |= 2;
+	if (setup.slowMotion) count |= 4;
+	if (!setup.scale2x) count |= 8;
 
 	file->storeChar(count);
 

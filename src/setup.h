@@ -36,9 +36,10 @@ class Setup {
 	public:
 		char*         characterName;
 		unsigned char characterCols[PCOLOURS];
-		bool          slowMotion;
-		bool          leaveUnneeded;
 		bool          manyBirds;
+		bool          leaveUnneeded;
+		bool          slowMotion;
+		bool          scale2x;
 
 		Setup  ();
 		~Setup ();

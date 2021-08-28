@@ -32,5 +32,4 @@ OBJS = \
 	ext/psmplug/snd_dsp.o ext/psmplug/sndfile.o ext/psmplug/snd_flt.o \
 	ext/psmplug/snd_fx.o ext/psmplug/sndmix.o \
 	ext/miniz/miniz.o \
-	ext/scale2x/scale2x.o ext/scale2x/scale3x.o \
-	ext/scale2x/scalebit.o ext/scale2x/simple2x.o
+	ext/scale2x/scale2x.o ext/scale2x/scale3x.o ext/scale2x/scalebit.o

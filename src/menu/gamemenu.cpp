@@ -373,6 +373,20 @@ int GameMenu::loadGame () {
 
 
 /**
+ * Directly load level.
+ *
+ * @return Error code
+ */
+int GameMenu::loadGame (int levelNum, int worldNum) {
+
+	if (newGameDifficulty(M_SINGLE, levelNum, worldNum) == E_QUIT) return E_QUIT;
+
+	return E_NONE;
+
+}
+
+
+/**
  * Run the new game level selection menu.
  *
  * @param mode Game mode
@@ -454,14 +468,17 @@ int GameMenu::selectEpisode (GameModeType mode, int episode) {
  * @return Error code
  */
 int GameMenu::newGameEpisode (GameModeType mode) {
+	const char *episodeTag[12] = { "1", "2", "3", "4", "5", "6",
+		"a", "b", "c", "x", "z", " " };
+	const char *episodeTitle[12] = { "turtle terror", "ballistic bunny",
+		"rabbits revenge", "gene machine", "the chase is on",
+		"the final clash", "outta dis world", "turtle soup",
+		"wild wabbit", "holiday hare", "bonus levels", "specific level" };
 
-	const char *options[12] = {"episode 1", "episode 2", "episode 3",
-		"episode 4", "episode 5", "episode 6", "episode a", "episode b",
-		"episode c", "episode x", "bonus stage", "specific level"};
 	bool exists[12];
 	char *check;
 	SDL_Rect dst;
-	int episode, count, x, y;
+	int episode, count, x, y, episodeX;
 
 	video.setPalette(palette);
 
@@ -551,18 +568,24 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		}
 
+		episodeX = canvasW >> 3;
+
 		for (count = 0; count < 12; count++) {
 
 			if (count == episode) {
 
+				// black on white
 				fontmn2->mapPalette(240, 8, 79, -80);
-				drawRect((canvasW >> 3) - 4, (canvasH >> 1) + (count << 4) - 94,
-					136, 15, 79);
+				drawRect(episodeX - 2, (canvasH >> 1) + (count << 4) - 94,
+					160, 15, 79);
 
 			} else if (!exists[count])
 				fontmn2->mapPalette(240, 8, 94, -16);
 
-			fontmn2->showString(options[count], canvasW >> 3,
+			// align both separately
+			fontmn2->showString(episodeTag[count], episodeX - (count < 6 ? 2 : 0),
+				(canvasH >> 1) + (count << 4) - 92);
+			fontmn2->showString(episodeTitle[count], episodeX + 16,
 				(canvasH >> 1) + (count << 4) - 92);
 
 			if ((count == episode) || (!exists[count]))

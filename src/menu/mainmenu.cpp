@@ -446,3 +446,16 @@ int MainMenu::main () {
 }
 
 
+/**
+ * Skip the main menu. Directly loads game
+ *
+ * @return Error code
+ */
+int MainMenu::skip (int levelNum, int worldNum) {
+
+	if (gameMenu->loadGame(levelNum, worldNum) == E_QUIT) return E_QUIT;
+
+	return E_RETURN;
+
+}
+
