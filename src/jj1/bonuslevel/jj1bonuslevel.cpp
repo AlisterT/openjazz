@@ -22,7 +22,7 @@
  */
 
 
-#include "jj1bonuslevelplayer/jj1bonuslevelplayer.h"
+#include "jj1bonuslevelplayer.h"
 #include "jj1bonuslevel.h"
 
 #include "game/game.h"

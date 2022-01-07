@@ -28,7 +28,7 @@
  */
 
 
-#include "../jj1bonuslevel.h"
+#include "jj1bonuslevel.h"
 #include "jj1bonuslevelplayer.h"
 
 #include "game/game.h"

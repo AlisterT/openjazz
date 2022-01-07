@@ -24,8 +24,8 @@
 #include "paletteeffects.h"
 #include "video.h"
 
-#include "jj1level/jj1level.h"
-#include "jj2level/jj2level.h"
+#include "jj1/level/jj1level.h"
+#include "jj2/level/jj2level.h"
 #include "level/levelplayer.h"
 #include "player/player.h"
 

@@ -27,7 +27,7 @@
 
 
 #include "../jj1level.h"
-#include "../jj1levelplayer/jj1levelplayer.h"
+#include "../jj1levelplayer.h"
 #include "jj1event.h"
 
 

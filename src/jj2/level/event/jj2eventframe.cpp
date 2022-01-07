@@ -27,7 +27,7 @@
 
 #include "jj2event.h"
 #include "../jj2level.h"
-#include "../jj2levelplayer/jj2levelplayer.h"
+#include "../jj2levelplayer.h"
 
 #include "io/gfx/anim.h"
 #include "io/gfx/font.h"

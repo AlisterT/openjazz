@@ -28,8 +28,8 @@
  */
 
 
-#include "../jj1event/jj1event.h"
-#include "../jj1level.h"
+#include "event/jj1event.h"
+#include "jj1level.h"
 #include "jj1bird.h"
 #include "jj1levelplayer.h"
 

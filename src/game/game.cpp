@@ -28,10 +28,10 @@
 
 #include "io/gfx/video.h"
 #include "io/sound.h"
-#include "jj1bonuslevel/jj1bonuslevel.h"
-#include "jj1level/jj1level.h"
-#include "jj1planet/jj1planet.h"
-#include "jj2level/jj2level.h"
+#include "jj1/bonuslevel/jj1bonuslevel.h"
+#include "jj1/level/jj1level.h"
+#include "jj1/planet/jj1planet.h"
+#include "jj2/level/jj2level.h"
 #include "player/player.h"
 #include "util.h"
 

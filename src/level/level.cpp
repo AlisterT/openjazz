@@ -35,7 +35,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "player/player.h"
-#include "jj1scene/jj1scene.h"
+#include "jj1/scene/jj1scene.h"
 #include "loop.h"
 #include "setup.h"
 

@@ -22,10 +22,10 @@
 
 
 #include "jj1bullet.h"
-#include "jj1event/jj1event.h"
+#include "event/jj1event.h"
 #include "jj1level.h"
-#include "jj1levelplayer/jj1bird.h"
-#include "jj1levelplayer/jj1levelplayer.h"
+#include "jj1bird.h"
+#include "jj1levelplayer.h"
 
 #include "game/game.h"
 #include "io/gfx/sprite.h"
