@@ -6,7 +6,7 @@ OpenJazz - Jack Jazzrabbit 1 game engine reimplementation
 
 =head1 SYNOPSIS
 
-B<OpenJazz> [options] <I<game directory>>
+B<OpenJazz> [options] <I<game directory 1>> <I<game directory 2>>
 
 =head1 DESCRIPTION
 
@@ -17,15 +17,23 @@ platform games. To play, you will need original data files.
 
 =over 4
 
-=item B<-f>
+=item B<-f, --fullscreen>
 
-Start in full-screen mode
+Start in fullscreen mode
+
+=item B<-w, --window>
+
+Start in window mode
 
 =item B<-m>
 
 Start with muted audio
 
-=item B<-l> <I<World>> <I<Level>>
+=item B<-s, --scale[=]> <I<Factor>>
+
+Scale window by factor
+
+=item B<-w, --world[=]> <I<World>> B<-l, --level[=]> <I<Level>>
 
 Directly load specific world/level
 
@@ -119,6 +127,10 @@ Bug fixes, enemy improvements
 =item Carsten Teibes (carstene1ns)
 
 Maintenance, bug fixes, documentation
+Integrating the ports (Wii, 3DS, PSP, ...)
+Additional coding
+Modernizing
+UI improvements
 
 =item Lars Persson (anotherguest)
 
