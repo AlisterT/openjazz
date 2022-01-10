@@ -7,7 +7,7 @@ dist_appicon_DATA = builds/unix/OpenJazz.svg
 appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
 dist_appicon_fallback_DATA = builds/unix/OpenJazz.png
 
-noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a
+noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a libargparse.a
 libpsmplug_a_SOURCES = \
 	ext/psmplug/fastmix.cpp \
 	ext/psmplug/load_psm.cpp \
@@ -31,6 +31,9 @@ libscale2x_a_SOURCES = \
 	ext/scale2x/scale3x.h \
 	ext/scale2x/scalebit.cpp \
 	ext/scale2x/scalebit.h
+libargparse_a_SOURCES = \
+	ext/argparse/argparse.cpp \
+	ext/argparse/argparse.h
 
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
@@ -38,7 +41,8 @@ OpenJazz_CPPFLAGS = \
 	-DSCALE \
 	-I${srcdir}/ext/scale2x \
 	-I${srcdir}/ext/psmplug \
-	-I${srcdir}/ext/miniz
+	-I${srcdir}/ext/miniz \
+	-I${srcdir}/ext/argparse
 OpenJazz_CXXFLAGS = \
 	${HOST_CFLAGS} \
 	${SDL_CFLAGS}
@@ -46,6 +50,7 @@ OpenJazz_LDADD = \
 	libpsmplug.a \
 	libminiz.a \
 	libscale2x.a \
+	libargparse.a \
 	${SDL_LIBS} \
 	${HOST_LIBS}
 OpenJazz_SOURCES = \

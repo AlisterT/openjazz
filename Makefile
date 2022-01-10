@@ -4,7 +4,7 @@ include openjazz.mk
 # Sane defaults
 CXX ?= g++
 CXXFLAGS ?= -g -Wall -O2
-CPPFLAGS = -Isrc -DSCALE -Iext/scale2x -Iext/psmplug -Iext/miniz
+CPPFLAGS = -Isrc -DSCALE -Iext/scale2x -Iext/psmplug -Iext/miniz -Iext/argparse
 
 # Network support
 CXXFLAGS += -DUSE_SOCKETS

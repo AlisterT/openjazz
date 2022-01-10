@@ -1,6 +1,7 @@
 
 # libraries
 OJEXTLIBOBJ = \
+	ext/argparse/argparse.o \
 	ext/miniz/miniz.o \
 	ext/psmplug/fastmix.o \
 	ext/psmplug/load_psm.o \
