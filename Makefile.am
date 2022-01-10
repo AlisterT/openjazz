@@ -70,6 +70,8 @@ OpenJazz_SOURCES = \
 	src/io/gfx/sprite.h \
 	src/io/gfx/video.cpp \
 	src/io/gfx/video.h \
+	src/io/log.cpp \
+	src/io/log.h \
 	src/io/network.cpp \
 	src/io/network.h \
 	src/io/sound.cpp \

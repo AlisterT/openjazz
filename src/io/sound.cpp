@@ -24,6 +24,7 @@
 #include "file.h"
 #include "sound.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <SDL_audio.h>
 #include <psmplug.h>
@@ -139,7 +140,7 @@ void openAudio () {
 	asDesired.userdata = NULL;
 
 	if (SDL_OpenAudio(&asDesired, &audioSpec) < 0)
-		logError("Unable to open audio", SDL_GetError());
+		LOG_ERROR("Unable to open audio: %s", SDL_GetError());
 
 
 	// Load sounds
@@ -269,7 +270,7 @@ void playMusic (const char * fileName, bool restart) {
 
 	if (!loadOk) {
 
-		logError("Could not play music file", fileName);
+		LOG_ERROR("Could not play music file: %s", fileName);
 
 		return;
 

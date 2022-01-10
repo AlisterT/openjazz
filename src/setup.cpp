@@ -31,7 +31,7 @@
 #include "player/player.h"
 #include "setup.h"
 #include "util.h"
-
+#include "io/log.h"
 
 #ifdef __SYMBIAN32__
     #ifdef UIQ3
@@ -96,7 +96,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 	} catch (int e) {
 
-		log("Configuration file not found.");
+		LOG_DEBUG("Configuration file not found.");
 
 		return;
 
@@ -105,7 +105,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	// Check that the config file has the correct version
 	if (file->loadChar() != 6) {
 
-		log("Valid configuration file not found.");
+		LOG_WARN("Valid configuration file not found.");
 		delete file;
 
 		return;
@@ -208,8 +208,7 @@ void Setup::save () {
 	// Check that the config file was opened
 	if (!file) {
 
-		logError("Could not write configuration file",
-			"File could not be opened.");
+		LOG_ERROR("Could not write configuration file: File could not be opened.");
 
 		return;
 

@@ -24,18 +24,6 @@
 
 #include "OpenJazz.h"
 
-
-// Macros
-
-#ifdef VERBOSE
-	#define LOG(message, detail) log(message, detail)
-	#define LOGRESULT(message, expression) log(message, expression)
-#else
-	#define LOG(message, detail)
-	#define LOGRESULT(message, expression) expression
-#endif
-
-
 // Variable
 
 /// Trigonometric function look-up table
@@ -53,10 +41,6 @@ EXTERN char*              createFileName       (const char *type, int extension)
 EXTERN char*              createFileName       (const char *type, const char *extension);
 EXTERN char*              createFileName       (const char *type, int level, int extension);
 EXTERN char*              createEditableString (const char *string);
-EXTERN void               log                  (const char *message);
-EXTERN void               log                  (const char *message, const char *detail);
-EXTERN void               log                  (const char *message, int number);
-EXTERN void               logError             (const char *message, const char *detail);
 EXTERN fixed              fSin                 (fixed angle);
 EXTERN fixed              fCos                 (fixed angle);
 

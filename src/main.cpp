@@ -42,6 +42,7 @@
 #include "loop.h"
 #include "setup.h"
 #include "util.h"
+#include "io/log.h"
 
 #ifdef PSP
 	#include "platforms/psp.h"
@@ -72,6 +73,12 @@ extern float sinf (float);
 #endif
 
 #define PI 3.141592f
+
+// Fallback version, should be defined by the build system
+#ifndef OJ_VERSION
+#define OJ_VERSION "git"
+#define OJ_DATE __DATE__
+#endif
 
 int loadLevel = -1, loadWorld = -1;
 
@@ -289,9 +296,9 @@ void startUp (int argc, char *argv[]) {
 
 		delete firstPath;
 
-		log("Unable to find game data files. When launching OpenJazz, pass the location");
-		log("of the original game data, eg:");
-		log("  OpenJazz ~/jazz1");
+		LOG_FATAL("Unable to find game data files. When launching OpenJazz, \n"
+			"               pass the location of the original game data, eg:\n"
+			"                 OpenJazz ~/jazz1");
 
 #ifdef __HAIKU__
 		char alertBuffer[100+B_PATH_NAME_LENGTH+B_FILE_NAME_LENGTH];
@@ -611,11 +618,14 @@ int main(int argc, char *argv[]) {
 	PSVITA_InitControls();
 #endif
 
+	// Log current version
+	LOG_INFO("This is OpenJazz %s, built on %s.", OJ_VERSION, OJ_DATE);
+
 	// Initialise SDL
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
 
-		logError("Could not start SDL", SDL_GetError());
+		LOG_FATAL("Could not start SDL: %s\n", SDL_GetError());
 
 		return -1;
 

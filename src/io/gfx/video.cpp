@@ -33,6 +33,7 @@
 
 #include "setup.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <string.h>
 
@@ -172,7 +173,7 @@ bool Video::init (int width, int height, bool startFullscreen) {
 
 	if (!reset(width, height)) {
 
-		logError("Could not set video mode", SDL_GetError());
+		LOG_FATAL("Could not set video mode: %s", SDL_GetError());
 
 		return false;
 

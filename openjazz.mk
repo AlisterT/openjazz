@@ -23,6 +23,7 @@ OJOBJS = \
 	src/game/servergame.o \
 	src/io/controls.o \
 	src/io/file.o \
+	src/io/log.o \
 	src/io/gfx/anim.o \
 	src/io/gfx/font.o \
 	src/io/gfx/paletteeffects.o \

@@ -32,6 +32,7 @@
 
 #include "loop.h"
 #include "util.h"
+#include "io/log.h"
 
 #ifdef USE_SOCKETS
 	#ifdef _WIN32
@@ -270,7 +271,7 @@ int Network::join (char *address) {
 
 		if (con == -1) {
 
-			log("Could not connect to server - code", getError());
+			LOG_WARN("Could not connect to server - code: %d", getError());
 
 			close(sock);
 
@@ -462,5 +463,3 @@ int Network::getError () {
 #endif
 
 }
-
-

@@ -33,6 +33,7 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <string.h>
 
@@ -243,10 +244,10 @@ JJ1ScenePage::~JJ1ScenePage() {
 JJ1Scene::JJ1Scene (const char * fileName) {
 
 	File *file;
-    int loop;
+	int loop;
 
-    nFonts = 0;
-    LOG("\nScene", fileName);
+	nFonts = 0;
+	LOG_TRACE("Scene: %s", fileName);
 
 	try {
 
@@ -269,25 +270,25 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	scriptStarts = new signed long int[scriptItems];
 	pages = new JJ1ScenePage[scriptItems];
 
-	LOG("Scene: Script items", scriptItems);
+	LOG_TRACE("Scene: Script items: %d", scriptItems);
 
 	for (loop = 0; loop < scriptItems; loop++) {
 
 		scriptStarts[loop] = file->loadInt();// Load offset to script
-		LOG("scriptStart", scriptStarts[loop]);
+		LOG_TRACE("scriptStart: %ld", scriptStarts[loop]);
 
 	}
 
 	// Seek to datastart now
 	file->seek(dataOffset, true); // Seek to data offsets
 	dataItems = file->loadShort() + 1; // Get number of data items
-	LOG("Scene: Data items", dataItems);
+	LOG_TRACE("Scene: Data items %d", dataItems);
 	dataOffsets = new signed long int[dataItems];
 
 	for (loop = 0; loop < dataItems; loop++) {
 
 		dataOffsets[loop] = file->loadInt();// Load offset to script
-		LOG("dataOffsets", dataOffsets[loop]);
+		LOG_TRACE("dataOffsets: %ld", dataOffsets[loop]);
 
 	}
 
@@ -501,7 +502,7 @@ int JJ1Scene::play () {
 
 					default:
 
-						LOG("Scene::Play unknown type", currentFrame->frameType);
+						LOG_DEBUG("Scene::Play unknown type: %d", currentFrame->frameType);
 
 						break;
 
