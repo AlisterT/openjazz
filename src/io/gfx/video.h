@@ -21,7 +21,7 @@
 #ifndef _VIDEO_H
 #define _VIDEO_H
 
-
+#include "setup.h"
 #include "paletteeffects.h"
 
 #include <SDL.h>
@@ -120,7 +120,7 @@ class Video {
 
 		int          minW; ///< Smallest possible width
 		int          maxW; ///< Largest possible width
-		int          minH; ///< SMallest possible height
+		int          minH; ///< Smallest possible height
 		int          maxH; ///< Largest possible height
 		int          screenW; ///< Real width
 		int          screenH; ///< Real height
@@ -135,7 +135,7 @@ class Video {
 	public:
 		Video ();
 
-		bool       init                  (int width, int height, bool startFullscreen);
+		bool       init                  (SetupOptions cfg);
 
 		bool       reset                 (int width, int height);
 

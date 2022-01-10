@@ -157,21 +157,25 @@ void Video::findResolutions () {
 /**
  * Initialise video output.
  *
- * @param width Width of the window or screen
- * @param height Height of the window or screen
- * @param startFullscreen Whether or not to start in full-screen mode
+ * @param cfg Video Options
  *
  * @return Success
  */
-bool Video::init (int width, int height, bool startFullscreen) {
+bool Video::init (SetupOptions cfg) {
 
-	fullscreen = startFullscreen;
+	fullscreen = cfg.fullScreen;
 
 	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
 	findResolutions();
 
-	if (!reset(width, height)) {
+#ifdef SCALE
+	if ((SW * cfg.videoScale <= cfg.videoWidth) &&
+		(SH * cfg.videoScale <= cfg.videoHeight))
+		scaleFactor = cfg.videoScale;
+#endif
+
+	if (!reset(cfg.videoWidth, cfg.videoHeight)) {
 
 		LOG_FATAL("Could not set video mode: %s", SDL_GetError());
 

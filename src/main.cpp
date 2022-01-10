@@ -64,6 +64,7 @@
 #endif
 
 #include <string.h>
+#include <argparse.h>
 
 #ifdef __SYMBIAN32__
 extern char KOpenJazzPath[256];
@@ -80,7 +81,88 @@ extern float sinf (float);
 #define OJ_DATE __DATE__
 #endif
 
-int loadLevel = -1, loadWorld = -1;
+static struct CliOptions {
+	bool muteAudio;
+	int fullScreen;
+	int scaleFactor;
+	int level;
+	int world;
+	char *verboseLevel;
+	int verbosity;
+	int quiet;
+} cli = {
+	false, -1, -1, -1, -1, NULL, -1, 0
+};
+
+#ifndef FULLSCREEN_ONLY
+int display_mode_cb(struct argparse *, const struct argparse_option *option) {
+	cli.fullScreen = (option->short_name == 'f') ? 1 : 0;
+	return 0;
+}
+#endif
+
+int checkOptions (int argc, char *argv[]) {
+
+	struct argparse argparse;
+
+	// generic usage message
+	const char *usage[] = {
+		"OpenJazz [options] [[--] <game directory 1> <game directory 2>]",
+	    NULL,
+	};
+
+	// command line options
+	struct argparse_option opt[] = {
+		OPT_HELP(),
+		OPT_GROUP("Engine options"),
+		OPT_BOOLEAN('m', "mute", &cli.muteAudio, "Mute audio output", NULL, 0, 0),
+#ifndef FULLSCREEN_ONLY
+		OPT_BOOLEAN('f', "fullscreen", NULL, "Display in Fullscreen mode",
+			display_mode_cb, 0, OPT_NONEG),
+		OPT_BOOLEAN('w', "window", NULL, "Display in Window mode",
+			display_mode_cb, 0, OPT_NONEG),
+#endif
+		OPT_INTEGER('s', "scale", &cli.scaleFactor, "<scale>", NULL, 0, 0),
+		OPT_GROUP("Developer options"),
+		OPT_INTEGER('w', "world", &cli.world, "Load specific World", NULL, 0, 0),
+		OPT_INTEGER('l', "level", &cli.level, "Load specific Level", NULL, 0, 0),
+		OPT_BOOLEAN('q', "quiet", &cli.quiet, "Disable console logging", NULL, 0, 0),
+		OPT_STRING('\0', "verbose", &cli.verboseLevel,
+			"Verbosity level: max, trace, debug, info, warn, error, fatal", NULL, 0, 0),
+		OPT_BOOLEAN('v', NULL, &cli.verbosity,
+			"Increase verbosity with every '-v' supplied", NULL, 0, 0),
+		OPT_END(),
+	};
+
+	argparse_init(&argparse, opt, usage, 0);
+	argparse_describe(&argparse,
+		"\nOpenJazz - Jack Jazzrabbit 1 game engine reimplementation", NULL);
+	argc = argparse_parse(&argparse, argc, argv);
+
+	// apply logger options
+	if (cli.quiet) logger.setQuiet(cli.quiet);
+	int verbosity = logger.getLevel();
+	if (cli.verboseLevel) {
+		if (!strcmp(cli.verboseLevel, "max"))        verbosity = LL_MAX;
+		else if (!strcmp(cli.verboseLevel, "trace")) verbosity = LL_TRACE;
+		else if (!strcmp(cli.verboseLevel, "debug")) verbosity = LL_DEBUG;
+		else if (!strcmp(cli.verboseLevel, "info"))  verbosity = LL_INFO;
+		else if (!strcmp(cli.verboseLevel, "warn"))  verbosity = LL_WARN;
+		else if (!strcmp(cli.verboseLevel, "error")) verbosity = LL_ERROR;
+		else if (!strcmp(cli.verboseLevel, "fatal")) verbosity = LL_FATAL;
+		else {
+
+			fprintf(stderr, "error: option `--verbose` has invalid level\n");
+			exit(EXIT_FAILURE);
+
+		}
+	}
+	if (cli.verbosity > -1) verbosity -= cli.verbosity + 1;
+	logger.setLevel(verbosity);
+
+	return argc;
+}
+
 
 /**
  * Initialises OpenJazz.
@@ -88,23 +170,16 @@ int loadLevel = -1, loadWorld = -1;
  * Establishes the paths from which to read files, loads configuration, sets up
  * the game window and loads required data.
  *
- * @param argc Number of arguments, as passed to main function
- * @param argv Array of argument strings, as passed to main function
+ * @param argv0 program path
+ * @param pathCount Number of path arguments
+ * @param paths Array of path argument strings
  */
-void startUp (int argc, char *argv[]) {
+void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	File* file;
 	unsigned char* pixels = NULL;
 	int count;
-	int screenW = DEFAULT_SCREEN_WIDTH;
-	int screenH = DEFAULT_SCREEN_HEIGHT;
-	int scaleFactor = 1;
-#ifdef FULLSCREEN_ONLY
-	bool fullscreen = true;
-#else
-	bool fullscreen = false;
-#endif
-
+	SetupOptions config;
 
 	// Determine paths
 
@@ -148,26 +223,21 @@ void startUp (int argc, char *argv[]) {
 
 	// Use any provided paths, appending a directory separator as necessary
 
-	for (count = 1; count < argc; count++) {
-
-		// If it isn't an option, it should be a path
-		if (argv[count][0] != '-') {
+	for (count = 0; count < pathCount; count++) {
 
 #ifdef _WIN32
-			if (argv[count][strlen(argv[count]) - 1] != '\\') {
+		if (paths[count][strlen(paths[count]) - 1] != '\\') {
 
-				firstPath = new Path(firstPath, createString(argv[count], "\\"));
+			firstPath = new Path(firstPath, createString(paths[count], "\\"));
 #else
-			if (argv[count][strlen(argv[count]) - 1] != '/') {
+		if (paths[count][strlen(paths[count]) - 1] != '/') {
 
-				firstPath = new Path(firstPath, createString(argv[count], "/"));
+			firstPath = new Path(firstPath, createString(paths[count], "/"));
 #endif
 
-			} else {
+		} else {
 
-				firstPath = new Path(firstPath, createString(argv[count]));
-
-			}
+			firstPath = new Path(firstPath, createString(paths[count]));
 
 		}
 
@@ -177,23 +247,23 @@ void startUp (int argc, char *argv[]) {
 	// Use the path of the program, but check before, since it is not always available
 	// At least crashes in Dolphin emulator (Wii) and 3DS (.cia build)
 
-	if (argc > 0) {
+	if (argv0) {
 
-		count = strlen(argv[0]) - 1;
+		count = strlen(argv0) - 1;
 
 		// Search for directory separator
 #ifdef _WIN32
-		while ((argv[0][count] != '\\') && (count >= 0)) count--;
+		while ((argv0[count] != '\\') && (count > 0)) count--;
 #else
-		while ((argv[0][count] != '/') && (count >= 0)) count--;
+		while ((argv0[count] != '/') && (count > 0)) count--;
 #endif
 
 		// If a directory was found, copy it to the path
 		if (count > 0) {
 
-			firstPath = new Path(firstPath, new char[count + 2]);
-			memcpy(firstPath->path, argv[0], count + 1);
-			firstPath->path[count + 1] = 0;
+			char *dir = createString(argv0);
+			dir[count+1] = '\0';
+			firstPath = new Path(firstPath, dir);
 
 		}
 
@@ -211,7 +281,7 @@ void startUp (int argc, char *argv[]) {
 #endif
 
 
-	// Use the current working directory
+	// Last Resort: Use the current working directory
 
 	firstPath = new Path(firstPath, createString(""));
 
@@ -229,39 +299,30 @@ void startUp (int argc, char *argv[]) {
 
 
 	// Load settings from config file
-	setup.load(&screenW, &screenH, &fullscreen, &scaleFactor);
+	config = setup.load();
+	if (!config.valid) {
 
+		// Invalid config - apply defaults
+		config.videoWidth = DEFAULT_SCREEN_WIDTH;
+		config.videoHeight = DEFAULT_SCREEN_HEIGHT;
+		config.videoScale = 1;
 
-	// Get command-line override
-	for (count = 1; count < argc; count++) {
+	}
 
-		// If there's a hyphen, it should be an option
-		if (argv[count][0] == '-') {
+	// Apply command-line override
+	if (cli.fullScreen > -1) config.fullScreen = cli.fullScreen;
+	if (cli.scaleFactor > 0) config.videoScale = cli.scaleFactor;
+	if (cli.muteAudio) {
 
-#ifndef FULLSCREEN_ONLY
-			if (argv[count][1] == 'f') fullscreen = true;
-#endif
-			if (argv[count][1] == 'm') {
-				setMusicVolume(0);
-				setSoundVolume(0);
-			}
-
-			if (argv[count][1] == 'l' && argc > count + 2) {
-				loadWorld = strtol(argv[count+1], NULL , 10);
-				loadLevel = strtol(argv[count+2], NULL , 10);
-				count+=2;
-			}
-
-		}
+		setMusicVolume(0);
+		setSoundVolume(0);
 
 	}
 
 
 	// Create the game's window
-
 	canvas = NULL;
-
-	if (!video.init(screenW, screenH, fullscreen)) {
+	if (!video.init(config)) {
 
 		delete firstPath;
 
@@ -269,17 +330,12 @@ void startUp (int argc, char *argv[]) {
 
 	}
 
-#ifdef SCALE
-	video.setScaleFactor(scaleFactor);
-#endif
-
 
 	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
 
 
 	// Set up audio
 	openAudio();
-
 
 
 	// Load fonts
@@ -427,7 +483,7 @@ int play () {
 
 	// Try loading the user-specified level
 
-	if (loadLevel > -1 && loadWorld > -1) {
+	if (cli.level > -1 && cli.world > -1) {
 
 		try {
 
@@ -439,7 +495,7 @@ int play () {
 
 		}
 
-		if (mainMenu->skip(loadLevel, loadWorld) == E_QUIT) {
+		if (mainMenu->skip(cli.level, cli.world) == E_QUIT) {
 
 			delete mainMenu;
 
@@ -604,6 +660,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 int main(int argc, char *argv[]) {
 
 	int ret;
+	const char *argv0 = NULL;
 
 	// Early platform init
 
@@ -617,6 +674,12 @@ int main(int argc, char *argv[]) {
 #elif defined(__vita__)
 	PSVITA_InitControls();
 #endif
+
+	// Save program path
+	if (argc) argv0 = argv[0];
+
+	// Check command line options
+	argc = checkOptions(argc, argv);
 
 	// Log current version
 	LOG_INFO("This is OpenJazz %s, built on %s.", OJ_VERSION, OJ_DATE);
@@ -636,7 +699,7 @@ int main(int argc, char *argv[]) {
 
 	try {
 
-		startUp(argc, argv);
+		startUp(argv0, argc, argv);
 
 	} catch (int e) {
 
@@ -665,5 +728,3 @@ int main(int argc, char *argv[]) {
 	return ret;
 
 }
-
-

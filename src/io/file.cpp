@@ -638,6 +638,8 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
  */
 Path::Path (Path* newNext, char* newPath) {
 
+	LOG_TRACE("Adding '%s' to the path list", newPath);
+
 	next = newNext;
 	path = newPath;
 
@@ -657,5 +659,3 @@ Path::~Path () {
 	return;
 
 }
-
-

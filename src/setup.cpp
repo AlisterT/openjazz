@@ -83,10 +83,14 @@ Setup::~Setup () {
 /**
  * Load settings from config file.
  */
-void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
+SetupOptions Setup::load () {
 
 	File* file;
 	int count;
+	SetupOptions cfg = { false, 0, 0, false, 0 };
+#ifdef FULLSCREEN_ONLY
+	cfg.fullScreen = true;
+#endif
 
 	// Open config file
 
@@ -96,9 +100,9 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 
 	} catch (int e) {
 
-		LOG_DEBUG("Configuration file not found.");
+		LOG_INFO("Configuration file not found. Using defaults.");
 
-		return;
+		return cfg;
 
 	}
 
@@ -108,23 +112,23 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 		LOG_WARN("Valid configuration file not found.");
 		delete file;
 
-		return;
+		return cfg;
 
 	}
 
 
 	// Read video settings
-	*videoW = file->loadShort(MAX_SCREEN_WIDTH);
-	*videoH = file->loadShort(MAX_SCREEN_HEIGHT);
+	cfg.videoWidth = file->loadShort(MAX_SCREEN_WIDTH);
+	cfg.videoHeight = file->loadShort(MAX_SCREEN_HEIGHT);
 	count = file->loadChar();
 #ifndef FULLSCREEN_ONLY
-	*fullscreen = count & 1;
+	cfg.fullScreen = count & 1;
 #endif
 #ifdef SCALE
 	if (count >= 10) count = 2;
-	*videoScale = count >> 1;
+	cfg.videoScale = count >> 1;
 #endif
-
+	cfg.valid = true;
 
 	// Read controls
 	for (count = 0; count < CONTROLS - 4; count++)
@@ -180,7 +184,7 @@ void Setup::load (int* videoW, int* videoH, bool* fullscreen, int* videoScale) {
 	delete file;
 
 
-	return;
+	return cfg;
 
 }
 
