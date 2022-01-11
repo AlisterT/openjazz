@@ -33,6 +33,12 @@
 #ifndef _OPENJAZZ_H
 #define _OPENJAZZ_H
 
+// Fallback version, should be defined by the build system
+#ifndef OJ_VERSION
+#define OJ_VERSION "git"
+#define OJ_DATE __DATE__
+#endif
+
 #ifndef EXTERN
 	#define EXTERN extern
 #endif

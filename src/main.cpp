@@ -75,12 +75,6 @@ extern float sinf (float);
 
 #define PI 3.141592f
 
-// Fallback version, should be defined by the build system
-#ifndef OJ_VERSION
-#define OJ_VERSION "git"
-#define OJ_DATE __DATE__
-#endif
-
 static struct CliOptions {
 	bool muteAudio;
 	int fullScreen;
