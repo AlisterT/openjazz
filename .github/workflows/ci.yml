@@ -1,6 +1,14 @@
 name: CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [master, dev, development, feature/**, bugfix/**, pr/**]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 defaults:
   run:
@@ -76,7 +84,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           update: true
-          install: base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL dos2unix
+          install: base-devel autotools mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL dos2unix
 
       - name: Prepare Environment
         run: |
@@ -155,6 +163,7 @@ jobs:
           path: OJ-*/
 
   psp-pspdev:
+    if: ${{ false }} # disable for now
     name: Build (PSP, pspdev)
     runs-on: ubuntu-latest
     container: pspdev/pspdev:latest
