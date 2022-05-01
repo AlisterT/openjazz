@@ -69,7 +69,7 @@ jobs:
           cp OpenJazz openjazz.000 README.md COPYING *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: openjazz-linux-glibc2.27-x86_64
           path: OJ-*/
@@ -112,7 +112,7 @@ jobs:
           cp OpenJazz.exe openjazz.000 *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
@@ -157,7 +157,7 @@ jobs:
           cp builds/wii/* openjazz.000 *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: openjazz-wii
           path: OJ-*/
@@ -197,7 +197,7 @@ jobs:
           cp builds/psp/EBOOT.PBP openjazz.000 *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: openjazz-psp
           path: OJ-*/
