@@ -39,6 +39,12 @@
 #define OJ_DATE __DATE__
 #endif
 
+// Fallback links, should be provided by the build system
+#ifndef PACKAGE_BUGREPORT
+#define PACKAGE_BUGREPORT "https://github.com/AlisterT/openjazz/issues"
+#define PACKAGE_URL "http://www.alister.eu/jazz/oj/"
+#endif
+
 #ifndef EXTERN
 	#define EXTERN extern
 #endif

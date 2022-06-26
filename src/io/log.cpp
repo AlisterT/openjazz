@@ -64,7 +64,6 @@ Log::Log () {
 #ifdef NDEBUG
 	// be more quiet in release builds
 	level = LL_INFO;
-	quiet = true;
 #endif
 
 }
@@ -131,7 +130,7 @@ void Log::setQuiet(bool enable) {
 void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 
 	// skip if nothing to write
-	if (lvl < level || (quiet && !logfile))	return;
+	if (!logfile && (lvl < level || quiet)) return;
 
 	// extract file name (like basename)
 	const char *src = strrchr(file, '\\');
@@ -145,8 +144,8 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 	time_t t = time(NULL);
 	struct tm *now = localtime(&t);
 
-	// log to console
-	if (!quiet) {
+	// log to console, up to set verbosity
+	if (!quiet && lvl >= level) {
 		// choose stderr/stdout depending on loglevel, use color if available
 		FILE *stream = stdout;
 		bool color = color_stdout;
@@ -181,7 +180,7 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 		va_end(args);
 
 		// only include source information if doing debug logs
-		if (level >= LL_INFO)
+		if (level > LL_DEBUG)
 			LOG("\n");
 		else if (color)
 			LOG(" \x1b[90m(%s:%d)\x1b[0m\n", src, line);
@@ -191,8 +190,8 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 		fflush(stream);
 	}
 
-	// Log to file
-	if (logfile) {
+	// Log to file, do debug logs by default, higher if wanted
+	if (logfile && (lvl >= LL_DEBUG || level <= lvl)) {
 		char timebuf[20];
 		strftime(timebuf, 20, "%Y-%m-%d %H:%M:%S", now);
 

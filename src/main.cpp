@@ -82,10 +82,9 @@ static struct CliOptions {
 	int level;
 	int world;
 	char *verboseLevel;
-	int verbosity;
 	int quiet;
 } cli = {
-	false, -1, -1, -1, -1, NULL, -1, 0
+	false, -1, -1, -1, -1, NULL, 0
 };
 
 #ifndef FULLSCREEN_ONLY
@@ -94,6 +93,12 @@ int display_mode_cb(struct argparse *, const struct argparse_option *option) {
 	return 0;
 }
 #endif
+
+int version_cb(struct argparse *, const struct argparse_option *option) {
+	(void)option;
+	printf("OpenJazz %s, built on %s.\n", OJ_VERSION, OJ_DATE);
+	exit(EXIT_SUCCESS);
+}
 
 int checkOptions (int argc, char *argv[]) {
 
@@ -116,21 +121,21 @@ int checkOptions (int argc, char *argv[]) {
 		OPT_BOOLEAN('w', "window", NULL, "Display in Window mode",
 			display_mode_cb, 0, OPT_NONEG),
 #endif
-		OPT_INTEGER('s', "scale", &cli.scaleFactor, "<scale>", NULL, 0, 0),
+		OPT_INTEGER('s', "scale", &cli.scaleFactor, "Scale graphics <int> times", NULL, 0, 0),
 		OPT_GROUP("Developer options"),
 		OPT_INTEGER('w', "world", &cli.world, "Load specific World", NULL, 0, 0),
 		OPT_INTEGER('l', "level", &cli.level, "Load specific Level", NULL, 0, 0),
-		OPT_BOOLEAN('q', "quiet", &cli.quiet, "Disable console logging", NULL, 0, 0),
+		OPT_BOOLEAN('q', "quiet", &cli.quiet, "Disable console logging (Enable with --no-quiet)", NULL, 0, 0),
 		OPT_STRING('\0', "verbose", &cli.verboseLevel,
 			"Verbosity level: max, trace, debug, info, warn, error, fatal", NULL, 0, 0),
-		OPT_BOOLEAN('v', NULL, &cli.verbosity,
-			"Increase verbosity with every '-v' supplied", NULL, 0, 0),
+		OPT_BOOLEAN('v', "version", NULL, "Show version information", version_cb, 0, OPT_NONEG),
 		OPT_END(),
 	};
 
 	argparse_init(&argparse, opt, usage, 0);
 	argparse_describe(&argparse,
-		"\nOpenJazz - Jack Jazzrabbit 1 game engine reimplementation", NULL);
+		"\nOpenJazz - Jack Jazzrabbit 1 game engine reimplementation",
+		"\nBug reports: " PACKAGE_BUGREPORT " - Homepage: " PACKAGE_URL);
 	argc = argparse_parse(&argparse, argc, argv);
 
 	// apply logger options
@@ -151,7 +156,6 @@ int checkOptions (int argc, char *argv[]) {
 
 		}
 	}
-	if (cli.verbosity > -1) verbosity -= cli.verbosity + 1;
 	logger.setLevel(verbosity);
 
 	return argc;
