@@ -146,10 +146,10 @@ OpenJazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-if HAVE_POD2MAN
+if HAVE_ASCIIDOCTOR
 
-builds/unix/OpenJazz.6: builds/unix/OpenJazz.6.pod
-	$(AM_V_GEN)$(POD2MAN) -c "OpenJazz Manual" -n OpenJazz -r "OpenJazz $(PACKAGE_VERSION)" $< $@
+builds/unix/OpenJazz.6: builds/unix/OpenJazz.6.adoc
+	$(AM_V_GEN)$(ASCIIDOCTOR) -b manpage -a "oj_version=$(PACKAGE_VERSION)" -o $@ $<
 
 dist_man6_MANS = builds/unix/OpenJazz.6
 MOSTLYCLEANFILES = builds/unix/OpenJazz.6
@@ -233,7 +233,7 @@ EXTRA_DIST = \
 	builds/riscos/!OpenJazz/!Sprites,ff9 \
 	builds/windows/OpenJazz.ico \
 	builds/windows/OpenJazz.rc \
-	builds/unix/OpenJazz.6.pod \
+	builds/unix/OpenJazz.6.adoc \
 	builds/psp/Makefile \
 	builds/psp/icon.png \
 	builds/3ds/Makefile \
