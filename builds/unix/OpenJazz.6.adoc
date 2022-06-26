@@ -103,6 +103,10 @@ _openjazz.log_::
 |kbd:[right Ctrl]                       |Change weapon
 |===
 
+IMPORTANT: Under Windows the Jump and Shoot keys are moved to the right to
+avoid opening the window context menu. That means kbd:[Space bar] => Shoot and
+kbd:[right Alt] => Jump/Swim upwards. Other platforms may have other defaults.
+
 *Game Controllers*::
   Most game controllers and joysticks that SDL recognizes can be used. +
   However, not all axes or buttons may be available. Needs manual settings.

@@ -8,7 +8,7 @@
 is a free, open-source version of the classic Jazz Jackrabbit™ games.
 
 OpenJazz can be compiled on a wide range of operating systems, including
-Windows, macOS, GNU/Linux and *BSD. Also ports are available for some
+Windows, macOS, GNU/Linux and BSD flavors. Also ports are available for some
 homebrew platforms, for example Wii and PSP.
 
 To play, you will need the files from one of the original games.
@@ -42,20 +42,7 @@ see `licenses.txt` for additional information.
 
 ## Controls
 
-`Enter` to choose a menu option, `Escape` to go back to the previous menu.
-`F9` to view in-game statistics, `P` to pause.
-`Alt` + `Enter` switches between full-screen and windowed mode.
-
-The other controls are configurable via the "setup options" menu.
-By default, the controls are as follows:
-
-- Left and right arrow keys to move left and right.
-- Under Windows, `Alt Gr (right Alt)` to jump and the `Space bar` to shoot.
-- Under Linux, the `Space bar` to jump and `left Alt` to shoot.
-- `Right Ctrl` to change weapon.
-
-Additionally, most game controllers and joysticks that SDL recognizes can be
-used. However, not all axes or buttons may be available.
+See [Manual page](builds/unix/OpenJazz.6.adoc#ingame-controls).
 
 ## Building
 
