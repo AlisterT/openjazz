@@ -7,7 +7,7 @@ dist_appicon_DATA = builds/unix/OpenJazz.svg
 appicon_fallbackdir = $(datadir)/icons/hicolor/48x48/apps
 dist_appicon_fallback_DATA = builds/unix/OpenJazz.png
 
-noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a
+noinst_LIBRARIES = libpsmplug.a libminiz.a libscale2x.a libargparse.a
 libpsmplug_a_SOURCES = \
 	ext/psmplug/fastmix.cpp \
 	ext/psmplug/load_psm.cpp \
@@ -31,6 +31,9 @@ libscale2x_a_SOURCES = \
 	ext/scale2x/scale3x.h \
 	ext/scale2x/scalebit.cpp \
 	ext/scale2x/scalebit.h
+libargparse_a_SOURCES = \
+	ext/argparse/argparse.cpp \
+	ext/argparse/argparse.h
 
 bin_PROGRAMS = OpenJazz
 OpenJazz_CPPFLAGS = \
@@ -38,7 +41,8 @@ OpenJazz_CPPFLAGS = \
 	-DSCALE \
 	-I${srcdir}/ext/scale2x \
 	-I${srcdir}/ext/psmplug \
-	-I${srcdir}/ext/miniz
+	-I${srcdir}/ext/miniz \
+	-I${srcdir}/ext/argparse
 OpenJazz_CXXFLAGS = \
 	${HOST_CFLAGS} \
 	${SDL_CFLAGS}
@@ -46,6 +50,7 @@ OpenJazz_LDADD = \
 	libpsmplug.a \
 	libminiz.a \
 	libscale2x.a \
+	libargparse.a \
 	${SDL_LIBS} \
 	${HOST_LIBS}
 OpenJazz_SOURCES = \
@@ -70,48 +75,50 @@ OpenJazz_SOURCES = \
 	src/io/gfx/sprite.h \
 	src/io/gfx/video.cpp \
 	src/io/gfx/video.h \
+	src/io/log.cpp \
+	src/io/log.h \
 	src/io/network.cpp \
 	src/io/network.h \
 	src/io/sound.cpp \
 	src/io/sound.h \
-	src/jj1bonuslevel/jj1bonuslevel.cpp \
-	src/jj1bonuslevel/jj1bonuslevel.h \
-	src/jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.cpp \
-	src/jj1bonuslevel/jj1bonuslevelplayer/jj1bonuslevelplayer.h \
-	src/jj1level/jj1bullet.cpp \
-	src/jj1level/jj1bullet.h \
-	src/jj1level/jj1demolevel.cpp \
-	src/jj1level/jj1event/jj1bridge.cpp \
-	src/jj1level/jj1event/jj1event.cpp \
-	src/jj1level/jj1event/jj1event.h \
-	src/jj1level/jj1event/jj1guardians.cpp \
-	src/jj1level/jj1event/jj1guardians.h \
-	src/jj1level/jj1event/jj1standardevent.cpp \
-	src/jj1level/jj1level.cpp \
-	src/jj1level/jj1levelframe.cpp \
-	src/jj1level/jj1level.h \
-	src/jj1level/jj1levelload.cpp \
-	src/jj1level/jj1levelplayer/jj1bird.cpp \
-	src/jj1level/jj1levelplayer/jj1bird.h \
-	src/jj1level/jj1levelplayer/jj1levelplayer.cpp \
-	src/jj1level/jj1levelplayer/jj1levelplayerframe.cpp \
-	src/jj1level/jj1levelplayer/jj1levelplayer.h \
-	src/jj1planet/jj1planet.cpp \
-	src/jj1planet/jj1planet.h \
-	src/jj1scene/jj1scene.cpp \
-	src/jj1scene/jj1scene.h \
-	src/jj1scene/jj1sceneload.cpp \
-	src/jj2level/jj2event/jj2event.cpp \
-	src/jj2level/jj2event/jj2eventframe.cpp \
-	src/jj2level/jj2event/jj2event.h \
-	src/jj2level/jj2layer.cpp \
-	src/jj2level/jj2level.cpp \
-	src/jj2level/jj2levelframe.cpp \
-	src/jj2level/jj2level.h \
-	src/jj2level/jj2levelload.cpp \
-	src/jj2level/jj2levelplayer/jj2levelplayer.cpp \
-	src/jj2level/jj2levelplayer/jj2levelplayerframe.cpp \
-	src/jj2level/jj2levelplayer/jj2levelplayer.h \
+	src/jj1/bonuslevel/jj1bonuslevel.cpp \
+	src/jj1/bonuslevel/jj1bonuslevel.h \
+	src/jj1/bonuslevel/jj1bonuslevelplayer.cpp \
+	src/jj1/bonuslevel/jj1bonuslevelplayer.h \
+	src/jj1/level/jj1bullet.cpp \
+	src/jj1/level/jj1bullet.h \
+	src/jj1/level/jj1demolevel.cpp \
+	src/jj1/level/event/jj1bridge.cpp \
+	src/jj1/level/event/jj1event.cpp \
+	src/jj1/level/event/jj1event.h \
+	src/jj1/level/event/jj1guardians.cpp \
+	src/jj1/level/event/jj1guardians.h \
+	src/jj1/level/event/jj1standardevent.cpp \
+	src/jj1/level/jj1level.cpp \
+	src/jj1/level/jj1levelframe.cpp \
+	src/jj1/level/jj1level.h \
+	src/jj1/level/jj1levelload.cpp \
+	src/jj1/level//jj1bird.cpp \
+	src/jj1/level//jj1bird.h \
+	src/jj1/level//jj1levelplayer.cpp \
+	src/jj1/level//jj1levelplayerframe.cpp \
+	src/jj1/level//jj1levelplayer.h \
+	src/jj1/planet/jj1planet.cpp \
+	src/jj1/planet/jj1planet.h \
+	src/jj1/scene/jj1scene.cpp \
+	src/jj1/scene/jj1scene.h \
+	src/jj1/scene/jj1sceneload.cpp \
+	src/jj2/level/event/jj2event.cpp \
+	src/jj2/level/event/jj2eventframe.cpp \
+	src/jj2/level/event/jj2event.h \
+	src/jj2/level/jj2layer.cpp \
+	src/jj2/level/jj2level.cpp \
+	src/jj2/level/jj2levelframe.cpp \
+	src/jj2/level/jj2level.h \
+	src/jj2/level/jj2levelload.cpp \
+	src/jj2/level/jj2levelplayer.cpp \
+	src/jj2/level/jj2levelplayerframe.cpp \
+	src/jj2/level/jj2levelplayer.h \
 	src/level/level.cpp \
 	src/level/level.h \
 	src/level/levelplayer.cpp \
@@ -139,10 +146,10 @@ OpenJazz_SOURCES = \
 	src/util.cpp \
 	src/util.h
 
-if HAVE_POD2MAN
+if HAVE_ASCIIDOCTOR
 
-builds/unix/OpenJazz.6: builds/unix/OpenJazz.6.pod
-	$(AM_V_GEN)$(POD2MAN) -c "OpenJazz Manual" -n OpenJazz -r "OpenJazz $(PACKAGE_VERSION)" $< $@
+builds/unix/OpenJazz.6: builds/unix/OpenJazz.6.adoc
+	$(AM_V_GEN)$(ASCIIDOCTOR) -b manpage -a "oj_version=$(PACKAGE_VERSION)" -o $@ $<
 
 dist_man6_MANS = builds/unix/OpenJazz.6
 MOSTLYCLEANFILES = builds/unix/OpenJazz.6
@@ -226,7 +233,7 @@ EXTRA_DIST = \
 	builds/riscos/!OpenJazz/!Sprites,ff9 \
 	builds/windows/OpenJazz.ico \
 	builds/windows/OpenJazz.rc \
-	builds/unix/OpenJazz.6.pod \
+	builds/unix/OpenJazz.6.adoc \
 	builds/psp/Makefile \
 	builds/psp/icon.png \
 	builds/3ds/Makefile \

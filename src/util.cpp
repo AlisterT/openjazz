@@ -31,13 +31,6 @@
 
 #include <string.h>
 
-// FIXME: Remove this when there is a custom logger
-#ifdef __vita__
-	#include <psp2/kernel/clib.h>
-	#define printf sceClibPrintf
-#endif
-
-
 /**
  * Check if a file exists.
  *
@@ -249,65 +242,6 @@ char * createEditableString (const char *string) {
 
 
 /**
- * Add a message to the log.
- *
- * @param message The log message
- */
-void log (const char *message) {
-
-	printf("%s\n", message);
-
-	return;
-
-}
-
-
-/**
- * Add a message with a detail message to the log.
- *
- * @param message The log message
- * @param detail The detail message
- */
-void log (const char *message, const char *detail) {
-
-	printf("%s: %s\n", message, detail);
-
-	return;
-
-}
-
-
-/**
- * Add a message with a detail number to the log.
- *
- * @param message The log message
- * @param number The detail number
- */
-void log (const char *message, int number) {
-
-	printf("%s: %d\n", message, number);
-
-	return;
-
-}
-
-
-/**
- * Add a message with a detail message to the error log.
- *
- * @param message The log message
- * @param detail The detail message
- */
-void logError (const char *message, const char *detail) {
-
-	fprintf(stderr, "%s: %s\n", message, detail);
-
-	return;
-
-}
-
-
-/**
  * Get the sine of the given angle
  *
  * @param angle The given angle (where 1024 represents a full circle)
@@ -333,4 +267,3 @@ fixed fCos (fixed angle) {
 	return sinLut[(angle + 256) & 1023];
 
 }
-

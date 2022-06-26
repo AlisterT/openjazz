@@ -27,6 +27,15 @@
 
 #include "OpenJazz.h"
 
+// Available options in config file
+struct SetupOptions {
+	bool valid;
+	int videoWidth;
+	int videoHeight;
+	bool fullScreen;
+	int videoScale;
+};
+
 
 // Class
 
@@ -44,7 +53,7 @@ class Setup {
 		Setup  ();
 		~Setup ();
 
-		void load (int* videoW, int* videoH, bool* fullscreen, int* videoScale);
+		SetupOptions load ();
 		void save ();
 
 };

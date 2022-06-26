@@ -29,8 +29,9 @@
 #include "game/game.h"
 #include "io/controls.h"
 #include "io/gfx/video.h"
+#include "io/gfx/font.h"
 #include "io/sound.h"
-#include "jj1scene/jj1scene.h"
+#include "jj1/scene/jj1scene.h"
 #include "loop.h"
 #include "util.h"
 
@@ -423,6 +424,7 @@ int MainMenu::main () {
 
 		plasma.draw();
 
+		// draw logo and version string
 
 		if (logo)
 		{
@@ -430,6 +432,10 @@ int MainMenu::main () {
 			dst.y = canvasH - (canvasH >> 2);
 			SDL_BlitSurface(logo, NULL, canvas, &dst);
 		}
+
+		panelBigFont->mapPalette(0, 256, 8, 8);
+		panelBigFont->showString("OpenJazz " OJ_VERSION, 1, canvasH - 9);
+		panelBigFont->restorePalette();
 
 		dst.x = (canvasW - SW) >> 1;
 		dst.y = (canvasH - SH) >> 1;

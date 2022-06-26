@@ -27,6 +27,7 @@
 
 #include "io/gfx/video.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <string.h>
 #include <miniz.h>
@@ -56,7 +57,7 @@ File::File (const char* name, bool write) {
 
 	}
 
-	log("Could not open file", name);
+	LOG_WARN("Could not open file: %s", name);
 
 	throw E_FILE;
 
@@ -70,13 +71,9 @@ File::~File () {
 
 	fclose(file);
 
-#ifdef VERBOSE
-	log("Closed file", filePath);
-#endif
+	LOG_TRACE("Closed file: %s", filePath);
 
 	delete[] filePath;
-
-	return;
 
 }
 
@@ -134,7 +131,7 @@ bool File::open (const char* path, const char* name, bool write) {
 
 	if (file) {
 
-        LOG("Opened file", filePath);
+        LOG_DEBUG("Opened file: %s", filePath);
 
 		return true;
 
@@ -247,7 +244,7 @@ unsigned short int File::loadShort (unsigned short int max) {
 
 	if (val > max) {
 
-		logError("Oversized value in file", filePath);
+		LOG_ERROR("Oversized value %d>%d in file %s", val, max, filePath);
 
 		return max;
 
@@ -316,7 +313,10 @@ unsigned char * File::loadBlock (int length) {
 
 	buffer = new unsigned char[length];
 
-	fread(buffer, 1, length, file);
+	int res = fread(buffer, 1, length, file);
+
+	if (res != length)
+		LOG_ERROR("Could not read whole block (%d of %d bytes read)", res, length);
 
 	return buffer;
 
@@ -430,20 +430,23 @@ unsigned char* File::loadLZ (int compressedLength, int length) {
 char * File::loadString () {
 
 	char *string;
-	int length, count;
 
-	length = fgetc(file);
+	int length = fgetc(file);
 
 	if (length) {
 
 		string = new char[length + 1];
-		fread(string, 1, length, file);
+		int res = fread(string, 1, length, file);
+
+		if (res != length)
+			LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
 
 	} else {
 
 		// If the length is not given, assume it is an 8.3 file name
 		string = new char[13];
 
+		int count;
 		for (count = 0; count < 9; count++) {
 
 			string[count] = fgetc(file);
@@ -635,6 +638,8 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
  */
 Path::Path (Path* newNext, char* newPath) {
 
+	LOG_TRACE("Adding '%s' to the path list", newPath);
+
 	next = newNext;
 	path = newPath;
 
@@ -654,5 +659,3 @@ Path::~Path () {
 	return;
 
 }
-
-

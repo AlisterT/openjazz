@@ -13,7 +13,8 @@ PSPSDK=$(shell psp-config --pspsdk-path)
 PSPPREFIX=$(shell psp-config --psp-prefix)
 
 CXXFLAGS = -g -O2 -G0 -Wall -DPSP
-INCDIR = $(PSPPREFIX)/include/SDL ../../ext/psmplug ../../ext/miniz ../../src
+INCDIR = $(PSPPREFIX)/include/SDL \
+        ../../ext/psmplug ../../ext/miniz ../../ext/argparse ../../src
 LIBS = -lSDL -lGL -lm -lstdc++ \
        -lpspdebug -lpspgu -lpspctrl -lpspge -lpspdisplay -lpsphprm \
        -lpspvfpu -lpsprtc -lpspaudio -lpsputility -lpspirkeyb -lpsppower

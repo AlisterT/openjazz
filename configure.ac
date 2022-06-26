@@ -65,10 +65,10 @@ AM_CONDITIONAL([HAVE_SOCKETS], [test "x$HAVE_SOCKETS" != "x" || test "x$OJ_MINGW
 AM_CONDITIONAL([HAVE_SDL_NET], [test "x$HAVE_SDL_NET" != "x"])
 
 # manual
-AC_CHECK_PROGS([POD2MAN], [pod2man])
-AM_CONDITIONAL([HAVE_POD2MAN], [test "x$POD2MAN" != "x"])
-AS_IF([test "x$POD2MAN" = "x" && test ! -f "${srcdir}/builds/unix/OpenJazz.6"],
-	[AC_MSG_WARN([pod2man is required to create the manual page])])
+AC_CHECK_PROGS([ASCIIDOCTOR], [asciidoctor])
+AM_CONDITIONAL([HAVE_ASCIIDOCTOR], [test "x$ASCIIDOCTOR" != "x"])
+AS_IF([test "x$ASCIIDOCTOR" = "x" && test ! -f "${srcdir}/builds/unix/OpenJazz.6"],
+	[AC_MSG_WARN([Asciidoctor is required to create the manual page])])
 AM_CONDITIONAL([HAVE_MANUAL], [test -f "${srcdir}/builds/unix/OpenJazz.6"])
 
 AC_CONFIG_FILES([Makefile])

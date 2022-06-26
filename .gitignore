@@ -1,12 +1,18 @@
-*.o
 openjazz
 OpenJazz
 openjazz.cfg
+openjazz.log
 *.exe
 *.a
+*.o
+
+# homebrew
+*.elf
+
+# wii
+*.dol
 
 # psp
-*.elf
 *.prx
 PARAM.SFO
 EBOOT.PBP
@@ -14,6 +20,7 @@ EBOOT.PBP
 # 3ds
 *.3dsx
 *.smdh
+*.cia
 *.d
 /builds/3ds/build
 /builds/3ds/romfs
@@ -24,6 +31,7 @@ EBOOT.PBP
 *,ff8
 *,e1f
 
+# macos
 .DS_Store
 
 # autotools
@@ -38,7 +46,7 @@ config.status
 configure
 configure~
 
-# distribution
+# distribution archives
 openjazz-*.tar.*
 OpenJazz-*.zip
 

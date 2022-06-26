@@ -1,0 +1,147 @@
+= OpenJazz(6)
+Carsten Teibes
+:doctype: manpage
+:man source: OpenJazz {oj_version}
+:man version: {oj_version}
+:man manual: OpenJazz Manual
+:icons: font
+:experimental:
+ifdef::backend-manpage[:!author:]
+
+== Name
+
+OpenJazz - Jack Jazzrabbit 1 game engine reimplementation
+
+== Synopsis
+
+*OpenJazz* [_options_] <__game directory 1__> <__game directory 2__>
+
+== Description
+
+OpenJazz is a free, open-source version of the classic Jazz Jackrabbit PC
+platform games. +
+To play, you will need original data files.
+
+== Options
+
+*-h*, *--help*::
+  Display command line flags and general help.
+
+*-v*, *--version*::
+  Display engine version.
+
+*-f*, *--fullscreen*::
+  Start in fullscreen mode.
+
+*-w*, *--window*::
+  Start in window mode.
+
+*-m*::
+  Start with muted audio.
+
+*-s*, *--scale[=]* <__Factor__>::
+  Scale window by factor.
+
+*-w*, *--world[=]* <__World__> *-l*, *--level[=]* <__Level__>::
+  Directly load specific world/level.
+
+*-q*, *--[no-]quiet*::
+  Enable/Disable console logging.
+
+*--verbose[=]* <__Debug Level__>::
+  Set logging verbosity. Can be one of _max_, _trace_, _debug_, _info_, _warn_,
+  _error_, _fatal_.
+
+== Files
+
+_openjazz.cfg_::
+  The configuration file.
+
+NOTE: Command line parameters will take precedence over values in the
+configuration file
+
+_openjazz.log_::
+  The generated logfile.
+
+*Game Data*::
+  OpenJazz should be compatible with all released versions of Jazz
+  Jackrabbit 1. +
+  This includes the Shareware Episodes, "Holiday Hare" and "Holiday Hare '95",
+  the "Jazz Jackrabbit CD" with "The Lost Episodes" and the "Complete" edition.
+
+== Ingame Controls
+
+*Fixed Controls*::
++
+|===
+|Key(s)          |Purpose
+
+|kbd:[Enter]     |Choose a menu option
+
+|kbd:[Escape]    |Go back to the previous menu
+
+|kbd:[F9]        |View in-game statistics (e.g. FPS)
+
+|kbd:[P]         |Pause the game
+
+|kbd:[Alt+Enter] |Switch between full-screen and windowed mode
+
+|kbd:[1-5]       |Switch weapon to Blaster, Toaster, Missile, Bouncer or TNT
+                  respectively. If the desired weapon is not available,
+                  try next.
+|===
+
+*Configurable Controls*::
+  These are configurable via the "setup options" menu. Default settings:
++
+|===
+|Key(s)          |Purpose
+
+|kbd:[Left arrow] and kbd:[Right arrow] |Move left and right
+|kbd:[Space bar]                        |Jump/Swim upwards
+|kbd:[left Alt]                         |Shoot
+|kbd:[right Ctrl]                       |Change weapon
+|===
+
+IMPORTANT: Under Windows the Jump and Shoot keys are moved to the right to
+avoid opening the window context menu. That means kbd:[Space bar] => Shoot and
+kbd:[right Alt] => Jump/Swim upwards. Other platforms may have other defaults.
+
+*Game Controllers*::
+  Most game controllers and joysticks that SDL recognizes can be used. +
+  However, not all axes or buttons may be available. Needs manual settings.
+
+== Reporting Bugs
+
+Bugs can be reported at the
+link:https://github.com/AlisterT/OpenJazz/issues[issue tracker].
+
+== See Also
+
+*J1E* - level editor by Newspaz,
+*JJ1MOD* - graphic editor by Doubble Dutch
+
+link:http://www.alister.eu/jazz/oj/[The OpenJazz Homepage]
+
+== Authors
+
+Alister Thomson (AlisterT):: Engine, project lead
+Alireza Nejati:: Menu plasma effect
+newspaz:: Bug fixes, enemy improvements
+Carsten Teibes (carstene1ns)::
+Maintenance, bug fixes, documentation +
+Integrating the ports (Wii, 3DS, PSP, PSVita, ...) +
+Additional coding (logger, CLI, ...) +
+Modernizing +
+UI improvements
+Lars Persson (anotherguest):: Movie playback fixes
+Scott Smith (Pickle):: GP2X/WIZ, Canoo, Pandora ports
+Przemysław Buczkowski (przemub):: Android, Haiku ports
+Matthieu Milan (usineur):: PSVita port
+deniska:: PSP port
+tehpola:: Wii port
+pocketinsanity:: PocketPC port
+Ricerind:: Mac OS X port
+Slaanesh:: GP32 port
+GPF:: Dreamcast port
+Cameron Cawley (ccawley2011):: RISC OS port

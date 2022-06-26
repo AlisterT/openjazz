@@ -11,7 +11,7 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:= OpenJazz
 BUILD		:= build
-INCLUDES	:= src ext/miniz ext/psmplug
+INCLUDES	:= src ext/miniz ext/psmplug ext/argparse
 APP_TITLE	:= OpenJazz
 APP_DESCRIPTION	:= Jack Jazzrabbit 1 game engine reimplementation
 APP_AUTHOR	:= AlisterT & carstene1ns
