@@ -748,8 +748,6 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	if (ret < 0) {
 
-		delete file;
-
 		if (events) delete events;
 		delete[] *mods;
 		delete[] mods;
