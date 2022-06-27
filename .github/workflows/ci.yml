@@ -44,7 +44,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -yqq
-          sudo apt-get install -yqq build-essential libsdl1.2-dev clang-10
+          sudo apt-get install -yqq build-essential libsdl1.2-dev clang-10 \
+            asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -65,7 +66,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
           cp OpenJazz openjazz.000 README.md COPYING *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
@@ -84,7 +86,9 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           update: true
-          install: base-devel autotools mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL dos2unix
+          install: |
+            base-devel autotools mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
+            dos2unix mingw-w64-x86_64-asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -105,7 +109,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
@@ -125,7 +130,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yqq automake dos2unix
+          sudo apt-get install -yqq automake dos2unix asciidoctor w3m
           # blocked!
           #dkp-pacman --noconfirm -S --needed wii-sdl
           dkp-pacman --noconfirm -U --needed https://f4ke.de/dev/wii/oj/wii-sdl-1.2.15-7-any.pkg.tar.xz
@@ -150,7 +155,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
@@ -171,7 +177,7 @@ jobs:
       - name: Install dependencies
         shell: sh
         run: |
-          apk add make bash perl dos2unix
+          apk add make bash perl dos2unix asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -190,7 +196,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          pod2text -l builds/unix/OpenJazz.6.pod Manual.txt
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
