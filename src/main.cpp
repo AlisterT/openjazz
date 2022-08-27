@@ -673,11 +673,17 @@ int main(int argc, char *argv[]) {
 	PSVITA_InitControls();
 #endif
 
-	// Save program path
-	if (argc) argv0 = argv[0];
+	// Some platforms (and emulators) do not provide arguments
 
-	// Check command line options
-	argc = checkOptions(argc, argv);
+	if (argc) {
+
+		// Save program path
+		argv0 = argv[0];
+
+		// Check command line options
+		argc = checkOptions(argc, argv);
+
+	}
 
 	// Log current version
 	LOG_INFO("This is OpenJazz %s, built on %s.", OJ_VERSION, OJ_DATE);
