@@ -34,7 +34,10 @@
 #include "jj1/scene/jj1scene.h"
 #include "loop.h"
 #include "util.h"
+#include "io/log.h"
+#include "logo.h"
 
+#include <miniz.h>
 #include <time.h>
 
 
@@ -46,24 +49,21 @@ MainMenu::MainMenu () {
 	File *file;
 	time_t currentTime;
 
-
 	// Load the OpenJazz logo
 
-	try {
+	unsigned char* pixels = new unsigned char[oj_logo.size];
+	size_t res = tinfl_decompress_mem_to_mem(pixels, oj_logo.size, oj_logo.data,
+		oj_logo.compressed_size, TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF|TINFL_FLAG_PARSE_ZLIB_HEADER);
+	if (res == TINFL_DECOMPRESS_MEM_TO_MEM_FAILED || res != oj_logo.size) {
 
-		file = new File("openjazz.000", false);
+		LOG_WARN("Could not uncompress logo (expected: %d, actual: %zu).", oj_logo.size, res);
 
-		logo = file->loadSurface(64, 40);
+	} else {
 
-		delete file;
-
-	} catch (int e) {
-
-		logo = NULL;
+		logo = createSurface(pixels, oj_logo.width, oj_logo.height);
 
 	}
-
-
+	delete[] pixels;
 
 	// Load the menu graphics
 
@@ -86,6 +86,8 @@ MainMenu::MainMenu () {
 
 		// In December, load the Christmas menu graphics
 		if (localtime(&currentTime)->tm_mon == 11) {
+
+			LOG_TRACE("Loading christmas menu theme.");
 
 			file->skipRLE();
 			file->skipRLE();
@@ -426,8 +428,7 @@ int MainMenu::main () {
 
 		// draw logo and version string
 
-		if (logo)
-		{
+		if (logo) {
 			dst.x = (canvasW >> 2) - 72;
 			dst.y = canvasH - (canvasH >> 2);
 			SDL_BlitSurface(logo, NULL, canvas, &dst);

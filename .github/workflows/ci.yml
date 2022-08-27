@@ -68,7 +68,7 @@ jobs:
           mkdir OJ-${SHORT_SHA}
           asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
           w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
-          cp OpenJazz openjazz.000 README.md COPYING *.txt OJ-${SHORT_SHA}/
+          cp OpenJazz README.md COPYING *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -114,7 +114,7 @@ jobs:
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
-          cp OpenJazz.exe openjazz.000 *.txt OJ-${SHORT_SHA}/
+          cp OpenJazz.exe *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -131,9 +131,6 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yqq automake dos2unix asciidoctor w3m
-          # blocked!
-          #dkp-pacman --noconfirm -S --needed wii-sdl
-          dkp-pacman --noconfirm -U --needed https://f4ke.de/dev/wii/oj/wii-sdl-1.2.15-7-any.pkg.tar.xz
 
       - name: Prepare Environment
         run: |
@@ -160,7 +157,7 @@ jobs:
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
-          cp builds/wii/* openjazz.000 *.txt OJ-${SHORT_SHA}/
+          cp builds/wii/* *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -201,7 +198,7 @@ jobs:
           cp README.md README.txt
           cp COPYING COPYING.txt
           unix2dos *.txt
-          cp builds/psp/EBOOT.PBP openjazz.000 *.txt OJ-${SHORT_SHA}/
+          cp builds/psp/EBOOT.PBP *.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3

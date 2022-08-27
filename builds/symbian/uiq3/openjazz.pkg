@@ -28,7 +28,6 @@
 "\epoc32\data\z\resource\apps\openjazz.rsc"-"!:\resource\apps\openjazz.rsc"
 "\epoc32\data\z\private\10003a3f\apps\openjazz_reg.rsc"-"!:\private\10003a3f\import\apps\openjazz_reg.rsc"
 ;"\epoc32\data\z\resource\apps\openjazz.mbm"-"!:\resource\apps\openjazz.mbm"
-"..\..\openjazz.000"-"c:\shared\openjazz\openjazz.000"
 
 ""-"c:\shared\openjazz\sdl.ini",FN
 ""-"c:\shared\openjazz\openjazz.cfg",FN

@@ -63,7 +63,6 @@ $(BUILD):
 
 romfs:
 	@mkdir -p romfs
-	@cp -up ../../openjazz.000 romfs/
 
 ifneq ($(DEPSDIR),$(BUILD))
 $(DEPSDIR):
@@ -73,7 +72,6 @@ endif
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
-	@rm -f romfs/openjazz.000
 	@rmdir --ignore-fail-on-non-empty romfs
 
 #---------------------------------------------------------------------------------

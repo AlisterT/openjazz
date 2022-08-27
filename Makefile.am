@@ -1,5 +1,3 @@
-dist_pkgdata_DATA = openjazz.000
-
 desktopdir = $(datadir)/applications
 dist_desktop_DATA = builds/unix/OpenJazz.desktop
 appicondir = $(datadir)/icons/hicolor/scalable/apps
@@ -125,6 +123,7 @@ OpenJazz_SOURCES = \
 	src/level/levelplayer.h \
 	src/level/movable.cpp \
 	src/level/movable.h \
+	src/logo.h \
 	src/loop.h \
 	src/main.cpp \
 	src/menu/gamemenu.cpp \
