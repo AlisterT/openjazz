@@ -114,8 +114,9 @@
 
 
 // OpenJazz modification
+#ifndef MINIZ_NO_ARCHIVE_APIS
 #define MINIZ_NO_ARCHIVE_APIS
-
+#endif
 
 /* Defines to completely disable specific portions of miniz.c: 
    If all macros here are defined the only functionality remaining will be CRC-32, adler-32, tinfl, and tdefl. */
