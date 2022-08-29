@@ -3,6 +3,5 @@
 *.txt text
 *.cpp text
 *.h text
-configure.ac text
-Makefile text
-Makefile.* text
+CMakeLists.txt text
+*.cmake text

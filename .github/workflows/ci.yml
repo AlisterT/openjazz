@@ -16,8 +16,8 @@ defaults:
 
 jobs:
   linux-gcc:
-    name: Build (Ubuntu 18.04 LTS x86_64, GCC)
-    runs-on: ubuntu-18.04
+    name: Build (Ubuntu 20.04 LTS x86_64, GCC)
+    runs-on: ubuntu-20.04
     steps:
       - name: Install dependencies
         run: |
@@ -38,14 +38,14 @@ jobs:
           ls -l OpenJazz
 
   linux-clang:
-    name: Build (Ubuntu 18.04 LTS x86_64, Clang)
-    runs-on: ubuntu-18.04
+    name: Build (Ubuntu 20.04 LTS x86_64, Clang)
+    runs-on: ubuntu-20.04
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get update -yqq
-          sudo apt-get install -yqq build-essential libsdl1.2-dev clang-10 \
-            asciidoctor w3m
+          sudo apt-get install -yqq build-essential cmake ninja-build clang-10 \
+            libsdl1.2-dev asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -60,20 +60,21 @@ jobs:
           export CXX=clang++
           export CXXFLAGS="-Wall -O2 -g -ffunction-sections -fdata-sections"
           export LDFLAGS="-Wl,--gc-sections"
-          make
-          ls -l OpenJazz
+          cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ls -l build/OpenJazz
 
       - name: Prepare artifact
         run: |
           mkdir OJ-${SHORT_SHA}
-          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
-          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
-          cp OpenJazz README.md COPYING *.txt OJ-${SHORT_SHA}/
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > OJ-${SHORT_SHA}/Manual.txt
+          cp build/OpenJazz README.md COPYING licenses.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: openjazz-linux-glibc2.27-x86_64
+          name: openjazz-linux-glibc2.31-x86_64
           path: OJ-*/
 
   windows-mingw-gcc:
@@ -87,8 +88,9 @@ jobs:
         with:
           update: true
           install: |
-            base-devel autotools mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
-            dos2unix mingw-w64-x86_64-asciidoctor w3m
+            base-devel dos2unix w3m
+          pacboy: |
+            toolchain:p cmake:p ninja:p SDL:p asciidoctor:p
 
       - name: Prepare Environment
         run: |
@@ -102,19 +104,19 @@ jobs:
         run: |
           export LDFLAGS="-static"
           export PKG_CONFIG="pkg-config --static"
-          autoreconf -if
-          ./configure --disable-dependency-tracking
-          make
+          cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
 
       - name: Prepare artifact
         run: |
-          mkdir OJ-${SHORT_SHA}
-          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
-          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
-          cp README.md README.txt
-          cp COPYING COPYING.txt
-          unix2dos *.txt
-          cp OpenJazz.exe *.txt OJ-${SHORT_SHA}/
+          cmake --install build --prefix $PWD
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > dist/Manual.txt
+          cp README.md dist/README.txt
+          cp COPYING dist/COPYING.txt
+          cp licenses.txt dist/
+          unix2dos dist/*.txt
+          mv dist OJ-${SHORT_SHA}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -130,7 +132,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yqq automake dos2unix asciidoctor w3m
+          sudo apt-get install -yqq ninja-build dos2unix asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -142,22 +144,20 @@ jobs:
 
       - name: Build OpenJazz
         run: |
-          export PATH=$PATH:$DEVKITPPC/bin:$DEVKITPRO/tools/bin:$DEVKITPRO/portlibs/wii/bin
-          export CXXFLAGS="-Wall -O2 -g -ffunction-sections -fdata-sections"
-          export LDFLAGS="-Wl,--gc-sections"
-          autoreconf -if
-          ./configure --host=powerpc-eabi --disable-dependency-tracking
-          make
+          export CXXFLAGS="-Wall -g -O2"
+          $DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
 
       - name: Prepare artifact
         run: |
-          mkdir OJ-${SHORT_SHA}
-          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
-          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
-          cp README.md README.txt
-          cp COPYING COPYING.txt
-          unix2dos *.txt
-          cp builds/wii/* *.txt OJ-${SHORT_SHA}/
+          cmake --install build --prefix $PWD
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > OpenJazz/Manual.txt
+          cp README.md OpenJazz/README.txt
+          cp COPYING OpenJazz/COPYING.txt
+          cp licenses.txt OpenJazz/
+          unix2dos OpenJazz/*.txt
+          mv OpenJazz OJ-${SHORT_SHA}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -165,16 +165,15 @@ jobs:
           name: openjazz-wii
           path: OJ-*/
 
-  psp-pspdev:
-    if: ${{ false }} # disable for now
-    name: Build (PSP, pspdev)
+  n3ds-devkitarm:
+    name: Build (3DS, devkitARM)
     runs-on: ubuntu-latest
-    container: pspdev/pspdev:latest
+    container: devkitpro/devkitarm:latest
     steps:
       - name: Install dependencies
-        shell: sh
         run: |
-          apk add make bash perl dos2unix asciidoctor w3m
+          sudo apt-get update -qq
+          sudo apt-get install -yqq ninja-build dos2unix asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -186,19 +185,106 @@ jobs:
 
       - name: Build OpenJazz
         run: |
-          export PATH=$PATH:$PSPDEV/bin
-          cd builds/psp
-          make
+          export CXXFLAGS="-Wall -g -O2"
+          $DEVKITPRO/portlibs/3ds/bin/arm-none-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
 
       - name: Prepare artifact
         run: |
+          cmake --install build --prefix $PWD
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > OpenJazz/Manual.txt
+          cp README.md OpenJazz/README.txt
+          cp COPYING OpenJazz/COPYING.txt
+          cp licenses.txt OpenJazz/
+          unix2dos OpenJazz/*.txt
+          mv OpenJazz OJ-${SHORT_SHA}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: openjazz-3ds
+          path: OJ-*/
+
+  riscos-gccsdk:
+    name: Build (RISC OS, GCCSDK 4.7)
+    runs-on: ubuntu-latest
+    container: riscosdotinfo/riscos-gccsdk-4.7:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -yqq cmake ninja-build
+
+      - name: Prepare Environment
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
+          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
+
+      - name: Prepare GCCSDK autobuilder and build SDL
+        run: |
+          cp /usr/bin/false /usr/bin/automake-1.11 # autobuilder wants this, sdl does not need it
+          cp /usr/bin/false /usr/bin/meson         # autobuilder wants this, sdl does not need it
+          svn co svn://svn.riscos.info/gccsdk/trunk/autobuilder/ autobuilder # todo: maybe use snapshot
+          mkdir sdl-build
+          cd sdl-build
+          ../autobuilder/build -v libsdl1.2debian # todo: cache?
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build OpenJazz
+        run: |
+          cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON
+          cmake --build build
+
+      - name: Prepare artifact
+        run: |
+          cmake --install build --prefix $PWD
+          cp README.md COPYING licenses.txt !OpenJazz/
           mkdir OJ-${SHORT_SHA}
-          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} builds/unix/OpenJazz.6.adoc
-          w3m -dump -cols 2147483647 -s OpenJazzManual.html > Manual.txt
-          cp README.md README.txt
-          cp COPYING COPYING.txt
-          unix2dos *.txt
-          cp builds/psp/EBOOT.PBP *.txt OJ-${SHORT_SHA}/
+          mv !OpenJazz OJ-${SHORT_SHA}/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: openjazz-riscos
+          path: OJ-*/
+
+  psp-pspdev:
+    name: Build (PSP, pspdev)
+    runs-on: ubuntu-latest
+    container: pspdev/pspdev:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          apk add cmake ninja asciidoctor w3m
+
+      - name: Prepare Environment
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
+          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build OpenJazz
+        run: |
+          export CXXFLAGS="-Wall -g -O2"
+          psp-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release -DNETWORK=OFF
+          cmake --build build
+
+      - name: Prepare artifact
+        run: |
+          cmake --install build --prefix $PWD
+          asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
+          w3m -dump -cols 2147483647 -s OpenJazzManual.html > OpenJazz/Manual.txt
+          cp README.md OpenJazz/README.txt
+          cp COPYING OpenJazz/COPYING.txt
+          cp licenses.txt OpenJazz/
+          unix2dos OpenJazz/*.txt
+          mv OpenJazz OJ-${SHORT_SHA}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3

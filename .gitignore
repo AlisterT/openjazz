@@ -1,10 +1,17 @@
-openjazz
 OpenJazz
 openjazz.cfg
 openjazz.log
 *.exe
 *.a
 *.o
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+!/builds/cmake/*.cmake
+ext/Makefile
+build.ninja
 
 # homebrew
 *.elf
@@ -21,30 +28,14 @@ EBOOT.PBP
 *.3dsx
 *.smdh
 *.cia
-*.d
-/builds/3ds/build
-/builds/3ds/romfs
 
 # RISC OS
-/builds/riscos/\!OpenJazz/data/*
-/builds/riscos/\!OpenJazz/openjazz.000
+/res/riscos/\!OpenJazz/data/*
 *,ff8
 *,e1f
 
 # macos
 .DS_Store
-
-# autotools
-/builds/autotools/
-.deps/
-.dirstamp
-Makefile.in
-aclocal.m4
-/autom4te.cache/
-config.log
-config.status
-configure
-configure~
 
 # distribution archives
 openjazz-*.tar.*
@@ -52,4 +43,4 @@ OpenJazz-*.zip
 
 # generated documentation
 /doc/html
-/builds/unix/OpenJazz.6
+/res/unix/OpenJazz.6
