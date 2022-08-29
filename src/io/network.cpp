@@ -61,7 +61,7 @@
 		#include <fcntl.h>
 		#include <malloc.h>
 		static u32* socBuffer = NULL;
-		#define SOC_BUFFERSIZE 0x100000
+		#define SOC_BUFFERSIZE 0x100000 // maybe 0x80000 is enough
 	#endif
 #elif defined(WII)
 	#include <network.h>

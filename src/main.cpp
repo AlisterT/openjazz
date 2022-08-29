@@ -43,33 +43,12 @@
 #include "setup.h"
 #include "util.h"
 #include "io/log.h"
-
-#ifdef PSP
-	#include "platforms/psp.h"
-#elif defined(_3DS)
-	#include <3ds.h>
-	#include "platforms/3ds.h"
-#elif defined(WII)
-	#include <unistd.h>
-	#include <fat.h>
-	#include "platforms/wii.h"
-#elif defined(__vita__)
-	#include "platforms/psvita.h"
-#elif defined(__HAIKU__)
-	#include <Alert.h>
-	#include <FindDirectory.h>
-	#include <fs_info.h>
-#elif defined(WIZ) || defined(GP2X)
-	#include "platforms/wiz.h"
-#endif
+#include "platforms/platforms.h"
 
 #include <string.h>
 #include <argparse.h>
 
-#ifdef __SYMBIAN32__
-extern char KOpenJazzPath[256];
-extern float sinf (float);
-#else
+#ifndef __SYMBIAN32__
 	#include <math.h>
 #endif
 
@@ -189,35 +168,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	firstPath = NULL;
 #endif
 
-#ifdef __HAIKU__
-	dev_t volume = dev_for_path("/boot");
-	char buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
-	status_t result;
-
-	result = find_directory(B_SYSTEM_DATA_DIRECTORY,
-		volume, false, buffer, sizeof(buffer));
-	strncat(buffer, "/openjazz/", sizeof(buffer));
-	firstPath = new Path(firstPath, createString(buffer));
-
-	result = find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY,
-		volume, false, buffer, sizeof(buffer));
-	strncat(buffer, "/openjazz/", sizeof(buffer));
-	firstPath = new Path(firstPath, createString(buffer));
-#endif
-
-#ifdef __SYMBIAN32__
-	#ifdef UIQ3
-	firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
-	#else
-	firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
-	#endif
-	firstPath = new Path(firstPath, createString(KOpenJazzPath));
-#endif
-
-#ifdef _3DS
-	firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
-	firstPath = new Path(firstPath, createString("romfs:/"));
-#endif
+	PLATFORM_AddGamePaths();
 
 	// Use any provided paths, appending a directory separator as necessary
 
@@ -267,7 +218,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	}
 
-
+/*
 	// Use the user's home directory, if available
 
 #ifdef HOMEDIR
@@ -277,12 +228,11 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
 	#endif
 #endif
-
+*/
 
 	// Last Resort: Use the current working directory
 
 	firstPath = new Path(firstPath, createString(""));
-
 
 
 	// Default settings
@@ -354,17 +304,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 			"               pass the location of the original game data, eg:\n"
 			"                 OpenJazz ~/jazz1");
 
-#ifdef __HAIKU__
-		char alertBuffer[100+B_PATH_NAME_LENGTH+B_FILE_NAME_LENGTH];
-		strcpy(alertBuffer, "Unable to find game data files!\n"
-			"Put the data into the folder:\n");
-		strncat(alertBuffer, buffer, sizeof(alertBuffer));
-		BAlert* alert = new BAlert("OpenJazz", alertBuffer, "Exit", NULL, NULL,
-			B_WIDTH_AS_USUAL, B_STOP_ALERT);
-		alert->Go();
-#elif defined(PSP)
-		PSP_ErrorNoDatafiles();
-#endif
+		PLATFORM_ErrorNoDatafiles();
 
 		throw e;
 
@@ -660,18 +600,7 @@ int main(int argc, char *argv[]) {
 	int ret;
 	const char *argv0 = NULL;
 
-	// Early platform init
-
-#ifdef PSP
-	PSP_PrepareSystem();
-#elif defined(WII)
-	fatInitDefault();
-	Wii_SetConsole();
-#elif defined(_3DS)
-	romfsInit();
-#elif defined(__vita__)
-	PSVITA_InitControls();
-#endif
+	PLATFORM_Init();
 
 	// Some platforms (and emulators) do not provide arguments
 
@@ -723,9 +652,7 @@ int main(int argc, char *argv[]) {
 
 	shutDown();
 
-#ifdef _3DS
-	romfsExit();
-#endif
+	PLATFORM_Exit();
 
 	SDL_Quit();
 

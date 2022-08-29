@@ -15,6 +15,7 @@
 #include "wiz.h"
 
 #if defined(WIZ) || defined(GP2X)
+
 #include <cstdio>
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>

@@ -16,6 +16,7 @@
 #define _WIZ_H
 
 #if defined(WIZ) || defined(GP2X)
+
 #define GP2X_BUTTON_VOLUP           (16)
 #define GP2X_BUTTON_VOLDOWN         (17)
 
@@ -27,6 +28,7 @@
 #define VOLUME_UP 2
 
 void WIZ_AdjustVolume( int direction );
+
 #endif
 
 #endif

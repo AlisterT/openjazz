@@ -77,16 +77,7 @@ add_executable(OpenJazz
 	src/menu/plasma.h
 	src/menu/setupmenu.cpp
 	src/OpenJazz.h
-	src/platforms/3ds.cpp
-	src/platforms/3ds.h
-	src/platforms/psp.cpp
-	src/platforms/psp.h
-	src/platforms/psvita.cpp
-	src/platforms/psvita.h
-	src/platforms/wii.cpp
-	src/platforms/wii.h
-	src/platforms/wiz.cpp
-	src/platforms/wiz.h
+	src/platforms/platforms.h
 	src/player/player.cpp
 	src/player/player.h
 	src/setup.cpp
@@ -203,6 +194,9 @@ elseif(RISCOS)
 	target_link_options(OpenJazz PRIVATE "-static")
 	elf2aif(OpenJazz)
 elseif(3DS)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/3ds.cpp
+		src/platforms/3ds.h)
 	target_link_libraries(OpenJazz -lcitro3d)
 	ctr_generate_smdh(OpenJazz.smdh
 		NAME "OpenJazz"
@@ -213,15 +207,33 @@ elseif(3DS)
 		SMDH OpenJazz.smdh
 		${ROMFS_ARG} ${ROMFS_PATH})
 elseif(WII)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/wii.cpp
+		src/platforms/wii.h)
 	target_link_libraries(OpenJazz -laesnd -lfat -lwiikeyboard)
 	ogc_create_dol(OpenJazz)
 elseif(PSP)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/psp.cpp
+		src/platforms/psp.h)
 	target_link_libraries(OpenJazz
 		-lGL -lpspdebug -lpspgu -lpspctrl -lpspge -lpspdisplay -lpsphprm -lpspvfpu -lpspaudio -lpspirkeyb -lpsppower)
 	create_pbp_file(TARGET OpenJazz
 		TITLE "\"Jazz Jackrabbit (OpenJazz)\""
 		ICON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/res/psp/icon.png
 		BUILD_PRX)
+elseif(PSVITA) # unfinished
+	target_sources(OpenJazz PRIVATE
+		src/platforms/psvita.cpp
+		src/platforms/psvita.h)
+elseif(GP2X OR WIZ)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/wiz.cpp
+		src/platforms/wiz.h)
+elseif(HAIKU)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/haiku.cpp
+		src/platforms/haiku.h)
 elseif(UNIX)
 	target_link_libraries(OpenJazz -lm)
 endif()

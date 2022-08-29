@@ -1,7 +1,7 @@
 
 /**
  *
- * @file psp.h
+ * @file symbian.h
  *
  * Part of the OpenJazz project
  *
@@ -12,16 +12,15 @@
  */
 
 
-#ifndef _PSP_H
-#define _PSP_H
+#ifndef _SYMBIAN_H
+#define _SYMBIAN_H
 
-#ifdef PSP
+#ifdef __SYMBIAN32__
 
-int PSP_WantsExit();
+extern char KOpenJazzPath[256];
+extern float sinf (float);
 
-void PSP_Init();
-
-void PSP_ErrorNoDatafiles();
+void SYMBIAN_AddGamePaths();
 
 #endif
 

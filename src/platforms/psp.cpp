@@ -25,6 +25,7 @@
 #include <stdlib.h>
 
 PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
+//PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU); // vfpu is used in SDL afaik
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 PSP_HEAP_SIZE_KB(-2048);
 
@@ -50,7 +51,10 @@ int PSP_WantsExit() {
 	return exitRequest;
 }
 
-void PSP_PrepareSystem() {
+void PSP_Init() {
+
+	// debug output
+
 	pspDebugScreenInit();
 	//pspDebugInstallErrorHandler(NULL);
 

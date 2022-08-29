@@ -1,7 +1,7 @@
 
 /**
  *
- * @file psp.h
+ * @file haiku.h
  *
  * Part of the OpenJazz project
  *
@@ -12,16 +12,14 @@
  */
 
 
-#ifndef _PSP_H
-#define _PSP_H
+#ifndef _HAIKU_H
+#define _HAIKU_H
 
-#ifdef PSP
+#ifdef __HAIKU__
 
-int PSP_WantsExit();
+void HAIKU_AddGamePaths();
 
-void PSP_Init();
-
-void PSP_ErrorNoDatafiles();
+void HAIKU_ErrorNoDatafiles();
 
 #endif
 
