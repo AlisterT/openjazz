@@ -94,6 +94,13 @@
 	#define NO_RESIZE
 
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_HWSURFACE)
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
+	#define DEFAULT_SCREEN_WIDTH SW
+	#define DEFAULT_SCREEN_HEIGHT SH
+
+	#undef WINDOWED_FLAGS
+	#define WINDOWED_FLAGS (SDL_WINDOW_RESIZABLE)
+	#define FULLSCREEN_FLAGS (SDL_WINDOW_FULLSCREEN_DESKTOP)
 #else
 	#define DEFAULT_SCREEN_WIDTH SW
 	#define DEFAULT_SCREEN_HEIGHT SH
@@ -111,6 +118,12 @@
 class Video {
 
 	private:
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_Window* window; ///< Output window
+		SDL_Renderer* renderer; ///< Output renderer
+		SDL_Texture* texture; ///< Output texture
+		SDL_Surface* textureSurface;
+#endif
 		SDL_Surface* screen; ///< Output surface
 
 		// Palettes
@@ -178,8 +191,11 @@ EXTERN Video video; ///< Video output
 
 // Functions
 
-EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
-EXTERN void           drawRect       (int x, int y, int width, int height, int index);
+EXTERN SDL_Surface*   createSurface     (unsigned char* pixels, int width, int height);
+EXTERN void           drawRect          (int x, int y, int width, int height, int index);
+EXTERN void           enableColorKey    (SDL_Surface* surface, unsigned int index);
+EXTERN unsigned int   getColorKey       (SDL_Surface* surface);
+EXTERN void           setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length);
 
 #endif
 

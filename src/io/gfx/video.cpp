@@ -53,7 +53,11 @@ SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 	int y;
 
 	// Create the surface
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	ret = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
+#else
 	ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+#endif
 
 	// Set the surface's palette
 	video.restoreSurfacePalette(ret);
@@ -109,6 +113,16 @@ void Video::findResolutions () {
 #ifdef NO_RESIZE
 	minW = maxW = DEFAULT_SCREEN_WIDTH;
 	minH = maxH = DEFAULT_SCREEN_HEIGHT;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_DisplayMode mode;
+
+	minW = maxW = DEFAULT_SCREEN_WIDTH;
+	minH = maxH = DEFAULT_SCREEN_HEIGHT;
+
+	if (SDL_GetDesktopDisplayMode(SDL_GetWindowDisplayIndex(window), &mode) >= 0) {
+		maxW = mode.w;
+		maxH = mode.h;
+	}
 #else
 	SDL_Rect **resolutions;
 	int count;
@@ -165,6 +179,29 @@ bool Video::init (SetupOptions cfg) {
 
 	fullscreen = cfg.fullScreen;
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	window = SDL_CreateWindow("OpenJazz", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SW, SH, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
+
+	if (!window) {
+
+		LOG_FATAL("Could not create window: %s", SDL_GetError());
+
+		return false;
+
+	}
+
+	renderer = SDL_CreateRenderer(window, -1, 0);
+
+	if (!renderer) {
+
+		LOG_FATAL("Could not create renderer: %s", SDL_GetError());
+
+		return false;
+
+	}
+
+#endif
+
 	if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
 
 	findResolutions();
@@ -203,8 +240,18 @@ bool Video::reset (int width, int height) {
 	screenW = width;
 	screenH = height;
 
-#ifdef SCALE
 	if (canvas != screen) SDL_FreeSurface(canvas);
+	canvas = NULL;
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_FreeSurface(screen);
+	screen = NULL;
+
+	SDL_FreeSurface(textureSurface);
+	textureSurface = NULL;
+
+	SDL_DestroyTexture(texture);
+	texture = NULL;
 #endif
 
 #ifdef NO_RESIZE
@@ -219,10 +266,17 @@ bool Video::reset (int width, int height) {
 		screenH = minH;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+
+	SDL_SetWindowSize(window, screenW, screenH);
+	SDL_SetWindowFullscreen(window, fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP: 0);
+
+#else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 
 	if (!screen) return false;
 
+#endif
 
 #ifdef SCALE
 	// Check that the scale will fit in the current resolution
@@ -237,6 +291,10 @@ bool Video::reset (int width, int height) {
 		canvasW = screenW / scaleFactor;
 		canvasH = screenH / scaleFactor;
 		canvas = createSurface(NULL, canvasW, canvasH);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		if (setup.scale2x && scaleFactor < 5)
+			screen = createSurface(NULL, screenW, screenH);
+#endif
 
 	} else
 #endif
@@ -244,9 +302,41 @@ bool Video::reset (int width, int height) {
 
 		canvasW = screenW;
 		canvasH = screenH;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		canvas = createSurface(NULL, canvasW, canvasH);
+#else
 		canvas = screen;
+#endif
 
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (!screen) {
+		screen = SDL_CreateRGBSurfaceFrom(canvas->pixels, canvas->w, canvas->h, canvas->format->BitsPerPixel, canvas->pitch,
+		                                  canvas->format->Rmask, canvas->format->Gmask, canvas->format->Bmask, canvas->format->Amask);
+	}
+
+	Uint32 format = SDL_PIXELFORMAT_UNKNOWN;
+	SDL_RendererInfo info;
+	if (SDL_GetRendererInfo(renderer, &info) >= 0) {
+		for (Uint32 i = 0; i < info.num_texture_formats; i++) {
+			if (SDL_ISPIXELFORMAT_PACKED(info.texture_formats[i])) {
+				format = info.texture_formats[i];
+				break;
+			}
+		}
+	}
+	if (format == SDL_PIXELFORMAT_UNKNOWN)
+		format = SDL_PIXELFORMAT_RGB888;
+
+	texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, screen->w, screen->h);
+
+	if (!texture) return false;
+
+	textureSurface = SDL_CreateRGBSurfaceWithFormat(SDL_SWSURFACE, screen->w, screen->h, SDL_BITSPERPIXEL(format), format);
+
+	if (!textureSurface) return false;
+#endif
 
 #if !defined(WIZ) && !defined(GP2X)
 	expose();
@@ -277,10 +367,10 @@ bool Video::reset (int width, int height) {
 void Video::setPalette (SDL_Color *palette) {
 
 	// Make palette changes invisible until the next draw. Hopefully.
-	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
+	clearScreen(SDL_MapRGB(canvas->format, 0, 0, 0));
 	flip(0);
 
-	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
+	changePalette(palette, 0, 256);
 	currentPalette = palette;
 
 	return;
@@ -309,7 +399,11 @@ SDL_Color* Video::getPalette () {
  */
 void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int amount) {
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_SetPaletteColors(screen->format->palette, palette, first, amount);
+#else
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
+#endif
 
 	return;
 
@@ -323,7 +417,7 @@ void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int
  */
 void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
-	SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
+	setLogicalPalette(surface, logicalPalette, 0, 256);
 
 	return;
 
@@ -428,7 +522,11 @@ void Video::setTitle (const char *title) {
 
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_SetWindowTitle(window, windowTitle);
+#else
 	SDL_WM_SetCaption(windowTitle, NULL);
+#endif
 
 	delete[] windowTitle;
 
@@ -487,8 +585,8 @@ bool Video::isFullscreen () {
  */
 void Video::expose () {
 
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+	setLogicalPalette(canvas, logicalPalette, 0, 256);
+	changePalette(currentPalette, 0, 256);
 
 	return;
 
@@ -527,6 +625,7 @@ void Video::update (SDL_Event *event) {
 			break;
     #endif
 
+    #if !SDL_VERSION_ATLEAST(2, 0, 0)
     #ifndef NO_RESIZE
 		case SDL_VIDEORESIZE:
 
@@ -540,6 +639,7 @@ void Video::update (SDL_Event *event) {
 			expose();
 
 			break;
+    #endif
 
 	}
 #endif
@@ -564,13 +664,15 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	if (canvas != NULL && canvas != screen) {
 
 		// Copy everything that has been drawn so far
-		if (setup.scale2x)
+		if (setup.scale2x && scaleFactor < 5)
 			scale(scaleFactor,
 				screen->pixels, screen->pitch,
 				canvas->pixels, canvas->pitch,
 				screen->format->BytesPerPixel, canvas->w, canvas->h);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 		else
 			SDL_SoftStretch(canvas, NULL, screen, NULL);
+#endif
 
 	}
 #endif
@@ -589,7 +691,7 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 
 			paletteEffects->apply(shownPalette, false, mspf, effectsStopped);
 
-			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+			changePalette(shownPalette, 0, 256);
 
 		} else {
 
@@ -600,7 +702,15 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	}
 
 	// Show what has been drawn
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_BlitSurface(screen, NULL, textureSurface, NULL);
+	SDL_UpdateTexture(texture, NULL, textureSurface->pixels, textureSurface->pitch);
+	SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
+#else
 	SDL_Flip(screen);
+#endif
 
 	return;
 
@@ -652,3 +762,42 @@ void drawRect (int x, int y, int width, int height, int index) {
 
 }
 
+
+void enableColorKey (SDL_Surface* surface, unsigned int index) {
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_SetColorKey(surface, SDL_TRUE, index);
+#else
+	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, index);
+#endif
+
+	return;
+
+}
+
+unsigned int getColorKey (SDL_Surface* surface) {
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	Uint32 key;
+
+	if (SDL_GetColorKey(surface, &key) < 0)
+		return -1;
+
+	return key;
+#else
+	return surface->format->colorkey;
+#endif
+
+}
+
+void setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length) {
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (surface->format->palette) {
+		SDL_SetPaletteColors(surface->format->palette, palette, start, length);
+	}
+#else
+	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
+#endif
+
+}

@@ -64,7 +64,7 @@ void Sprite::clearPixels () {
 
 	data = 0;
 	pixels = createSurface(&data, 1, 1);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, 0);
+	enableColorKey(pixels, 0);
 
 	return;
 
@@ -94,7 +94,7 @@ void Sprite::setPixels (unsigned char *data, int width, int height, unsigned cha
 	if (pixels) SDL_FreeSurface(pixels);
 
 	pixels = createSurface(data, width, height);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, key);
+	enableColorKey(pixels, key);
 
 	return;
 
@@ -158,7 +158,7 @@ int Sprite::getYOffset () {
  */
 void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 
-	SDL_SetPalette(pixels, SDL_LOGPAL, palette + start, start, amount);
+	setLogicalPalette(pixels, palette + start, start, amount);
 
 	return;
 
@@ -178,7 +178,7 @@ void Sprite::flashPalette (int index) {
 	for (count = 0; count < 256; count++)
 		palette[count].r = palette[count].g = palette[count].b = index;
 
-	SDL_SetPalette(pixels, SDL_LOGPAL, palette, 0, 256);
+	setLogicalPalette(pixels, palette, 0, 256);
 
 	return;
 
@@ -241,7 +241,7 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 	int dstX, dstY;
 	int srcX, srcY;
 
-	key = pixels->format->colorkey;
+	key = getColorKey(pixels);
 
 	fullWidth = FTOI(pixels->w * scale);
 	if (x < -(fullWidth >> 1)) return; // Off-screen

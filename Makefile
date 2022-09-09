@@ -14,8 +14,9 @@ ifeq ($(OS),Windows_NT)
 endif
 
 # SDL
-CXXFLAGS += $(shell sdl-config --cflags)
-LIBS += $(shell sdl-config --libs)
+SDLCONFIG ?= sdl-config
+CXXFLAGS += $(shell $(SDLCONFIG) --cflags)
+LIBS += $(shell $(SDLCONFIG) --libs)
 
 LIBS += -lm
 

@@ -28,6 +28,7 @@
 
 #include <SDL_audio.h>
 #include <psmplug.h>
+#include <cstring>
 
 #if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP) || defined(__vita__)
 	#define SOUND_FREQ 22050

@@ -132,7 +132,7 @@ SetupOptions Setup::load () {
 
 	// Read controls
 	for (count = 0; count < CONTROLS - 4; count++)
-		controls.setKey(count, (SDLKey)(file->loadInt()));
+		controls.setKey(count, file->loadInt());
 
 	for (count = 0; count < CONTROLS; count++)
 		controls.setButton(count, file->loadInt());
