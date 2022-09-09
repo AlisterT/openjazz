@@ -15,8 +15,8 @@ defaults:
     shell: bash
 
 jobs:
-  linux-gcc:
-    name: Build (Ubuntu 18.04 LTS x86_64, GCC)
+  linux-gcc-sdl1:
+    name: Build (Ubuntu 18.04 LTS x86_64, GCC, SDL 1.2)
     runs-on: ubuntu-18.04
     steps:
       - name: Install dependencies
@@ -34,11 +34,11 @@ jobs:
 
       - name: Build OpenJazz (normal)
         run: |
-          make
+          make SDLCONFIG=sdl-config
           ls -l OpenJazz
 
-  linux-clang:
-    name: Build (Ubuntu 18.04 LTS x86_64, Clang)
+  linux-clang-sdl1:
+    name: Build (Ubuntu 18.04 LTS x86_64, Clang, SDL 1.2)
     runs-on: ubuntu-18.04
     steps:
       - name: Install dependencies
@@ -60,7 +60,7 @@ jobs:
           export CXX=clang++
           export CXXFLAGS="-Wall -O2 -g -ffunction-sections -fdata-sections"
           export LDFLAGS="-Wl,--gc-sections"
-          make
+          make SDLCONFIG=sdl-config
           ls -l OpenJazz
 
       - name: Prepare artifact
@@ -75,6 +75,51 @@ jobs:
         with:
           name: openjazz-linux-glibc2.27-x86_64
           path: OJ-*/
+
+  linux-gcc-sdl2:
+    name: Build (Ubuntu 18.04 LTS x86_64, GCC, SDL2)
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -yqq
+          sudo apt-get install -yqq build-essential libsdl2-dev
+
+      - name: Prepare Environment
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
+          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build OpenJazz (normal)
+        run: |
+          make SDLCONFIG=sdl2-config
+          ls -l OpenJazz
+
+  linux-clang-sdl2:
+    name: Build (Ubuntu 18.04 LTS x86_64, Clang, SDL2)
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -yqq
+          sudo apt-get install -yqq build-essential libsdl2-dev clang-10 \
+            asciidoctor w3m
+
+      - name: Prepare Environment
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
+          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build OpenJazz (normal)
+        run: |
+          make SDLCONFIG=sdl2-config
+          ls -l OpenJazz
 
   windows-mingw-gcc:
     name: Build (Windows x86_64, MinGW, GCC)
