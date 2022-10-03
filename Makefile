@@ -13,9 +13,10 @@ ifeq ($(OS),Windows_NT)
 	LIBS += -lws2_32
 endif
 
-# SDL
-CXXFLAGS += $(shell sdl-config --cflags)
-LIBS += $(shell sdl-config --libs)
+# SDL1.2 or SDL2
+SDLCONFIG ?= sdl-config
+CXXFLAGS += $(shell $(SDLCONFIG) --cflags)
+LIBS += $(shell $(SDLCONFIG) --libs)
 
 LIBS += -lm
 

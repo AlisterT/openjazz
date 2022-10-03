@@ -25,7 +25,11 @@
 #include "paletteeffects.h"
 
 #include <SDL.h>
-
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	#define OJ_SDL2 1
+#else
+	#define OJ_SDL2 0
+#endif
 
 // Constants
 
