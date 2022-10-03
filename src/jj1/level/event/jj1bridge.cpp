@@ -51,8 +51,6 @@ JJ1Bridge::JJ1Bridge (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
 	leftDipX = set->multiA * set->pieceSize * F4;
 	rightDipX = 0;
 
-	return;
-
 }
 
 
@@ -65,18 +63,10 @@ JJ1Bridge::JJ1Bridge (unsigned char gX, unsigned char gY) : JJ1Event(gX, gY) {
  */
 JJ1Event* JJ1Bridge::step (unsigned int ticks) {
 
-	JJ1LevelPlayer* levelPlayer;
-	int count;
-	fixed bridgeLength, playerDipX, playerDipY;
-
-
 	set = prepareStep(ticks);
-
 	if (!set) return remove(false);
 
-
-	bridgeLength = set->multiA * set->pieceSize * F4;
-
+	fixed bridgeLength = set->multiA * set->pieceSize * F4;
 
 	// Gradually stop the bridge sagging
 	if (leftDipX < bridgeLength) leftDipX += 5120;
@@ -84,12 +74,12 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks) {
 	if (rightDipX > 0) rightDipX -= 5120;
 	if (rightDipX < 0) rightDipX = 0;
 
+	for (int i = 0; i < nPlayers; i++) {
 
-	for (count = 0; count < nPlayers; count++) {
+		JJ1LevelPlayer* levelPlayer = players[i].getJJ1LevelPlayer();
 
-		levelPlayer = players[count].getJJ1LevelPlayer();
-
-		playerDipX = levelPlayer->getX() + PXO_MID - x;
+		fixed playerDipX = levelPlayer->getX() + PXO_MID - x;
+		fixed playerDipY;
 
 		if (playerDipX < bridgeLength >> 1) playerDipY = playerDipX >> 3;
 		else playerDipY = (bridgeLength - playerDipX) >> 3;
@@ -109,7 +99,6 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks) {
 
 	}
 
-
 	return this;
 
 }
@@ -123,31 +112,23 @@ JJ1Event* JJ1Bridge::step (unsigned int ticks) {
  */
 void JJ1Bridge::draw (unsigned int ticks, int change) {
 
-	unsigned char frame;
 	int count;
-	fixed bridgeLength, anchorY, leftDipY, rightDipY;
-
 
 	if (next) next->draw(ticks, change);
-
 
 	// If the event has been removed from the grid, do not show it
 	if (!set) return;
 
-
 	// Check if the event has anything to draw
 	if ((animType == E_NOANIM) || ((set->anims[animType] & 0x7F) == 0)) return;
 
-
-	frame = ticks / (set->animSpeed << 5);
-
+	unsigned char frame = ticks / (set->animSpeed << 5);
 	setAnimFrame(frame + gridX + gridY, true);
 
-
 	// Draw the bridge
-
-	bridgeLength = set->multiA * set->pieceSize * F4;
-	anchorY = getDrawY(change) - F10 - anim->getOffset();
+	fixed leftDipY, rightDipY;
+	fixed bridgeLength = set->multiA * set->pieceSize * F4;
+	fixed anchorY = getDrawY(change) - F10 - anim->getOffset();
 
 	if (rightDipX >= leftDipX) {
 
@@ -186,9 +167,4 @@ void JJ1Bridge::draw (unsigned int ticks, int change) {
 
 	}
 
-
-	return;
-
 }
-
-

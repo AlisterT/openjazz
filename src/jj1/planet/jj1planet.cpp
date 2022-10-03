@@ -54,7 +54,7 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
 	} catch (int e) {
 
-		throw e;
+		throw;
 
 	}
 
@@ -91,8 +91,6 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
 	delete file;
 
-	return;
-
 }
 
 
@@ -102,8 +100,6 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 JJ1Planet::~JJ1Planet () {
 
 	delete[] name;
-
-	return;
 
 }
 
@@ -161,5 +157,3 @@ int JJ1Planet::play () {
 	return E_NONE;
 
 }
-
-

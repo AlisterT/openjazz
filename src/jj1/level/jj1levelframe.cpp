@@ -210,7 +210,7 @@ void JJ1Level::draw () {
 	SDL_Rect src, dst;
 	int viewH;
 	int vX, vY;
-	int x, y, bgScale;
+	int x, y;
 	unsigned int change;
 
 
@@ -252,6 +252,7 @@ void JJ1Level::draw () {
 	if (sky) {
 
 		// Background scale
+		int bgScale;
 		if (canvasW > 320) bgScale = ((canvasH - 1) / 100) + 1;
 		else bgScale = ((canvasH - 34) / 100) + 1;
 
@@ -509,9 +510,4 @@ void JJ1Level::draw () {
 	// Fill in remaining energy bar space with black
 	drawRect(dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
 
-
-	return;
-
 }
-
-

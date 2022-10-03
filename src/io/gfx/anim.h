@@ -50,6 +50,9 @@ class Anim {
 		unsigned char  accessory; ///< Number of an animation that is an accessory to this animation
 		                          ///< Most of the time accessories are used with guardians.
 
+		Anim(const Anim&); // non construction-copyable
+		Anim& operator=(const Anim&); // non copyable
+
 	public:
 		Anim                        ();
 		~Anim                       ();

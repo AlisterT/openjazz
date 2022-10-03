@@ -134,8 +134,6 @@ void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedP
 
 	delete[] pixels;
 
-	return;
-
 }
 
 
@@ -147,14 +145,8 @@ void JJ2Level::loadSprite (unsigned char* parameters, unsigned char* compressedP
 int JJ2Level::loadSprites () {
 
 	File* file;
-	unsigned char* aBuffer;
-	unsigned char* bBuffer;
-	unsigned char* cBuffer;
 	int* setOffsets;
-	int aCLength, bCLength, cCLength;
-	int aLength, bLength, cLength;
-	int setAnims, nSprites, animSprites;
-	int set, anim, sprite, setSprite;
+	int set;
 
 	// Thanks to Neobeo for working out the .j2a format
 
@@ -180,7 +172,7 @@ int JJ2Level::loadSprites () {
 
 	// Count number of sprites
 
-	nSprites = 0;
+	int nSprites = 0;
 
 	for (set = 0; set < nAnimSets; set++) {
 
@@ -204,7 +196,7 @@ int JJ2Level::loadSprites () {
 
 		file->seek(setOffsets[set] + 4, true);
 
-		setAnims = file->loadChar();
+		int setAnims = file->loadChar();
 
 		if (setAnims) {
 
@@ -220,24 +212,24 @@ int JJ2Level::loadSprites () {
 
 		file->seek(7, false);
 
-		aCLength = file->loadInt();
-		aLength = file->loadInt();
-		bCLength = file->loadInt();
-		bLength = file->loadInt();
-		cCLength = file->loadInt();
-		cLength = file->loadInt();
+		int aCLength = file->loadInt();
+		int aLength = file->loadInt();
+		int bCLength = file->loadInt();
+		int bLength = file->loadInt();
+		int cCLength = file->loadInt();
+		int cLength = file->loadInt();
 		file->loadInt(); // Don't need this compressed block length
 		file->loadInt(); // Don't need this block length
 
-		aBuffer = file->loadLZ(aCLength, aLength);
-		bBuffer = file->loadLZ(bCLength, bLength);
-		cBuffer = file->loadLZ(cCLength, cLength);
+		unsigned char* aBuffer = file->loadLZ(aCLength, aLength);
+		unsigned char* bBuffer = file->loadLZ(bCLength, bLength);
+		unsigned char* cBuffer = file->loadLZ(cCLength, cLength);
 
-		setSprite = 0;
+		int setSprite = 0;
 
-		for (anim = 0; anim < setAnims; anim++) {
+		for (int anim = 0; anim < setAnims; anim++) {
 
-			animSprites = createShort(aBuffer + (anim * 8));
+			int animSprites = createShort(aBuffer + (anim * 8));
 
 			// Fonts are loaded separately
 			if (animSprites == 224) animSprites = 1;
@@ -245,7 +237,7 @@ int JJ2Level::loadSprites () {
 			animSets[set][anim].setData(animSprites, 0, 0, 0, 0, 0, 0);
 			flippedAnimSets[set][anim].setData(animSprites, 0, 0, 0, 0, 0, 0);
 
-			for (sprite = 0; sprite < animSprites; sprite++) {
+			for (int sprite = 0; sprite < animSprites; sprite++) {
 
 				loadSprite(bBuffer + (setSprite * 24), cBuffer, spriteSet + nSprites, flippedSpriteSet + nSprites);
 
@@ -457,7 +449,7 @@ int JJ2Level::loadTiles (char* fileName) {
  * @param y Y-coordinate of the new event
  * @param data Event parameters
  */
-void JJ2Level::createEvent (int x, int y, unsigned char* data) {
+void JJ2Level::createEvent (int x, int y, const unsigned char* data) {
 
 	unsigned char type;
 	int properties;
@@ -522,8 +514,6 @@ void JJ2Level::createEvent (int x, int y, unsigned char* data) {
 
 	}
 
-	return;
-
 }
 
 
@@ -551,8 +541,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	int count, x, y, ret;
 	unsigned char tileQuad[8];
 	short int* quadRefs;
-	int flags, width, pitch, height;
-	fixed xSpeed, ySpeed;
+	int width, height;
 	unsigned char startX, startY;
 
 	// Thanks to Neobeo for working out the most of the .j2l format
@@ -564,7 +553,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	} catch (int e) {
 
-		throw e;
+		throw;
 
 	}
 
@@ -578,7 +567,6 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	} catch (int e) {
 
 		delete font;
-
 		return e;
 
 	}
@@ -586,7 +574,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	// Load level name
 	file->seek(188, true);
 
-	string = (char *)file->loadBlock(32);
+	string = reinterpret_cast<char *>(file->loadBlock(32));
 
 
 	// Show loading screen
@@ -624,7 +612,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Load tile set from given file
 
-	ret = loadTiles((char *)aBuffer + 51);
+	ret = loadTiles(reinterpret_cast<char *>(aBuffer) + 51);
 
 	if (ret < 0) {
 
@@ -644,14 +632,14 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 
 	// Next level
-	string = (char *)aBuffer + 115;
+	string = reinterpret_cast<char *>(aBuffer) + 115;
 
 	if (fileExists(string)) nextLevel = createString(string);
 	else nextLevel = createString(string, ".j2l");
 
 
 	// Music file
-	string = (char *)aBuffer + 179;
+	string = reinterpret_cast<char *>(aBuffer) + 179;
 
 	if (fileExists(string)) musicFile = createString(string);
 	else musicFile = createString(string, ".j2b");
@@ -659,16 +647,16 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Create layers
 
-	quadRefs = (short int *)dBuffer;
+	quadRefs = reinterpret_cast<short int *>(dBuffer);
 
 	for (count = 0; count < LAYERS; count++) {
 
-		flags = aBuffer[8403 + (count << 2)];
+		int flags = aBuffer[8403 + (count << 2)];
 		width = createInt(aBuffer + 8403 + 48 + (count << 2));
-		pitch = createInt(aBuffer + 8403 + 80 + (count << 2));
+		int pitch = createInt(aBuffer + 8403 + 80 + (count << 2));
 		height = createInt(aBuffer + 8403 + 112 + (count << 2));
-		xSpeed = createInt(aBuffer + 8403 + 248 + (count << 2)) >> 6;
-		ySpeed = createInt(aBuffer + 8403 + 280 + (count << 2)) >> 6;
+		fixed xSpeed = createInt(aBuffer + 8403 + 248 + (count << 2)) >> 6;
+		fixed ySpeed = createInt(aBuffer + 8403 + 280 + (count << 2)) >> 6;
 
 		pitch = (pitch + 3) >> 2;
 
@@ -787,7 +775,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 		string[2] = 0;
 		string[3] = 0;
 
-		game->send((unsigned char *)string);
+		game->send(reinterpret_cast<unsigned char *>(string));
 
 		delete[] string;
 
@@ -914,4 +902,3 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	return E_NONE;
 
 }
-

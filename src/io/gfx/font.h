@@ -41,10 +41,10 @@ class Font {
 		char           map[128]; ///< Maps ASCII values to symbol indices
 
 	public:
-		Font                     (const char *fileName);
-		Font                     (unsigned char *pixels, bool big);
-		Font                     (bool bonus);
-		~Font                    ();
+		explicit Font(const char *fileName);
+		Font(unsigned char *pixels, bool big);
+		explicit Font(bool bonus);
+		~Font();
 
 		int  showString          (const char *s, int x, int y);
 		int  showSceneString     (const unsigned char *s, int x, int y);

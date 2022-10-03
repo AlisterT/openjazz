@@ -70,8 +70,8 @@ class GameMenu : public Menu {
 		int joinGame          ();
 
 	public:
-		GameMenu  (File* file);
-		~GameMenu ();
+		explicit GameMenu(File* file);
+		~GameMenu();
 
 		int newGame  ();
 		int loadGame ();
@@ -106,6 +106,8 @@ class MainMenu : public Menu {
 		GameMenu*    gameMenu; ///< New game menu
 		SDL_Color    palette[256]; ///< Menu palette
 
+		MainMenu(const MainMenu&); // non construction-copyable
+		MainMenu& operator=(const MainMenu&); // non copyable
 		int select (int option);
 
 	public:

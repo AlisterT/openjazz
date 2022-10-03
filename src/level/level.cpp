@@ -55,18 +55,13 @@ Level::Level (Game* owner) {
 
 	// Arbitrary initial value
 	smoothfps = 50.0f;
-
 	paletteEffects = NULL;
-
 	paused = false;
 
 	// Set the level stage
 	stage = LS_NORMAL;
-
-	stats = 0;
-
-	return;
-
+	sprites = tickOffset = steps = prevTicks = ticks = endTime = items = stats = 0;
+	multiplayer = false;
 }
 
 
@@ -78,8 +73,6 @@ Level::~Level () {
 	stopMusic();
 
 	if (paletteEffects) delete paletteEffects;
-
-	return;
 
 }
 
@@ -107,8 +100,6 @@ void Level::createLevelPlayers (LevelType levelType, Anim** anims,
 		game->resetPlayer(players + count);
 
 	}
-
-	return;
 
 }
 
@@ -189,8 +180,6 @@ void Level::timeCalcs () {
 		ticks = globalTicks - tickOffset;
 
 	}
-
-	return;
 
 }
 
@@ -308,8 +297,6 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 	}
 
-	return;
-
 }
 
 
@@ -322,8 +309,6 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
  * @return Error code
  */
 int Level::select (bool& menu, int option) {
-
-	bool wasSlow;
 
 	switch (option) {
 
@@ -353,7 +338,7 @@ int Level::select (bool& menu, int option) {
 
 			if (!multiplayer) {
 
-				wasSlow = setup.slowMotion;
+				bool wasSlow = setup.slowMotion;
 
 				if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
 
@@ -482,8 +467,6 @@ int Level::loop (bool& menu, int& option, bool& message) {
  */
 void Level::addTimer (int seconds) {
 
-	unsigned char buffer[MTL_L_PROP];
-
 	if (stage != LS_NORMAL) return;
 
 	endTime += seconds * 1000;
@@ -493,6 +476,7 @@ void Level::addTimer (int seconds) {
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_PROP];
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 2; // add timer
@@ -502,8 +486,6 @@ void Level::addTimer (int seconds) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -515,22 +497,19 @@ void Level::addTimer (int seconds) {
  */
 void Level::setStage (LevelStage newStage) {
 
-	unsigned char buffer[MTL_L_STAGE];
-
 	if (stage == newStage) return;
 
 	stage = newStage;
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_STAGE];
 		buffer[0] = MTL_L_STAGE;
 		buffer[1] = MT_L_STAGE;
 		buffer[2] = stage;
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -545,4 +524,3 @@ LevelStage Level::getStage () {
 	return stage;
 
 }
-

@@ -35,13 +35,15 @@
 JJ2Layer::JJ2Layer () {
 
 	width = height = 1;
+	tileX = tileY = 0;
+	limit = true;
+	warp = false;
+	xSpeed = ySpeed = 0;
 
 	grid = new JJ2Tile *[1];
 	*grid = new JJ2Tile[1];
 
 	(*grid)->tile = 0;
-
-	return;
 
 }
 
@@ -75,8 +77,6 @@ JJ2Layer::JJ2Layer (int flags, int newWidth, int newHeight, fixed newXSpeed, fix
 	xSpeed = newXSpeed;
 	ySpeed = newYSpeed;
 
-	return;
-
 }
 
 
@@ -87,8 +87,6 @@ JJ2Layer::~JJ2Layer () {
 
 	delete[] *grid;
 	delete[] grid;
-
-	return;
 
 }
 
@@ -165,8 +163,6 @@ void JJ2Layer::setFrame (int x, int y, unsigned char frame) {
 
 	grid[y][x].frame = frame;
 
-	return;
-
 }
 
 
@@ -200,8 +196,6 @@ void JJ2Layer::setTile (int x, int y, unsigned short int tile, bool TSF, int til
 	if (ge->tile > tiles) ge->tile = 0;
 
 	ge->frame = 0;
-
-	return;
 
 }
 
@@ -258,7 +252,4 @@ void JJ2Layer::draw (SDL_Surface* tileSet, SDL_Surface* flippedTileSet) {
 
 	}
 
-	return;
-
 }
-

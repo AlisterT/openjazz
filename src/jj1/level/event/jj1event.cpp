@@ -70,8 +70,6 @@ JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 	width = F32;
 	height = F32;
 
-	return;
-
 }
 
 
@@ -81,8 +79,6 @@ JJ1Event::JJ1Event (unsigned char gX, unsigned char gY) {
 JJ1Event::~JJ1Event () {
 
 	if (next) delete next;
-
-	return;
 
 }
 
@@ -133,8 +129,6 @@ void JJ1Event::destroy (unsigned int ticks) {
 	level->setEventTime(gridX, gridY, ticks);
 
 	playSound(set->sound);
-
-	return;
 
 }
 
@@ -221,8 +215,6 @@ void JJ1Event::calcDimensions () {
 
 	}
 
-	return;
-
 }
 
 
@@ -267,8 +259,6 @@ void JJ1Event::setAnimType(unsigned char type) {
 
 	calcDimensions();
 
-	return;
-
 }
 
 
@@ -281,8 +271,6 @@ void JJ1Event::setAnimFrame (int frame, bool looping) {
 
 	anim->setFrame(frame, looping);
 	calcDimensions();
-
-	return;
 
 }
 
@@ -357,7 +345,4 @@ void JJ1Event::drawEnergy (unsigned int ticks) {
 
 	}
 
-	return;
-
 }
-

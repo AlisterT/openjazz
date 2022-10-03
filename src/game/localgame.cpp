@@ -51,8 +51,6 @@ LocalGame::LocalGame (const char *firstLevel, int gameDifficulty) {
 	localPlayer = players = new Player[1];
 	localPlayer->init(this, setup.characterName, NULL, 0);
 
-	return;
-
 }
 
 
@@ -62,8 +60,6 @@ LocalGame::LocalGame (const char *firstLevel, int gameDifficulty) {
 LocalGame::~LocalGame () {
 
 	delete mode;
-
-	return;
 
 }
 
@@ -102,8 +98,6 @@ void LocalGame::send (unsigned char *buffer) {
 
 	// Do nothing
 
-	return;
-
 }
 
 
@@ -136,8 +130,6 @@ void LocalGame::score (unsigned char team) {
 
 	// Do nothing
 
-	return;
-
 }
 
 
@@ -152,7 +144,4 @@ void LocalGame::setCheckpoint (int gridX, int gridY) {
 	checkX = gridX;
 	checkY = gridY;
 
-	return;
-
 }
-

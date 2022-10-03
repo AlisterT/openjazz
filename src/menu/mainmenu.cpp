@@ -75,7 +75,7 @@ MainMenu::MainMenu () {
 
 		if (logo) SDL_FreeSurface(logo);
 
-		throw e;
+		throw;
 
 	}
 
@@ -125,8 +125,6 @@ MainMenu::MainMenu () {
 
 	delete file;
 
-	return;
-
 }
 
 
@@ -140,8 +138,6 @@ MainMenu::~MainMenu () {
 	if (logo) SDL_FreeSurface(logo);
 
 	delete gameMenu;
-
-	return;
 
 }
 
@@ -465,4 +461,3 @@ int MainMenu::skip (int levelNum, int worldNum) {
 	return E_RETURN;
 
 }
-

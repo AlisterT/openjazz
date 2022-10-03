@@ -306,7 +306,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 		PLATFORM_ErrorNoDatafiles();
 
-		throw e;
+		throw;
 
 	}
 
@@ -346,7 +346,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 		delete firstPath;
 
-		throw e;
+		throw;
 
 	}
 

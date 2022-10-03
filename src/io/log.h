@@ -53,6 +53,9 @@ class Log {
 		void log(int level, const char *file, int line, const char *fmt, ...) LIKE_PRINTF;
 
 	private:
+		Log(const Log&); // non construction-copyable
+		Log& operator=(const Log&); // non copyable
+
 		FILE *logfile;
 		int level;
 		bool quiet;

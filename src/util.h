@@ -33,8 +33,8 @@ EXTERN fixed sinLut[1024];
 // Functions
 
 EXTERN bool               fileExists           (const char *fileName);
-EXTERN unsigned short int createShort          (unsigned char* data);
-EXTERN int                createInt            (unsigned char* data);
+EXTERN unsigned short int createShort          (const unsigned char* data);
+EXTERN int                createInt            (const unsigned char* data);
 EXTERN char*              createString         (const char *string);
 EXTERN char*              createString         (const char *first, const char *second);
 EXTERN char*              createFileName       (const char *type, int extension);

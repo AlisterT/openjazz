@@ -51,11 +51,10 @@
  */
 JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
-	int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
+	const int offsets[15] = {PCO_GREY, PCO_SGREEN, PCO_BLUE, PCO_RED, PCO_LGREEN,
 		PCO_LEVEL1, PCO_YELLOW, PCO_LEVEL2, PCO_ORANGE, PCO_LEVEL3, PCO_LEVEL4,
 		PCO_SANIM, PCO_LANIM, PCO_LEVEL5, 256};
 	int count, start, length;
-
 
 	player = parent;
 
@@ -65,10 +64,6 @@ JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 
 	for (count = 0; count < flockSize; count++)
 		birds = new JJ1Bird(birds, this, startX, startY - 2);
-
-	shield = 0;
-	enemies = items = 0;
-	gem = false;
 
 	reset(startX, startY);
 
@@ -118,9 +113,6 @@ JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 		palette[count + 88].r = palette[count + 88].g = palette[count + 88].b =
 			(count * length / 8) + start;
 
-
-	return;
-
 }
 
 
@@ -130,8 +122,6 @@ JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 JJ1LevelPlayer::~JJ1LevelPlayer () {
 
 	if (birds) delete birds;
-
-	return;
 
 }
 
@@ -159,12 +149,11 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	reactionTime = 0;
 	jumpHeight = PYO_JUMP;
 	targetY = TTOF(LH);
-	fastFeetTime = 0;
-	warpTime = 0;
-	fireTime = 0;
-	fireAnimTime = 0;
-
-	return;
+	fastFeetTime = warpTime = fireTime = fireAnimTime = 0;
+	eventX = eventY = warpX = warpY = lookTime = 0;
+	shield = 0;
+	enemies = items = 0;
+	gem = false;
 
 }
 
@@ -175,8 +164,6 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 void JJ1LevelPlayer::addItem () {
 
 	items++;
-
-	return;
 
 }
 
@@ -192,8 +179,6 @@ void JJ1LevelPlayer::clearEvent (unsigned char gridX, unsigned char gridY) {
 	// If the location matches, clear the event
 
 	if ((gridX == eventX) && (gridY == eventY)) eventType = JJ1PE_NONE;
-
-	return;
 
 }
 
@@ -376,8 +361,6 @@ void JJ1LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	}
 
-	return;
-
 }
 
 
@@ -408,11 +391,9 @@ bool JJ1LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) 
  */
 JJ1PlayerReaction JJ1LevelPlayer::reacted (unsigned int ticks) {
 
-	JJ1PlayerReaction oldReaction;
-
 	if ((reaction != PR_NONE) && (reactionTime < ticks)) {
 
-		oldReaction = reaction;
+		JJ1PlayerReaction oldReaction = reaction;
 		reaction = PR_NONE;
 
 		return oldReaction;
@@ -446,8 +427,6 @@ void JJ1LevelPlayer::setPlatform (unsigned char gridX, unsigned char gridY, fixe
 	}
 
 	y = newY;
-
-	return;
 
 }
 
@@ -866,8 +845,6 @@ void JJ1LevelPlayer::send (unsigned char *buffer) {
 	buffer[43] = (y >> 8) & 255;
 	buffer[44] = y & 255;
 
-	return;
-
 }
 
 
@@ -918,7 +895,4 @@ void JJ1LevelPlayer::receive (unsigned char *buffer) {
 
 	}
 
-	return;
-
 }
-

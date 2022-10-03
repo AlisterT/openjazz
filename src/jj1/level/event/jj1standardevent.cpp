@@ -107,8 +107,6 @@ JJ1StandardEvent::JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsig
 
 	}
 
-	return;
-
 }
 
 
@@ -567,8 +565,6 @@ void JJ1StandardEvent::move (unsigned int ticks) {
 	x += dx >> 6;
 	y += dy >> 6;
 
-	return;
-
 }
 
 
@@ -1018,17 +1014,12 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
  */
 void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
-	Anim* miscAnim;
-
-
 	if (next) next->draw(ticks, change);
-
 
 	// Uncomment the following to see the raw location
 	/*drawRect(FTOI(getDrawX(change)),
 		FTOI(getDrawY(change) - height), FTOI(width),
 		FTOI(height), 88);*/
-
 
 	// If the event has been removed from the grid, do not show it
 	if (!set) return;
@@ -1045,7 +1036,6 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	}
 
-
 	if ((animType & ~1) == E_LFINISHANIM) {
 
 		setAnimFrame((ticks - level->getEventTime(gridX, gridY)) / (set->animSpeed << 3), false);
@@ -1059,8 +1049,6 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 		setAnimFrame((ticks / (set->animSpeed << 5)) + gridX + gridY, true);
 
 	}
-
-
 
 	// Calculate new positions
 	fixed changeX = getDrawX(change);
@@ -1139,19 +1127,13 @@ void JJ1StandardEvent::draw (unsigned int ticks, int change) {
 
 	}
 
-
-
 	// If the event has been destroyed, draw an explosion
 	if (set->strength && ((animType & ~1) == E_LFINISHANIM)) {
 
-		miscAnim = level->getMiscAnim(MA_EXPLOSION1);
+		Anim* miscAnim = level->getMiscAnim(MA_EXPLOSION1);
 		miscAnim->setFrame((ticks - level->getEventTime(gridX, gridY)) >> 3, false);
 		miscAnim->draw(changeX, changeY);
 
 	}
 
-
-	return;
-
 }
-

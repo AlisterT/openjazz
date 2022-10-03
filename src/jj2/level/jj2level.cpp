@@ -64,8 +64,6 @@ JJ2Level::JJ2Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
 
 	multiplayer = multi;
 
-	return;
-
 }
 
 
@@ -105,8 +103,6 @@ JJ2Level::~JJ2Level () {
 	// Restore panel font palette
 	panelBigFont->restorePalette();
 	panelSmallFont->restorePalette();
-
-	return;
 
 }
 
@@ -178,13 +174,12 @@ bool JJ2Level::checkMaskDown (fixed x, fixed y, bool drop) {
  */
 void JJ2Level::setNext (char* fileName) {
 
-	unsigned char buffer[MTL_L_PROP];
-
 	delete[] nextLevel;
 	nextLevel = createString(fileName);
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_PROP];
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 0; // set next level
@@ -194,8 +189,6 @@ void JJ2Level::setNext (char* fileName) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -209,12 +202,11 @@ void JJ2Level::setNext (char* fileName) {
  */
 void JJ2Level::setFrame (int gridX, int gridY, unsigned char frame) {
 
-	unsigned char buffer[MTL_L_GRID];
-
 	layer->setFrame(gridX, gridY, frame);
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_GRID];
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
 		buffer[2] = gridX & 0xFF;
@@ -227,8 +219,6 @@ void JJ2Level::setFrame (int gridX, int gridY, unsigned char frame) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -317,14 +307,13 @@ Anim* JJ2Level::getPlayerAnim (int character, int anim, bool flipped) {
  */
 void JJ2Level::setWaterLevel (int gridY, bool instant) {
 
-	unsigned char buffer[MTL_L_PROP];
-
 	waterLevelTarget = TTOF(gridY);
 
 	if (instant) waterLevel = waterLevelTarget - F8;
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_PROP];
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 1; // set water level
@@ -334,8 +323,6 @@ void JJ2Level::setWaterLevel (int gridY, bool instant) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -419,8 +406,6 @@ void JJ2Level::receive (unsigned char* buffer) {
 
 	}
 
-	return;
-
 }
 
 
@@ -435,8 +420,7 @@ int JJ2Level::play () {
 	bool pmessage, pmenu;
 	int option;
 	unsigned int returnTime;
-	int count, ret;
-
+	int count;
 
 	jj2LevelPlayer = localPlayer->getJJ2LevelPlayer();
 
@@ -455,7 +439,7 @@ int JJ2Level::play () {
 
 	while (true) {
 
-		ret = loop(pmenu, option, pmessage);
+		int ret = loop(pmenu, option, pmessage);
 
 		if (ret < 0) return ret;
 
@@ -533,5 +517,3 @@ int JJ2Level::play () {
 	return E_NONE;
 
 }
-
-

@@ -60,7 +60,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	} catch (int e) {
 
-		throw e;
+		throw;
 
 	}
 
@@ -92,8 +92,6 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	if (ret < 0) throw ret;
 
-	return;
-
 }
 
 
@@ -104,8 +102,6 @@ JJ1DemoLevel::~JJ1DemoLevel () {
 
 	delete[] macro;
 
-	return;
-
 }
 
 
@@ -115,10 +111,6 @@ JJ1DemoLevel::~JJ1DemoLevel () {
  * @return Error code
  */
 int JJ1DemoLevel::play () {
-
-	unsigned char macroPoint;
-	int ret;
-
 
 	tickOffset = globalTicks;
 	ticks = 17;
@@ -143,8 +135,7 @@ int JJ1DemoLevel::play () {
 
 
 		// Use macro
-
-		macroPoint = macro[(ticks / 76) & 1023];
+		unsigned char macroPoint = macro[(ticks / 76) & 1023];
 
 		if (macroPoint & 128) return E_NONE;
 
@@ -179,7 +170,7 @@ int JJ1DemoLevel::play () {
 		// Process step
 		while (getTimeChange() >= T_STEP) {
 
-			ret = step();
+			int ret = step();
 			steps++;
 
 			if (ret < 0) return ret;

@@ -117,8 +117,6 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
 
 	}
 
-	return;
-
 }
 
 
@@ -151,8 +149,6 @@ void openAudio () {
 
 	SDL_PauseAudio(0);
 
-	return;
-
 }
 
 
@@ -161,18 +157,15 @@ void openAudio () {
  */
 void closeAudio () {
 
-	int count;
-
 	stopMusic();
-
 	SDL_CloseAudio();
 
 	if (rawSounds) {
 
-		for (count = 0; count < nRawSounds; count++) {
+		for (int i = 0; i < nRawSounds; i++) {
 
-			delete[] rawSounds[count].data;
-			delete[] rawSounds[count].name;
+			delete[] rawSounds[i].data;
+			delete[] rawSounds[i].name;
 
 		}
 
@@ -186,8 +179,6 @@ void closeAudio () {
 		delete[] sounds;
 
 	}
-
-	return;
 
 }
 
@@ -283,8 +274,6 @@ void playMusic (const char * fileName, bool restart) {
 	SDL_PauseAudio(0);
 	musicPaused = false;
 
-	return;
-
 }
 
 
@@ -324,8 +313,6 @@ void stopMusic () {
 	}
 
 	SDL_PauseAudio(0);
-
-	return;
 
 }
 
@@ -406,7 +393,6 @@ void setMusicTempo (int tempo) {
 int loadSounds (const char *fileName) {
 
 	File *file;
-	int count, offset, headerOffset;
 
 	try {
 
@@ -420,15 +406,15 @@ int loadSounds (const char *fileName) {
 
 	sounds = new Sound[32];
 
-	for (count = 0; count < 32; count++) {
+	for (int i = 0; i < 32; i++) {
 
-		sounds[count].data = NULL;
+		sounds[i].data = NULL;
 
 	}
 
 	// Locate the header data
 	file->seek(file->getSize() - 4, true);
-	headerOffset = file->loadInt();
+	int headerOffset = file->loadInt();
 
 	// Calculate number of sounds
 	nRawSounds = (file->getSize() - headerOffset) / 18;
@@ -437,22 +423,22 @@ int loadSounds (const char *fileName) {
 
 	rawSounds = new RawSound[nRawSounds];
 
-	for (count = 0; count < nRawSounds; count++) {
+	for (int i = 0; i < nRawSounds; i++) {
 
-		file->seek(headerOffset + (count * 18), true);
+		file->seek(headerOffset + (i * 18), true);
 
 		// Read the name of the clip
-		rawSounds[count].name = (char *)(file->loadBlock(12));
+		rawSounds[i].name = reinterpret_cast<char*>(file->loadBlock(12));
 
 		// Read the offset of the clip
-		offset = file->loadInt();
+		int offset = file->loadInt();
 
 		// Read the length of the clip
-		rawSounds[count].length = file->loadShort();
+		rawSounds[i].length = file->loadShort();
 
 		// Read the clip
 		file->seek(offset, true);
-		rawSounds[count].data = file->loadBlock(rawSounds[count].length);
+		rawSounds[i].data = file->loadBlock(rawSounds[i].length);
 
 	}
 
@@ -470,9 +456,9 @@ int loadSounds (const char *fileName) {
  */
 void resampleSound (int index, const char* name, int rate) {
 
-	int count, rsFactor, sample;
+	int rsFactor;
 
-    if (sounds[index].data) {
+	if (sounds[index].data) {
 
 		delete[] sounds[index].data;
 		sounds[index].data = NULL;
@@ -481,23 +467,23 @@ void resampleSound (int index, const char* name, int rate) {
 
 	// Search for matching sound
 
-	for (count = 0; count < nRawSounds; count++) {
+	for (int i = 0; i < nRawSounds; i++) {
 
-		if (!strcmp(name, rawSounds[count].name)) {
+		if (!strcmp(name, rawSounds[i].name)) {
 
 			// Calculate the resampling factor
 			if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
 				rsFactor = (F2 * audioSpec.freq) / rate;
 			else rsFactor = (F4 * audioSpec.freq) / rate;
 
-			sounds[index].length = MUL(rawSounds[count].length, rsFactor);
+			sounds[index].length = MUL(rawSounds[i].length, rsFactor);
 
 			// Allocate the buffer for the resampled clip
 			sounds[index].data = new unsigned char[sounds[index].length];
 
 			// Resample the clip
-			for (sample = 0; sample < sounds[index].length; sample++)
-				sounds[index].data[sample] = rawSounds[count].data[DIV(sample, rsFactor)];
+			for (int sample = 0; sample < sounds[index].length; sample++)
+				sounds[index].data[sample] = rawSounds[i].data[DIV(sample, rsFactor)];
 
 			sounds[index].position = -1;
 
@@ -515,15 +501,11 @@ void resampleSound (int index, const char* name, int rate) {
  */
 void resampleSounds () {
 
-	int count;
+	for (int i = 0; (i < 32) && (i < nRawSounds); i++) {
 
-	for (count = 0; (count < 32) && (count < nRawSounds); count++) {
-
-		resampleSound(count, rawSounds[count].name, 11025);
+		resampleSound(i, rawSounds[i].name, 11025);
 
 	}
-
-	return;
 
 }
 
@@ -533,19 +515,15 @@ void resampleSounds () {
  */
 void freeSounds () {
 
-	int count;
-
 	if (sounds) {
 
-		for (count = 0; count < 32; count++) {
+		for (int i = 0; i < 32; i++) {
 
-			if (sounds[count].data) delete[] sounds[count].data;
+			if (sounds[i].data) delete[] sounds[i].data;
 
 		}
 
 	}
-
-	return;
 
 }
 
@@ -558,8 +536,6 @@ void freeSounds () {
 void playSound (char index) {
 
 	if (sounds && (index > 0) && (index <= 32)) sounds[index - 1].position = 0;
-
-	return;
 
 }
 

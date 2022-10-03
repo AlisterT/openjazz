@@ -63,6 +63,9 @@ class JJ1BonusLevel : public Level {
 		char                     mask[60][64]; ///< Tile masks (at most 60 tiles, all with 8 * 8 masks)
 		fixed                    direction; ///< Player's direction
 
+		JJ1BonusLevel(const JJ1BonusLevel&); // non construction-copyable
+		JJ1BonusLevel& operator=(const JJ1BonusLevel&); // non copyable
+
 		int  loadSprites ();
 		int  loadTiles   (char* fileName);
 		bool isEvent     (fixed x, fixed y);

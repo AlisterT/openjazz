@@ -114,7 +114,7 @@ class CoopGameMode : public CooperativeGameMode {
 class BattleGameMode : public FreeForAllGameMode {
 
 	private:
-		int targetKills; ///< Number of kills required for a player to win
+		//int targetKills; ///< Number of kills required for a player to win
 
 	public:
 		GameModeType getMode ();
@@ -125,7 +125,7 @@ class BattleGameMode : public FreeForAllGameMode {
 class TeamBattleGameMode : public TeamGameMode {
 
 	private:
-		int targetKills; ///< Number of kills required for a team to win
+		//int targetKills; ///< Number of kills required for a team to win
 
 	public:
 		GameModeType getMode ();
@@ -136,7 +136,7 @@ class TeamBattleGameMode : public TeamGameMode {
 class RaceGameMode : public FreeForAllGameMode {
 
 	private:
-		int targetLaps; ///< Number of laps required for a player to win
+		//int targetLaps; ///< Number of laps required for a player to win
 
 	public:
 		GameModeType getMode    ();

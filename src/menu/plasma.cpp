@@ -50,11 +50,9 @@ Plasma::Plasma(){
 int Plasma::draw(){
 	int x,y;
 
-	int t1,t2,t3,t4;
 	int w,h,pitch;
 	unsigned char *px;
 	unsigned char colour;
-	unsigned int colb;
 
 	// draw plasma
 
@@ -64,14 +62,14 @@ int Plasma::draw(){
 	h 		= canvas->h;
 	pitch 	= canvas->pitch;
 
-	px = (unsigned char *)canvas->pixels;
+	px = static_cast<unsigned char*>(canvas->pixels);
 
-    t1 = p0;
-    t2 = p1;
+    int t1 = p0;
+    int t2 = p1;
     for(y=0;y<h;y++){
-        t3 = p2;
-        t4 = p3;
-		colb = (fCos(t1*4)<<3)+(fCos(t2*4)<<3)+(32<<10);
+        int t3 = p2;
+        int t4 = p3;
+		unsigned int colb = (fCos(t1*4)<<3)+(fCos(t2*4)<<3)+(32<<10);
         for(x=0;x<w;x++){
 
 			colour = ((colb+(fCos(t3*4)<<3)+(fCos(t4*4)<<3))>>10) & 0xF;
@@ -97,4 +95,3 @@ int Plasma::draw(){
 	return E_NONE;
 
 }
-

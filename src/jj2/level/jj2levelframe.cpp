@@ -186,9 +186,4 @@ void JJ2Level::draw () {
 
 	} else panelSmallFont->showNumber(localPlayer->getAmmo(), canvasW - 8, canvasH - 16);
 
-
-	return;
-
 }
-
-
