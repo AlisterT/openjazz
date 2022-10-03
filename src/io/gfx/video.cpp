@@ -626,3 +626,30 @@ void drawRect (int x, int y, int width, int height, int index) {
 	SDL_FillRect(canvas, &dst, index);
 
 }
+
+void enableColorKey (SDL_Surface* surface, unsigned int index) {
+
+#if OJ_SDL2
+	SDL_SetColorKey(surface, SDL_TRUE, index);
+#else
+	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, index);
+#endif
+
+}
+
+unsigned int getColorKey (SDL_Surface* surface) {
+
+#if OJ_SDL2
+	Uint32 key;
+
+	if (SDL_GetColorKey(surface, &key) < 0) {
+		LOG_WARN("Could not get Color Key: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	return key;
+#else
+	return surface->format->colorkey;
+#endif
+
+}

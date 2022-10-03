@@ -184,7 +184,7 @@ EXTERN Video video; ///< Video output
 
 EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
 EXTERN void           drawRect       (int x, int y, int width, int height, int index);
+EXTERN void           enableColorKey (SDL_Surface* surface, unsigned int index);
+EXTERN unsigned int   getColorKey    (SDL_Surface* surface);
 
 #endif
-
-

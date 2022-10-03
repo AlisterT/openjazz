@@ -60,7 +60,7 @@ void Sprite::clearPixels () {
 
 	data = 0;
 	pixels = createSurface(&data, 1, 1);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, 0);
+	enableColorKey(pixels, 0);
 
 }
 
@@ -86,7 +86,7 @@ void Sprite::setPixels (unsigned char *data, int width, int height, unsigned cha
 	if (pixels) SDL_FreeSurface(pixels);
 
 	pixels = createSurface(data, width, height);
-	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, key);
+	enableColorKey(pixels, key);
 
 }
 
@@ -216,12 +216,11 @@ void Sprite::draw (int x, int y, bool includeOffsets) {
  */
 void Sprite::drawScaled (int x, int y, fixed scale) {
 
-	unsigned char pixel, key;
 	int width, height, fullWidth, fullHeight;
 	int dstX, dstY;
 	int srcX, srcY;
 
-	key = pixels->format->colorkey;
+	unsigned char key = getColorKey(pixels);
 
 	fullWidth = FTOI(pixels->w * scale);
 	if (x < -(fullWidth >> 1)) return; // Off-screen
@@ -266,7 +265,7 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 
 		while (srcX < width) {
 
-			pixel = srcRow[DIV(srcX, scale)];
+			unsigned char pixel = srcRow[DIV(srcX, scale)];
 			if (pixel != key) dstRow[dstX] = pixel;
 
 			srcX++;

@@ -47,7 +47,7 @@ GameMenu::GameMenu (File *file) {
 	// Load the difficulty graphics
 	file->loadPalette(menuPalette);
 	difficultyScreen = file->loadSurface(SW, SH);
-	SDL_SetColorKey(difficultyScreen, SDL_SRCCOLORKEY, 0);
+	enableColorKey(difficultyScreen, 0);
 
 	// Load the episode pictures (max. 10 episodes + bonus level)
 
