@@ -430,7 +430,7 @@ int MainMenu::main () {
 			SDL_BlitSurface(logo, NULL, canvas, &dst);
 		}
 
-		panelBigFont->mapPalette(0, 256, 8, 8);
+		panelBigFont->mapPalette(0, MAX_PALETTE_COLORS, 8, 8);
 		panelBigFont->showString("OpenJazz " OJ_VERSION, 1, canvasH - 9);
 		panelBigFont->restorePalette();
 

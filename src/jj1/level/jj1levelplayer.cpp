@@ -70,7 +70,7 @@ JJ1LevelPlayer::JJ1LevelPlayer (Player* parent, Anim** newAnims, unsigned char s
 
 	// Create the player's palette
 
-	for (count = 0; count < 256; count++)
+	for (count = 0; count < MAX_PALETTE_COLORS; count++)
 		palette[count].r = palette[count].g = palette[count].b = count;
 
 

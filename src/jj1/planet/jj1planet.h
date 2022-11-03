@@ -31,7 +31,7 @@
 class JJ1Planet {
 
 	private:
-		SDL_Color palette[256]; /// Palette
+		SDL_Color palette[MAX_PALETTE_COLORS]; /// Palette
 		Sprite    sprite; /// Planet image
 		char*     name; /// Planet name
 		int       id; /// World number

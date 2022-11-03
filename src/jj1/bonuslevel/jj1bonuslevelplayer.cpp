@@ -58,7 +58,7 @@ JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsig
 
 	// Create the player's palette
 
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < MAX_PALETTE_COLORS; i++)
 		palette[i].r = palette[i].g = palette[i].b = i;
 
 	/// @todo Custom colours

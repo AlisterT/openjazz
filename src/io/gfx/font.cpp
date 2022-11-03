@@ -533,7 +533,7 @@ void Font::showNumber (int n, int x, int y) {
  */
 void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
-	SDL_Color palette[256];
+	SDL_Color palette[MAX_PALETTE_COLORS];
 	int count;
 
 	for (count = 0; count < length; count++)
@@ -541,7 +541,7 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 			(count * newLength / length) + newStart;
 
 	for (count = 0; count < nCharacters; count++)
-		SDL_SetPalette(characters[count], SDL_LOGPAL, palette, start, length);
+		setLogicalPalette(characters[count], palette, start, length);
 
 }
 

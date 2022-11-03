@@ -119,7 +119,7 @@ class Video {
 
 		// Palettes
 		SDL_Color*   currentPalette; ///< Current palette
-		SDL_Color    logicalPalette[256]; ///< Logical palette (greyscale)
+		SDL_Color    logicalPalette[MAX_PALETTE_COLORS]; ///< Logical palette (greyscale)
 		bool         fakePalette; ///< Whether or not the palette mode is being emulated
 
 		int          minW; ///< Smallest possible width
@@ -182,9 +182,10 @@ EXTERN Video video; ///< Video output
 
 // Functions
 
-EXTERN SDL_Surface*   createSurface  (unsigned char* pixels, int width, int height);
-EXTERN void           drawRect       (int x, int y, int width, int height, int index);
-EXTERN void           enableColorKey (SDL_Surface* surface, unsigned int index);
-EXTERN unsigned int   getColorKey    (SDL_Surface* surface);
+EXTERN SDL_Surface* createSurface     (unsigned char* pixels, int width, int height);
+EXTERN void         drawRect          (int x, int y, int width, int height, int index);
+EXTERN void         enableColorKey    (SDL_Surface* surface, unsigned int index);
+EXTERN unsigned int getColorKey       (SDL_Surface* surface);
+EXTERN void         setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length);
 
 #endif

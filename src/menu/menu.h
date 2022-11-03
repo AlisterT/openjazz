@@ -56,8 +56,8 @@ class GameMenu : public Menu {
 	private:
 		SDL_Surface*  episodeScreens[11]; ///< Episode images
 		SDL_Surface*  difficultyScreen; ///< 4 difficulty images
-		SDL_Color     palette[256]; ///< Episode selection palette
-		SDL_Color     greyPalette[256]; ///< Greyed-out episode selection palette
+		SDL_Color     palette[MAX_PALETTE_COLORS]; ///< Episode selection palette
+		SDL_Color     greyPalette[MAX_PALETTE_COLORS]; ///< Greyed-out episode selection palette
 		int           episodes; ///< Number of episodes
 		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
 
@@ -104,7 +104,7 @@ class MainMenu : public Menu {
 		SDL_Surface* highlight; ///< Menu image with highlighted text
 		SDL_Surface* logo; ///< OJ logo image
 		GameMenu*    gameMenu; ///< New game menu
-		SDL_Color    palette[256]; ///< Menu palette
+		SDL_Color    palette[MAX_PALETTE_COLORS]; ///< Menu palette
 
 		MainMenu(const MainMenu&); // non construction-copyable
 		MainMenu& operator=(const MainMenu&); // non copyable
@@ -122,7 +122,7 @@ class MainMenu : public Menu {
 
 // Variables
 
-EXTERN SDL_Color menuPalette[256]; /// Palette used by most menu screens
+EXTERN SDL_Color menuPalette[MAX_PALETTE_COLORS]; /// Palette used by most menu screens
 
 #endif
 

@@ -43,7 +43,7 @@ class Player;
 class LevelPlayer : public Movable {
 
 	protected:
-		SDL_Color palette[256]; ///< Palette (for custom colours)
+		SDL_Color palette[MAX_PALETTE_COLORS]; ///< Palette (for custom colours)
 
 	public:
 		Player* player; ///< Corresponding game player

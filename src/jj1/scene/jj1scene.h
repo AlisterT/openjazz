@@ -22,9 +22,7 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
-
 #include "io/file.h"
-
 
 // Enums
 
@@ -165,7 +163,7 @@ class JJ1ScenePalette {
 
 	public:
 		JJ1ScenePalette* next;
-		SDL_Color palette[256];
+		SDL_Color palette[MAX_PALETTE_COLORS];
 		int id;
 
 		explicit JJ1ScenePalette (JJ1ScenePalette* newNext);

@@ -96,6 +96,7 @@
 
 #define E_NONE       0
 
+#define MAX_PALETTE_COLORS 256
 
 // Macros
 

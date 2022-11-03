@@ -88,7 +88,7 @@ Video::Video () {
 	fullscreen = false;
 
 	// Generate the logical palette
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < MAX_PALETTE_COLORS; i++)
 		logicalPalette[i].r = logicalPalette[i].g = logicalPalette[i].b = i;
 
 	currentPalette = logicalPalette;
@@ -271,7 +271,7 @@ void Video::setPalette (SDL_Color *palette) {
 	clearScreen(SDL_MapRGB(screen->format, 0, 0, 0));
 	flip(0);
 
-	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
+	changePalette(palette, 0, MAX_PALETTE_COLORS);
 	currentPalette = palette;
 
 }
@@ -298,7 +298,11 @@ SDL_Color* Video::getPalette () {
  */
 void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int amount) {
 
+#if OJ_SDL2
+	SDL_SetPaletteColors(screen->format->palette, palette, first, amount);
+#else
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
+#endif
 
 }
 
@@ -310,7 +314,7 @@ void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int
  */
 void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
-	SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
+	setLogicalPalette(surface, logicalPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -472,8 +476,8 @@ bool Video::isFullscreen () {
  */
 void Video::expose () {
 
-	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
-	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
+	setLogicalPalette(screen, logicalPalette, 0, MAX_PALETTE_COLORS);
+	changePalette(currentPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -539,7 +543,7 @@ void Video::update (SDL_Event *event) {
  */
 void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) {
 
-	SDL_Color shownPalette[256];
+	SDL_Color shownPalette[MAX_PALETTE_COLORS];
 
 #ifdef SCALE
 	if (canvas != NULL && canvas != screen) {
@@ -566,11 +570,11 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 
 		if (fakePalette) {
 
-			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * 256);
+			memcpy(shownPalette, currentPalette, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
 			paletteEffects->apply(shownPalette, false, mspf, effectsStopped);
 
-			SDL_SetPalette(screen, SDL_PHYSPAL, shownPalette, 0, 256);
+			changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 		} else {
 
@@ -650,6 +654,19 @@ unsigned int getColorKey (SDL_Surface* surface) {
 	return key;
 #else
 	return surface->format->colorkey;
+#endif
+
+}
+
+void setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length) {
+
+#if OJ_SDL2
+	if (surface->format->palette) {
+		SDL_SetPaletteColors(surface->format->palette, palette, start, length);
+	} else
+		LOG_WARN("Could not change palette on surface without palette.");
+#else
+	SDL_SetPalette(surface, SDL_LOGPAL, palette, start, length);
 #endif
 
 }

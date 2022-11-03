@@ -332,7 +332,7 @@ int JJ2Level::loadTiles (char* fileName) {
 
 
 	// Load the palette
-	for (count = 0; count < 256; count++) {
+	for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 		palette[count].r = aBuffer[count << 2];
 		palette[count].g = aBuffer[(count << 2) + 1];

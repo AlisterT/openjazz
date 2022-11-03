@@ -102,13 +102,13 @@ void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 
 	if (whiteness > F1) {
 
-		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
+		memset(shownPalette, 255, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
 		if (!isStatic) whiteness -= ITOF(mspf) / duration;
 
 	} else if (whiteness > 0) {
 
-		for (count = 0; count < 256; count++) {
+		for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 			shownPalette[count].r = 255 -
 				FTOI((255 - shownPalette[count].r) * (F1 - whiteness));
@@ -123,7 +123,7 @@ void WhiteInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 
 	}
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -161,13 +161,13 @@ void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf,
 
 	if (blackness > F1) {
 
-		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
+		memset(shownPalette, 0, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
 		if (!isStatic) blackness -= ITOF(mspf) / duration;
 
 	} else if (blackness > 0) {
 
-		for (count = 0; count < 256; count++) {
+		for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 			shownPalette[count].r =
 				FTOI(shownPalette[count].r * (F1 - blackness));
@@ -182,7 +182,7 @@ void FadeInPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf,
 
 	}
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -218,13 +218,13 @@ void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int msp
 
 	if (whiteness > F1) {
 
-		memset(shownPalette, 255, sizeof(SDL_Color) * 256);
+		memset(shownPalette, 255, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
 	} else {
 
 		if (whiteness > 0) {
 
-			for (int i = 0; i < 256; i++) {
+			for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 
 				shownPalette[i].r = 255 -
 					FTOI((255 - shownPalette[i].r) * (F1 - whiteness));
@@ -240,7 +240,7 @@ void WhiteOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int msp
 
 	}
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -275,13 +275,13 @@ void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 
 	if (blackness > F1) {
 
-		memset(shownPalette, 0, sizeof(SDL_Color) * 256);
+		memset(shownPalette, 0, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
 	} else {
 
 		if (blackness > 0) {
 
-			for (int i = 0; i < 256; i++) {
+			for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 
 				shownPalette[i].r = FTOI(shownPalette[i].r * (F1 - blackness));
 				shownPalette[i].g = FTOI(shownPalette[i].g * (F1 - blackness));
@@ -295,7 +295,7 @@ void FadeOutPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf
 
 	}
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -340,7 +340,7 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 
 	if (progress < 0) {
 
-		for (count = 0; count < 256; count++) {
+		for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 			shownPalette[count].r = FTOI((shownPalette[count].r * -progress) +
 				(red * (progress + F1)));
@@ -355,7 +355,7 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 
 	} else if (progress < F1) {
 
-		for (count = 0; count < 256; count++) {
+		for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 			shownPalette[count].r = FTOI((shownPalette[count].r * progress) +
 				(red * (F1 - progress)));
@@ -370,7 +370,7 @@ void FlashPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 
 	}
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -656,7 +656,7 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 
 	if (position < depth) {
 
-		for (int i = 0; i < 256; i++) {
+		for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 
 			shownPalette[i].r = FTOI(currentPalette[i].r * (1023 - DIV(position, depth)));
 			shownPalette[i].g = FTOI(currentPalette[i].g * (1023 - DIV(position, depth)));
@@ -664,8 +664,8 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 
 		}
 
-	} else memset(shownPalette, 0, sizeof(SDL_Color) * 256);
+	} else memset(shownPalette, 0, sizeof(SDL_Color) * MAX_PALETTE_COLORS);
 
-	if (direct) video.changePalette(shownPalette, 0, 256);
+	if (direct) video.changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 
 }
