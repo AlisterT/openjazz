@@ -48,6 +48,8 @@
 #define MAX_SCREEN_WIDTH (32 * 256 * MAX_SCALE)
 #define MAX_SCREEN_HEIGHT (32 * 64 * MAX_SCALE)
 
+// Fullscreen and Window flags are only for SDL1.2 currently
+
 #define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
@@ -115,23 +117,28 @@
 class Video {
 
 	private:
-		SDL_Surface* screen; ///< Output surface
+#if OJ_SDL2
+		SDL_Window*   window; ///< Output window
+		SDL_Renderer* renderer; ///< Output renderer
+		SDL_Texture*  texture; ///< Output texture
+		SDL_Surface*  textureSurface;
+#endif
+		SDL_Surface*  screen; ///< Output surface
 
 		// Palettes
-		SDL_Color*   currentPalette; ///< Current palette
-		SDL_Color    logicalPalette[MAX_PALETTE_COLORS]; ///< Logical palette (greyscale)
-		bool         fakePalette; ///< Whether or not the palette mode is being emulated
+		SDL_Color*    currentPalette; ///< Current palette
+		SDL_Color     logicalPalette[MAX_PALETTE_COLORS]; ///< Logical palette (greyscale)
 
-		int          minW; ///< Smallest possible width
-		int          maxW; ///< Largest possible width
-		int          minH; ///< Smallest possible height
-		int          maxH; ///< Largest possible height
-		int          screenW; ///< Real width
-		int          screenH; ///< Real height
+		int           minW; ///< Smallest possible width
+		int           maxW; ///< Largest possible width
+		int           minH; ///< Smallest possible height
+		int           maxH; ///< Largest possible height
+		int           screenW; ///< Real width
+		int           screenH; ///< Real height
 #ifdef SCALE
-		int          scaleFactor; ///< Scaling factor
+		int           scaleFactor; ///< Scaling factor
 #endif
-		bool         fullscreen; ///< Full-screen mode
+		bool          fullscreen; ///< Full-screen mode
 
 		void findResolutions ();
 		void expose          ();
@@ -140,8 +147,9 @@ class Video {
 		Video ();
 
 		bool       init                  (SetupOptions cfg);
-
+		void       deinit                ();
 		bool       reset                 (int width, int height);
+		void       commonDeinit          ();
 
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            ();

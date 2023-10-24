@@ -389,12 +389,9 @@ void shutDown () {
 	delete fontmn1;
 	delete fontmn2;
 
-#ifdef SCALE
-	if (video.getScaleFactor() > 1) SDL_FreeSurface(canvas);
-#endif
-
 	closeAudio();
 
+	video.deinit();
 
 	// Save settings to config file
 	setup.save();
@@ -649,6 +646,8 @@ int main(int argc, char *argv[]) {
 
 
 	// Save configuration and shut down
+
+	LOG_DEBUG("Shutting down engine.");
 
 	shutDown();
 
