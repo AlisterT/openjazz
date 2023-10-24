@@ -130,7 +130,7 @@ Alireza Nejati:: Menu plasma effect
 newspaz:: Bug fixes, enemy improvements
 Carsten Teibes (carstene1ns)::
 Maintenance, bug fixes, documentation +
-Integrating the ports (Wii, 3DS, PSP, PSVita, ...) +
+Integrating the ports (Wii, 3DS, PSP, PSVita, SDL2, ...) +
 Additional coding (logger, CLI, ...) +
 Modernizing +
 UI improvements
@@ -144,4 +144,4 @@ pocketinsanity:: PocketPC port
 Ricerind:: Mac OS X port
 Slaanesh:: GP32 port
 GPF:: Dreamcast port
-Cameron Cawley (ccawley2011):: RISC OS port
+Cameron Cawley (ccawley2011):: RISC OS, SDL2 port

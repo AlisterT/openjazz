@@ -215,8 +215,11 @@ bool Video::init (SetupOptions cfg) {
 
 }
 
-
-void Video::commonDeinit() {
+/**
+ * Shared Deinitialisation code for reset() and deinit()
+ *
+ */
+void Video::commonDeinit () {
 	// canvas is used when scaling or built with SDL2
 	if (canvas != screen && canvas) {
 		SDL_FreeSurface(canvas);
@@ -241,7 +244,10 @@ void Video::commonDeinit() {
 #endif
 }
 
-
+/**
+ * Deinitialise video output.
+ *
+ */
 void Video::deinit () {
 
 	commonDeinit();
@@ -729,6 +735,12 @@ void drawRect (int x, int y, int width, int height, int index) {
 
 }
 
+/**
+ * Sets the Color key of provided surface.
+ *
+ * @param surface Surface to change
+ * @param index Color index
+ */
 void enableColorKey (SDL_Surface* surface, unsigned int index) {
 
 #if OJ_SDL2
@@ -739,6 +751,13 @@ void enableColorKey (SDL_Surface* surface, unsigned int index) {
 
 }
 
+/**
+ * Returns the Color key of provided surface.
+ *
+ * @param surface Surface to query
+ *
+ * @return color index
+ */
 unsigned int getColorKey (SDL_Surface* surface) {
 
 #if OJ_SDL2
@@ -756,6 +775,14 @@ unsigned int getColorKey (SDL_Surface* surface) {
 
 }
 
+/**
+ * Sets the palette colors of provided surface.
+ *
+ * @param surface Surface to change
+ * @param palette Palette to copy colors from
+ * @param start index of first color copy
+ * @param length number of colors to copy
+ */
 void setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length) {
 
 #if OJ_SDL2
