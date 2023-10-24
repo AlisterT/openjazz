@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   linux-gcc:
-    name: Build (Ubuntu 20.04 LTS x86_64, GCC)
+    name: Build (Ubuntu 20.04 LTS x86_64, GCC, SDL1.2)
     runs-on: ubuntu-20.04
     steps:
       - name: Install dependencies
@@ -30,7 +30,7 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz (normal)
         run: |
@@ -38,14 +38,14 @@ jobs:
           ls -l OpenJazz
 
   linux-clang:
-    name: Build (Ubuntu 20.04 LTS x86_64, Clang)
+    name: Build (Ubuntu 20.04 LTS x86_64, Clang, SDL2)
     runs-on: ubuntu-20.04
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get update -yqq
           sudo apt-get install -yqq build-essential cmake ninja-build clang-10 \
-            libsdl1.2-dev asciidoctor w3m
+            libsdl2-dev asciidoctor w3m
 
       - name: Prepare Environment
         run: |
@@ -53,7 +53,7 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz (slim)
         run: |
@@ -90,7 +90,7 @@ jobs:
           install: |
             base-devel dos2unix w3m
           pacboy: |
-            toolchain:p cmake:p ninja:p SDL:p asciidoctor:p
+            toolchain:p cmake:p ninja:p SDL2:p asciidoctor:p
 
       - name: Prepare Environment
         run: |
@@ -98,18 +98,17 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
-          export LDFLAGS="-static"
-          export PKG_CONFIG="pkg-config --static"
           cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
           cmake --build build
 
       - name: Prepare artifact
         run: |
           cmake --install build --prefix $PWD
+          cp /mingw64/bin/SDL2.dll dist/
           asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
           w3m -dump -cols 2147483647 -s OpenJazzManual.html > dist/Manual.txt
           cp README.md dist/README.txt
@@ -140,7 +139,7 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
@@ -181,7 +180,7 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
@@ -231,7 +230,7 @@ jobs:
           ../autobuilder/build -v libsdl1.2debian # todo: cache?
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
@@ -267,7 +266,7 @@ jobs:
           echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |

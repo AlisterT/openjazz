@@ -23,9 +23,7 @@
 #ifndef _BASELEVEL_H
 #define _BASELEVEL_H
 
-
 #include "menu/menu.h"
-
 
 // Macros
 
@@ -95,7 +93,7 @@ class Level {
 	protected:
 		Game*          game;
 		PaletteEffect* paletteEffects; ///< Palette effects in use while playing the level
-		SDL_Color      palette[256]; ///< Palette in use while playing the level
+		SDL_Color      palette[MAX_PALETTE_COLORS]; ///< Palette in use while playing the level
 		int            sprites; ///< The number of sprite that have been loaded
 		unsigned int   tickOffset; ///< Level time offset from system time
 		unsigned int   steps; ///< Number of steps taken

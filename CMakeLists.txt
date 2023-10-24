@@ -20,13 +20,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 include(Platform-Helpers)
 
 # Endianess check
-
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-	include(TestBigEndian)
-	test_big_endian(PLATFORM_BIGENDIAN)
-	if(PLATFORM_BIGENDIAN)
-		add_compile_definitions(WORDS_BIGENDIAN=1)
-	endif()
+include(TestBigEndian)
+test_big_endian(PLATFORM_BIGENDIAN)
+if(PLATFORM_BIGENDIAN)
+	add_compile_definitions(WORDS_BIGENDIAN=1)
 endif()
 
 # OpenJazz
@@ -130,7 +127,7 @@ target_include_directories(OpenJazz PUBLIC src)
 option(SCALE "Allow scaling" ${OJ_SCALE})
 if(SCALE)
 	target_compile_definitions(OpenJazz PRIVATE SCALE)
-	set(OJ_SCALE_LIBS scale2x)
+	set(OJ_LIBS_SCALE scale2x)
 endif()
 
 # path to game data
@@ -142,8 +139,17 @@ endif()
 
 # libraries
 
-find_package(SDL REQUIRED)
-target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
+if(LEGACY_SDL)
+	find_package(SDL REQUIRED)
+	target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
+	set(OJ_LIBS_SDL ${SDL_LIBRARY})
+	set(OJ_SDL "SDL1.2 (legacy)")
+else()
+	find_package(SDL2 REQUIRED)
+	target_include_directories(OpenJazz PRIVATE ${SDL2_INCLUDE_DIRS})
+	set(OJ_LIBS_SDL ${SDL2_LIBRARIES})
+	set(OJ_SDL "SDL2")
+endif()
 
 # bundled libraries
 
@@ -176,7 +182,7 @@ if(NETWORK)
 endif()
 
 target_link_libraries(OpenJazz
-	argparse miniz psmplug ${OJ_SCALE_LIBS} ${SDL_LIBRARY} ${OJ_LIBS_NET} ${OJ_LIBS_HOST})
+	argparse miniz psmplug ${OJ_LIBS_SCALE} ${OJ_LIBS_SDL} ${OJ_LIBS_NET} ${OJ_LIBS_HOST})
 
 # platform stuff
 
@@ -332,6 +338,7 @@ message(STATUS "")
 message(STATUS "OpenJazz")
 message(STATUS "========")
 message(STATUS "Target system: ${OJ_HOST}")
+message(STATUS "Platform abstraction: ${OJ_SDL}")
 if(ROMFS)
 	message(STATUS "RomFS: Embedding directory \"${ROMFS_PATH}\"")
 endif()

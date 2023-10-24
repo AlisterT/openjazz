@@ -47,7 +47,7 @@ GameMenu::GameMenu (File *file) {
 	// Load the difficulty graphics
 	file->loadPalette(menuPalette);
 	difficultyScreen = file->loadSurface(SW, SH);
-	SDL_SetColorKey(difficultyScreen, SDL_SRCCOLORKEY, 0);
+	enableColorKey(difficultyScreen, 0);
 
 	// Load the episode pictures (max. 10 episodes + bonus level)
 
@@ -55,7 +55,7 @@ GameMenu::GameMenu (File *file) {
 	file->loadPalette(palette);
 
 	// Generate a greyscale mapping
-	for (int i = 0; i < 256; i++) {
+	for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 
 		int col = ((palette[i].r >> 1) + (palette[i].g << 1) + (palette[i].b >> 1)) >> 3;
 
@@ -481,7 +481,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		delete[] check;
 
 		if (exists[count]) video.restoreSurfacePalette(episodeScreens[count]);
-		else SDL_SetPalette(episodeScreens[count], SDL_LOGPAL, greyPalette, 0, 256);
+		else setLogicalPalette(episodeScreens[count], greyPalette, 0, MAX_PALETTE_COLORS);
 
 	}
 

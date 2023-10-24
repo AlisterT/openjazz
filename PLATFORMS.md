@@ -7,12 +7,12 @@ Use a cross-compiler, enable specific platform code with option:
 
 ## Embedded Linux systems
 
-  * Pandora: ´-DPANDORA=ON´
-  * GP2X Canoo: ´-DCAANOO=ON´
-  * GP2X Wiz: ´-DWIZ=ON´
-  * GP2X: ´-DGP2X=ON´
-  * Dingoo: ´-DDINGOO=ON´
-  * GameShell: ´-DGAMESHELL=ON´
+  * Pandora: `-DPANDORA=ON`
+  * GP2X Canoo: `-DCAANOO=ON`
+  * GP2X Wiz: `-DWIZ=ON`
+  * GP2X: `-DGP2X=ON`
+  * Dingoo: `-DDINGOO=ON`
+  * GameShell: `-DGAMESHELL=ON`
 
 ## RISC OS
 

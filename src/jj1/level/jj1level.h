@@ -186,7 +186,7 @@ class JJ1Level : public Level {
 		JJ1EventType  eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
 		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
-		SDL_Color     skyPalette[256]; ///< Full palette for sky background
+		SDL_Color     skyPalette[MAX_PALETTE_COLORS]; ///< Full palette for sky background
 		bool          sky; ///< Whether or not to use sky background
 		unsigned char skyOrb; ///< The tile to use as the background sun/moon/etc.
 		int           levelNum; ///< Number of current level

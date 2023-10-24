@@ -597,10 +597,10 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 	unsigned char* buffer;
 	int count;
 
-	if (rle) buffer = loadRLE(768);
-	else buffer = loadBlock(768);
+	if (rle) buffer = loadRLE(MAX_PALETTE_COLORS * 3);
+	else buffer = loadBlock(MAX_PALETTE_COLORS * 3);
 
-	for (count = 0; count < 256; count++) {
+	for (count = 0; count < MAX_PALETTE_COLORS; count++) {
 
 		// Palette entries are 6-bit
 		// Shift them upwards to 8-bit, and fill in the lower 2 bits

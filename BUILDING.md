@@ -2,10 +2,10 @@
 # Building OpenJazz
 
 Needed:
-- SDL 1.2.x library (https://libsdl.org/).
+- SDL 2.x or SDL 1.2.x (deprecated) library (https://libsdl.org/)
 
 Optional:
-- SDL_net 1.2.x library (https://www.libsdl.org/projects/SDL_net/)
+- SDL_net library (https://www.libsdl.org/projects/SDL_net/)
 - CMake (https://cmake.org/)
 
 OpenJazz ships a basic Makefile that may be used and adapted to the specific
@@ -40,5 +40,4 @@ Some ports have their own options, see (Platforms)[PLATFORMS.md] for details.
 
 ### advanced options
 
-~~- `HOMEDIR` - use the user's home directory for data files~~ default on unix
 - `FULLSCREEN_ONLY` - disable window mode, useful for console ports

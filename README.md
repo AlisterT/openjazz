@@ -7,7 +7,7 @@
 
 OpenJazz can be compiled on a wide range of operating systems, including
 Windows, macOS, GNU/Linux and BSD flavors. Also ports are available for some
-homebrew platforms, for example Wii and PSP. See [Platforms](PLATFORMS.md) for
+homebrew platforms, consoles and handhelds. See [Platforms](PLATFORMS.md) for
 details.
 
 To play, you will need the files from one of the original games.
@@ -62,7 +62,8 @@ command line argument.
 
 ## Authors
 
-Original author: Alister Thomson (alister_j_t at yahoo dot com), 
+Original author: Alister Thomson (alister_j_t at yahoo dot com)
+
 [Additional Authors](res/unix/OpenJazz.6.adoc#authors) (See manual)
 
 ## Homepage

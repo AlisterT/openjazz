@@ -117,9 +117,9 @@ MainMenu::MainMenu () {
 
 	}
 
-	SDL_SetColorKey(background, SDL_SRCCOLORKEY, 0);
-	SDL_SetColorKey(highlight, SDL_SRCCOLORKEY, 0);
-	if (logo) SDL_SetColorKey(logo, SDL_SRCCOLORKEY, 28);
+	enableColorKey(background, 0);
+	enableColorKey(highlight, 0);
+	if (logo) enableColorKey(logo, 28);
 
 	gameMenu = new GameMenu(file);
 
@@ -430,7 +430,7 @@ int MainMenu::main () {
 			SDL_BlitSurface(logo, NULL, canvas, &dst);
 		}
 
-		panelBigFont->mapPalette(0, 256, 8, 8);
+		panelBigFont->mapPalette(0, MAX_PALETTE_COLORS, 8, 8);
 		panelBigFont->showString("OpenJazz " OJ_VERSION, 1, canvasH - 9);
 		panelBigFont->restorePalette();
 

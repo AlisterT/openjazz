@@ -414,7 +414,7 @@ void AmmoJJ2Event::draw (unsigned int ticks, int change) {
  */
 void CoinGemJJ2Event::mapPalette (Anim* anim, int start) {
 
-	SDL_Color palette[256];
+	SDL_Color palette[MAX_PALETTE_COLORS];
 	int count;
 
 	for (count = 0; count < 112; count++)

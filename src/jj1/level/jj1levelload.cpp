@@ -374,7 +374,7 @@ int JJ1Level::loadTiles (char* fileName) {
 	tiles = pos >> 10;
 
 	tileSet = createSurface(buffer, TTOI(1), TTOI(tiles));
-	SDL_SetColorKey(tileSet, SDL_SRCCOLORKEY, TKEY);
+	enableColorKey(tileSet, TKEY);
 
 	delete[] buffer;
 

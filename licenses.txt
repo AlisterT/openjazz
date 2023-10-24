@@ -32,9 +32,10 @@ emulators.
 The Simple DirectMedia Layer library source code is available from:
 https://www.libsdl.org/
 
-This library is distributed under the terms of the GNU LGPL license:
-https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html
+Version 1.2 of this library is distributed under the terms of the GNU LGPL
+license: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html
 
+Version 2 uses the zlib license: https://www.libsdl.org/license.php
 
 
 ================================================================================
