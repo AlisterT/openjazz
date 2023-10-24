@@ -12,13 +12,14 @@ option(GP2X "Build for GP2X" OFF)           # arm-open2x-linux
 option(DINGOO "Build for Dingoo" OFF)       # mipsel-linux*
 option(GAMESHELL "Build for GameShell" OFF) # armv7l-unknown-linux-gnueabihf
 option(RISCOS "Build for RISC OS" OFF)      # arm-unknown-riscos
-# "Official" Toolchain files define these
+
+# Official/Homebrew Toolchain files define these
 if(NINTENDO_3DS)
 	set(3DS ON)
 	set(OJ_HOST "3DS")
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
 	set(OJ_SCALE OFF)
-	option(ROMFS "Embedd a directory in the executable" OFF)
+	option(ROMFS "Embed a directory in the executable" OFF)
 	set(ROMFS_PATH "romfs" CACHE PATH "Directory to include in executable as romfs:/ path")
 	set(ROMFS_ARG "NO_ROMFS_IGNORE_ME")
 	if(ROMFS)
@@ -111,4 +112,9 @@ endif()
 
 if(${OJ_HOST} STREQUAL "Unknown")
 	set(OJ_HOST ${CMAKE_SYSTEM_NAME})
+	set(OJ_ALLOW_NEW_SDL TRUE)
 endif()
+
+# choose SDL library for Linux/Windows/Mac/etc., but not homebrew platforms
+include(CMakeDependentOption)
+cmake_dependent_option(LEGACY_SDL "Build for SDL 1.2" OFF "OJ_ALLOW_NEW_SDL" ON)
