@@ -21,6 +21,9 @@
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
+ * @par Description:
+ * Deals with the creation and destruction of players in levels, and their
+ * interactions with other level objects.
  */
 
 
@@ -45,7 +48,7 @@ class LevelPlayer : public Movable {
 	public:
 		Player* player; ///< Corresponding game player
 
-		virtual ~LevelPlayer ();
+		virtual ~LevelPlayer () {};
 
 		virtual void reset   (int startX, int startY) = 0;
 

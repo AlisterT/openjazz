@@ -85,6 +85,7 @@ class Player {
 	private:
 		Game*                game;
 		LevelPlayer*         levelPlayer; ///< Level player base class
+		LevelType            levelPlayerType;
 
 		char*           name; ///< Name
 		bool            pcontrols[PCONTROLS]; ///< Control status

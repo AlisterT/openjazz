@@ -127,7 +127,7 @@ class Anim;
 class JJ1Bird;
 
 /// JJ1 level player
-class JJ1LevelPlayer : public LevelPlayer {
+class JJ1LevelPlayer final : public LevelPlayer {
 
 	private:
 		JJ1Bird*          birds; ///< Bird companion(s)
@@ -168,11 +168,11 @@ class JJ1LevelPlayer : public LevelPlayer {
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1LevelPlayer ();
 
-		void reset (int startX, int startY);
+		void reset (int startX, int startY) override;
 
 		void              addItem     ();
 		void              clearEvent  (unsigned char gridX, unsigned char gridY);
-		int               countBirds  ();
+		int               countBirds  () override;
 		Anim*             getAnim     ();
 		int               getEnemies  ();
 		int               getEnergy   ();
@@ -188,8 +188,8 @@ class JJ1LevelPlayer : public LevelPlayer {
 		bool              takeEvent   (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 
-		void           send        (unsigned char* buffer);
-		void           receive     (unsigned char* buffer);
+		void           send        (unsigned char* buffer) override;
+		void           receive     (unsigned char* buffer) override;
 
 		void           changeAmmo  (int type, bool fallback = false);
 		void           control     (unsigned int ticks);

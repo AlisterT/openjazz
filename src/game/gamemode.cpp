@@ -29,13 +29,6 @@
 
 
 /**
- * Destroy game mode
- */
-GameMode::~GameMode () {
-}
-
-
-/**
  * Outcome of player being hit
  *
  * @param source Player responsible for the hit

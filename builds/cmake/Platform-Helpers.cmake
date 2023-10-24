@@ -41,6 +41,10 @@ elseif(PSP)
 	set(OJ_SCALE OFF)
 endif()
 
+if(NINTENDO_3DS OR NINTENDO_WII OR PSP)
+	add_compile_options(-fno-rtti)
+endif()
+
 if(PANDORA OR CANOO OR WIZ OR GP2X)
 	add_compile_options(-fsigned-char)
 endif()

@@ -67,7 +67,7 @@ class Anim;
 class JJ1BonusLevel;
 
 /// JJ1 bonus level player
-class JJ1BonusLevelPlayer : public LevelPlayer {
+class JJ1BonusLevelPlayer final : public LevelPlayer {
 
 	private:
 		Anim*         anims[BPANIMS]; ///< Animations
@@ -85,16 +85,16 @@ class JJ1BonusLevelPlayer : public LevelPlayer {
 		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ1BonusLevelPlayer ();
 
-		void          reset        (int startX, int startY);
+		void          reset        (int startX, int startY) override;
 
 		void          addGem       ();
-		int           countBirds   ();
+		int           countBirds   () override;
 		fixed         getDirection ();
 		int           getGems      ();
 		fixed         getZ         ();
 
-		void          send         (unsigned char* buffer);
-		void          receive      (unsigned char* buffer);
+		void          send         (unsigned char* buffer) override;
+		void          receive      (unsigned char* buffer) override;
 
 		void          step         (unsigned int ticks, int msps, JJ1BonusLevel* bonus);
 		void          draw         (unsigned int ticks);

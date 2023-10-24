@@ -37,6 +37,7 @@
 #include "util.h"
 
 #include <string.h>
+#include <cassert>
 
 
 /**
@@ -45,6 +46,7 @@
 Player::Player () {
 
 	levelPlayer = NULL;
+	levelPlayerType = LT_JJ1;
 	name = NULL;
 
 }
@@ -165,14 +167,14 @@ void Player::reset (int x, int y) {
 void Player::createLevelPlayer (LevelType levelType, Anim** anims,
 	Anim** flippedAnims, unsigned char x, unsigned char y) {
 
-	int count;
-
 	if (levelPlayer) {
 
 		flockSize = levelPlayer->countBirds();
 		delete levelPlayer;
 
 	}
+
+	levelPlayerType = levelType;
 
 	switch (levelType) {
 
@@ -196,7 +198,7 @@ void Player::createLevelPlayer (LevelType levelType, Anim** anims,
 
 	}
 
-	for (count = 0; count < PCONTROLS; count++) pcontrols[count] = false;
+	for (int i = 0; i < PCONTROLS; i++) pcontrols[i] = false;
 
 }
 
@@ -244,7 +246,9 @@ char * Player::getName () {
  */
 JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
 
-	return dynamic_cast<JJ1BonusLevelPlayer*>(levelPlayer);
+	assert(levelPlayerType == LT_JJ1BONUS);
+
+	return static_cast<JJ1BonusLevelPlayer*>(levelPlayer);
 
 }
 
@@ -256,7 +260,9 @@ JJ1BonusLevelPlayer* Player::getJJ1BonusLevelPlayer () {
  */
 JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
 
-	return dynamic_cast<JJ1LevelPlayer*>(levelPlayer);
+	assert(levelPlayerType == LT_JJ1);
+
+	return static_cast<JJ1LevelPlayer*>(levelPlayer);
 
 }
 
@@ -268,7 +274,9 @@ JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
  */
 JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
 
-	return dynamic_cast<JJ2LevelPlayer*>(levelPlayer);
+	assert(levelPlayerType == LT_JJ2);
+
+	return static_cast<JJ2LevelPlayer*>(levelPlayer);
 
 }
 

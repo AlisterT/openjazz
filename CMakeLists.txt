@@ -62,7 +62,6 @@ add_executable(OpenJazz
 	src/io/sound.h
 	src/level/level.cpp
 	src/level/level.h
-	src/level/levelplayer.cpp
 	src/level/levelplayer.h
 	src/level/movable.cpp
 	src/level/movable.h

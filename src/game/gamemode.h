@@ -53,7 +53,7 @@ class Player;
 class GameMode {
 
 	public:
-        virtual ~GameMode ();
+        virtual ~GameMode () {};
 
 		virtual GameModeType  getMode    () = 0;
 		virtual unsigned char chooseTeam () = 0;
