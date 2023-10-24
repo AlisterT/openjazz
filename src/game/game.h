@@ -187,8 +187,8 @@ class ClientGame : public Game {
 		int            sock; ///< Client socket
 
 	public:
-		ClientGame         (char *address);
-		~ClientGame        ();
+		explicit ClientGame(char *address);
+		~ClientGame();
 
 		int  setLevel      (char *fileName);
 		void send          (unsigned char *buffer);

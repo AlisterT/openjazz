@@ -212,7 +212,7 @@ class JJ1Level : public Level {
 		Font* font; ///< On-screen message font
 		char* musicFile; ///< Music file name
 
-		JJ1Level (Game* owner);
+		explicit JJ1Level(Game* owner);
 
 		int  load (char* fileName, bool checkpoint);
 		int  step ();
@@ -221,8 +221,8 @@ class JJ1Level : public Level {
 	public:
 		JJ1EventPath path[PATHS]; ///< Pre-defined event movement paths
 
-		JJ1Level          (Game* owner, char* fileName, bool checkpoint, bool multi);
-		virtual ~JJ1Level ();
+		JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi);
+		~JJ1Level ();
 
 		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);

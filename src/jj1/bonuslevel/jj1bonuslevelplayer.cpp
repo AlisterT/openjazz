@@ -51,27 +51,17 @@
  */
 JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
-	int count;
-
-
 	player = parent;
-
-	memcpy(anims, newAnims, BPANIMS * sizeof(Anim*));
-
 	birds = flockSize;
-
+	memcpy(anims, newAnims, BPANIMS * sizeof(Anim*));
 	reset(startX, startY);
-
 
 	// Create the player's palette
 
-	for (count = 0; count < 256; count++)
-		palette[count].r = palette[count].g = palette[count].b = count;
+	for (int i = 0; i < 256; i++)
+		palette[i].r = palette[i].g = palette[i].b = i;
 
 	/// @todo Custom colours
-
-
-	return;
 
 }
 
@@ -80,8 +70,6 @@ JJ1BonusLevelPlayer::JJ1BonusLevelPlayer (Player* parent, Anim **newAnims, unsig
  * Delete the JJ1 bonus level player.
  */
 JJ1BonusLevelPlayer::~JJ1BonusLevelPlayer () {
-
-	return;
 
 }
 
@@ -108,8 +96,7 @@ void JJ1BonusLevelPlayer::reset (int startX, int startY) {
 	gems = 0;
 
 	animType = PA_WALK;
-
-	return;
+	running = false;
 
 }
 
@@ -120,8 +107,6 @@ void JJ1BonusLevelPlayer::reset (int startX, int startY) {
 void JJ1BonusLevelPlayer::addGem () {
 
 	gems++;
-
-	return;
 
 }
 
@@ -329,9 +314,6 @@ void JJ1BonusLevelPlayer::step (unsigned int ticks, int msps, JJ1BonusLevel* bon
 
 	}
 
-
-	return;
-
 }
 
 
@@ -348,8 +330,6 @@ void JJ1BonusLevelPlayer::draw (unsigned int ticks) {
 	anim->setFrame(ticks / 75, true);
 	if (canvasW <= SW) anim->draw(ITOF((canvasW - anim->getWidth()) >> 1), ITOF(canvasH - anim->getHeight() - 16 - FTOI(z * 80)));
 	else anim->drawScaled(ITOF(canvasW >> 1), ITOF(canvasH - ((((anim->getHeight() >> 1) + 16 + FTOI(z * 80)) * canvasW) / SW)), ITOF(canvasW) / SW);
-
-	return;
 
 }
 
@@ -385,8 +365,6 @@ void JJ1BonusLevelPlayer::send (unsigned char *buffer) {
 	buffer[43] = (y >> 8) & 255;
 	buffer[44] = y & 255;
 
-	return;
-
 }
 
 
@@ -413,7 +391,4 @@ void JJ1BonusLevelPlayer::receive (unsigned char *buffer) {
 
 	}
 
-	return;
-
 }
-

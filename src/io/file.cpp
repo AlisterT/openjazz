@@ -188,8 +188,6 @@ void File::seek (int offset, bool reset) {
 
 	fseek(file, offset, reset ? SEEK_SET: SEEK_CUR);
 
-	return;
-
 }
 
 
@@ -208,8 +206,6 @@ unsigned char File::loadChar () {
 void File::storeChar (unsigned char val) {
 
 	fputc(val, file);
-
-	return;
 
 }
 
@@ -260,8 +256,6 @@ void File::storeShort (unsigned short int val) {
 	fputc(val & 255, file);
 	fputc(val >> 8, file);
 
-	return;
-
 }
 
 
@@ -294,8 +288,6 @@ void File::storeInt (signed int val) {
 	fputc((uval >> 8) & 255, file);
 	fputc((uval >> 16) & 255, file);
 	fputc(uval >> 24, file);
-
-	return;
 
 }
 
@@ -332,27 +324,24 @@ unsigned char * File::loadBlock (int length) {
  */
 unsigned char* File::loadRLE (int length) {
 
-	unsigned char* buffer;
-	int rle, pos, byte, count, next;
-
 	// Determine the offset that follows the block
-	next = fgetc(file);
+	int next = fgetc(file);
 	next += fgetc(file) << 8;
 	next += ftell(file);
 
-	buffer = new unsigned char[length];
+	unsigned char* buffer = new unsigned char[length];
 
-	pos = 0;
+	int pos = 0;
 
 	while (pos < length) {
 
-		rle = fgetc(file);
+		int rle = fgetc(file);
 
 		if (rle & 128) {
 
-			byte = fgetc(file);
+			int byte = fgetc(file);
 
-			for (count = 0; count < (rle & 127); count++) {
+			for (int i = 0; i < (rle & 127); i++) {
 
 				buffer[pos++] = byte;
 				if (pos >= length) break;
@@ -361,7 +350,7 @@ unsigned char* File::loadRLE (int length) {
 
 		} else if (rle) {
 
-			for (count = 0; count < rle; count++) {
+			for (int i = 0; i < rle; i++) {
 
 				buffer[pos++] = fgetc(file);
 				if (pos >= length) break;
@@ -390,8 +379,6 @@ void File::skipRLE () {
 	next += fgetc(file) << 8;
 
 	fseek(file, next, SEEK_CUR);
-
-	return;
 
 }
 
@@ -625,8 +612,6 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 
 	delete[] buffer;
 
-	return;
-
 }
 
 
@@ -643,8 +628,6 @@ Path::Path (Path* newNext, char* newPath) {
 	next = newNext;
 	path = newPath;
 
-	return;
-
 }
 
 
@@ -655,7 +638,5 @@ Path::~Path () {
 
 	if (next) delete next;
 	delete[] path;
-
-	return;
 
 }

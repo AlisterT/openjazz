@@ -39,7 +39,7 @@ Font::Font (const char* fileName) {
 	unsigned char* pixels;
 	unsigned char* blank;
 	int fileSize;
-	int count, size, width, height;
+	int count, width, height;
 
 	// Load font from a font file
 
@@ -49,7 +49,7 @@ Font::Font (const char* fileName) {
 
 	} catch (int e) {
 
-		throw e;
+		throw;
 
 	}
 
@@ -80,7 +80,7 @@ Font::Font (const char* fileName) {
 
 		}
 
-		size = file->loadShort();
+		int size = file->loadShort();
 
 		if (size > 4) {
 
@@ -146,8 +146,6 @@ Font::Font (const char* fileName) {
 
 	}
 
-	return;
-
 }
 
 
@@ -212,8 +210,6 @@ Font::Font (unsigned char* pixels, bool big) {
 
 	}
 
-	return;
-
 }
 
 
@@ -227,7 +223,7 @@ Font::Font (bool bonus) {
 	File* file;
 	unsigned char* pixels;
 	int fileSize;
-	int count, width, height;
+	int count;
 
 	// Load font from FONTS.000 or BONUS.000
 
@@ -237,7 +233,7 @@ Font::Font (bool bonus) {
 
 	} catch (int e) {
 
-		throw e;
+		throw;
 
 	}
 
@@ -257,7 +253,7 @@ Font::Font (bool bonus) {
 
 			file->seek(4, false);
 
-			width = file->loadShort();
+			int width = file->loadShort();
 			if (width == 0xFFFF) width = 0;
 
 			file->seek((width << 2) + file->loadShort(), false);
@@ -278,8 +274,8 @@ Font::Font (bool bonus) {
 
 		}
 
-		width = file->loadShort(SW);
-		height = file->loadShort(SH);
+		int width = file->loadShort(SW);
+		int height = file->loadShort(SH);
 
 		if (bonus) width = (width + 3) & ~3;
 		else width <<= 2;
@@ -345,8 +341,6 @@ Font::Font (bool bonus) {
 
 	}
 
-	return;
-
 }
 
 
@@ -355,11 +349,7 @@ Font::Font (bool bonus) {
  */
 Font::~Font () {
 
-	int count;
-
-	for (count = 0; count < nCharacters; count++) SDL_FreeSurface(characters[count]);
-
-	return;
+	for (int i = 0; i < nCharacters; i++) SDL_FreeSurface(characters[i]);
 
 }
 
@@ -530,8 +520,6 @@ void Font::showNumber (int n, int x, int y) {
 
 	}
 
-	return;
-
 }
 
 
@@ -555,8 +543,6 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 	for (count = 0; count < nCharacters; count++)
 		SDL_SetPalette(characters[count], SDL_LOGPAL, palette, start, length);
 
-	return;
-
 }
 
 
@@ -569,8 +555,6 @@ void Font::restorePalette () {
 
 	for (count = 0; count < nCharacters; count++)
 		video.restoreSurfacePalette(characters[count]);
-
-	return;
 
 }
 
@@ -637,5 +621,3 @@ int Font::getSceneStringWidth (const unsigned char *string) {
 	return stringWidth;
 
 }
-
-

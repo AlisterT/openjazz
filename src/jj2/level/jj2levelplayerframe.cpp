@@ -84,8 +84,6 @@ void JJ2LevelPlayer::ground () {
 	// If on a downhill slope, push the player downwards
 	if (!checkMaskUp(F1) && checkMaskUp(F2)) y += F1;
 
-	return;
-
 }
 
 
@@ -230,8 +228,6 @@ void JJ2LevelPlayer::modify (JJ2Modifier* nextMod, unsigned int ticks) {
 	}
 
 	mod = nextMod;
-
-	return;
 
 }
 
@@ -593,9 +589,6 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 	} else animType = JJ2PA_FALL;
 
-
-	return;
-
 }
 
 
@@ -806,9 +799,6 @@ void JJ2LevelPlayer::move (unsigned int ticks, int msps) {
 
 	if (jj2Level->getStage() == LS_END) return;
 
-
-	return;
-
 }
 
 
@@ -857,9 +847,6 @@ void JJ2LevelPlayer::view (unsigned int ticks, int mspf, int change) {
 		viewY = ((oldViewY * (speed - mspf)) + (viewY * mspf)) / speed;
 
 	}
-
-
-	return;
 
 }
 
@@ -973,8 +960,4 @@ void JJ2LevelPlayer::draw (unsigned int ticks, int change) {
 
 	//panelBigFont->showNumber(mod->properties, FTOI(drawX) + 24, FTOI(drawY) + 12);
 
-	return;
-
 }
-
-

@@ -51,16 +51,15 @@
 JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
 	Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize) {
 
-	int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
+	const int offsets[14] = {JJ2PCO_GREY, JJ2PCO_SGREEN, JJ2PCO_BLUE, JJ2PCO_RED,
 		JJ2PCO_LGREEN, JJ2PCO_LEVEL1, JJ2PCO_YELLOW, JJ2PCO_LEVEL2,
 		JJ2PCO_ORANGE, JJ2PCO_LEVEL3, JJ2PCO_LEVEL4, JJ2PCO_SANIM, JJ2PCO_LANIM,
 		JJ2PCO_LEVEL5};
-	int lengths[14] = {JJ2PCL_GREY, JJ2PCL_SGREEN, JJ2PCL_BLUE, JJ2PCL_RED,
+	const int lengths[14] = {JJ2PCL_GREY, JJ2PCL_SGREEN, JJ2PCL_BLUE, JJ2PCL_RED,
 		JJ2PCL_LGREEN, JJ2PCL_LEVEL1, JJ2PCL_YELLOW, JJ2PCL_LEVEL2,
 		JJ2PCL_ORANGE, JJ2PCL_LEVEL3, JJ2PCL_LEVEL4, JJ2PCL_SANIM, JJ2PCL_LANIM,
 		JJ2PCL_LEVEL5};
 	int count, start, length;
-
 
 	player = parent;
 
@@ -68,8 +67,6 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
 	memcpy(flippedAnims, newFlippedAnims, JJ2PANIMS * sizeof(Anim *));
 
 	birds = flockSize;
-
-	shield = JJ2S_NONE;
 
 	reset(startX, startY);
 
@@ -119,9 +116,6 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
 		palette[count + 40].r = palette[count + 40].g = palette[count + 40].b =
 			(count * length / 8) + start;
 
-
-	return;
-
 }
 
 
@@ -129,8 +123,6 @@ JJ2LevelPlayer::JJ2LevelPlayer (Player* parent, Anim** newAnims,
  * Delete the JJ2 level player.
  */
 JJ2LevelPlayer::~JJ2LevelPlayer () {
-
-	return;
 
 }
 
@@ -153,16 +145,18 @@ void JJ2LevelPlayer::reset (int startX, int startY) {
 	reactionTime = 0;
 	jumpHeight = JJ2PYO_JUMP;
 	throwY = TTOF(256);
+	throwX = 0;
 	fastFeetTime = 0;
 	stopTime = 0;
+	lookTime = 0;
+	fireTime = 0;
 	dx = 0;
 	dy = 0;
 	x = TTOF(startX);
 	y = TTOF(startY);
 	gems[0] = gems[1] = gems[2] = gems[3] = 0;
 	coins = 0;
-
-	return;
+	shield = JJ2S_NONE;
 
 }
 
@@ -176,8 +170,6 @@ void JJ2LevelPlayer::addGem (int colour) {
 
 	gems[colour]++;
 
-	return;
-
 }
 
 
@@ -188,8 +180,6 @@ void JJ2LevelPlayer::centreX () {
 
 	x = ((x + JJ2PXO_MID) & ~32767) + F16 - JJ2PXO_MID;
 
-	return;
-
 }
 
 
@@ -199,8 +189,6 @@ void JJ2LevelPlayer::centreX () {
 void JJ2LevelPlayer::centreY () {
 
 	y = ((y + JJ2PYO_MID) & ~32767) + F16 - JJ2PYO_MID;
-
-	return;
 
 }
 
@@ -334,8 +322,6 @@ void JJ2LevelPlayer::kill (Player *source, unsigned int ticks) {
 
 	}
 
-	return;
-
 }
 
 
@@ -366,11 +352,9 @@ bool JJ2LevelPlayer::overlap (fixed left, fixed top, fixed width, fixed height) 
  */
 JJ2PlayerReaction JJ2LevelPlayer::reacted (unsigned int ticks) {
 
-	JJ2PlayerReaction oldReaction;
-
 	if ((reaction != JJ2PR_NONE) && (reactionTime < ticks)) {
 
-		oldReaction = reaction;
+		JJ2PlayerReaction oldReaction = reaction;
 		reaction = JJ2PR_NONE;
 
 		return oldReaction;
@@ -393,8 +377,6 @@ void JJ2LevelPlayer::setPosition (fixed newX, fixed newY) {
 	x = newX;
 	y = newY;
 
-	return;
-
 }
 
 
@@ -408,8 +390,6 @@ void JJ2LevelPlayer::setSpeed (fixed newDx, fixed newDy) {
 
 	dx = newDx;
 	if (newDy) dy = newDy;
-
-	return;
 
 }
 
@@ -689,8 +669,6 @@ void JJ2LevelPlayer::send (unsigned char *buffer) {
 	buffer[43] = (y >> 8) & 255;
 	buffer[44] = y & 255;
 
-	return;
-
 }
 
 
@@ -732,7 +710,4 @@ void JJ2LevelPlayer::receive (unsigned char *buffer) {
 
 	}
 
-	return;
-
 }
-

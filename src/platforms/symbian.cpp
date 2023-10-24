@@ -139,4 +139,15 @@ float sinf(float value)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+void SYMBIAN_AddGamePaths() {
+
+#ifdef UIQ3
+	firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
+#else
+	firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
+#endif
+	firstPath = new Path(firstPath, createString(KOpenJazzPath));
+
+}
+
 #endif

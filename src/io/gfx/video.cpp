@@ -49,11 +49,8 @@
  */
 SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 
-	SDL_Surface *ret;
-	int y;
-
 	// Create the surface
-	ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+	SDL_Surface *ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
 	// Set the surface's palette
 	video.restoreSurfacePalette(ret);
@@ -63,8 +60,8 @@ SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 		// Upload pixel data to the surface
 		if (SDL_MUSTLOCK(ret)) SDL_LockSurface(ret);
 
-		for (y = 0; y < height; y++)
-			memcpy(((unsigned char *)(ret->pixels)) + (ret->pitch * y),
+		for (int y = 0; y < height; y++)
+			memcpy(static_cast<unsigned char*>(ret->pixels) + (ret->pitch * y),
 				pixels + (width * y), width);
 
 		if (SDL_MUSTLOCK(ret)) SDL_UnlockSurface(ret);
@@ -81,22 +78,20 @@ SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
  */
 Video::Video () {
 
-	int count;
-
 	screen = NULL;
-
+	fakePalette = false;
+	minW = maxW = screenW = DEFAULT_SCREEN_WIDTH;
+	minH = maxH = screenH = DEFAULT_SCREEN_HEIGHT;
 #ifdef SCALE
 	scaleFactor = 1;
 #endif
+	fullscreen = false;
 
 	// Generate the logical palette
-	for (count = 0; count < 256; count++)
-		logicalPalette[count].r = logicalPalette[count].g =
- 			logicalPalette[count].b = count;
+	for (int i = 0; i < 256; i++)
+		logicalPalette[i].r = logicalPalette[i].g = logicalPalette[i].b = i;
 
 	currentPalette = logicalPalette;
-
-	return;
 
 }
 
@@ -110,13 +105,10 @@ void Video::findResolutions () {
 	minW = maxW = DEFAULT_SCREEN_WIDTH;
 	minH = maxH = DEFAULT_SCREEN_HEIGHT;
 #else
-	SDL_Rect **resolutions;
-	int count;
-
-	resolutions = SDL_ListModes(NULL, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
+	SDL_Rect **resolutions = SDL_ListModes(NULL, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 
 	// All resolutions available, set to arbitrary limit
-	if (resolutions == (SDL_Rect **)(-1)) {
+	if (resolutions == reinterpret_cast<SDL_Rect**>(-1)) {
 
 		minW = SW;
 		minH = SH;
@@ -125,18 +117,18 @@ void Video::findResolutions () {
 
 	} else {
 
-		for (count = 0; resolutions[count] != NULL; count++) {
+		for (int i = 0; resolutions[i] != NULL; i++) {
 
 			// Save largest resolution
-			if (count == 0) {
-				maxW = resolutions[count]->w;
-				maxH = resolutions[count]->h;
+			if (i == 0) {
+				maxW = resolutions[i]->w;
+				maxH = resolutions[i]->h;
 			}
 
 			// Save smallest resolution
-			if (resolutions[count + 1] == NULL) {
-				minW = resolutions[count]->w;
-				minH = resolutions[count]->h;
+			if (resolutions[i + 1] == NULL) {
+				minW = resolutions[i]->w;
+				minH = resolutions[i]->h;
 			}
 
 		}
@@ -150,7 +142,6 @@ void Video::findResolutions () {
 	}
 #endif
 
-	return;
 }
 
 
@@ -200,17 +191,17 @@ bool Video::init (SetupOptions cfg) {
  */
 bool Video::reset (int width, int height) {
 
-	screenW = width;
-	screenH = height;
-
-#ifdef SCALE
-	if (canvas != screen) SDL_FreeSurface(canvas);
-#endif
-
 #ifdef NO_RESIZE
 	screenW = DEFAULT_SCREEN_WIDTH;
 	screenH = DEFAULT_SCREEN_HEIGHT;
 	fullscreen = true;
+#else
+	screenW = width;
+	screenH = height;
+#endif
+
+#ifdef SCALE
+	if (canvas != screen) SDL_FreeSurface(canvas);
 #endif
 
 	// If video mode is not valid reset to low default
@@ -283,8 +274,6 @@ void Video::setPalette (SDL_Color *palette) {
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
 	currentPalette = palette;
 
-	return;
-
 }
 
 
@@ -311,8 +300,6 @@ void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int
 
 	SDL_SetPalette(screen, SDL_PHYSPAL, palette, first, amount);
 
-	return;
-
 }
 
 
@@ -324,8 +311,6 @@ void Video::changePalette (SDL_Color *palette, unsigned char first, unsigned int
 void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
 	SDL_SetPalette(surface, SDL_LOGPAL, logicalPalette, 0, 256);
-
-	return;
 
 }
 
@@ -490,8 +475,6 @@ void Video::expose () {
 	SDL_SetPalette(screen, SDL_LOGPAL, logicalPalette, 0, 256);
 	SDL_SetPalette(screen, SDL_PHYSPAL, currentPalette, 0, 256);
 
-	return;
-
 }
 
 
@@ -543,8 +526,6 @@ void Video::update (SDL_Event *event) {
 
 	}
 #endif
-
-	return;
 
 }
 
@@ -602,8 +583,6 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	// Show what has been drawn
 	SDL_Flip(screen);
 
-	return;
-
 }
 
 
@@ -622,8 +601,6 @@ void Video::clearScreen (int index) {
 #else
 	SDL_FillRect(canvas, NULL, index);
 #endif
-
-	return;
 
 }
 
@@ -648,7 +625,4 @@ void drawRect (int x, int y, int width, int height, int index) {
 
 	SDL_FillRect(canvas, &dst, index);
 
-	return;
-
 }
-

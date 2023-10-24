@@ -310,15 +310,14 @@ Controls::Controls () {
 		axes[count].pressed = false;
 		hats[count].pressed = false;
 
-		controls[count].time = 0;
-		controls[count].state = false;
+		controlstates[count].time = 0;
+		controlstates[count].state = false;
 
 	}
 
-	cursorPressed = false;
-	cursorReleased = false;
-
-	return;
+	cursorX = cursorY = 0;
+	cursorPressed = cursorReleased = false;
+	wheelUp = wheelDown = 0;
 
 }
 
@@ -334,8 +333,6 @@ void Controls::setKey (int control, int key) {
 	keys[control].key = key;
 	keys[control].pressed = false;
 
-	return;
-
 }
 
 
@@ -349,8 +346,6 @@ void Controls::setButton (int control, int button) {
 
 	buttons[control].button = button;
 	buttons[control].pressed = false;
-
-	return;
 
 }
 
@@ -368,8 +363,6 @@ void Controls::setAxis (int control, int axis, bool direction) {
 	axes[control].direction = direction;
 	axes[control].pressed = false;
 
-	return;
-
 }
 
 
@@ -385,8 +378,6 @@ void Controls::setHat (int control, int hat, int direction) {
 	hats[control].hat = hat;
 	hats[control].direction = direction;
 	hats[control].pressed = false;
-
-	return;
 
 }
 
@@ -488,8 +479,6 @@ void Controls::setCursor(int x, int y, bool pressed) {
 	cursorY = y;
 	cursorPressed = pressed;
 	cursorReleased = !pressed;
-
-	return;
 
 }
 
@@ -657,25 +646,23 @@ void Controls::loop () {
 
 	// Apply controls to universal control tracking
 	for (count = 0; count < CONTROLS; count++)
-		controls[count].state = (controls[count].time < globalTicks) &&
+		controlstates[count].state = (controlstates[count].time < globalTicks) &&
 			(keys[count].pressed || buttons[count].pressed ||
 			axes[count].pressed || hats[count].pressed);
 
 	if (wheelUp) {
 
-		controls[C_UP].state = true;
+		controlstates[C_UP].state = true;
 		wheelUp--;
 
 	}
 
 	if (wheelDown) {
 
-		controls[C_DOWN].state = true;
+		controlstates[C_DOWN].state = true;
 		wheelDown--;
 
 	}
-
-	return;
 
 }
 
@@ -689,7 +676,7 @@ void Controls::loop () {
  */
 bool Controls::getState (int control) {
 
-	return controls[control].state;
+	return controlstates[control].state;
 
 }
 
@@ -703,10 +690,10 @@ bool Controls::getState (int control) {
  */
 bool Controls::release (int control) {
 
-	if (!controls[control].state) return false;
+	if (!controlstates[control].state) return false;
 
-	controls[control].time = globalTicks + T_KEY;
-	controls[control].state = false;
+	controlstates[control].time = globalTicks + T_KEY;
+	controlstates[control].state = false;
 
 	return true;
 
@@ -756,4 +743,3 @@ bool Controls::wasCursorReleased () {
 	return false;
 
 }
-

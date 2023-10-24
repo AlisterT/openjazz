@@ -227,8 +227,6 @@ ClientGame::ClientGame (char* address) {
 
 	}
 
-	return;
-
 }
 
 
@@ -242,8 +240,6 @@ ClientGame::~ClientGame () {
 	if (file) delete file;
 
 	delete mode;
-
-	return;
 
 }
 
@@ -315,8 +311,6 @@ void ClientGame::send (unsigned char* buffer) {
 
 	net->send(sock, buffer);
 
-	return;
-
 }
 
 
@@ -329,9 +323,7 @@ void ClientGame::send (unsigned char* buffer) {
  */
 int ClientGame::step (unsigned int ticks) {
 
-	unsigned char sendBuffer[BUFFER_LENGTH];
-	int length, count;
-	bool firstMessage;
+	int length;
 
 	// Receive data from server
 
@@ -367,6 +359,8 @@ int ClientGame::step (unsigned int ticks) {
 
 					if (recvBuffer[1] == MT_G_LEVEL) {
 
+						bool firstMessage;
+
 						if (!file) {
 
 							// Not already storing level data, so open the file
@@ -383,12 +377,17 @@ int ClientGame::step (unsigned int ticks) {
 
 							firstMessage = true;
 
-						} else firstMessage = false;
+						} else
+							firstMessage = false;
 
-						file->seek((recvBuffer[2] << 8) + recvBuffer[3], true);
+						if (file) {
 
-						for (count = 4; count < recvBuffer[0]; count++)
-							file->storeChar(recvBuffer[count]);
+							file->seek((recvBuffer[2] << 8) + recvBuffer[3], true);
+
+							for (int i = 4; i < recvBuffer[0]; i++)
+								file->storeChar(recvBuffer[i]);
+
+						}
 
 						// If a zero-length block has been sent, it is the last
 						if (recvBuffer[0] == MTL_G_LEVEL) {
@@ -418,18 +417,18 @@ int ClientGame::step (unsigned int ticks) {
 						printf("Player %d joined the game.\n", recvBuffer[3]);
 
 						// Add the new player, and any that have been missed
+						int player_num;
+						for (player_num = nPlayers; player_num <= recvBuffer[3]; player_num++) {
 
-						for (count = nPlayers; count <= recvBuffer[3]; count++) {
-
-							players[count].init(this, (char *)recvBuffer + 9,
+							players[player_num].init(this, reinterpret_cast<char*>(recvBuffer + 9),
 								recvBuffer + 5, recvBuffer[4]);
-							addLevelPlayer(players + count);
+							addLevelPlayer(players + player_num);
 
-							printf("Player %d joined team %d.\n", count, recvBuffer[4]);
+							printf("Player %d joined team %d.\n", player_num, recvBuffer[4]);
 
 						}
 
-						nPlayers = count;
+						nPlayers = player_num;
 
 						if (recvBuffer[2] == clientID)
 							localPlayer = players + recvBuffer[3];
@@ -446,8 +445,8 @@ int ClientGame::step (unsigned int ticks) {
 						players[recvBuffer[2]].deinit();
 
 						// If necessary, move more recent players
-						for (count = recvBuffer[2]; count < nPlayers; count++)
-							memcpy(static_cast<void*>(players + count), players + count + 1,
+						for (int i = recvBuffer[2]; i < nPlayers; i++)
+							memcpy(static_cast<void*>(players + i), players + i + 1,
 								sizeof(Player));
 
 						// Clear duplicate pointers
@@ -471,10 +470,10 @@ int ClientGame::step (unsigned int ticks) {
 
 					if (recvBuffer[1] == MT_G_SCORE) {
 
-						for (count = 0; count < nPlayers; count++) {
+						for (int i = 0; i < nPlayers; i++) {
 
-							if (players[count].getTeam() == recvBuffer[2])
-								players[count].teamScore++;
+							if (players[i].getTeam() == recvBuffer[2])
+								players[i].teamScore++;
 
 						}
 
@@ -529,7 +528,7 @@ int ClientGame::step (unsigned int ticks) {
 	if (localPlayer && (ticks >= sendTime)) {
 
 		// Update server
-
+		unsigned char sendBuffer[BUFFER_LENGTH];
 		sendBuffer[0] = MTL_P_TEMP;
 		sendBuffer[1] = MT_P_TEMP;
 		sendBuffer[2] = 0;
@@ -560,8 +559,6 @@ void ClientGame::score (unsigned char team) {
 	buffer[2] = team;
 	send(buffer);
 
-	return;
-
 }
 
 
@@ -583,8 +580,4 @@ void ClientGame::setCheckpoint (int gridX, int gridY) {
 	buffer[5] = (gridY >> 8) & 0xFF;
 	send(buffer);
 
-	return;
-
 }
-
-

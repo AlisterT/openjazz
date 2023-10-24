@@ -84,8 +84,6 @@ ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficu
 
 	mode = createMode(modeType);
 
-	return;
-
 }
 
 
@@ -107,8 +105,6 @@ ServerGame::~ServerGame () {
 	if (levelData) delete[] levelData;
 
 	delete mode;
-
-	return;
 
 }
 
@@ -200,8 +196,6 @@ void ServerGame::send (unsigned char* buffer) {
 			net->send(clientSock[count], buffer);
 
 	}
-
-	return;
 
 }
 
@@ -297,7 +291,7 @@ int ServerGame::step (unsigned int ticks) {
 							recvBuffers[count][4] = mode->chooseTeam();
 
 							players[nPlayers].init(this,
-								(char *)(recvBuffers[count]) + 9,
+								reinterpret_cast<char*>(recvBuffers[count] + 9),
 								recvBuffers[count] + 5, recvBuffers[count][4]);
 							addLevelPlayer(players + nPlayers);
 
@@ -523,8 +517,6 @@ void ServerGame::score (unsigned char team) {
 
 	}
 
-	return;
-
 }
 
 
@@ -549,8 +541,4 @@ void ServerGame::setCheckpoint (int gridX, int gridY) {
 	checkX = gridX;
 	checkY = gridY;
 
-	return;
-
 }
-
-

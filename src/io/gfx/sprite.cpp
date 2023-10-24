@@ -36,8 +36,6 @@ Sprite::Sprite () {
 	xOffset = 0;
 	yOffset = 0;
 
-	return;
-
 }
 
 
@@ -47,8 +45,6 @@ Sprite::Sprite () {
 Sprite::~Sprite () {
 
 	if (pixels) SDL_FreeSurface(pixels);
-
-	return;
 
 }
 
@@ -66,8 +62,6 @@ void Sprite::clearPixels () {
 	pixels = createSurface(&data, 1, 1);
 	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, 0);
 
-	return;
-
 }
 
 
@@ -75,8 +69,6 @@ void Sprite::setOffset (short int x, short int y) {
 
 	xOffset = x;
 	yOffset = y;
-
-	return;
 
 }
 
@@ -95,8 +87,6 @@ void Sprite::setPixels (unsigned char *data, int width, int height, unsigned cha
 
 	pixels = createSurface(data, width, height);
 	SDL_SetColorKey(pixels, SDL_SRCCOLORKEY, key);
-
-	return;
 
 }
 
@@ -160,8 +150,6 @@ void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 
 	SDL_SetPalette(pixels, SDL_LOGPAL, palette + start, start, amount);
 
-	return;
-
 }
 
 
@@ -180,8 +168,6 @@ void Sprite::flashPalette (int index) {
 
 	SDL_SetPalette(pixels, SDL_LOGPAL, palette, 0, 256);
 
-	return;
-
 }
 
 
@@ -191,8 +177,6 @@ void Sprite::flashPalette (int index) {
 void Sprite::restorePalette () {
 
 	video.restoreSurfacePalette(pixels);
-
-	return;
 
 }
 
@@ -220,8 +204,6 @@ void Sprite::draw (int x, int y, bool includeOffsets) {
 
 	SDL_BlitSurface(pixels, NULL, canvas, &dst);
 
-	return;
-
 }
 
 
@@ -234,8 +216,6 @@ void Sprite::draw (int x, int y, bool includeOffsets) {
  */
 void Sprite::drawScaled (int x, int y, fixed scale) {
 
-	unsigned char* srcRow;
-	unsigned char* dstRow;
 	unsigned char pixel, key;
 	int width, height, fullWidth, fullHeight;
 	int dstX, dstY;
@@ -269,8 +249,8 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 
 	while (srcY < height) {
 
-		srcRow = ((unsigned char *)(pixels->pixels)) + (pixels->pitch * DIV(srcY, scale));
-		dstRow = ((unsigned char *)(canvas->pixels)) + (canvas->pitch * dstY);
+		unsigned char* srcRow = static_cast<unsigned char*>(pixels->pixels) + (pixels->pitch * DIV(srcY, scale));
+		unsigned char* dstRow = static_cast<unsigned char*>(canvas->pixels) + (canvas->pitch * dstY);
 
 		if (x < (fullWidth >> 1)) {
 
@@ -301,7 +281,4 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 
 	if (SDL_MUSTLOCK(canvas)) SDL_UnlockSurface(canvas);
 
-	return;
-
 }
-

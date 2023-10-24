@@ -58,11 +58,19 @@
  * @param owner The current game
  */
 JJ1Level::JJ1Level (Game* owner) : Level(owner) {
-
-	// Do nothing
-
-	return;
-
+	tileSet = panel = NULL;
+	events = NULL;
+	bullets = NULL;
+	sceneFile = NULL;
+	spriteSet = NULL;
+	sky = false;
+	skyOrb = 0;
+	levelNum = worldNum = nextLevelNum = nextWorldNum = 0;
+	enemies = 0;
+	waterLevel = waterLevelTarget = waterLevelSpeed = 0;
+	energyBar = ammoType = ammoOffset = 0;
+	font = NULL;
+	musicFile = NULL;
 }
 
 
@@ -77,17 +85,11 @@ JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 JJ1Level::JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
 	Level (owner) {
 
-	int ret;
-
 	// Load level data
-
-	ret = load(fileName, checkpoint);
-
+	int ret = load(fileName, checkpoint);
 	if (ret < 0) throw ret;
 
 	multiplayer = multi;
-
-	return;
 
 }
 
@@ -105,8 +107,6 @@ void JJ1Level::deletePanel () {
 	SDL_FreeSurface(panelAmmo[4]);
 	SDL_FreeSurface(panelAmmo[5]);
 
-	return;
-
 }
 
 
@@ -115,18 +115,16 @@ void JJ1Level::deletePanel () {
  */
 JJ1Level::~JJ1Level () {
 
-	int count;
-
 	// Free events
 	if (events) delete events;
 
 	// Free bullets
 	if (bullets) delete bullets;
 
-	for (count = 0; count < PATHS; count++) {
+	for (int i = 0; i < PATHS; i++) {
 
-		delete[] path[count].x;
-		delete[] path[count].y;
+		delete[] path[i].x;
+		delete[] path[i].y;
 
 	}
 
@@ -145,8 +143,6 @@ JJ1Level::~JJ1Level () {
 
 	video.setTitle(NULL);
 
-	return;
-
 }
 
 
@@ -163,7 +159,7 @@ bool JJ1Level::checkMaskUp (fixed x, fixed y) {
 	GridElement *ge;
 
 	// Anything off the edge of the map is solid
-	if ((x < 0) || (y < 0) || (x > TTOF(LW)) || (y > TTOF(LH)))
+	if ((x < 0) || (y < 0) || (x >= TTOF(LW)) || (y >= TTOF(LH)))
 		return true;
 
 	ge = grid[FTOT(y)] + FTOT(x);
@@ -188,7 +184,7 @@ bool JJ1Level::checkMaskUp (fixed x, fixed y) {
 bool JJ1Level::checkMaskDown (fixed x, fixed y) {
 
 	// Anything off the edge of the map is solid
-	if ((x < 0) || (y < 0) || (x > TTOF(LW)) || (y > TTOF(LH)))
+	if ((x < 0) || (y < 0) || (x >= TTOF(LW)) || (y >= TTOF(LH)))
 		return true;
 
 	// Check the mask in the tile in question
@@ -244,13 +240,12 @@ int JJ1Level::getWorld() {
  */
 void JJ1Level::setNext (int nextLevel, int nextWorld) {
 
-	unsigned char buffer[MTL_L_PROP];
-
 	nextLevelNum = nextLevel;
 	nextWorldNum = nextWorld;
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_PROP];
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 0; // set next level
@@ -260,8 +255,6 @@ void JJ1Level::setNext (int nextLevel, int nextWorld) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -275,12 +268,11 @@ void JJ1Level::setNext (int nextLevel, int nextWorld) {
  */
 void JJ1Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char tile) {
 
-	unsigned char buffer[MTL_L_GRID];
-
 	grid[gridY][gridX].tile = tile;
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_GRID];
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
 		buffer[2] = gridX;
@@ -291,8 +283,6 @@ void JJ1Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char 
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -366,8 +356,6 @@ unsigned int JJ1Level::getEventTime (unsigned char gridX, unsigned char gridY) {
  */
 void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
-	unsigned char buffer[MTL_L_GRID];
-
 	// Ignore if the event has been un-destroyed
 	if (!grid[gridY][gridX].hits &&
 		eventSet[grid[gridY][gridX].event].strength) return;
@@ -376,6 +364,7 @@ void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_GRID];
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
 		buffer[2] = gridX;
@@ -386,8 +375,6 @@ void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -406,7 +393,6 @@ void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
 int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time) {
 
 	GridElement* ge;
-	unsigned char buffer[MTL_L_GRID];
 	int hitsToKill;
 
 	ge = grid[gridY] + gridX;
@@ -441,6 +427,7 @@ int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1L
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_GRID];
 		buffer[0] = MTL_L_GRID;
 		buffer[1] = MT_L_GRID;
 		buffer[2] = gridX;
@@ -467,8 +454,6 @@ int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1L
 void JJ1Level::setEventTime (unsigned char gridX, unsigned char gridY, unsigned int time) {
 
 	grid[gridY][gridX].time = time;
-
-	return;
 
 }
 
@@ -536,12 +521,11 @@ Anim* JJ1Level::getPlayerAnim (unsigned char anim) {
  */
 void JJ1Level::setWaterLevel (unsigned char gridY) {
 
-	unsigned char buffer[MTL_L_PROP];
-
 	waterLevelTarget = TTOF(gridY) + F2;
 
 	if (multiplayer) {
 
+		unsigned char buffer[MTL_L_PROP];
 		buffer[0] = MTL_L_PROP;
 		buffer[1] = MT_L_PROP;
 		buffer[2] = 1; // set water level
@@ -551,8 +535,6 @@ void JJ1Level::setWaterLevel (unsigned char gridY) {
 		game->send(buffer);
 
 	}
-
-	return;
 
 }
 
@@ -622,8 +604,6 @@ void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, 
 
 	}
 
-	return;
-
 }
 
 
@@ -638,8 +618,6 @@ void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, 
 void JJ1Level::flash (unsigned char red, unsigned char green, unsigned char blue, int duration) {
 
 	paletteEffects = new FlashPaletteEffect(red, green, blue, duration, paletteEffects);
-
-	return;
 
 }
 
@@ -718,8 +696,6 @@ void JJ1Level::receive (unsigned char* buffer) {
 
 	}
 
-	return;
-
 }
 
 
@@ -729,29 +705,16 @@ void JJ1Level::receive (unsigned char* buffer) {
  * @return Error code
  */
 int JJ1Level::play () {
-
-	JJ1LevelPlayer* levelPlayer;
-	char *string;
-	bool pmessage, pmenu;
-	int option;
-	unsigned int returnTime;
- 	int perfect;
- 	int timeBonus;
- 	int count, ret;
-
-
-	levelPlayer = localPlayer->getJJ1LevelPlayer();
-
+	JJ1LevelPlayer* levelPlayer = localPlayer->getJJ1LevelPlayer();
 	tickOffset = globalTicks;
 	ticks = T_STEP;
 	steps = 0;
+	bool pmessage = false, pmenu = false;
+	int option = 0;
 
-	pmessage = pmenu = false;
-	option = 0;
-
-	returnTime = 0;
-	timeBonus = -1;
-	perfect = 0;
+	unsigned int returnTime = 0;
+	int timeBonus = -1;
+	int perfect = 0;
 
 	video.setPalette(palette);
 
@@ -759,10 +722,8 @@ int JJ1Level::play () {
 
 	while (true) {
 
-		ret = loop(pmenu, option, pmessage);
-
+		int ret = loop(pmenu, option, pmessage);
 		if (ret < 0) return ret;
-
 
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
@@ -791,7 +752,7 @@ int JJ1Level::play () {
 
 			// Advance to next level
 
-			string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
+			char *string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
 			ret = game->setLevel(string);
 			delete[] string;
 
@@ -809,8 +770,8 @@ int JJ1Level::play () {
 			bool playerWasAlive = (localPlayer->getJJ1LevelPlayer()->getEnergy() != 0);
 
 			// Apply controls to local player
-			for (count = 0; count < PCONTROLS; count++)
-				localPlayer->setControl(count, controls.getState(count));
+			for (int i = 0; i < PCONTROLS; i++)
+				localPlayer->setControl(i, controls.getState(i));
 
 			ret = step();
 			steps++;
@@ -843,8 +804,8 @@ int JJ1Level::play () {
 
 			if (timeBonus) {
 
-				count = (ticks - prevTicks) / 100;
-				if (!count) count = 1;
+				int bonusCount = (ticks - prevTicks) / 100;
+				if (!bonusCount) bonusCount = 1;
 
 				if (timeBonus == -1) {
 
@@ -854,10 +815,10 @@ int JJ1Level::play () {
 					if ((levelPlayer->getEnemies() == enemies) &&
 						(levelPlayer->getItems() == items)) perfect = 100;
 
-				} else if (timeBonus - count >= 0) {
+				} else if (timeBonus - bonusCount >= 0) {
 
-					localPlayer->addScore(count * 10);
-					timeBonus -= count;
+					localPlayer->addScore(bonusCount * 10);
+					timeBonus -= bonusCount;
 
 				} else {
 
@@ -914,5 +875,3 @@ int JJ1Level::play () {
 	return E_NONE;
 
 }
-
-

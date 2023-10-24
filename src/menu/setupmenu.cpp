@@ -44,13 +44,13 @@
 int SetupMenu::setupKeyboard () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, character, x, y, count;
+	int progress, x, y, count;
 
 	progress = 0;
 
 	while (true) {
 
-		character = loop(SET_KEY_LOOP);
+		int character = loop(SET_KEY_LOOP);
 
 		if (character == E_QUIT) return E_QUIT;
 
@@ -134,13 +134,13 @@ int SetupMenu::setupKeyboard () {
 int SetupMenu::setupJoystick () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, control, direction, x, y, count;
+	int x, y;
 
-	progress = 0;
+	int progress = 0;
 
 	while (true) {
 
-		control = loop(SET_JOYSTICK_LOOP);
+		int control = loop(SET_JOYSTICK_LOOP);
 
 		if (control == E_QUIT) return E_QUIT;
 
@@ -241,7 +241,7 @@ int SetupMenu::setupJoystick () {
 			case JOYSTICKHRHT:
 			case JOYSTICKHDWN:
 
-				direction = 0;
+				int direction = 0;
 				switch(control & 0xF00) {
 					case JOYSTICKHUP:  direction = SDL_HAT_UP;    break;
 					case JOYSTICKHLFT: direction = SDL_HAT_LEFT;  break;
@@ -290,7 +290,7 @@ int SetupMenu::setupJoystick () {
 
 		video.clearScreen(0);
 
-		for (count = 0; count < PCONTROLS; count++) {
+		for (int count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
 				fontmn2->showString("okay", (canvasW >> 2) + 176, (canvasH >> 1) + (count << 4) - 56);
@@ -331,14 +331,11 @@ int SetupMenu::setupResolution () {
     int heightOptions[] = {SH, 240, 288, 300, 320, 384, 400, 480, 576, 600, 720,
         768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
         2048, 2160, MAX_SCREEN_HEIGHT};
-	int screenW, screenH, oldscreenW, oldscreenH, x, y, count;
-	bool dimension, resOK;
-
+	int screenW, screenH, oldscreenW, oldscreenH, x, y;
 	screenW = oldscreenW = video.getWidth();
 	screenH = oldscreenH = video.getHeight();
-
-	dimension = false;
-	resOK = true;
+	bool dimension = false;
+	bool resOK = true;
 
 	while (true) {
 
@@ -385,7 +382,7 @@ int SetupMenu::setupResolution () {
 		if (dimension) fontmn2->restorePalette();
 
 
-		count = 0;
+		int count = 0;
 
 		if (controls.release(C_LEFT)) dimension = !dimension;
 
@@ -784,5 +781,3 @@ int SetupMenu::setupMain () {
 	return E_NONE;
 
 }
-
-

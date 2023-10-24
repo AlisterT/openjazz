@@ -69,7 +69,6 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 	unsigned char* nextPixel = pixels;
 	unsigned char* nextData = frameData;
 	int fillWidth = 0;
-	unsigned char header;
 	bool trans = true;
 
 	/*FILE* out = fopen("c:\\output.dat", "wb");
@@ -77,7 +76,7 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 	fclose(out);*/
 
 	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
-		header = *nextData;
+		unsigned char header = *nextData;
 		nextData++;
 		LOG_MAX("PL FF frame header: %x", header);
 
@@ -162,12 +161,11 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 	unsigned char* nextPixel = pixels;
 	unsigned char* endpixdata = pixels + (SW * SH);
 	unsigned char* fillstart = NULL;
-	int fillWidth = 0;
-	unsigned char header;
+	int fillWidth;
 
 	while (size > 0) {
 
-		header = *frameData;
+		unsigned char header = *frameData;
 		frameData++;
 
 		if (header == 0x7F) {
@@ -216,11 +214,10 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 		} else {
 
 			fillWidth = (header & 0x3F) + 1;
-			unsigned char color;
 
 			for (int col = 0; col < fillWidth; col++) {
 
-				color = *frameData;
+				unsigned char color = *frameData;
 				frameData++;
 
 				if (color != 0xFF) {
@@ -295,7 +292,6 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 			palettes->id = dataIndex;
 
-			unsigned short int value = 0;
 			int items = 0;
 			int validValue = true;
 
@@ -303,7 +299,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 			while (validValue) {
 
-				value = f->loadShort();
+				unsigned short int value = f->loadShort();
 				LOG_MAX("PL Read block start tag: %x", value);
 			    int size = f->loadShort();
 				LOG_MAX("PL Anim block size: %d", size);
@@ -405,6 +401,8 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 							f->seek(-4, false);
 							value = longvalue;
+
+							LOG_MAX("PL Read Long: %x", value);
 
 						}
 
@@ -527,12 +525,8 @@ void JJ1Scene::loadScripts (File *f) {
 	for(loop = 0; loop < scriptItems; loop++) {
 
 	    LOG_MAX("Parse Script: %d", loop);
-	    int textPosX = -1;
-	    int textPosY = -1;
 
-	    int extraheight = -1;
 	    SDL_Rect textRect = { 0,0,0,0 };
-	    bool textRectValid = false;
 		f->seek(scriptStarts[loop], true); // Seek to data start
 
 		if (f->loadChar() == 0x50) { // Script tag
@@ -542,13 +536,17 @@ void JJ1Scene::loadScripts (File *f) {
 			LOG_MAX("Script default palette: %x", palette);
 			pages[loop].paletteIndex = palette;
 
-			unsigned char type = 0;
 			bool breakloop = false;
 			int pos = f->tell();
 
+			int textPosX = -1;
+			int textPosY = -1;
+			int extraheight = -1;
+			bool textRectValid = false;
+
 			while(!breakloop && pos < dataOffsets[0]) {
 
-				type = f->loadChar();
+				unsigned char type = f->loadChar();
 
 				switch(type) {
 

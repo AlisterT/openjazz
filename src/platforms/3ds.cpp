@@ -18,6 +18,20 @@
 
 #include <3ds.h>
 
+void N3DS_Init() {
+    // file system
+    romfsInit();
+}
+
+void N3DS_Exit() {
+    romfsExit();
+}
+
+void N3DS_AddGamePaths() {
+    firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
+    firstPath = new Path(firstPath, createString("romfs:/"));
+}
+
 int N3DS_InputIP(char*& current_ip, char*& new_ip) {
 
 	SwkbdState swkbd;

@@ -163,6 +163,9 @@ class JJ2Layer {
 		fixed     xSpeed; ///< Relative horizontal speed
 		fixed     ySpeed; ///< Relative vertical speed
 
+		JJ2Layer(const JJ2Layer&); // non construction-copyable
+		JJ2Layer& operator=(const JJ2Layer&); // non copyable
+
 	public:
 		JJ2Layer  ();
 		JJ2Layer  (int flags, int newWidth, int newHeight, fixed newXSpeed, fixed newYSpeed);
@@ -208,7 +211,7 @@ class JJ2Level : public Level {
 		fixed         waterLevelTarget; ///< Future height of water
 		fixed         waterLevelSpeed; ///< Rate of water level change
 
-		void createEvent (int x, int y, unsigned char* data);
+		void createEvent (int x, int y, const unsigned char* data);
 		int  load        (char* fileName, bool checkpoint);
 		void loadSprite  (unsigned char* parameters, unsigned char* compressedPixels, Sprite* sprite, Sprite* flippedSprite);
 		int  loadSprites ();

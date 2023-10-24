@@ -155,7 +155,7 @@ class Anim;
 class JJ2Event;
 
 /// JJ2 level player
-class JJ2LevelPlayer : public LevelPlayer {
+class JJ2LevelPlayer final : public LevelPlayer {
 
 	private:
 		int               birds; ///< Placeholder for eventual JJ2Bird objects
@@ -192,10 +192,10 @@ class JJ2LevelPlayer : public LevelPlayer {
 		JJ2LevelPlayer  (Player* parent, Anim** newAnims, Anim** newFlippedAnims, unsigned char startX, unsigned char startY, int flockSize);
 		~JJ2LevelPlayer ();
 
-		void              reset       (int startX, int startY);
+		void              reset       (int startX, int startY) override;
 
 		void              addGem      (int colour);
-		int               countBirds  ();
+		int               countBirds  () override;
 		Anim*             getAnim     ();
 		int               getEnemies  ();
 		int               getEnergy   ();
@@ -209,8 +209,8 @@ class JJ2LevelPlayer : public LevelPlayer {
 		void              setSpeed    (fixed newDx, fixed newDy);
 		bool              touchEvent  (JJ2Event* touched, unsigned int ticks, int msps);
 
-		void              send        (unsigned char* buffer);
-		void              receive     (unsigned char* buffer);
+		void              send        (unsigned char* buffer) override;
+		void              receive     (unsigned char* buffer) override;
 
 		void              control     (unsigned int ticks, int msps);
 		void              move        (unsigned int ticks, int msps);
