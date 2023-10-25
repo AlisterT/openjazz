@@ -254,6 +254,21 @@ void ModPlug_Seek(ModPlugFile* file, int millisecond)
 	file->mSoundFile.SetCurrentPos((int)(millisecond * postime));
 }
 
+int ModPlug_Tell(ModPlugFile *file)
+{
+	int currentPos = (int)file->mSoundFile.GetCurrentPos();
+	int maxpos;
+	int maxtime = (int)file->mSoundFile.GetSongTime() * 1000;
+	float postime;
+	maxpos = (int)file->mSoundFile.GetMaxPosition();
+	postime = 0.0f;
+	if (maxtime != 0.0f)
+		postime = (float)maxpos / (float)maxtime;
+	if (postime == 0.0f)
+		return 0;
+	return (int) ((float)currentPos / postime);
+}
+
 void ModPlug_GetSettings(ModPlug_Settings* settings)
 {
 	memcpy(settings, &ModPlug::gSettings, sizeof(ModPlug_Settings));

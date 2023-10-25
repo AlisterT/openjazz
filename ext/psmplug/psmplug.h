@@ -53,6 +53,9 @@ int ModPlug_GetLength(ModPlugFile* file);
  * ModPlug_GetLength() does not report the full length. */
 void ModPlug_Seek(ModPlugFile* file, int millisecond);
 
+/* Get the absolute playing position in song, in milliseconds. */
+int ModPlug_Tell(ModPlugFile* file);
+
 enum _ModPlug_Flags
 {
 	MODPLUG_ENABLE_OVERSAMPLING     = 1 << 0,  /* Enable oversampling (*highly* recommended) */
