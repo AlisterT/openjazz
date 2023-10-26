@@ -4,6 +4,7 @@ set(PLATFORM_LIST "")
 set(OJ_ALLOW_SCALE ON)
 set(OJ_LIBS_NET)
 set(OJ_LIBS_HOST)
+set(OJ_DEFAULT_PORTABLE ON)
 
 option(PANDORA "Build for Pandora" OFF)     # arm-none-linux-gnueabi
 option(CAANOO "Build for GP2X Canoo" OFF)   # arm-gph-linux-gnueabi
@@ -113,6 +114,11 @@ endif()
 if(${OJ_HOST} STREQUAL "Unknown")
 	set(OJ_HOST ${CMAKE_SYSTEM_NAME})
 	set(OJ_ALLOW_NEW_SDL TRUE)
+
+	if(UNIX)
+		# usually we do a system-wide installation
+		set(OJ_DEFAULT_PORTABLE OFF)
+	endif()
 endif()
 
 # choose SDL library for Linux/Windows/Mac/etc., but not homebrew platforms

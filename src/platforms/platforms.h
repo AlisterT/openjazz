@@ -80,7 +80,10 @@ inline void PLATFORM_AddGamePaths() {
 
 // using __unix__ might add too much
 #if (__linux__ && !__ANDROID__) || __FreeBSD__ || __OpenBSD__
+	#ifndef PORTABLE
+	// Only use XDG dirs for installed package
 	XDG_AddGamePaths();
+	#endif
 #endif
 }
 

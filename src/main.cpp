@@ -158,19 +158,11 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	// Determine paths
 
-	// Use hard-coded data paths, if available
-#ifdef DATAPATH
-	gamePaths.add(createString(DATAPATH), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
-#endif
-
 	PLATFORM_AddGamePaths();
 
 	// Use any provided paths
-	for (int i = 0; i < pathCount; i++) {
-
+	for (int i = 0; i < pathCount; i++)
 		gamePaths.add(createString(paths[i]), PATH_TYPE_GAME);
-
-	}
 
 
 	// Use the path of the program, but check before, since it is not always available
@@ -193,9 +185,13 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	}
 
-	// Last Resort: Use the current working directory
+	// Use the current working directory
 	gamePaths.add(createString(""), PATH_TYPE_GAME|PATH_TYPE_CONFIG|PATH_TYPE_TEMP);
 
+	// Use hard-coded data paths, if available
+#ifdef DATAPATH
+	gamePaths.add(createString(DATAPATH), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
+#endif
 
 	// Default settings
 
