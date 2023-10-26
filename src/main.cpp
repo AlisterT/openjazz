@@ -34,7 +34,9 @@
 #include "io/gfx/video.h"
 #include "io/network.h"
 #include "io/sound.h"
+#ifdef ENABLE_JJ2
 #include "jj2/level/jj2level.h"
+#endif
 #include "jj1/level/jj1level.h"
 #include "menu/menu.h"
 #include "player/player.h"
@@ -319,7 +321,10 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 
 	level = NULL;
+
+#ifdef ENABLE_JJ2
 	jj2Level = NULL;
+#endif
 
 }
 

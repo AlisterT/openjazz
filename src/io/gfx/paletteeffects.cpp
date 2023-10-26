@@ -25,7 +25,9 @@
 #include "video.h"
 
 #include "jj1/level/jj1level.h"
+#ifdef ENABLE_JJ2
 #include "jj2/level/jj2level.h"
+#endif
 #include "level/levelplayer.h"
 #include "player/player.h"
 
@@ -649,7 +651,9 @@ void WaterPaletteEffect::apply (SDL_Color* shownPalette, bool direct, int mspf, 
 	currentPalette = video.getPalette();
 
 	if (level) position = localPlayer->getLevelPlayer()->getY() - level->getWaterLevel();
+#ifdef ENABLE_JJ2
 	else if (jj2Level) position = localPlayer->getLevelPlayer()->getY() - jj2Level->getWaterLevel();
+#endif
 	else return;
 
 	if (position <= 0) return;

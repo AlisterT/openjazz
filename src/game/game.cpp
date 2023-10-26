@@ -31,11 +31,15 @@
 #include "jj1/bonuslevel/jj1bonuslevel.h"
 #include "jj1/level/jj1level.h"
 #include "jj1/planet/jj1planet.h"
+#ifdef ENABLE_JJ2
 #include "jj2/level/jj2level.h"
+#endif
 #include "player/player.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <string.h>
+#include <cassert>
 
 
 /**
@@ -217,6 +221,8 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 		delete bonus;
 		baseLevel = NULL;
 
+#ifdef ENABLE_JJ2
+
 	} else if (levelType == LT_JJ2) {
 
 		try {
@@ -233,6 +239,8 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
 
 		delete jj2Level;
 		baseLevel = jj2Level = NULL;
+
+#endif
 
 	} else {
 
@@ -303,11 +311,10 @@ int Game::playLevel (char* fileName, bool intro, bool checkpoint) {
  */
 LevelType Game::getLevelType (const char* fileName) {
 
-	int length;
-
-	length = strlen(fileName);
-
+#ifdef ENABLE_JJ2
+	int length = strlen(fileName);
 	if ((length > 4) && isFileType(fileName + length - 4, ".j2l", 4)) return LT_JJ2;
+#endif
 	if (isFileType(fileName, "bonusmap", 8)) return LT_JJ1BONUS;
 	return LT_JJ1;
 
@@ -438,6 +445,8 @@ void Game::addLevelPlayer (Player *player) {
 
 		player->createLevelPlayer(levelType, pAnims, NULL, checkX, checkY);
 
+#ifdef ENABLE_JJ2
+
 	} else if (jj2Level) {
 
 		Anim* pAnims[JJ2PANIMS];
@@ -451,6 +460,13 @@ void Game::addLevelPlayer (Player *player) {
 		}
 
 		player->createLevelPlayer(levelType, pAnims, pFlippedAnims, checkX, checkY);
+
+#endif
+
+	} else {
+
+		LOG_WARN("Cannot create level player!");
+		assert(false);
 
 	}
 

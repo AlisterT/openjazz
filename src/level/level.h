@@ -51,7 +51,9 @@ enum LevelType {
 
 	LT_JJ1 = 0, ///< JJ1 level
 	LT_JJ1BONUS = 1, ///< JJ1 bonus level
+#ifdef ENABLE_JJ2
 	LT_JJ2 = 2 ///< JJ2 level
+#endif
 
 };
 

@@ -29,7 +29,9 @@
 
 #include "jj1/bonuslevel/jj1bonuslevelplayer.h"
 #include "jj1/level/jj1levelplayer.h"
+#ifdef ENABLE_JJ2
 #include "jj2/level/jj2levelplayer.h"
+#endif
 #include "level/levelplayer.h"
 
 #include "game/game.h"
@@ -167,6 +169,10 @@ void Player::reset (int x, int y) {
 void Player::createLevelPlayer (LevelType levelType, Anim** anims,
 	Anim** flippedAnims, unsigned char x, unsigned char y) {
 
+#ifndef ENABLE_JJ2
+	(void)flippedAnims;
+#endif
+
 	if (levelPlayer) {
 
 		flockSize = levelPlayer->countBirds();
@@ -190,11 +196,15 @@ void Player::createLevelPlayer (LevelType levelType, Anim** anims,
 
 			break;
 
+#ifdef ENABLE_JJ2
+
 		case LT_JJ2:
 
 			levelPlayer = new JJ2LevelPlayer(this, anims, flippedAnims, x, y, flockSize);
 
 			break;
+
+#endif
 
 	}
 
@@ -266,6 +276,7 @@ JJ1LevelPlayer* Player::getJJ1LevelPlayer () {
 
 }
 
+#ifdef ENABLE_JJ2
 
 /**
  * Get the player's JJ2 level player.
@@ -279,6 +290,8 @@ JJ2LevelPlayer* Player::getJJ2LevelPlayer () {
 	return static_cast<JJ2LevelPlayer*>(levelPlayer);
 
 }
+
+#endif
 
 
 /**

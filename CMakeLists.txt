@@ -98,19 +98,7 @@ add_executable(OpenJazz
 	src/jj1/planet/jj1planet.h
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
-	src/jj1/scene/jj1sceneload.cpp
-	# episode 2
-	src/jj2/level/event/jj2event.cpp
-	src/jj2/level/event/jj2event.h
-	src/jj2/level/event/jj2eventframe.cpp
-	src/jj2/level/jj2layer.cpp
-	src/jj2/level/jj2level.cpp
-	src/jj2/level/jj2level.h
-	src/jj2/level/jj2levelframe.cpp
-	src/jj2/level/jj2levelload.cpp
-	src/jj2/level/jj2levelplayer.cpp
-	src/jj2/level/jj2levelplayer.h
-	src/jj2/level/jj2levelplayerframe.cpp)
+	src/jj1/scene/jj1sceneload.cpp)
 target_include_directories(OpenJazz PUBLIC src)
 
 # portable mode
@@ -190,6 +178,23 @@ if(SCALE)
 elseif(NOT LEGACY_SDL)
 	# FIXME: add codepath for gpu scaling
 	set(SCALE_STATUS "Disabled (currently broken in SDL2 port)")
+endif()
+
+option(ENABLE_JJ2 "Enable experimental Episode 2 support (not recommended)" OFF)
+if(ENABLE_JJ2)
+	target_sources(OpenJazz PRIVATE
+		src/jj2/level/event/jj2event.cpp
+		src/jj2/level/event/jj2event.h
+		src/jj2/level/event/jj2eventframe.cpp
+		src/jj2/level/jj2layer.cpp
+		src/jj2/level/jj2level.cpp
+		src/jj2/level/jj2level.h
+		src/jj2/level/jj2levelframe.cpp
+		src/jj2/level/jj2levelload.cpp
+		src/jj2/level/jj2levelplayer.cpp
+		src/jj2/level/jj2levelplayer.h
+		src/jj2/level/jj2levelplayerframe.cpp)
+	target_compile_definitions(OpenJazz PRIVATE ENABLE_JJ2)
 endif()
 
 target_link_libraries(OpenJazz
