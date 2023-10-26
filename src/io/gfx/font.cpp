@@ -45,7 +45,7 @@ Font::Font (const char* fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -229,7 +229,7 @@ Font::Font (bool bonus) {
 
 	try {
 
-		file = new File(bonus? "BONUS.000": "FONTS.000", false);
+		file = new File(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 

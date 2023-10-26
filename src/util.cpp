@@ -34,10 +34,11 @@
  * Check if a file exists.
  *
  * @param fileName The file to check
+ * @param pathType Kind of directory
  *
  * @return Whether or not the file exists
  */
-bool fileExists (const char * fileName) {
+bool fileExists (const char * fileName, int pathType) {
 
 	File *file;
 
@@ -47,7 +48,7 @@ bool fileExists (const char * fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, pathType);
 
 	} catch (int e) {
 

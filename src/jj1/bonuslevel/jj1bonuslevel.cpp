@@ -51,7 +51,7 @@ int JJ1BonusLevel::loadSprites () {
 
 	try {
 
-		file = new File("BONUS.000", false);
+		file = new File("BONUS.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -135,7 +135,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -216,7 +216,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

@@ -113,10 +113,24 @@ add_executable(OpenJazz
 	src/jj2/level/jj2levelplayerframe.cpp)
 target_include_directories(OpenJazz PUBLIC src)
 
+# portable mode
+
+cmake_dependent_option(PORTABLE "Do not write to external directories, etc." OFF
+	"NOT OJ_DEFAULT_PORTABLE" ON)
+if(PORTABLE)
+	set(PORTABLE_STATUS "Enabled")
+	target_compile_definitions(OpenJazz PRIVATE PORTABLE)
+else()
+	set(PORTABLE_STATUS "Disabled")
+endif()
+if((PORTABLE AND OJ_DEFAULT_PORTABLE) OR (NOT PORTABLE AND NOT OJ_DEFAULT_PORTABLE))
+	set(PORTABLE_STATUS "${PORTABLE_STATUS} (Default)")
+endif()
+
 # path to game data
 
-set(DATAPATH "" CACHE PATH "Fixed path where game data is searched first")
-if(${DATAPATH})
+set(DATAPATH "" CACHE PATH "Fixed path where game data is available")
+if(DATAPATH)
 	target_compile_definitions(OpenJazz PRIVATE DATAPATH="${DATAPATH}")
 endif()
 
@@ -192,6 +206,9 @@ if(WIN32)
 	# add icon
 	target_sources(OpenJazz PRIVATE res/windows/OpenJazz.rc)
 elseif(RISCOS)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/riscos.cpp
+		src/platforms/riscos.h)
 	target_link_options(OpenJazz PRIVATE "-static")
 	elf2aif(OpenJazz)
 elseif(3DS)
@@ -236,6 +253,9 @@ elseif(HAIKU)
 		src/platforms/haiku.cpp
 		src/platforms/haiku.h)
 elseif(UNIX)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/xdg.cpp
+		src/platforms/xdg.h)
 	target_link_libraries(OpenJazz -lm)
 endif()
 
@@ -340,7 +360,11 @@ if(ROMFS)
 endif()
 message(STATUS "Network: ${NETWORK_STATUS}")
 message(STATUS "Scaling: ${SCALE_STATUS}")
+if(DATAPATH)
+	message(STATUS "Additional/System Game Data Path: \"${DATAPATH}\"")
+endif()
 message(STATUS "Manual page: ${MANUAL_STATUS}")
+message(STATUS "Portable Engine: ${PORTABLE_STATUS}")
 message(STATUS "")
 message(STATUS "In case something goes wrong, report bugs to https://github.com/AlisterT/openjazz/issues")
 message(STATUS "")

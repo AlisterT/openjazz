@@ -24,6 +24,9 @@
 #include <BAUTILS.H>
 #include <e32math.h>
 
+#include "util.h"
+#include "io/file.h"
+
 char KOpenJazzPath[256];
 FILE* mystdout = NULL;
 FILE *mystderr = NULL;
@@ -142,11 +145,11 @@ float sinf(float value)
 void SYMBIAN_AddGamePaths() {
 
 #ifdef UIQ3
-	firstPath = new Path(firstPath, createString("c:\\shared\\openjazz\\"));
+	gamePaths.add(createString("c:\\shared\\openjazz\\"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 #else
-	firstPath = new Path(firstPath, createString("c:\\data\\openjazz\\"));
+	gamePaths.add(createString("c:\\data\\openjazz\\"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 #endif
-	firstPath = new Path(firstPath, createString(KOpenJazzPath));
+	gamePaths.add(createString(KOpenJazzPath), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 
 }
 

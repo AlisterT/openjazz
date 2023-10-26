@@ -477,7 +477,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		else x = 50;
 
 		check = createFileName("LEVEL", 0, x);
-		exists[count] = fileExists(check);
+		exists[count] = fileExists(check, PATH_TYPE_GAME);
 		delete[] check;
 
 		if (exists[count]) video.restoreSurfacePalette(episodeScreens[count]);
@@ -488,12 +488,12 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 	if (mode == M_SINGLE) {
 
 		check = createFileName("BONUSMAP", 0);
-		exists[10] = fileExists(check);
+		exists[10] = fileExists(check, PATH_TYPE_GAME);
 		delete[] check;
 
 	} else exists[10] = false;
 
-	exists[11] = true;
+	exists[11] = true; // always possible to load custom level
 
 	episode = 0;
 

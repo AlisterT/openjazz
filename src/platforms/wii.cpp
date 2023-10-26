@@ -21,6 +21,9 @@
 #include <unistd.h>
 #include <fat.h>
 
+#include "util.h"
+#include "io/file.h"
+
 /* USBGecko Debugging */
 
 #define SLOT 1 // A: 0, B: 1
@@ -66,6 +69,10 @@ void WII_Init() {
 		devoptab_list[STD_OUT] = &dotab_stdnull;
 		devoptab_list[STD_ERR] = &dotab_stdnull;
 	}
+}
+
+void WII_AddGamePaths() {
+	gamePaths.add(createString("sd:/apps/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 }
 
 #endif

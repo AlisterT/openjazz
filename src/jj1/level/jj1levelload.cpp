@@ -62,7 +62,7 @@ int JJ1Level::loadPanel () {
 
 	try {
 
-		file = new File("PANEL.000", false);
+		file = new File("PANEL.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -179,7 +179,7 @@ int JJ1Level::loadSprites (char * fileName) {
 	// Open fileName
 	try {
 
-		specFile = new File(fileName, false);
+		specFile = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -191,7 +191,7 @@ int JJ1Level::loadSprites (char * fileName) {
 	// This function loads all the sprites, not just those in fileName
 	try {
 
-		mainFile = new File("MAINCHAR.000", false);
+		mainFile = new File("MAINCHAR.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -304,7 +304,7 @@ int JJ1Level::loadTiles (char* fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -449,7 +449,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		try {
 
-			file = new File(string, false);
+			file = new File(string, PATH_TYPE_GAME);
 
 		} catch (int e) {
 
@@ -530,7 +530,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

@@ -56,7 +56,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

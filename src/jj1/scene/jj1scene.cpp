@@ -255,7 +255,7 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

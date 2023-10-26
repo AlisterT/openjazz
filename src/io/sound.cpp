@@ -208,7 +208,7 @@ void playMusic (const char * fileName, bool restart) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -396,7 +396,7 @@ int loadSounds (const char *fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

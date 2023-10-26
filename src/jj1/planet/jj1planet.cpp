@@ -50,7 +50,7 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

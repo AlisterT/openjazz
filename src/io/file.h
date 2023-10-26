@@ -40,7 +40,7 @@ class File {
 		bool open (const char* path, const char* name, bool write);
 
 	public:
-		File                           (const char* name, bool write);
+		File                           (const char* name, int pathType, bool write = false);
 		~File                          ();
 
 		int                getSize     ();
@@ -66,21 +66,59 @@ class File {
 };
 
 /// Directory path
+
+enum path_type {
+	PATH_TYPE_INVALID = 0,     ///< Invalid directory, do not use
+	PATH_TYPE_SYSTEM = 1 << 0, ///< Read-only system directory
+	PATH_TYPE_CONFIG = 1 << 1, ///< User writable configuration directory
+	PATH_TYPE_GAME = 1 << 2,   ///< Directory containing game data
+	PATH_TYPE_TEMP = 1 << 3,   ///< User writable temporary directory
+	PATH_TYPE_ANY =  1 << 4    ///< Special case: any type
+};
+
 class Path {
 
 	public:
-		Path* next; ///< Next path to check
-		char* path; ///< Path
+		Path* next;      ///< Next path to check
+		char* path;      ///< Path
+		int   pathType;  ///< One or more of path_type enum
 
-		Path  (Path* newNext, char* newPath);
+		Path  (Path* newNext, char* newPath, int newPathType);
 		~Path ();
 
 };
 
 
+class PathMgr {
+
+	public:
+		PathMgr();
+		~PathMgr();
+
+		bool add(char* newPath, int newPathType = PATH_TYPE_ANY);
+
+		Path* paths;
+
+		bool has_config;
+		bool has_temp;
+
+};
+
+
+// Directory Seperator
+
+#ifdef _WIN32
+	#define OJ_DIR_SEP '\\'
+	#define OJ_DIR_SEP_STR "\\"
+#else
+	#define OJ_DIR_SEP '/'
+	#define OJ_DIR_SEP_STR "/"
+#endif
+
+
 // Variable
 
-EXTERN Path* firstPath; ///< Paths to files
+EXTERN PathMgr gamePaths; ///< Paths to files
 
 #endif
 

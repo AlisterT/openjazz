@@ -19,6 +19,8 @@
 
 void PSVITA_Init();
 
+void PSVITA_AddGamePaths();
+
 int PSVITA_InputString(const char* hint, char*& current_string, char*& new_string);
 
 #endif
