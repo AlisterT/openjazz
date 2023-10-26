@@ -1,7 +1,7 @@
 
 set(OJ_HOST "Unknown")
 set(PLATFORM_LIST "")
-set(OJ_SCALE ON)
+set(OJ_ALLOW_SCALE ON)
 set(OJ_LIBS_NET)
 set(OJ_LIBS_HOST)
 
@@ -18,7 +18,7 @@ if(NINTENDO_3DS)
 	set(3DS ON)
 	set(OJ_HOST "3DS")
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
-	set(OJ_SCALE OFF)
+	set(OJ_ALLOW_SCALE OFF)
 	option(ROMFS "Embed a directory in the executable" OFF)
 	set(ROMFS_PATH "romfs" CACHE PATH "Directory to include in executable as romfs:/ path")
 	set(ROMFS_ARG "NO_ROMFS_IGNORE_ME")
@@ -39,7 +39,7 @@ elseif(WIN32)
 	set(OJ_LIBS_NET "-lws2_32")
 elseif(PSP)
 	set(OJ_HOST "PSP")
-	set(OJ_SCALE OFF)
+	set(OJ_ALLOW_SCALE OFF)
 endif()
 
 if(NINTENDO_3DS OR NINTENDO_WII OR PSP)
@@ -116,5 +116,11 @@ if(${OJ_HOST} STREQUAL "Unknown")
 endif()
 
 # choose SDL library for Linux/Windows/Mac/etc., but not homebrew platforms
-include(CMakeDependentOption)
 cmake_dependent_option(LEGACY_SDL "Build for SDL 1.2" OFF "OJ_ALLOW_NEW_SDL" ON)
+
+# Endianess check
+include(TestBigEndian)
+test_big_endian(PLATFORM_BIGENDIAN)
+if(PLATFORM_BIGENDIAN)
+	add_compile_definitions(WORDS_BIGENDIAN=1)
+endif()

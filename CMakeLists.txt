@@ -1,30 +1,21 @@
-cmake_minimum_required(VERSION 3.13...3.24)
+cmake_minimum_required(VERSION 3.16...3.27)
 
 project(OpenJazz
-	VERSION 20220827
+	VERSION 20231027
 	LANGUAGES CXX
 	HOMEPAGE_URL http://www.alister.eu/jazz/oj/)
 
 # Extra CMake Module files
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/builds/cmake)
+include(CMakeDependentOption)
 include(OJ-misc)
-
-# We want to migrate to C++11 someday
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED OFF)
-
-# platform
-
 include(Platform-Helpers)
 
-# Endianess check
-include(TestBigEndian)
-test_big_endian(PLATFORM_BIGENDIAN)
-if(PLATFORM_BIGENDIAN)
-	add_compile_definitions(WORDS_BIGENDIAN=1)
-endif()
+# We are in the process to migrate to C++11
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # OpenJazz
 
@@ -122,14 +113,6 @@ add_executable(OpenJazz
 	src/jj2/level/jj2levelplayerframe.cpp)
 target_include_directories(OpenJazz PUBLIC src)
 
-# Default Options
-
-option(SCALE "Allow scaling" ${OJ_SCALE})
-if(SCALE)
-	target_compile_definitions(OpenJazz PRIVATE SCALE)
-	set(OJ_LIBS_SCALE scale2x)
-endif()
-
 # path to game data
 
 set(DATAPATH "" CACHE PATH "Fixed path where game data is searched first")
@@ -143,12 +126,12 @@ if(LEGACY_SDL)
 	find_package(SDL REQUIRED)
 	target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
 	set(OJ_LIBS_SDL ${SDL_LIBRARY})
-	set(OJ_SDL "SDL1.2 (legacy)")
+	set(SDL_STATUS "SDL1.2 (legacy)")
 else()
 	find_package(SDL2 REQUIRED)
 	target_include_directories(OpenJazz PRIVATE ${SDL2_INCLUDE_DIRS})
 	set(OJ_LIBS_SDL ${SDL2_LIBRARIES})
-	set(OJ_SDL "SDL2")
+	set(SDL_STATUS "SDL2")
 endif()
 
 # bundled libraries
@@ -179,6 +162,19 @@ if(NETWORK)
 			endif()
 		endif()
 	endif()
+endif()
+
+# scaling
+
+set(SCALE_STATUS "Disabled")
+cmake_dependent_option(SCALE "Allow scaling" ON "OJ_ALLOW_SCALE;LEGACY_SDL" OFF)
+if(SCALE)
+	set(SCALE_STATUS "Enabled, scale2x")
+	target_compile_definitions(OpenJazz PRIVATE SCALE)
+	set(OJ_LIBS_SCALE scale2x)
+elseif(NOT LEGACY_SDL)
+	# FIXME: add codepath for gpu scaling
+	set(SCALE_STATUS "Disabled (currently broken in SDL2 port)")
 endif()
 
 target_link_libraries(OpenJazz
@@ -338,11 +334,12 @@ message(STATUS "")
 message(STATUS "OpenJazz")
 message(STATUS "========")
 message(STATUS "Target system: ${OJ_HOST}")
-message(STATUS "Platform abstraction: ${OJ_SDL}")
+message(STATUS "Platform abstraction: ${SDL_STATUS}")
 if(ROMFS)
 	message(STATUS "RomFS: Embedding directory \"${ROMFS_PATH}\"")
 endif()
 message(STATUS "Network: ${NETWORK_STATUS}")
+message(STATUS "Scaling: ${SCALE_STATUS}")
 message(STATUS "Manual page: ${MANUAL_STATUS}")
 message(STATUS "")
 message(STATUS "In case something goes wrong, report bugs to https://github.com/AlisterT/openjazz/issues")
