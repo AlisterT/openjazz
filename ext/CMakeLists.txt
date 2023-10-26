@@ -28,22 +28,3 @@ add_library(psmplug STATIC
 	psmplug/tables.h
 )
 target_include_directories(psmplug PUBLIC psmplug)
-
-if(SCALE)
-	# scale2x
-
-	include(Find-Restrict-Keyword)
-
-	add_library(scale2x STATIC
-		scale2x/scale2x.cpp
-		scale2x/scale2x.h
-		scale2x/scale3x.cpp
-		scale2x/scale3x.h
-		scale2x/scalebit.cpp
-		scale2x/scalebit.h
-	)
-	target_compile_definitions(scale2x PRIVATE
-		USE_SCALE_RANDOMWRITE
-		restrict=${RESTRICT_KEYWORD})
-	target_include_directories(scale2x PUBLIC scale2x)
-endif()

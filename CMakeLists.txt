@@ -148,7 +148,7 @@ else()
 	set(SDL_STATUS "SDL2")
 endif()
 
-# bundled libraries
+# common bundled libraries
 
 add_subdirectory(ext)
 
@@ -186,6 +186,7 @@ if(SCALE)
 	set(SCALE_STATUS "Enabled, scale2x")
 	target_compile_definitions(OpenJazz PRIVATE SCALE)
 	set(OJ_LIBS_SCALE scale2x)
+	add_subdirectory(ext/scale2x)
 elseif(NOT LEGACY_SDL)
 	# FIXME: add codepath for gpu scaling
 	set(SCALE_STATUS "Disabled (currently broken in SDL2 port)")
