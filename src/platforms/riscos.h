@@ -1,7 +1,7 @@
 
 /**
  *
- * @file wii.h
+ * @file riscos.h
  *
  * Part of the OpenJazz project
  *
@@ -12,14 +12,12 @@
  */
 
 
-#ifndef _WII_H
-#define _WII_H
+#ifndef _RISCOS_H
+#define _RISCOS_H
 
-#ifdef __wii__
+#ifdef __riscos__
 
-void WII_Init();
-
-void WII_AddGamePaths();
+void RISCOS_AddGamePaths();
 
 #endif
 

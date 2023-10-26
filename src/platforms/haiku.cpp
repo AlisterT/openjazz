@@ -23,23 +23,27 @@
 #include "util.h"
 #include "io/file.h"
 
-static char dir_buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
-
 void HAIKU_AddGamePaths() {
+	char dir_buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
 	dev_t volume = dev_for_path("/boot");
-
-	find_directory(B_SYSTEM_DATA_DIRECTORY,
-		volume, false, dir_buffer, sizeof(dir_buffer));
-	strncat(dir_buffer, "/openjazz/", sizeof(dir_buffer) - 1);
-	firstPath = new Path(firstPath, createString(dir_buffer));
 
 	find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY,
 		volume, false, dir_buffer, sizeof(dir_buffer));
 	strncat(dir_buffer, "/openjazz/", sizeof(dir_buffer) - 1);
-	firstPath = new Path(firstPath, createString(dir_buffer));
+	gamePaths.add(createString(dir_buffer), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
+
+	find_directory(B_SYSTEM_DATA_DIRECTORY,
+		volume, false, dir_buffer, sizeof(dir_buffer));
+	strncat(dir_buffer, "/openjazz/", sizeof(dir_buffer) - 1);
+	gamePaths.add(createString(dir_buffer), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 }
 
 void HAIKU_ErrorNoDatafiles() {
+	char dir_buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
+	find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY,
+		dev_for_path("/boot"), false, dir_buffer, sizeof(dir_buffer));
+	strncat(dir_buffer, "/openjazz/", sizeof(dir_buffer) - 1);
+
 	char alertBuffer[100 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
 	strcpy(alertBuffer, "Unable to find game data files!\n"
 		"Put the data into the folder:\n");

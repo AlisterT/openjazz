@@ -12,24 +12,25 @@
  */
 
 #include "3ds.h"
-#include "util.h"
 
 #ifdef _3DS
 
 #include <3ds.h>
+#include "util.h"
+#include "io/file.h"
 
 void N3DS_Init() {
-    // file system
-    romfsInit();
+	// file system
+	romfsInit();
 }
 
 void N3DS_Exit() {
-    romfsExit();
+	romfsExit();
 }
 
 void N3DS_AddGamePaths() {
-    firstPath = new Path(firstPath, createString("sdmc:/3ds/OpenJazz/"));
-    firstPath = new Path(firstPath, createString("romfs:/"));
+	gamePaths.add(createString("sdmc:/3ds/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
+	gamePaths.add(createString("romfs:/"), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 }
 
 int N3DS_InputIP(char*& current_ip, char*& new_ip) {

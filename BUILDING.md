@@ -33,7 +33,7 @@ http://www.alister.eu/jazz/oj/build.php
 
 ## additional build options
 
-- `DATAPATH` - use a fixed path for data files
+- `DATAPATH` - add a fixed path for game data files
 - `SCALE` - enable scaling of the video output (i.e. Scale2X...)
 
 Some ports have their own options, see (Platforms)[PLATFORMS.md] for details.

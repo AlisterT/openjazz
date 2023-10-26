@@ -27,7 +27,7 @@
 #define VOLUME_DOWN 1
 #define VOLUME_UP 2
 
-void WIZ_AdjustVolume( int direction );
+void WIZ_AdjustVolume(int direction);
 
 #endif
 

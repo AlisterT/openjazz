@@ -115,7 +115,7 @@ target_include_directories(OpenJazz PUBLIC src)
 
 # path to game data
 
-set(DATAPATH "" CACHE PATH "Fixed path where game data is searched first")
+set(DATAPATH "" CACHE PATH "Fixed path where game data is available")
 if(${DATAPATH})
 	target_compile_definitions(OpenJazz PRIVATE DATAPATH="${DATAPATH}")
 endif()
@@ -192,6 +192,9 @@ if(WIN32)
 	# add icon
 	target_sources(OpenJazz PRIVATE res/windows/OpenJazz.rc)
 elseif(RISCOS)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/riscos.cpp
+		src/platforms/riscos.h)
 	target_link_options(OpenJazz PRIVATE "-static")
 	elf2aif(OpenJazz)
 elseif(3DS)
@@ -236,6 +239,9 @@ elseif(HAIKU)
 		src/platforms/haiku.cpp
 		src/platforms/haiku.h)
 elseif(UNIX)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/xdg.cpp
+		src/platforms/xdg.h)
 	target_link_libraries(OpenJazz -lm)
 endif()
 

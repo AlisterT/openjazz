@@ -153,7 +153,7 @@ int JJ2Level::loadSprites () {
 
 	try {
 
-		file = new File("anims.j2a", false);
+		file = new File("anims.j2a", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -295,7 +295,7 @@ int JJ2Level::loadTiles (char* fileName) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -562,7 +562,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	try {
 
-		file = new File(fileName, false);
+		file = new File(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -634,14 +634,14 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 	// Next level
 	string = reinterpret_cast<char *>(aBuffer) + 115;
 
-	if (fileExists(string)) nextLevel = createString(string);
+	if (fileExists(string, PATH_TYPE_GAME)) nextLevel = createString(string);
 	else nextLevel = createString(string, ".j2l");
 
 
 	// Music file
 	string = reinterpret_cast<char *>(aBuffer) + 179;
 
-	if (fileExists(string)) musicFile = createString(string);
+	if (fileExists(string, PATH_TYPE_GAME)) musicFile = createString(string);
 	else musicFile = createString(string, ".j2b");
 
 

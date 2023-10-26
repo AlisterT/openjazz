@@ -52,7 +52,6 @@ int PSP_WantsExit() {
 }
 
 void PSP_Init() {
-
 	// debug output
 
 	pspDebugScreenInit();

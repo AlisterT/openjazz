@@ -367,7 +367,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							try {
 
-								file = new File(levelFile, true);
+								file = new File(levelFile, PATH_TYPE_TEMP, true);
 
 							} catch (int e) {
 

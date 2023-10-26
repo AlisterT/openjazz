@@ -1,7 +1,7 @@
 
 /**
  *
- * @file wii.h
+ * @file xdg.h
  *
  * Part of the OpenJazz project
  *
@@ -12,14 +12,12 @@
  */
 
 
-#ifndef _WII_H
-#define _WII_H
+#ifndef _XDG_H
+#define _XDG_H
 
-#ifdef __wii__
+#if __unix__
 
-void WII_Init();
-
-void WII_AddGamePaths();
+void XDG_AddGamePaths();
 
 #endif
 

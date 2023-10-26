@@ -20,6 +20,9 @@
 #include <psp2/touch.h>
 #include <kbdvita.h>
 
+#include "util.h"
+#include "io/file.h"
+
 void PSVITA_Init() {
 
 	// controls
@@ -27,6 +30,10 @@ void PSVITA_Init() {
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 
+}
+
+void PSVITA_AddGamePaths() {
+	gamePaths.add(createString("ux0:data/jazz/"), PATH_TYPE_CONFIG);
 }
 
 int PSVITA_InputString(const char* hint, char*& current_string, char*& new_string) {

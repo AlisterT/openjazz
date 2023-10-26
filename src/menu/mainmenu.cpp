@@ -69,7 +69,7 @@ MainMenu::MainMenu () {
 
 	try {
 
-		file = new File("MENU.000", false);
+		file = new File("MENU.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -283,7 +283,7 @@ int MainMenu::main () {
 
 		try {
 
-			file = new File(fileName, false);
+			file = new File(fileName, PATH_TYPE_GAME);
 			macroType[macro] = file->loadChar();
 			delete file;
 

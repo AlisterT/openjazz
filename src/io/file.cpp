@@ -30,6 +30,7 @@
 #include "io/log.h"
 
 #include <string.h>
+#include <unistd.h>
 #include <miniz.h>
 
 #if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
@@ -42,17 +43,26 @@
  * Try opening a file from the available paths.
  *
  * @param name File name
+ * @param pathType Kind of directory
  * @param write Whether or not the file can be written to
  */
-File::File (const char* name, bool write) {
+File::File (const char* name, int pathType, bool write) {
 
-	Path* path;
-
-	path = firstPath;
+	Path* path = gamePaths.paths;
 
 	while (path) {
 
-		if (open(path->path, name, write)) return;
+		// skip other paths
+		if (pathType != PATH_TYPE_ANY && (path->pathType & pathType) != pathType) {
+			path = path->next;
+			continue;
+		}
+
+		// only allow certain write paths
+		if (!write || (pathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
+			if (open(path->path, name, write)) return;
+		} else LOG_FATAL("Not allowed to write to %s", name);
+
 		path = path->next;
 
 	}
@@ -615,18 +625,94 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 }
 
 
+PathMgr::PathMgr():
+	paths(NULL), has_config(false), has_temp(false) {
+
+};
+
+PathMgr::~PathMgr() {
+	delete paths;
+};
+
+bool PathMgr::add(char* newPath, int newPathType) {
+
+	// Check for CWD
+	if(!strlen(newPath)) {
+		delete[] newPath;
+
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)) != NULL) {
+			newPath = createString(cwd);
+		} else {
+			LOG_WARN("Could not get current working directory!");
+			return false;
+		}
+	}
+
+	// Append a directory separator if necessary
+	if (newPath[strlen(newPath) - 1] != OJ_DIR_SEP) {
+		char* tmp = createString(newPath, OJ_DIR_SEP_STR);
+		delete[] newPath;
+		newPath = tmp;
+	}
+
+	// all paths need to be readable
+	if (access(newPath, R_OK) != 0) {
+		LOG_TRACE("Path '%s' is not readable, ignoring!", newPath);
+		delete[] newPath;
+		return false;
+	}
+
+	// ignore, if already present
+	if(has_config) newPathType &= ~PATH_TYPE_CONFIG;
+	if(has_temp) newPathType &= ~PATH_TYPE_TEMP;
+
+	// config and temp dir need to be writeable
+	if ((newPathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
+		if (access(newPath, W_OK) != 0) {
+			LOG_WARN("Path '%s' is not writeable, disabling!", newPath);
+
+			newPathType &= ~PATH_TYPE_CONFIG;
+			newPathType &= ~PATH_TYPE_TEMP;
+		}
+	}
+
+	if(newPathType == PATH_TYPE_INVALID) {
+		delete[] newPath;
+		return false;
+	}
+
+	// we only need one directory for these
+	if (newPathType & PATH_TYPE_CONFIG) has_config = true;
+	if (newPathType & PATH_TYPE_TEMP) has_temp = true;
+
+	// Finally add
+	paths = new Path(paths, newPath, newPathType);
+
+	return true;
+}
+
+
 /**
  * Create a new directory path object.
  *
  * @param newNext Next path
  * @param newPath The new path
  */
-Path::Path (Path* newNext, char* newPath) {
+Path::Path (Path* newNext, char* newPath, int newPathType) {
 
-	LOG_TRACE("Adding '%s' to the path list", newPath);
+	char pathInfo[10] = {};
+	if(newPathType & PATH_TYPE_SYSTEM) strcat(pathInfo, "S");
+	if(newPathType & PATH_TYPE_CONFIG) strcat(pathInfo, "C");
+	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "G");
+	if(newPathType & PATH_TYPE_TEMP) strcat(pathInfo, "T");
+	if(newPathType & PATH_TYPE_ANY) strcat(pathInfo, "A");
+
+	LOG_DEBUG("Adding '%s' to the path list [%s]", newPath, pathInfo);
 
 	next = newNext;
 	path = newPath;
+	pathType = newPathType;
 
 }
 

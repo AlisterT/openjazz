@@ -45,7 +45,7 @@
 #include "io/log.h"
 #include "platforms/platforms.h"
 
-#include <string.h>
+#include <cstring>
 #include <argparse.h>
 
 #ifndef __SYMBIAN32__
@@ -154,84 +154,47 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	File* file;
 	unsigned char* pixels = NULL;
-	int count;
 	SetupOptions config;
 
 	// Determine paths
 
-	// Use hard-coded paths, if available
-
+	// Use hard-coded data paths, if available
 #ifdef DATAPATH
-	firstPath = new Path(NULL, createString(DATAPATH));
-#else
-	firstPath = NULL;
+	gamePaths.add(createString(DATAPATH), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 #endif
 
 	PLATFORM_AddGamePaths();
 
-	// Use any provided paths, appending a directory separator as necessary
+	// Use any provided paths
+	for (int i = 0; i < pathCount; i++) {
 
-	for (count = 0; count < pathCount; count++) {
-
-#ifdef _WIN32
-		if (paths[count][strlen(paths[count]) - 1] != '\\') {
-
-			firstPath = new Path(firstPath, createString(paths[count], "\\"));
-#else
-		if (paths[count][strlen(paths[count]) - 1] != '/') {
-
-			firstPath = new Path(firstPath, createString(paths[count], "/"));
-#endif
-
-		} else {
-
-			firstPath = new Path(firstPath, createString(paths[count]));
-
-		}
+		gamePaths.add(createString(paths[i]), PATH_TYPE_GAME);
 
 	}
 
 
 	// Use the path of the program, but check before, since it is not always available
 	// At least crashes in Dolphin emulator (Wii) and 3DS (.cia build)
-
 	if (argv0) {
 
-		count = strlen(argv0) - 1;
+		int i = strlen(argv0) - 1;
 
 		// Search for directory separator
-#ifdef _WIN32
-		while ((argv0[count] != '\\') && (count > 0)) count--;
-#else
-		while ((argv0[count] != '/') && (count > 0)) count--;
-#endif
+		while ((argv0[i] != OJ_DIR_SEP) && (i > 0)) i--;
 
 		// If a directory was found, copy it to the path
-		if (count > 0) {
+		if (i > 0) {
 
 			char *dir = createString(argv0);
-			dir[count+1] = '\0';
-			firstPath = new Path(firstPath, dir);
+			dir[i+1] = '\0';
+			gamePaths.add(dir, PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 
 		}
 
 	}
 
-/*
-	// Use the user's home directory, if available
-
-#ifdef HOMEDIR
-	#ifdef _WIN32
-	firstPath = new Path(firstPath, createString(getenv("HOME"), "\\"));
-	#else
-	firstPath = new Path(firstPath, createString(getenv("HOME"), "/."));
-	#endif
-#endif
-*/
-
 	// Last Resort: Use the current working directory
-
-	firstPath = new Path(firstPath, createString(""));
+	gamePaths.add(createString(""), PATH_TYPE_GAME|PATH_TYPE_CONFIG|PATH_TYPE_TEMP);
 
 
 	// Default settings
@@ -271,8 +234,6 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	canvas = NULL;
 	if (!video.init(config)) {
 
-		delete firstPath;
-
 		throw E_VIDEO;
 
 	}
@@ -291,13 +252,11 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	try {
 
-		file = new File("PANEL.000", false);
+		file = new File("PANEL.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
 		closeAudio();
-
-		delete firstPath;
 
 		LOG_FATAL("Unable to find game data files. When launching OpenJazz, \n"
 			"               pass the location of the original game data, eg:\n"
@@ -343,8 +302,6 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 		closeAudio();
 
-		delete firstPath;
-
 		throw;
 
 	}
@@ -357,8 +314,8 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 
 	// Fill trigonometric function look-up tables
-	for (count = 0; count < 1024; count++)
-		sinLut[count] = fixed(sinf(2 * PI * float(count) / 1024.0f) * 1024.0f);
+	for (int i = 0; i < 1024; i++)
+		sinLut[i] = fixed(sinf(2 * PI * float(i) / 1024.0f) * 1024.0f);
 
 
 	// Initiate networking
@@ -394,9 +351,6 @@ void shutDown () {
 
 	// Save settings to config file
 	setup.save();
-
-
-	delete firstPath;
 
 }
 

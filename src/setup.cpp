@@ -33,19 +33,7 @@
 #include "util.h"
 #include "io/log.h"
 
-#ifdef __SYMBIAN32__
-    #ifdef UIQ3
-        #define CONFIG_FILE "c:\\shared\\openjazz\\openjazz.cfg"
-    #else
-        #define CONFIG_FILE "c:\\data\\openjazz\\openjazz.cfg"
-    #endif
-#elif defined(__riscos__)
-    #define CONFIG_FILE "/<Choices$Write>/OpenJazz/openjazz.cfg"
-#elif __vita__
-    #define CONFIG_FILE "ux0:data/jazz/openjazz.cfg"
-#else
-    #define CONFIG_FILE "openjazz.cfg"
-#endif
+#define CONFIG_FILE "openjazz.cfg"
 
 
 /**
@@ -96,7 +84,7 @@ SetupOptions Setup::load () {
 
 	try {
 
-		file = new File(CONFIG_FILE, false);
+		file = new File(CONFIG_FILE, PATH_TYPE_CONFIG, false);
 
 	} catch (int e) {
 
@@ -199,7 +187,7 @@ void Setup::save () {
 	// Open config file
 	try {
 
-		file = new File(CONFIG_FILE, true);
+		file = new File(CONFIG_FILE, PATH_TYPE_CONFIG, true);
 
 	} catch (int e) {
 
