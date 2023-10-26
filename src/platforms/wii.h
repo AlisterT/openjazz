@@ -15,9 +15,9 @@
 #ifndef _WII_H
 #define _WII_H
 
-#ifdef WII
+#ifdef __wii__
 
-void Wii_Init();
+void WII_Init();
 
 #endif
 
