@@ -141,7 +141,7 @@
     #define DEFAULT_BUTTON_PAUSE        (11)
     #define DEFAULT_BUTTON_YES          (-1)
     #define DEFAULT_BUTTON_NO           (-1)
-#elif defined(WII)
+#elif defined(__wii__)
     #define DEFAULT_BUTTON_UP           (-1)
     #define DEFAULT_BUTTON_DOWN         (-1)
     #define DEFAULT_BUTTON_LEFT         (-1)

@@ -1,7 +1,7 @@
 
 /**
  *
- * @file wiz.cpp
+ * @file wii.cpp
  *
  * Part of the OpenJazz project
  *
@@ -13,7 +13,7 @@
 
 #include "wii.h"
 
-#ifdef WII
+#ifdef __wii__
 
 #include <gccore.h>
 #include <ogc/usbgecko.h>
@@ -49,14 +49,11 @@ const devoptab_t dotab_geckoout = {
 	NULL, NULL, NULL
 };
 
-void Wii_Init() {
-
+void WII_Init() {
 	// enable file system
-
 	fatInitDefault();
 
 	// set console
-
 	LWP_MutexInit(&usbgecko_mutex, false);
 	usbgecko = usb_isgeckoalive(SLOT);
 
@@ -69,7 +66,6 @@ void Wii_Init() {
 		devoptab_list[STD_OUT] = &dotab_stdnull;
 		devoptab_list[STD_ERR] = &dotab_stdnull;
 	}
-
 }
 
 #endif

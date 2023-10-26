@@ -63,7 +63,7 @@
 		static u32* socBuffer = NULL;
 		#define SOC_BUFFERSIZE 0x100000 // maybe 0x80000 is enough
 	#endif
-#elif defined(WII)
+#elif defined(__wii__)
 	#include <network.h>
 #elif defined(USE_SDL_NET)
 	#include <arpa/inet.h>
@@ -86,7 +86,7 @@ Network::Network () {
 	socInit(socBuffer, SOC_BUFFERSIZE);
 	#endif
 #elif defined USE_SDL_NET
-#  ifdef WII
+#  ifdef __wii__
 	char ip[16];
 
 	// Initialize Wii networking (using dhcp)
@@ -113,7 +113,7 @@ Network::~Network () {
 	#endif
 #elif defined USE_SDL_NET
 	SDLNet_Quit();
-#  ifdef WII
+#  ifdef __wii__
 	net_deinit();
 #  endif
 #endif

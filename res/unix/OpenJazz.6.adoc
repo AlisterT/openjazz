@@ -33,14 +33,14 @@ To play, you will need original data files.
 *-f*, *--fullscreen*::
   Start in fullscreen mode.
 
-*-w*, *--window*::
+*--window*::
   Start in window mode.
 
 *-m*::
   Start with muted audio.
 
 *-s*, *--scale[=]* <__Factor__>::
-  Scale window by factor.
+  Scale window by factor. Can be between _1_ and _4_.
 
 *-w*, *--world[=]* <__World__> *-l*, *--level[=]* <__Level__>::
   Directly load specific world/level.

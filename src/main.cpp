@@ -73,8 +73,7 @@ int display_mode_cb(struct argparse *, const struct argparse_option *option) {
 }
 #endif
 
-int version_cb(struct argparse *, const struct argparse_option *option) {
-	(void)option;
+int version_cb(struct argparse *, const struct argparse_option */*option*/) {
 	printf("OpenJazz %s, built on %s.\n", OJ_VERSION, OJ_DATE);
 	exit(EXIT_SUCCESS);
 }
@@ -97,7 +96,7 @@ int checkOptions (int argc, char *argv[]) {
 #ifndef FULLSCREEN_ONLY
 		OPT_BOOLEAN('f', "fullscreen", NULL, "Display in Fullscreen mode",
 			display_mode_cb, 0, OPT_NONEG),
-		OPT_BOOLEAN('w', "window", NULL, "Display in Window mode",
+		OPT_BOOLEAN('\0', "window", NULL, "Display in Window mode",
 			display_mode_cb, 0, OPT_NONEG),
 #endif
 		OPT_INTEGER('s', "scale", &cli.scaleFactor, "Scale graphics <int> times", NULL, 0, 0),

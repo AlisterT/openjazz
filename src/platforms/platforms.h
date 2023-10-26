@@ -27,8 +27,8 @@ inline void PLATFORM_Init() {
 	PSP_Init();
 #endif
 
-#ifdef WII
-	Wii_Init();
+#ifdef __wii__
+	WII_Init();
 #endif
 
 #ifdef _3DS
