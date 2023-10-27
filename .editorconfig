@@ -1,0 +1,31 @@
+# https://EditorConfig.org
+
+root = true
+
+[*]
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[{CMakeLists.txt,*.cmake,Makefile}]
+indent_style = tab
+indent_size = 4
+
+[{*.cpp,*.h}]
+indent_style = tab
+indent_size = 4
+
+[ext/**/{*.cpp,*.h}]
+indent_style = ignore
+indent_size = ignore
+
+[*.json,*.yml,*.rc,*.adoc]
+indent_style = space
+indent_size = 2
+
+[*.md]
+indent_style = space
+indent_size = 4
+
+[*.xml]
+indent_style = tab
+indent_size = 4
