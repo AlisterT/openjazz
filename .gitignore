@@ -12,6 +12,7 @@ CMakeFiles/
 !/builds/cmake/*.cmake
 ext/Makefile
 build.ninja
+CMakeUserPresets.json
 
 # homebrew
 *.elf

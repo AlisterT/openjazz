@@ -50,7 +50,6 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -95,19 +94,17 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
-          cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
-          cmake --build build
+          cmake --workflow --preset release
 
       - name: Prepare artifact
         run: |
-          cmake --install build --prefix $PWD
+          cmake --install build-release --prefix $PWD
           cp /mingw64/bin/SDL2.dll dist/
           asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
           w3m -dump -cols 2147483647 -s OpenJazzManual.html > dist/Manual.txt
@@ -136,15 +133,13 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
-          export CXXFLAGS="-Wall -g -O2"
-          $DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          $DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build
 
       - name: Prepare artifact
@@ -177,15 +172,13 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
-          export CXXFLAGS="-Wall -g -O2"
-          $DEVKITPRO/portlibs/3ds/bin/arm-none-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release
+          $DEVKITPRO/portlibs/3ds/bin/arm-none-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build
 
       - name: Prepare artifact
@@ -218,7 +211,6 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Prepare GCCSDK autobuilder and build SDL
         run: |
@@ -263,20 +255,18 @@ jobs:
       - name: Prepare Environment
         run: |
           echo "SHORT_SHA=${GITHUB_SHA:0:10}" >> $GITHUB_ENV
-          echo "MAKEFLAGS=-j$(nproc)" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build OpenJazz
         run: |
-          export CXXFLAGS="-Wall -g -O2"
-          psp-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release -DNETWORK=OFF
-          cmake --build build
+          cmake --preset=psp-release -DNETWORK=OFF
+          cmake --build --preset=psp-release
 
       - name: Prepare artifact
         run: |
-          cmake --install build --prefix $PWD
+          cmake --install build-psp-release --prefix $PWD
           asciidoctor -o OpenJazzManual.html -a oj_version=${SHORT_SHA} res/unix/OpenJazz.6.adoc
           w3m -dump -cols 2147483647 -s OpenJazzManual.html > OpenJazz/Manual.txt
           cp README.md OpenJazz/README.txt
