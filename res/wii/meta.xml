@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
 	<name>OpenJazz</name>
-	<version>20190101000000</version>
+	<version>20231028000000</version>
 	<coder>AlisterT, tehpola, carstene1ns</coder>
 	<short_description>Open source Jazz Jackrabbit engine</short_description>
 	<long_description>
