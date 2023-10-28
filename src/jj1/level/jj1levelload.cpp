@@ -40,6 +40,7 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <string.h>
 
@@ -403,7 +404,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	int tiles;
 	int count, x, y, type;
 	unsigned char startX, startY;
-
+	// FIXME: actually use these
+	int animSpeed, jumpHeight;
 
 	// Load font
 
@@ -853,17 +855,26 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	y = file->loadChar();
 	setNext(x, y);
 
+	// jump height
+	jumpHeight = (file->loadShort() - 0xFFFF) / 2;
+	if (jumpHeight != -5)
+		LOG_TRACE("Uncommon jumpHeight: %i", jumpHeight);
 
-	// Skip jump height (FIXME) and some unknown level
-	file->seek(4, false);
+	// skip some unknown level
+	file->seek(2, false);
 
 	// Thanks to Doubble Dutch for the water level bytes
 	waterLevelTarget = ITOF(file->loadShort() + 17);
 	waterLevel = waterLevelTarget - F8;
 	waterLevelSpeed = -80000;
 
-	// Skip Jazz animation speed(FIXME) and an unknown value (end marker?)
-	file->seek(3, false);
+	// Jazz animation speed
+	animSpeed = file->loadChar();
+	if (animSpeed != 119)
+		LOG_TRACE("Uncommon animationSpeed: %i", animSpeed);
+
+	// Skip an unknown value (end marker?)
+	file->seek(2, false);
 
 
 	// Thanks to Feline and the JCS94 team for the next bits:

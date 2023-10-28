@@ -68,6 +68,6 @@ Original author: Alister Thomson (alister_j_t at yahoo dot com)
 
 ## Homepage
 
-http://www.alister.eu/jazz/oj/
+http://alister.eu/jazz/oj/
 
 [logo]: res/unix/OpenJazz.png

@@ -1,0 +1,363 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "base",
+      "displayName": "Comment: base preset, all inherit from it",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "WANT_CCACHE": "ON"
+      }
+    },
+    {
+      "name": "type-debug",
+      "displayName": "Comment: build type debug preset",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "type-release",
+      "displayName": "Comment: build type release preset",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "Default build using Ninja generator",
+      "hidden": true
+    },
+    {
+      "name": "debug",
+      "displayName": "Native (Debug)",
+      "inherits": [
+        "parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "release",
+      "displayName": "Native (Release)",
+      "inherits": [
+        "parent",
+        "type-release"
+      ]
+    },
+    {
+      "name": "asan-parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "ASAN build using Ninja generator",
+      "cacheVariables": {
+        "WANT_ASAN": "ON"
+      },
+      "hidden": true
+    },
+    {
+      "name": "asan-debug",
+      "displayName": "ASAN (Debug)",
+      "inherits": [
+        "asan-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "3ds-parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "Homebrew build using Ninja generator",
+      "toolchainFile": "$env{DEVKITPRO}/cmake/3DS.cmake",
+      "hidden": true
+    },
+    {
+      "name": "3ds-debug",
+      "displayName": "Nintendo 3DS (Debug)",
+      "inherits": [
+        "3ds-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "3ds-release",
+      "displayName": "Nintendo 3DS (Release)",
+      "inherits": [
+        "3ds-parent",
+        "type-release"
+      ]
+    },
+    {
+      "name": "wii-parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "Homebrew build using Ninja generator",
+      "toolchainFile": "$env{DEVKITPRO}/cmake/Wii.cmake",
+      "hidden": true
+    },
+    {
+      "name": "wii-debug",
+      "displayName": "Nintendo Wii (Debug)",
+      "inherits": [
+        "wii-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "wii-release",
+      "displayName": "Nintendo Wii (Release)",
+      "inherits": [
+        "wii-parent",
+        "type-release"
+      ]
+    },
+    {
+      "name": "psp-parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "Homebrew build using Ninja generator",
+      "toolchainFile": "$env{PSPDEV}/psp/share/pspdev.cmake",
+      "hidden": true
+    },
+    {
+      "name": "psp-debug",
+      "displayName": "Sony PSP (Debug)",
+      "inherits": [
+        "psp-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "psp-release",
+      "displayName": "Sony PSP (Release)",
+      "inherits": [
+        "psp-parent",
+        "type-release"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "asan-debug",
+      "configurePreset": "asan-debug"
+    },
+    {
+      "name": "3ds-debug",
+      "configurePreset": "3ds-debug"
+    },
+    {
+      "name": "3ds-release",
+      "configurePreset": "3ds-release"
+    },
+    {
+      "name": "wii-debug",
+      "configurePreset": "wii-debug"
+    },
+    {
+      "name": "wii-release",
+      "configurePreset": "wii-release"
+    },
+    {
+      "name": "psp-debug",
+      "configurePreset": "psp-debug"
+    },
+    {
+      "name": "psp-release",
+      "configurePreset": "psp-release"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "asan-debug",
+      "configurePreset": "asan-debug"
+    },
+    {
+      "name": "3ds-debug",
+      "configurePreset": "3ds-debug"
+    },
+    {
+      "name": "3ds-release",
+      "configurePreset": "3ds-release"
+    },
+    {
+      "name": "wii-debug",
+      "configurePreset": "wii-debug"
+    },
+    {
+      "name": "wii-release",
+      "configurePreset": "wii-release"
+    },
+    {
+      "name": "psp-debug",
+      "configurePreset": "psp-debug"
+    },
+    {
+      "name": "psp-release",
+      "configurePreset": "psp-release"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "debug"
+        },
+        {
+          "type": "build",
+          "name": "debug"
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release"
+        },
+        {
+          "type": "build",
+          "name": "release"
+        }
+      ]
+    },
+    {
+      "name": "asan-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "asan-debug"
+        },
+        {
+          "type": "build",
+          "name": "asan-debug"
+        }
+      ]
+    },
+    {
+      "name": "3ds-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "3ds-debug"
+        },
+        {
+          "type": "build",
+          "name": "3ds-debug"
+        },
+        {
+          "type": "package",
+          "name": "3ds-debug"
+        }
+      ]
+    },
+    {
+      "name": "3ds-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "3ds-release"
+        },
+        {
+          "type": "build",
+          "name": "3ds-release"
+        },
+        {
+          "type": "package",
+          "name": "3ds-release"
+        }
+      ]
+    },
+    {
+      "name": "wii-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "wii-debug"
+        },
+        {
+          "type": "build",
+          "name": "wii-debug"
+        },
+        {
+          "type": "package",
+          "name": "wii-debug"
+        }
+      ]
+    },
+    {
+      "name": "wii-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "wii-release"
+        },
+        {
+          "type": "build",
+          "name": "wii-release"
+        },
+        {
+          "type": "package",
+          "name": "wii-release"
+        }
+      ]
+    },
+    {
+      "name": "psp-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "psp-debug"
+        },
+        {
+          "type": "build",
+          "name": "psp-debug"
+        },
+        {
+          "type": "package",
+          "name": "psp-debug"
+        }
+      ]
+    },
+    {
+      "name": "psp-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "psp-release"
+        },
+        {
+          "type": "build",
+          "name": "psp-release"
+        },
+        {
+          "type": "package",
+          "name": "psp-release"
+        }
+      ]
+    }
+  ]
+}

@@ -36,6 +36,7 @@
 #include "util.h"
 #include "io/log.h"
 #include "logo.h"
+#include "version.h"
 
 #include <miniz.h>
 #include <time.h>
@@ -431,7 +432,8 @@ int MainMenu::main () {
 		}
 
 		panelBigFont->mapPalette(0, MAX_PALETTE_COLORS, 8, 8);
-		panelBigFont->showString("OpenJazz " OJ_VERSION, 1, canvasH - 9);
+		panelBigFont->showString("OpenJazz", 1, canvasH - 9);
+		panelBigFont->showString(oj_version, 90, canvasH - 9);
 		panelBigFont->restorePalette();
 
 		dst.x = (canvasW - SW) >> 1;

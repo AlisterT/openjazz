@@ -121,7 +121,7 @@ link:https://github.com/AlisterT/OpenJazz/issues[issue tracker].
 *J1E* - level editor by Newspaz,
 *JJ1MOD* - graphic editor by Doubble Dutch
 
-link:http://www.alister.eu/jazz/oj/[The OpenJazz Homepage]
+link:http://alister.eu/jazz/oj/[The OpenJazz Homepage]
 
 == Authors
 

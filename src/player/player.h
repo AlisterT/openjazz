@@ -76,7 +76,9 @@ enum PlayerColour {
 class Anim;
 class JJ1LevelPlayer;
 class JJ1BonusLevelPlayer;
+#ifdef ENABLE_JJ2
 class JJ2LevelPlayer;
+#endif
 class LevelPlayer;
 
 /// Game player
@@ -115,7 +117,9 @@ class Player {
 		LevelPlayer*         getLevelPlayer         ();
 		JJ1BonusLevelPlayer* getJJ1BonusLevelPlayer ();
 		JJ1LevelPlayer*      getJJ1LevelPlayer      ();
+#ifdef ENABLE_JJ2
 		JJ2LevelPlayer*      getJJ2LevelPlayer      ();
+#endif
 
 		void            addLife           ();
 		void            addScore          (int addedScore);
@@ -137,7 +141,9 @@ class Player {
 		void            receive           (unsigned char* buffer);
 
 		friend class JJ1LevelPlayer;
+#ifdef ENABLE_JJ2
 		friend class JJ2LevelPlayer;
+#endif
 
 };
 

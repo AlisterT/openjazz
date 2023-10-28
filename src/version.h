@@ -1,7 +1,7 @@
 
 /**
  *
- * @file haiku.h
+ * @file version.h
  *
  * Part of the OpenJazz project
  *
@@ -14,15 +14,12 @@
  */
 
 
-#ifndef _HAIKU_H
-#define _HAIKU_H
+#ifndef OJ_VERSION_H
+#define OJ_VERSION_H
 
-#ifdef __HAIKU__
+#include "OpenJazz.h"
 
-void HAIKU_AddGamePaths();
-
-void HAIKU_ErrorNoDatafiles();
-
-#endif
+extern const char *oj_version;
+extern const char *oj_date;
 
 #endif

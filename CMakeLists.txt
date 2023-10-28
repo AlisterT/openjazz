@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16...3.27)
 project(OpenJazz
 	VERSION 20231027
 	LANGUAGES CXX
-	HOMEPAGE_URL http://www.alister.eu/jazz/oj/)
+	HOMEPAGE_URL http://alister.eu/jazz/oj/)
 
 # Extra CMake Module files
 
@@ -71,6 +71,8 @@ add_executable(OpenJazz
 	src/setup.h
 	src/util.cpp
 	src/util.h
+	src/version.cpp
+	src/version.h
 	# episode 1
 	src/jj1/bonuslevel/jj1bonuslevel.cpp
 	src/jj1/bonuslevel/jj1bonuslevel.h
@@ -98,19 +100,7 @@ add_executable(OpenJazz
 	src/jj1/planet/jj1planet.h
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
-	src/jj1/scene/jj1sceneload.cpp
-	# episode 2
-	src/jj2/level/event/jj2event.cpp
-	src/jj2/level/event/jj2event.h
-	src/jj2/level/event/jj2eventframe.cpp
-	src/jj2/level/jj2layer.cpp
-	src/jj2/level/jj2level.cpp
-	src/jj2/level/jj2level.h
-	src/jj2/level/jj2levelframe.cpp
-	src/jj2/level/jj2levelload.cpp
-	src/jj2/level/jj2levelplayer.cpp
-	src/jj2/level/jj2levelplayer.h
-	src/jj2/level/jj2levelplayerframe.cpp)
+	src/jj1/scene/jj1sceneload.cpp)
 target_include_directories(OpenJazz PUBLIC src)
 
 # portable mode
@@ -191,6 +181,66 @@ elseif(NOT LEGACY_SDL)
 	# FIXME: add codepath for gpu scaling
 	set(SCALE_STATUS "Disabled (currently broken in SDL2 port)")
 endif()
+
+option(ENABLE_JJ2 "Enable experimental Episode 2 support (not recommended)" OFF)
+if(ENABLE_JJ2)
+	target_sources(OpenJazz PRIVATE
+		src/jj2/level/event/jj2event.cpp
+		src/jj2/level/event/jj2event.h
+		src/jj2/level/event/jj2eventframe.cpp
+		src/jj2/level/jj2layer.cpp
+		src/jj2/level/jj2level.cpp
+		src/jj2/level/jj2level.h
+		src/jj2/level/jj2levelframe.cpp
+		src/jj2/level/jj2levelload.cpp
+		src/jj2/level/jj2levelplayer.cpp
+		src/jj2/level/jj2levelplayer.h
+		src/jj2/level/jj2levelplayerframe.cpp)
+	target_compile_definitions(OpenJazz PRIVATE ENABLE_JJ2)
+endif()
+
+# version
+
+string(TIMESTAMP OJ_DATE "%Y-%m-%d")
+include(GetGitRevisionDescription)
+git_get_exact_tag(GIT_TAG)
+# Do not include a hash, if we are building a release tag
+if(NOT GIT_TAG)
+	# otherwise concatenate a version with hash
+	git_describe(GIT_DESCRIPTION)
+	if(GIT_DESCRIPTION)
+		string(REPLACE "-" ";" GIT_DESCRIPTION ${GIT_DESCRIPTION})
+		list(LENGTH GIT_DESCRIPTION GIT_DESCRIPTION_PARTS)
+		if(GIT_DESCRIPTION_PARTS EQUAL 3)
+			list(GET GIT_DESCRIPTION 0 GIT_TAG)
+			list(GET GIT_DESCRIPTION 1 GIT_COMMITS)
+			list(GET GIT_DESCRIPTION 2 GIT_HASH)
+			set(GIT_STATUS "${GIT_COMMITS} commits since tag \"${GIT_TAG}\", ")
+			string(PREPEND GIT_COMMITS "+")
+		else()
+			# no tags found, only hash
+			list(GET GIT_DESCRIPTION 0 GIT_HASH)
+		endif()
+		# strip the g prefix
+		string(SUBSTRING ${GIT_HASH} 1 -1 GIT_HASH)
+		set(OJ_VERSION_GIT "git${GIT_COMMITS}@${GIT_HASH}")
+		string(APPEND GIT_STATUS "object hash is ${GIT_HASH}")
+		git_local_changes(GIT_DIRTY)
+		if(GIT_DIRTY STREQUAL "DIRTY")
+			string(APPEND OJ_VERSION_GIT "-dirty")
+			string(APPEND GIT_STATUS ", with uncommitted changes")
+		endif()
+	endif()
+endif()
+set_property(SOURCE src/version.cpp PROPERTY COMPILE_DEFINITIONS
+	OJ_VERSION="${PROJECT_VERSION}"; OJ_DATE="${OJ_DATE}";
+	$<$<BOOL:${OJ_VERSION_GIT}>:OJ_VERSION_GIT="${OJ_VERSION_GIT}">)
+
+# project links
+
+set(OJ_BUGREPORT "https://github.com/AlisterT/openjazz/issues")
+set_property(SOURCE src/main.cpp PROPERTY COMPILE_DEFINITIONS
+	OJ_URL="${PROJECT_HOMEPAGE_URL}"; OJ_BUGREPORT="${OJ_BUGREPORT}")
 
 target_link_libraries(OpenJazz
 	argparse miniz psmplug ${OJ_LIBS_SCALE} ${OJ_LIBS_SDL} ${OJ_LIBS_NET} ${OJ_LIBS_HOST})
@@ -354,6 +404,10 @@ unset(MAN_PATH)
 message(STATUS "")
 message(STATUS "OpenJazz")
 message(STATUS "========")
+message(STATUS "Version: ${PROJECT_VERSION}")
+if(GIT_STATUS)
+	message(STATUS "Git status: ${GIT_STATUS}")
+endif()
 message(STATUS "Target system: ${OJ_HOST}")
 message(STATUS "Platform abstraction: ${SDL_STATUS}")
 if(ROMFS)
@@ -367,5 +421,5 @@ endif()
 message(STATUS "Manual page: ${MANUAL_STATUS}")
 message(STATUS "Portable Engine: ${PORTABLE_STATUS}")
 message(STATUS "")
-message(STATUS "In case something goes wrong, report bugs to https://github.com/AlisterT/openjazz/issues")
+message(STATUS "In case something goes wrong, report bugs to ${OJ_BUGREPORT}")
 message(STATUS "")

@@ -612,7 +612,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	// Load tile set from given file
 
-	ret = loadTiles(reinterpret_cast<char *>(aBuffer) + 51);
+	ret = loadTiles(reinterpret_cast<char *>(aBuffer + 51));
 
 	if (ret < 0) {
 
@@ -632,14 +632,14 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 
 	// Next level
-	string = reinterpret_cast<char *>(aBuffer) + 115;
+	string = reinterpret_cast<char *>(aBuffer + 115);
 
 	if (fileExists(string, PATH_TYPE_GAME)) nextLevel = createString(string);
 	else nextLevel = createString(string, ".j2l");
 
 
 	// Music file
-	string = reinterpret_cast<char *>(aBuffer) + 179;
+	string = reinterpret_cast<char *>(aBuffer + 179);
 
 	if (fileExists(string, PATH_TYPE_GAME)) musicFile = createString(string);
 	else musicFile = createString(string, ".j2b");

@@ -33,18 +33,6 @@
 #ifndef _OPENJAZZ_H
 #define _OPENJAZZ_H
 
-// Fallback version, should be defined by the build system
-#ifndef OJ_VERSION
-#define OJ_VERSION "git"
-#define OJ_DATE __DATE__
-#endif
-
-// Fallback links, should be provided by the build system
-#ifndef PACKAGE_BUGREPORT
-#define PACKAGE_BUGREPORT "https://github.com/AlisterT/openjazz/issues"
-#define PACKAGE_URL "http://www.alister.eu/jazz/oj/"
-#endif
-
 #ifndef EXTERN
 	#define EXTERN extern
 #endif

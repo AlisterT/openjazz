@@ -42,7 +42,8 @@ OJOBJS = \
 	src/menu/setupmenu.o \
 	src/player/player.o \
 	src/setup.o \
-	src/util.o
+	src/util.o \
+	src/version.o
 
 # episode 1
 OJ1OBJS = \
@@ -64,15 +65,4 @@ OJ1OBJS = \
 	src/jj1/scene/jj1scene.o \
 	src/jj1/scene/jj1sceneload.o
 
-# episode 2
-OJ2OBJS = \
-	src/jj2/level/event/jj2event.o \
-	src/jj2/level/event/jj2eventframe.o \
-	src/jj2/level/jj2layer.o \
-	src/jj2/level/jj2level.o \
-	src/jj2/level/jj2levelframe.o \
-	src/jj2/level/jj2levelload.o \
-	src/jj2/level/jj2levelplayer.o \
-	src/jj2/level/jj2levelplayerframe.o
-
-OBJS = $(OJEXTLIBOBJ) $(OJOBJS) $(OJ1OBJS) $(OJ2OBJS)
+OBJS = $(OJEXTLIBOBJ) $(OJOBJS) $(OJ1OBJS)
