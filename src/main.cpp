@@ -25,6 +25,7 @@
  */
 
 
+// consume all external variables
 #define EXTERN
 
 #include "game/game.h"
@@ -46,6 +47,7 @@
 #include "util.h"
 #include "io/log.h"
 #include "platforms/platforms.h"
+#include "version.h"
 
 #include <cstring>
 #include <argparse.h>
@@ -55,6 +57,14 @@
 #endif
 
 #define PI 3.141592f
+
+// Fallback links, should be provided by the build system
+#ifndef OJ_BUGREPORT
+	#define OJ_BUGREPORT "https://github.com/AlisterT/openjazz/issues"
+#endif
+#ifndef OJ_URL
+	#define OJ_URL "http://alister.eu/jazz/oj/"
+#endif
 
 static struct CliOptions {
 	bool muteAudio;
@@ -76,7 +86,7 @@ int display_mode_cb(struct argparse *, const struct argparse_option *option) {
 #endif
 
 int version_cb(struct argparse *, const struct argparse_option */*option*/) {
-	printf("OpenJazz %s, built on %s.\n", OJ_VERSION, OJ_DATE);
+	printf("OpenJazz %s, built on %s.\n", oj_version, oj_date);
 	exit(EXIT_SUCCESS);
 }
 
@@ -115,7 +125,7 @@ int checkOptions (int argc, char *argv[]) {
 	argparse_init(&argparse, opt, usage, 0);
 	argparse_describe(&argparse,
 		"\nOpenJazz - Jack Jazzrabbit 1 game engine reimplementation",
-		"\nBug reports: " PACKAGE_BUGREPORT " - Homepage: " PACKAGE_URL);
+		"\nBug reports: " OJ_BUGREPORT " - Homepage: " OJ_URL);
 	argc = argparse_parse(&argparse, argc, argv);
 
 	// apply logger options
@@ -566,7 +576,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Log current version
-	LOG_INFO("This is OpenJazz %s, built on %s.", OJ_VERSION, OJ_DATE);
+	LOG_INFO("This is OpenJazz %s, built on %s.", oj_version, oj_date);
 
 	// Initialise SDL
 

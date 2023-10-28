@@ -42,7 +42,8 @@ OJOBJS = \
 	src/menu/setupmenu.o \
 	src/player/player.o \
 	src/setup.o \
-	src/util.o
+	src/util.o \
+	src/version.o
 
 # episode 1
 OJ1OBJS = \
