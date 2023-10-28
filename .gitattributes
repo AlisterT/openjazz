@@ -1,7 +1,12 @@
 * text=auto
 
+# source files
 *.txt text
 *.cpp text
 *.h text
 CMakeLists.txt text
 *.cmake text
+*.json text
+
+# distribution archives
+/.github export-ignore
