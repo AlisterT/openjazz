@@ -46,7 +46,10 @@ inline void ProcessPlugins(int n) {}
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef __linux__
 #include <malloc.h>
+#endif
 
 typedef int8_t CHAR;
 typedef uint8_t UCHAR;
