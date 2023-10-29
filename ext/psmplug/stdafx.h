@@ -21,7 +21,6 @@
 #include <windowsx.h>
 #include <mmsystem.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <stdint.h>
 
 #define srandom(_seed)  srand(_seed)
@@ -46,7 +45,6 @@ inline void ProcessPlugins(int n) {}
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 
 typedef int8_t CHAR;
 typedef uint8_t UCHAR;
