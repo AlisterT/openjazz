@@ -417,7 +417,7 @@ void JJ2LevelPlayer::control (unsigned int ticks, int msps) {
 
 			event = JJ2PE_NONE;
 
-			playSound(S_JUMPA);
+			playSound(SE::JUMPA);
 
 		}
 

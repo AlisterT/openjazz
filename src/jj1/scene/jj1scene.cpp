@@ -47,7 +47,7 @@
  */
 JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int newFrameSize) {
 
-	soundId = 0;
+	soundId = SE::NONE;
 	frameData = newFrameData;
 	frameType = newFrameType;
 	frameSize = newFrameSize;

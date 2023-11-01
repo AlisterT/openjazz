@@ -732,7 +732,13 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 		eventSet[count].bulletPeriod         = buffer[(count * ELENGTH) + 13];
 		eventSet[count].speed                = buffer[(count * ELENGTH) + 15] + 1;
 		eventSet[count].animSpeed            = buffer[(count * ELENGTH) + 17] + 1;
-		eventSet[count].sound                = buffer[(count * ELENGTH) + 21];
+		auto se = static_cast<SE::Type>(buffer[(count * ELENGTH) + 21]);
+		if (!isValidSoundIndex(se)) {
+			eventSet[count].sound = SE::NONE;
+			LOG_WARN("Event %d has invalid sound effect %d.", count, se);
+		} else {
+			eventSet[count].sound = se;
+		}
 		eventSet[count].multiA               = buffer[(count * ELENGTH) + 22];
 		eventSet[count].multiB               = buffer[(count * ELENGTH) + 23];
 		eventSet[count].pieceSize            = buffer[(count * ELENGTH) + 24];

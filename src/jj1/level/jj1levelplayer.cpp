@@ -319,7 +319,7 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 	}
 
-	playSound(S_UPLOOP);
+	playSound(SE::UPLOOP);
 
 	if (energy) {
 
@@ -568,7 +568,7 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 
 			// Speed up music
 
-			setMusicTempo(MUSIC_FAST);
+			setMusicTempo(MusicTempo::FAST);
 
 			break;
 

@@ -113,8 +113,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 		if (controls.release(C_ENTER)) {
 
-			playSound(S_ORB);
-
+			playConfirmSound();
 			return E_NONE;
 
 		}
@@ -132,8 +131,7 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 
 				if (controls.wasCursorReleased()) {
 
-					playSound(S_ORB);
-
+					playConfirmSound();
 					return E_NONE;
 
 				}
@@ -189,7 +187,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	if (res) {
 
-		playSound(S_ORB);
+		playConfirmSound();
 
 		delete[] text;
 		text = input;
@@ -202,7 +200,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	if (PSVITA_InputString(request, text, input)) {
 
-		playSound(S_ORB);
+		playConfirmSound();
 
 		delete[] text;
 		text = input;
@@ -334,7 +332,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 		if (controls.release(C_ENTER)) {
 
-			playSound(S_ORB);
+			playConfirmSound();
 
 			// Replace the original string with the input string
 			delete[] text;

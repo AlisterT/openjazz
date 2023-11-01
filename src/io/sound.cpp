@@ -28,6 +28,13 @@
 
 #include <SDL_audio.h>
 #include <psmplug.h>
+#include <cassert>
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	#define OJ_SDL2 1
+#else
+	#define OJ_SDL2 0
+#endif
 
 #if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP) || defined(__vita__)
 	#define SOUND_FREQ 22050
@@ -52,14 +59,70 @@
 	#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
 #endif
 
-ModPlugFile *musicFile;
-SDL_AudioSpec  audioSpec;
-bool musicPaused = false;
-int musicVolume = MAX_VOLUME >> 1; // 50%
-int soundVolume = MAX_VOLUME >> 2; // 25%
-char *currentMusic = NULL;
-int musicTempo = MUSIC_NORMAL;
+#define clamp_vol(vol, min, max) (((vol) < (min)) ? (min) : (((vol) > (max)) ? (max) : (vol)))
 
+// Datatype
+
+/// Raw sound effect data
+typedef struct {
+	unsigned char *data;
+	char          *name;
+	int            length;
+} RawSound;
+
+/// Resampled sound effect data
+typedef struct {
+	unsigned char *data;
+	int            length;
+	int            position;
+} Sound;
+
+// Variables
+
+static RawSound *rawSounds;
+static int nRawSounds;
+static Sound sounds[SE::MAX] = {};
+static bool soundsLoaded = false;
+static ModPlugFile *musicFile = nullptr;
+static SDL_AudioSpec audioSpec = {};
+static bool musicPaused = false;
+static int musicVolume = MAX_VOLUME >> 1; // 50%
+static int soundVolume = MAX_VOLUME >> 2; // 25%
+static char *currentMusic = nullptr;
+static MusicTempo musicTempo = MusicTempo::NORMAL;
+
+#if OJ_SDL2
+static SDL_AudioDeviceID audioDevice = 0;
+#endif
+
+// Helpers
+
+static void LockAudio() {
+#if OJ_SDL2
+	SDL_LockAudioDevice(audioDevice);
+#else
+	SDL_LockAudio();
+#endif
+}
+static void UnlockAudio() {
+#if OJ_SDL2
+	SDL_UnlockAudioDevice(audioDevice);
+#else
+	SDL_UnlockAudio();
+#endif
+}
+#if !OJ_SDL2
+int SDL_AUDIO_BITSIZE(int format) {
+	if (format == AUDIO_U8 || audioSpec.format == AUDIO_S8)
+		return 8;
+	else if (format == AUDIO_S16MSB || audioSpec.format == AUDIO_S16LSB ||
+		format == AUDIO_U16MSB || audioSpec.format == AUDIO_U16LSB)
+		return 16;
+
+	LOG_ERROR("Unsupported Audio format.");
+	return 0;
+}
+#endif
 
 /**
  * Callback used to provide data to the audio subsystem.
@@ -68,55 +131,43 @@ int musicTempo = MUSIC_NORMAL;
  * @param stream Output stream
  * @param len Length of data to be placed in the output stream
  */
-void audioCallback (void * userdata, unsigned char * stream, int len) {
+void audioCallback (void * /*userdata*/, unsigned char * stream, int len) {
+	// Clear audio buffer
+	memset(stream, '\0', len * sizeof(unsigned char));
 
-	(void)userdata;
-
-	int count;
-
-	if (!musicPaused) {
-
-		// Read the next portion of music into the audio stream
-
-		if (musicFile) ModPlug_Read(musicFile, stream, len);
-
+	if (musicFile && !musicPaused) {
+		// Read the next portion of music into the stream
+		ModPlug_Read(musicFile, stream, len);
 	}
 
-	if (!sounds) return;
+	if (!soundsLoaded) return;
 
-	for (count = 0; count < 32; count++) {
+	for (int i = SE::NONE; i < SE::MAX; i++) {
+		if (!sounds[i].data || sounds[i].position < 0) continue;
 
-		if (sounds[count].data && (sounds[count].position >= 0)) {
+		int rest = sounds[i].length - sounds[i].position;
+		int length = 0;
+		int position = sounds[i].position;
 
-			// Add the next portion of the sound clip to the audio stream
-
-			if (len < sounds[count].length - sounds[count].position) {
-
-				// Play as much of the clip as possible
-
-				SDL_MixAudio(stream,
-					sounds[count].data + sounds[count].position, len,
-					soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
-
-				sounds[count].position += len;
-
-			} else {
-
-				// Play the remainder of the clip
-
-				SDL_MixAudio(stream,
-					sounds[count].data + sounds[count].position,
-					sounds[count].length - sounds[count].position,
-					soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
-
-				sounds[count].position = -1;
-
-			}
-
+		if (len < rest) {
+			// Play as much of the clip as possible
+			length = len;
+			sounds[i].position += len;
+		} else {
+			// Play the remainder of the clip
+			length = rest;
+			sounds[i].position = -1;
 		}
 
+		// Add the next portion of the sound clip to the audio stream
+#if OJ_SDL2
+		SDL_MixAudioFormat(stream, sounds[i].data + position, audioSpec.format,
+			length, soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+#else
+		SDL_MixAudio(stream, sounds[i].data + position, length,
+			soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+#endif
 	}
-
 }
 
 
@@ -124,31 +175,49 @@ void audioCallback (void * userdata, unsigned char * stream, int len) {
  * Initialise audio.
  */
 void openAudio () {
-
-	SDL_AudioSpec asDesired;
-	musicFile = NULL;
-
 	// Set up SDL audio
-
+	SDL_AudioSpec asDesired = {};
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16;
 	asDesired.channels = 2;
 	asDesired.samples = SOUND_SAMPLES;
 	asDesired.callback = audioCallback;
-	asDesired.userdata = NULL;
+	asDesired.userdata = nullptr;
 
-	if (SDL_OpenAudio(&asDesired, &audioSpec) < 0)
+	bool audioOk = false;
+
+#if OJ_SDL2
+	audioDevice = SDL_OpenAudioDevice(nullptr, 0, &asDesired, &audioSpec,
+		SDL_AUDIO_ALLOW_ANY_CHANGE);
+
+	if(!audioDevice || SDL_AUDIO_ISFLOAT(audioSpec.format) ||
+		(SDL_AUDIO_BITSIZE(audioSpec.format) != 8 && SDL_AUDIO_BITSIZE(audioSpec.format) != 16)) {
+		LOG_DEBUG("SDL audio format unsupported, letting SDL convert it.");
+
+		audioDevice = SDL_OpenAudioDevice(nullptr, 0, &asDesired, &audioSpec, 0);
+	}
+	audioOk = (audioDevice != 0);
+#else
+	audioOk = (SDL_OpenAudio(&asDesired, &audioSpec) == 0);
+#endif
+
+	if(!audioOk) {
 		LOG_ERROR("Unable to open audio: %s", SDL_GetError());
+		return;
+	}
 
+	LOG_DEBUG("Opened %dHz Audio at %d bit, %d channels with %d samples",
+		audioSpec.freq, SDL_AUDIO_BITSIZE(audioSpec.format), audioSpec.channels, audioSpec.samples);
 
 	// Load sounds
-
-	if (loadSounds("SOUNDS.000") != E_NONE) sounds = NULL;
+	soundsLoaded = loadSounds("SOUNDS.000");
 
 	// Start audio for sfx to work
-
+#if OJ_SDL2
+	SDL_PauseAudioDevice(audioDevice, 0);
+#else
 	SDL_PauseAudio(0);
-
+#endif
 }
 
 
@@ -156,30 +225,25 @@ void openAudio () {
  * Stop audio.
  */
 void closeAudio () {
-
 	stopMusic();
+
+#if OJ_SDL2
+	SDL_CloseAudioDevice(audioDevice);
+	audioDevice = 0;
+#else
 	SDL_CloseAudio();
+#endif
 
 	if (rawSounds) {
-
 		for (int i = 0; i < nRawSounds; i++) {
-
 			delete[] rawSounds[i].data;
 			delete[] rawSounds[i].name;
-
 		}
 
 		delete[] rawSounds;
-
 	}
 
-	if (sounds) {
-
-		freeSounds();
-		delete[] sounds;
-
-	}
-
+	if (soundsLoaded) freeSounds();
 }
 
 
@@ -190,13 +254,6 @@ void closeAudio () {
  * @param restart Restart music when same file is played.
  */
 void playMusic (const char * fileName, bool restart) {
-
-	File *file;
-	unsigned char *psmData;
-	int size;
-	bool loadOk = false;
-	ModPlug_Settings settings;
-
 	/* Only stop any existing music playing, if a different file
 	   should be played or a restart has been requested. */
 	if ((currentMusic && (strcmp(fileName, currentMusic) == 0)) && !restart)
@@ -204,41 +261,35 @@ void playMusic (const char * fileName, bool restart) {
 
 	stopMusic();
 
+	LockAudio();
+
 	// Load the music file
-
+	File *file;
 	try {
-
 		file = new File(fileName, PATH_TYPE_GAME);
-
 	} catch (int e) {
-
+		UnlockAudio();
 		return;
-
 	}
 
 	// Save current music filename
-
 	if (currentMusic) delete[] currentMusic;
 	currentMusic = createString(fileName);
 
 	// Find the size of the file
-	size = file->getSize();
+	int size = file->getSize();
 
 	// Read the entire file into memory
 	file->seek(0, true);
-	psmData = file->loadBlock(size);
+	unsigned char *psmData = file->loadBlock(size);
 
 	delete file;
 
 	// Set up libpsmplug
-
+	ModPlug_Settings settings = {};
 	settings.mFlags = MUSIC_FLAGS;
 	settings.mChannels = audioSpec.channels;
-
-	if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
-		settings.mBits = 8;
-	else settings.mBits = 16;
-
+	settings.mBits = SDL_AUDIO_BITSIZE(audioSpec.format);
 	settings.mFrequency = audioSpec.freq;
 	settings.mResamplingMode = MUSIC_RESAMPLEMODE;
 	settings.mReverbDepth = 25;
@@ -255,25 +306,21 @@ void playMusic (const char * fileName, bool restart) {
 
 	// Load the file into libmodplug
 	musicFile = ModPlug_Load(psmData, size);
-	loadOk = (musicFile != NULL);
-
 	delete[] psmData;
 
-	if (!loadOk) {
-
+	if (!musicFile) {
 		LOG_ERROR("Could not play music file: %s", fileName);
-
-		return;
-
+		delete[] currentMusic;
+		currentMusic = nullptr;
 	}
 
 	// Re-apply volume setting
 	setMusicVolume(musicVolume);
 
 	// Start the audio playing
-	SDL_PauseAudio(0);
 	musicPaused = false;
 
+	UnlockAudio();
 }
 
 
@@ -291,29 +338,21 @@ void pauseMusic (bool pause) {
  * Stop the current music.
  */
 void stopMusic () {
-
 	// Stop the music playing
-
-	SDL_PauseAudio(~0);
-
-	// Cleanup
-
-	if (currentMusic) {
-
-		delete[] currentMusic;
-		currentMusic = NULL;
-
-	}
+	LockAudio();
 
 	if (musicFile) {
-
 		ModPlug_Unload(musicFile);
-		musicFile = NULL;
-
+		musicFile = nullptr;
 	}
 
-	SDL_PauseAudio(0);
+	// Cleanup
+	if (currentMusic) {
+		delete[] currentMusic;
+		currentMusic = nullptr;
+	}
 
+	UnlockAudio();
 }
 
 
@@ -323,9 +362,7 @@ void stopMusic () {
  * @return music volume (0-100)
  */
 int getMusicVolume () {
-
 	return musicVolume;
-
 }
 
 
@@ -335,15 +372,12 @@ int getMusicVolume () {
  * @param volume new volume (0-100)
  */
 void setMusicVolume (int volume) {
-
-	musicVolume = volume;
-	if (volume < 1) musicVolume = 0;
-	if (volume > MAX_VOLUME) musicVolume = MAX_VOLUME;
+	musicVolume = clamp_vol(volume, 0, MAX_VOLUME);
 
 	// do not access music player settings when not playing
+	if (!musicFile) return;
 
-	if (musicFile) ModPlug_SetMasterVolume(musicFile, musicVolume * 2.56);
-
+	ModPlug_SetMasterVolume(musicFile, musicVolume * 2.56);
 }
 
 
@@ -352,10 +386,8 @@ void setMusicVolume (int volume) {
  *
  * @return music tempo (MUSIC_NORMAL, MUSIC_FAST)
  */
-int getMusicTempo () {
-
+MusicTempo getMusicTempo () {
 	return musicTempo;
-
 }
 
 
@@ -364,24 +396,13 @@ int getMusicTempo () {
  *
  * @param tempo new tempo (MUSIC_NORMAL, MUSIC_FAST)
  */
-void setMusicTempo (int tempo) {
-
-	if ((tempo != MUSIC_FAST) && (tempo != MUSIC_NORMAL))
-		musicTempo = MUSIC_NORMAL;
-	else
-		musicTempo = tempo;
+void setMusicTempo (MusicTempo tempo) {
+	musicTempo = tempo;
 
 	// do not access music player settings when not playing
+	if (!musicFile) return;
 
-	if (musicFile) {
-
-		if (musicTempo == MUSIC_FAST)
-			ModPlug_SetMusicTempoFactor(musicFile, 80);
-		else
-			ModPlug_SetMusicTempoFactor(musicFile, 128);
-
-	}
-
+	ModPlug_SetMusicTempoFactor(musicFile, static_cast<unsigned int>(tempo));
 }
 
 
@@ -390,26 +411,13 @@ void setMusicTempo (int tempo) {
  *
  * @param fileName Name of a file containing sound clips
  */
-int loadSounds (const char *fileName) {
-
+bool loadSounds (const char *fileName) {
 	File *file;
 
 	try {
-
 		file = new File(fileName, PATH_TYPE_GAME);
-
 	} catch (int e) {
-
-		return e;
-
-	}
-
-	sounds = new Sound[32];
-
-	for (int i = 0; i < 32; i++) {
-
-		sounds[i].data = NULL;
-
+		return false;
 	}
 
 	// Locate the header data
@@ -418,9 +426,11 @@ int loadSounds (const char *fileName) {
 
 	// Calculate number of sounds
 	nRawSounds = (file->getSize() - headerOffset) / 18;
+	LOG_TRACE("Loading %d sounds...", nRawSounds);
+
+	assert(nRawSounds < SE::MAX);
 
 	// Load sound clips
-
 	rawSounds = new RawSound[nRawSounds];
 
 	for (int i = 0; i < nRawSounds; i++) {
@@ -441,13 +451,11 @@ int loadSounds (const char *fileName) {
 		rawSounds[i].data = file->loadBlock(rawSounds[i].length);
 
 	}
-
 	delete file;
 
 	resampleSounds();
 
-	return E_NONE;
-
+	return true;
 }
 
 
@@ -455,105 +463,138 @@ int loadSounds (const char *fileName) {
  * Resample sound clip data.
  */
 void resampleSound (int index, const char* name, int rate) {
+	// Skip SE::NONE
+	int se = index + 1;
 
-	int rsFactor;
+	if(!isValidSoundIndex(static_cast<SE::Type>(se))) {
+		LOG_ERROR("Cannot resample Sound Index %d", se);
+		return;
+	}
 
-	if (sounds[index].data) {
+	if (sounds[se].data) {
+		LOG_TRACE("Overwriting Sound index %d: %s", se, name);
 
-		delete[] sounds[index].data;
-		sounds[index].data = NULL;
-
+		delete[] sounds[se].data;
+		sounds[se].data = nullptr;
 	}
 
 	// Search for matching sound
-
 	for (int i = 0; i < nRawSounds; i++) {
+		if (strcmp(name, rawSounds[i].name) != 0) continue;
 
-		if (!strcmp(name, rawSounds[i].name)) {
-
-			// Calculate the resampling factor
-			if ((audioSpec.format == AUDIO_U8) || (audioSpec.format == AUDIO_S8))
-				rsFactor = (F2 * audioSpec.freq) / rate;
-			else rsFactor = (F4 * audioSpec.freq) / rate;
-
-			sounds[index].length = MUL(rawSounds[i].length, rsFactor);
-
-			// Allocate the buffer for the resampled clip
-			sounds[index].data = new unsigned char[sounds[index].length];
-
-			// Resample the clip
-			for (int sample = 0; sample < sounds[index].length; sample++)
-				sounds[index].data[sample] = rawSounds[i].data[DIV(sample, rsFactor)];
-
-			sounds[index].position = -1;
-
+#if OJ_SDL2
+		// We let SDL2 resample as needed
+		SDL_AudioCVT cvt;
+		int res = SDL_BuildAudioCVT(&cvt, AUDIO_S8, 1, rate, audioSpec.format,
+			audioSpec.channels, audioSpec.freq);
+		if (res >= 0) {
+			cvt.len = rawSounds[i].length;
+			cvt.buf = new unsigned char[cvt.len * cvt.len_mult];
+			if(!cvt.buf) {
+				LOG_ERROR("Cannot create conversion buffer.");
+				return;
+			}
+			memcpy(cvt.buf, rawSounds[i].data, cvt.len);
+			sounds[se].length = cvt.len;
+			// only convert, if needed
+			if (res > 0) {
+				if((res = SDL_ConvertAudio(&cvt)) == 0) {
+					// successful
+					sounds[se].length = cvt.len_cvt;
+				}
+			}
+		}
+		if(res < 0) {
+			LOG_WARN("Cannot resample sound effect: %s", SDL_GetError());
 			return;
+		}
+		// From here it does not matter, if converted or already right samplerate
+		sounds[se].data = new unsigned char[sounds[se].length];
+		if(!sounds[se].data) {
+			LOG_ERROR("Cannot create buffer for resampled sound effect.");
+			return;
+		}
+		// Copy data over
+		memcpy(sounds[se].data, cvt.buf, sounds[se].length * sizeof(unsigned char));
+		delete[](cvt.buf);
+#else
+		// Calculate the resampling factor
+		int rsFactor;
+		if (SDL_AUDIO_BITSIZE(audioSpec.format) == 8)
+			rsFactor = (F2 * audioSpec.freq) / rate;
+		else
+			rsFactor = (F4 * audioSpec.freq) / rate;
 
+		sounds[se].length = MUL(rawSounds[i].length, rsFactor);
+
+		// Allocate the buffer for the resampled clip
+		sounds[se].data = new unsigned char[sounds[se].length];
+		if(!sounds[se].data) {
+			LOG_ERROR("Cannot create buffer for resampled sound effect.");
+			return;
 		}
 
-	}
+		// Resample the clip
+		for (int sample = 0; sample < sounds[se].length; sample++)
+			sounds[se].data[sample] = rawSounds[i].data[DIV(sample, rsFactor)];
+#endif
+		sounds[se].position = -1;
 
+		return;
+	}
 }
 
 
 /**
  * Resample all sound clips to matching indices.
  */
-void resampleSounds () {
-
-	for (int i = 0; (i < 32) && (i < nRawSounds); i++) {
-
+void resampleSounds() {
+	for (int i = 0; i < nRawSounds; i++) {
 		resampleSound(i, rawSounds[i].name, 11025);
-
 	}
-
 }
 
 
 /**
  * Delete resampled sound clip data.
  */
-void freeSounds () {
+void freeSounds() {
+	if (!soundsLoaded) return;
 
-	if (sounds) {
-
-		for (int i = 0; i < 32; i++) {
-
-			if (sounds[i].data) delete[] sounds[i].data;
-
-		}
-
+	for (int i = SE::NONE; i < SE::MAX; i++) {
+		if (sounds[i].data) delete[] sounds[i].data;
 	}
-
 }
 
 
 /**
  * Set the sound clip to be played.
  *
- * @param index Number of the sound to play plus one (0 to play no sound)
+ * @param index Number of the sound to play
  */
-void playSound (char index) {
+void playSound(SE::Type index) {
+	if (!soundsLoaded) return;
 
-	if (sounds && (index > 0) && (index <= 32)) sounds[index - 1].position = 0;
+	if (!isValidSoundIndex(index)) {
+		LOG_WARN("Cannot play invalid sound %d", index);
+		return;
+	}
 
+	sounds[index].position = 0;
 }
 
 
 /**
  * Check if a sound clip is playing.
  *
- * @param index Number of the sound to check plus one
+ * @param index Number of the sound to check
  *
  * @return Whether the sound is playing
  */
-bool isSoundPlaying (char index) {
+bool isSoundPlaying (SE::Type index) {
+	if (!soundsLoaded || !isValidSoundIndex(index)) return false;
 
-	if (!sounds || (index <= 0) || (index > 32))
-		return false;
-
-	return (sounds[index - 1].position > 0);
-
+	return (sounds[index].position > 0);
 }
 
 
@@ -563,9 +604,7 @@ bool isSoundPlaying (char index) {
  * @return sound volume (0-100)
  */
 int getSoundVolume () {
-
 	return soundVolume;
-
 }
 
 
@@ -575,9 +614,5 @@ int getSoundVolume () {
  * @param volume new volume (0-100)
  */
 void setSoundVolume (int volume) {
-
-	soundVolume = volume;
-	if (volume < 1) soundVolume = 0;
-	if (volume > MAX_VOLUME) soundVolume = MAX_VOLUME;
-
+	soundVolume = clamp_vol(volume, 0, MAX_VOLUME);
 }

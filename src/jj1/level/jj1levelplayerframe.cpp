@@ -338,7 +338,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			eventType = JJ1PE_NONE;
 
-			playSound(S_PHOTON);
+			playSound(SE::PHOTON);
 
 		} else if (((eventType == JJ1PE_NONE) || (eventType == JJ1PE_PLATFORM)) &&
 			!player->pcontrols[C_JUMP]) {
@@ -517,7 +517,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 	// Replay sound effect before invincibility wears off
 
 	if ((reaction == PR_INVINCIBLE) && (reactionTime < ticks + 2200))
-		if (!isSoundPlaying(S_INVULN)) playSound(S_INVULN);
+		if (!isSoundPlaying(SE::INVULN)) playSound(SE::INVULN);
 
 }
 
@@ -552,7 +552,7 @@ void JJ1LevelPlayer::move (unsigned int ticks) {
 		// reset music speed before running shoes wear off
 
 		if (fastFeetTime - ticks < T_FASTFEET >> 2)
-			setMusicTempo(MUSIC_NORMAL);
+			setMusicTempo(MusicTempo::NORMAL);
 
 	} else {
 

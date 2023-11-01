@@ -142,7 +142,7 @@ typedef struct {
 	unsigned char bulletPeriod; ///< The time between successive bullet shots
 	unsigned char speed; ///< The speed at which the event moves
 	unsigned char animSpeed; ///< The speed of the event's animation
-	unsigned char sound; ///< The sound played on the appropriate trigger
+	SE::Type      sound; ///< The sound played on the appropriate trigger
 	signed char   multiA; ///< Usage depends on event type
 	signed char   multiB; ///< Usage depends on event type
 	signed char   pieceSize; ///< Size of pieces in bridges, swinging balls chains, etc.

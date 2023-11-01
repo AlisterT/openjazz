@@ -184,7 +184,9 @@ JJ1Bullet* JJ1Bullet::step (unsigned int ticks) {
 	// If the scenery has been hit and this is not a bouncer, destroy the bullet
 	if (level->checkMaskUp(x, y) && (set[B_BEHAVIOUR] != 4)) {
 
-		playSound(set[B_FINISHSOUND]);
+		// FIXME: rewrite "set"
+		auto se = static_cast<SE::Type>(set[B_FINISHSOUND]);
+		playSound(se);
 
 		return remove();
 

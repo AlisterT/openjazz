@@ -600,7 +600,9 @@ void JJ1Level::createBullet (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, 
 
 		}
 
-		playSound(set[B_STARTSOUND]);
+		// FIXME: rewrite "set"
+		auto se = static_cast<SE::Type>(set[B_STARTSOUND]);
+		playSound(se);
 
 	}
 
@@ -831,7 +833,7 @@ int JJ1Level::play () {
 
 					returnTime = ticks + T_END;
 					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
-					playSound(S_ORB);
+					playSound(SE::ORB);
 
 				}
 

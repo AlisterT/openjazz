@@ -278,7 +278,7 @@ bool JJ2LevelPlayer::hit (Player *source, unsigned int ticks) {
 
 		//if (bird) bird->hit();
 
-		playSound(S_OW);
+		playSound(SE::OW);
 
 	}
 

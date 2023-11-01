@@ -79,9 +79,7 @@ int SetupMenu::setupKeyboard () {
 				if (progress == PCONTROLS) {
 
 					// If all controls have been assigned, return
-
-					playSound(S_ORB);
-
+					playConfirmSound();
 					return E_NONE;
 
 				}
@@ -165,9 +163,7 @@ int SetupMenu::setupJoystick () {
 					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
-
-						playSound(S_ORB);
-
+						playConfirmSound();
 						return E_NONE;
 
 					}
@@ -195,9 +191,7 @@ int SetupMenu::setupJoystick () {
 					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
-
-						playSound(S_ORB);
-
+						playConfirmSound();
 						return E_NONE;
 
 					}
@@ -225,9 +219,7 @@ int SetupMenu::setupJoystick () {
 					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
-
-						playSound(S_ORB);
-
+						playConfirmSound();
 						return E_NONE;
 
 					}
@@ -266,9 +258,7 @@ int SetupMenu::setupJoystick () {
 					if (progress == PCONTROLS) {
 
 						// If all controls have been assigned, return
-
-						playSound(S_ORB);
-
+						playConfirmSound();
 						return E_NONE;
 
 					}
@@ -447,7 +437,7 @@ int SetupMenu::setupResolution () {
 		// Apply resolution change
 		if (controls.release(C_ENTER)) {
 
-			playSound(S_ORB);
+			playConfirmSound();
 
 			if (video.reset(screenW, screenH)) {
 
@@ -533,7 +523,7 @@ int SetupMenu::setupScaling () {
 		// Check for a scaling change
 		if (scaleFactor != video.getScaleFactor()) {
 
-			playSound(S_ORB);
+			playConfirmSound();
 			scaleFactor = video.setScaleFactor(scaleFactor);
 
 		}
@@ -578,7 +568,7 @@ int SetupMenu::setupSound () {
 			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11)) setMusicVolume(x << 1);
 			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 16) && (y < 27)) setSoundVolume(x << 1);
 
-			if (controls.wasCursorReleased()) playSound(S_ORB);
+			if (controls.wasCursorReleased()) playConfirmSound();
 
 		}
 
@@ -609,7 +599,7 @@ int SetupMenu::setupSound () {
 			if (soundActive) setSoundVolume(getSoundVolume() - 4);
 			else setMusicVolume(getMusicVolume() - 4);
 
-			playSound(S_ORB);
+			playConfirmSound();
 
 		}
 
@@ -618,7 +608,7 @@ int SetupMenu::setupSound () {
 			if (soundActive) setSoundVolume(getSoundVolume() + 4);
 			else setMusicVolume(getMusicVolume() + 4);
 
-			playSound(S_ORB);
+			playConfirmSound();
 
 		}
 

@@ -155,7 +155,7 @@ int MainMenu::select (int option) {
 	JJ1Scene *scene;
 	SetupMenu setupMenu;
 
-	playSound(S_ORB);
+	playConfirmSound();
 
 	switch (option) {
 
