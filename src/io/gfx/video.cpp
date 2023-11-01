@@ -352,13 +352,13 @@ bool Video::reset (int width, int height) {
 
 	texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, canvasW, canvasH);
 	if (!texture) {
-		LOG_WARN("Could not create texture: %s\n", SDL_GetError());
+		LOG_ERROR("Could not create texture: %s", SDL_GetError());
 		return false;
 	}
 
 	textureSurface = SDL_CreateRGBSurfaceWithFormat(SDL_SWSURFACE, canvasW, canvasH, SDL_BITSPERPIXEL(format), format);
 	if (!textureSurface) {
-		LOG_WARN("Could not create surface: %s\n", SDL_GetError());
+		LOG_ERROR("Could not create surface: %s", SDL_GetError());
 		return false;
 	}
 #endif

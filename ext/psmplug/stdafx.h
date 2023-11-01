@@ -21,14 +21,12 @@
 #include <windowsx.h>
 #include <mmsystem.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 #define srandom(_seed)  srand(_seed)
 #define random()        rand()
 #define sleep(_ms)      Sleep(_ms)
-
-inline void ProcessPlugins(int n) {}
 
 #undef strcasecmp
 #undef strncasecmp
@@ -46,7 +44,6 @@ inline void ProcessPlugins(int n) {}
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 
 typedef int8_t CHAR;
 typedef uint8_t UCHAR;

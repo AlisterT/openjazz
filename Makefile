@@ -2,7 +2,7 @@
 include openjazz.mk
 
 # Sane defaults
-CXX ?= g++
+CXX ?= g++ -std=c++11
 CXXFLAGS ?= -g -Wall -O2
 DEFINES = -DSCALE -DPORTABLE
 CPPFLAGS = $(DEFINES) -Isrc -Iext/scale2x -Iext/psmplug -Iext/miniz -Iext/argparse
