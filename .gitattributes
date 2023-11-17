@@ -10,3 +10,4 @@ CMakeLists.txt text
 
 # distribution archives
 /.github export-ignore
+/builds/ci export-ignore
