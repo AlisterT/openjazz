@@ -114,7 +114,7 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 	Game* game;
 	int ret;
 
-	playSound(S_ORB);
+	playConfirmSound();
 
 	if (mode == M_SINGLE) {
 
@@ -316,7 +316,7 @@ int GameMenu::loadGame () {
 
 		if (controls.release(C_ENTER)) {
 
-			playSound(S_ORB);
+			playConfirmSound();
 
 			if (newGameDifficulty(M_SINGLE, levelNum, worldNum) == E_QUIT) return E_QUIT;
 
@@ -419,7 +419,7 @@ int GameMenu::newGameLevel (GameModeType mode) {
  */
 int GameMenu::selectEpisode (GameModeType mode, int episode) {
 
-	playSound(S_ORB);
+	playConfirmSound();
 
 	if (episode < 10) {
 

@@ -23,6 +23,7 @@
 #define _SCENE_H
 
 #include "io/file.h"
+#include "types.h"
 
 // Enums
 
@@ -189,7 +190,7 @@ class JJ1SceneFrame {
 		unsigned char* frameData;
 		int            frameSize;
 		unsigned int   frameType;
-		unsigned char  soundId;
+		SE::Type       soundId;
 
 		JJ1SceneFrame  (int frameType, unsigned char* frameData, int frameSize);
 		~JJ1SceneFrame ();

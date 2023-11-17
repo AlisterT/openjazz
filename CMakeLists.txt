@@ -69,6 +69,7 @@ add_executable(OpenJazz
 	src/player/player.h
 	src/setup.cpp
 	src/setup.h
+	src/types.h
 	src/util.cpp
 	src/util.h
 	src/version.cpp

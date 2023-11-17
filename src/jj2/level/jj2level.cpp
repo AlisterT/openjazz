@@ -491,7 +491,7 @@ int JJ2Level::play () {
 			if (!returnTime) {
 
 				returnTime = ticks + 3000;
-				playSound(S_UPLOOP);
+				playSound(SE::UPLOOP);
 
 			}
 

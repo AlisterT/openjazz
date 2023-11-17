@@ -1,0 +1,11 @@
+#!/bin/bash
+
+test $# -gt 0 || exit 1
+
+find $@ -prune -type d | while IFS= read -r d; do
+  f="${d#*/}.zip"
+  echo "Creating $f:"
+  (cd $d
+    zip -9 -r "../$f" *
+  )
+done

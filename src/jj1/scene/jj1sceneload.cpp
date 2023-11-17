@@ -377,9 +377,14 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 					case ESTAniHeader: // Sound item
 
 						{
-							unsigned char soundIndex = f->loadChar();
-							animations->lastFrame->soundId = soundIndex;
-							LOG_MAX("PL Audio tag with index: %d", soundIndex);
+							auto se = static_cast<SE::Type>(f->loadChar());
+							if (!isValidSoundIndex(se)) {
+								LOG_WARN("PL Audio tag with invalid index: %d", se);
+								animations->lastFrame->soundId = SE::NONE;
+							} else {
+								LOG_MAX("PL Audio tag with index: %d", se);
+								animations->lastFrame->soundId = se;
+							}
 							LOG_MAX("PL Audio tag play at: %x", f->loadChar());
 							LOG_MAX("PL Audio tag play offset: %x", f->loadChar());
 						}

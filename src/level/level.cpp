@@ -330,7 +330,7 @@ int Level::select (bool& menu, int option) {
 
 		case 3: // Load
 
-			playSound(S_WAIT);
+			playSound(SE::WAIT);
 
 			break;
 
