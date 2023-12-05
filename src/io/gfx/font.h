@@ -17,15 +17,14 @@
  *
  */
 
-
 #ifndef _FONT_H
 #define _FONT_H
-
 
 #include "OpenJazz.h"
 
 #include <SDL.h>
 
+#define MAX_FONT_CHARS 128
 
 // Classes
 
@@ -35,10 +34,15 @@ class File;
 class Font {
 
 	private:
-		SDL_Surface   *characters[128]; ///< Symbol images
+		void           commonSetup();
+		void           cleanMapping();
+		SDL_Surface   *characterAtlas; ///< Symbol images
+		SDL_Rect       atlasRects[MAX_FONT_CHARS]; ///< Symbol positions
+		bool           isOk; ///< Font is loaded and usable
 		int            nCharacters; ///< Number of symbols
+		unsigned char  spaceWidth; ///< Horizontal spacing of displayed characters
 		unsigned char  lineHeight; ///< Vertical spacing of displayed characters
-		char           map[128]; ///< Maps ASCII values to symbol indices
+		unsigned int   map[MAX_FONT_CHARS]; ///< Maps ASCII values to symbol indices
 
 	public:
 		explicit Font(const char *fileName);
@@ -52,8 +56,12 @@ class Font {
 		void mapPalette          (int start, int length, int newStart, int newLength);
 		void restorePalette      ();
 		int  getHeight           ();
+		int  getSpaceWidth       ();
 		int  getStringWidth      (const char *string);
 		int  getSceneStringWidth (const unsigned char *string);
+#ifdef DEBUG_FONTS
+		void saveAtlasAsBMP      (const char *fileName);
+#endif
 
 };
 
@@ -69,4 +77,3 @@ EXTERN Font *panelBigFont;   /** Found in PANEL.000 */
 EXTERN Font *panelSmallFont; /** Found in PANEL.000 */
 
 #endif
-

@@ -418,7 +418,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 		return e;
 
 	}
-
+	#if DEBUG_FONTS
+	font->saveAtlasAsBMP("levelfont.bmp");
+	#endif
 
 	// Load panel
 

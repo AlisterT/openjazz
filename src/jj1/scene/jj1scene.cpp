@@ -617,7 +617,7 @@ int JJ1Scene::play () {
 			// Text itself
 			font->showSceneString(text->text, xOffset, yOffset);
 
-			y += extraLineHeight + font->getHeight() / 2;
+			y += extraLineHeight + font->getHeight();
 
 		}
 
