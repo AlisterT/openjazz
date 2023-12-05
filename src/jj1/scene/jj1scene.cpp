@@ -547,7 +547,7 @@ int JJ1Scene::play () {
 					}
 				}
 
-				y += extraLineHeight + font->getHeight() / 2;
+				y += extraLineHeight + font->getHeight();
 			}
 		}
 

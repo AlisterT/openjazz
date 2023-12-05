@@ -280,12 +280,12 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	delete file;
 
-	panelBigFont = NULL;
-	panelSmallFont = NULL;
-	font2 = NULL;
-	fontbig = NULL;
-	fontiny = NULL;
-	fontmn1 = NULL;
+	panelBigFont = nullptr;
+	panelSmallFont = nullptr;
+	font2 = nullptr;
+	fontbig = nullptr;
+	fontiny = nullptr;
+	fontmn1 = nullptr;
 
 	try {
 
@@ -313,9 +313,16 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 		throw;
 
 	}
+	#if DEBUG_FONTS
+	panelBigFont->saveAtlasAsBMP("panelbigfont.bmp");
+	panelSmallFont->saveAtlasAsBMP("panelsmallfont.bmp");
+	font2->saveAtlasAsBMP("font2.bmp");
+	fontbig->saveAtlasAsBMP("fontbig.bmp");
+	fontiny->saveAtlasAsBMP("fontiny.bmp");
+	fontmn1->saveAtlasAsBMP("fontmn1.bmp");
+	#endif
 
 	delete[] pixels;
-
 
 	// Establish arbitrary timing
 	globalTicks = SDL_GetTicks() - 20;
