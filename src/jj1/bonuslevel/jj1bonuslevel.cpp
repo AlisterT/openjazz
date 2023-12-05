@@ -213,6 +213,9 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 		throw;
 
 	}
+	#if DEBUG_FONTS
+	font->saveAtlasAsBMP("bonusfont.bmp");
+	#endif
 
 	try {
 

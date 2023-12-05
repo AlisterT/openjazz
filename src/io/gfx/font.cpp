@@ -20,13 +20,37 @@
  *
  */
 
-
-#include "../file.h"
+#include "io/file.h"
 #include "font.h"
 #include "video.h"
+#include "io/log.h"
 
+#include <stb_rect_pack.h>
 #include <string.h>
 
+namespace {
+	constexpr unsigned int INVALID_FONT_CHAR = -1;
+
+	constexpr int normalPadding = 2;
+	constexpr int sceneStringPadding = 1;
+}
+
+void Font::commonSetup() {
+	isOk = false;
+	lineHeight = 0;
+	spaceWidth = 0;
+	nCharacters = MAX_FONT_CHARS;
+	memset(atlasRects, 0, sizeof(atlasRects));
+	memset(map, INVALID_FONT_CHAR, sizeof(map));
+}
+
+void Font::cleanMapping() {
+	// remove empty
+	for (int i = 0; i < MAX_FONT_CHARS; i++) {
+		if (map[i] >= static_cast<unsigned int>(nCharacters))
+			map[i] = INVALID_FONT_CHAR;
+	}
+}
 
 /**
  * Load a font from the given .0FN file.
@@ -34,118 +58,124 @@
  * @param fileName Name of an .0FN file
  */
 Font::Font (const char* fileName) {
-
-	File* file;
-	unsigned char* pixels;
-	unsigned char* blank;
-	int fileSize;
-	int count, width, height;
+	commonSetup();
 
 	// Load font from a font file
+	File* file = new File(fileName, PATH_TYPE_GAME);
+	int fileSize = file->getSize();
 
-	try {
-
-		file = new File(fileName, PATH_TYPE_GAME);
-
-	} catch (int e) {
-
-		throw;
-
+	// Checking font file
+	unsigned char *identifier1 = file->loadBlock(18);
+	char identifier2 = file->loadChar();
+	if (memcmp(identifier1, "Digital Dimensions", 18) != 0 || identifier2 != 0x1A) {
+		LOG_ERROR("Font not valid!");
+		delete[] identifier1;
+		return;
 	}
+	delete[] identifier1;
 
-	fileSize = file->getSize();
+	spaceWidth = file->loadChar();
+	lineHeight = file->loadChar();
+	LOG_MAX("spaceWidth: %d, lineHeight: %d", spaceWidth, lineHeight);
 
-	nCharacters = 128;
-
-
-	file->seek(20, true);
-	lineHeight = file->loadChar() << 1;
-
-
-	// Create blank character data
-
-	blank = new unsigned char[3];
-	memset(blank, 0, 3);
-
+	// temporary character data
+	SDL_Surface *chars[MAX_FONT_CHARS];
+	stbrp_rect rects[MAX_FONT_CHARS];
 
 	// Load characters
-
-	for (count = 0; count < 128; count++) {
-
+	for (int i = 0; i < MAX_FONT_CHARS; i++) {
 		if (file->tell() >= fileSize) {
-
-			nCharacters = count;
+			nCharacters = i;
+			LOG_TRACE("Loaded %d characters from font.", nCharacters);
 
 			break;
-
 		}
 
 		int size = file->loadShort();
+		int w = 0;
+		int h = 0;
 
 		if (size > 4) {
+			unsigned char* pixels = file->loadRLE(size);
 
-			pixels = file->loadRLE(size);
+			int width = pixels[0]|pixels[1] << 8;
+			int height = pixels[2]|pixels[3] << 8;
 
-			width = pixels[0];
-			width += pixels[1] << 8;
-			height = pixels[2];
-			height += pixels[3] << 8;
+			if (size - 4 >= width * height) {
+				chars[i] = createSurface(pixels + 4, width, height);
 
-			if (size - 4 >= width * height)
-				characters[count] = createSurface(pixels + 4, width, height);
-			else
-				characters[count] = createSurface(blank, 3, 1);
+				w = width;
+				h = height;
+			}
 
 			delete[] pixels;
+		}
 
-		} else characters[count] = createSurface(blank, 3, 1);
+		// setup sizes for packing
+		rects[i] = { i, w, h, 0, 0, 0 };
 
-		enableColorKey(characters[count], 0);
-
+		// save size
+		atlasRects[i] = { -1, -1, w, h };
 	}
-
-	delete[] blank;
 
 	delete file;
 
+	// Pack all characters in a 128x128 pixels surface
+	int aW = 128;
+	int aH = 128;
+	characterAtlas = createSurface(nullptr, aW, aH);
+	enableColorKey(characterAtlas, 0);
+
+	stbrp_context ctx;
+	stbrp_node nodes[aW];
+	stbrp_init_target(&ctx, aW, aH, nodes, aW);
+
+	bool res = stbrp_pack_rects(&ctx, rects, nCharacters);
+	if(res) {
+		for (int i = 0; i < nCharacters; i++) {
+			// save position
+			atlasRects[i].x = rects[i].x;
+			atlasRects[i].y = rects[i].y;
+
+			// copy char to atlas
+			if (rects[i].w > 0 && rects[i].h > 0)
+				SDL_BlitSurface(chars[i], nullptr, characterAtlas, &atlasRects[i]);
+		}
+	} else
+		LOG_WARN("Could not pack font atlas!");
+
+	// Delete single char surfaces
+	for (int i = 0; i < nCharacters; i++) {
+		if(rects[i].w > 0 && rects[i].h > 0)
+			SDL_FreeSurface(chars[i]);
+	}
 
 	// Create ASCII->font map
-
-	for (count = 0; count < 33; count++) map[count] = 0;
 	map[33] = 107; // !
 	map[34] = 116; // "
-	map[35] = 0; // #
-	map[36] = 63; // $
-	map[37] = 0; // %
-	map[38] = 0; // &
+	map[36] = 63;  // $
 	map[39] = 115; // '
 	map[40] = 111; // (
 	map[41] = 112; // )
-	map[42] = 0; // *
 	map[43] = 105; // +
 	map[44] = 101; // ,
 	map[45] = 104; // -
 	map[46] = 102; // .
 	map[47] = 108; // /
-	for (count = 48; count < 58; count++) map[count] = count + 5;  // Numbers
+	for (int i = 48; i < 58; i++)
+		map[i] = i + 5;  // Numbers
 	map[58] = 114; // :
 	map[59] = 113; // ;
-	map[60] = 0; // <
 	map[61] = 106; // =
-	map[62] = 0; // >
 	map[63] = 103; // ?
-	map[64] = 0; // @
-	for (count = 65; count < 91; count++) map[count] = count - 38; // Upper-case letters
-	for (; count < 97; count++) map[count] = 0;
-	for (; count < 123; count++) map[count] = count - 96; // Lower-case letters
-	for (; count < 128; count++) map[count] = 0;
+	for (int i = 65; i < 91; i++)
+		map[i] = i - 38; // Upper-case letters
+	for (int i = 97; i < 123; i++)
+		map[i] = i - 96; // Lower-case letters
 
-	for (count = 0; count < 128; count++) {
+	cleanMapping();
 
-		if (map[count] >= nCharacters) map[count] = 0;
-
-	}
-
+	isOk = res;
 }
 
 
@@ -156,60 +186,98 @@ Font::Font (const char* fileName) {
  * @param big Whether to use the small or the big font
  */
 Font::Font (unsigned char* pixels, bool big) {
+	commonSetup();
 
-	unsigned char* chrPixels;
-	int count, y;
-
-	if (big) lineHeight = 8;
-	else lineHeight = 7;
-
-	chrPixels = new unsigned char[8 * lineHeight];
-
-	for (count = 0; count < 40; count++) {
-
-		for (y = 0; y < lineHeight; y++)
-			memcpy(chrPixels + (y * 8), pixels + (count * 8) + (y * SW), 8);
-
-		characters[count] = createSurface(chrPixels, 8, lineHeight);
-
-		if (big) enableColorKey(characters[count], 31);
-
+	int charWidth = 8;
+	spaceWidth = 5;
+	if (big) {
+		nCharacters = 40;
+		lineHeight = 8;
+	} else {
+		nCharacters = 13;
+		lineHeight = 7;
 	}
 
-	nCharacters= 40;
+	// temporary character data
+	SDL_Surface *chars[nCharacters];
+	stbrp_rect rects[MAX_FONT_CHARS];
+
+	unsigned char* chrPixels = new unsigned char[charWidth * lineHeight];
+
+	for (int i = 0; i < nCharacters; i++) {
+		// copy to atlas
+		for (int y = 0; y < lineHeight; y++) {
+			memcpy(chrPixels + (y * charWidth),
+				pixels + (i * charWidth) + (y * SW), charWidth);
+		}
+		chars[i] = createSurface(chrPixels, charWidth, lineHeight);
+
+		// setup sizes for packing
+		rects[i] = { i, charWidth, lineHeight, 0, 0, 0 };
+
+		// save size
+		atlasRects[i] = { -1, -1, charWidth, lineHeight };
+	}
 
 	delete[] chrPixels;
 
-
-	// Create ASCII->font map
-
-	if (big) {
-
-		// Goes " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:."
-
-		for (count = 0; count < 45; count++) map[count] = 0;
-		map[count++] = 37;
-		map[count++] = 39;
-		for (; count < 48; count++) map[count] = 0;
-		for (; count < 58; count++) map[count] = count - 47; // Numbers
-		map[count++] = 38;
-		for (; count < 65; count++) map[count] = 0;
-		for (; count < 91; count++) map[count] = count - 54; // Upper-case letters
-		for (; count < 97; count++) map[count] = 0;
-		for (; count < 123; count++) map[count] = count - 86; // Lower-case letters
-		for (; count < 128; count++) map[count] = 0;
-
+	// Pack all characters in a surface
+	int aW, aH;
+	if(big) {
+		// 56x48
+		aW = 7 * charWidth;
+		aH = 6 * lineHeight;
 	} else {
-
-		// Goes " 0123456789oo" (where oo = infinity)
-		// Use :; to represent the infinity symbol
-
-		for (count = 0; count < 48; count++) map[count] = 0;
-		for (; count < 60; count++) map[count] = count - 47; // Numbers and :;
-		for (; count < 128; count++) map[count] = 0;
-
+		// 32x28
+		aW = 4 * charWidth;
+		aH = 4 * lineHeight;
 	}
 
+	characterAtlas = createSurface(nullptr, aW, aH);
+
+	stbrp_context ctx;
+	stbrp_node nodes[aW];
+	stbrp_init_target(&ctx, aW, aH, nodes, aW);
+
+	bool res = stbrp_pack_rects(&ctx, rects, nCharacters);
+	if(res) {
+		for (int i = 0; i < nCharacters; i++) {
+			// save position
+			atlasRects[i].x = rects[i].x;
+			atlasRects[i].y = rects[i].y;
+
+			// copy char to atlas
+			SDL_BlitSurface(chars[i], nullptr, characterAtlas, &atlasRects[i]);
+		}
+	} else
+		LOG_WARN("Could not pack font atlas!");
+
+	// Delete single char surfaces
+	for (int i = 0; i < nCharacters; i++)
+		SDL_FreeSurface(chars[i]);
+
+	if (big) enableColorKey(characterAtlas, 31);
+
+	// Create ASCII->font map
+	if (big) {
+		// Goes " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-:."
+		map[45] = 37; // -
+		map[46] = 39; // .
+		map[58] = 38; // :
+		for (int i = 47; i < 58; i++)
+			map[i] = i - 47; // Numbers
+		for (int i = 64; i < 91; i++) {
+			map[i] = i - 54; // Upper-case letters
+			map[i+32] = map[i]; // Lower-case letters (copy)
+		}
+	} else {
+		// Goes " 0123456789oo" (where oo = infinity)
+		// Use :; to represent the infinity symbol
+		for (int i = 47; i < 60; i++)
+			map[i] = i - 47; // Numbers and :;
+	}
+
+	isOk = res;
 }
 
 
@@ -219,128 +287,117 @@ Font::Font (unsigned char* pixels, bool big) {
  * @param bonus whether to use FONTS.000 or BONUS.000
  */
 Font::Font (bool bonus) {
-
-	File* file;
-	unsigned char* pixels;
-	int fileSize;
-	int count;
+	commonSetup();
 
 	// Load font from FONTS.000 or BONUS.000
+	File* file = new File(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
 
-	try {
-
-		file = new File(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
-
-	} catch (int e) {
-
-		throw;
-
-	}
-
-
-	fileSize = file->getSize();
-
+	int fileSize = file->getSize();
 	nCharacters = file->loadShort(256);
 
 	if (bonus) {
-
-		count = file->loadShort();
-		nCharacters -= count;
+		int nSprites = file->loadShort();
+		nCharacters -= nSprites;
 
 		// Skip sprites
-
-		for (; count > 0; count--) {
-
+		for (int i = 0; i < nSprites; i++) {
 			file->seek(4, false);
 
 			int width = file->loadShort();
 			if (width == 0xFFFF) width = 0;
 
 			file->seek((width << 2) + file->loadShort(), false);
-
 		}
-
 	}
 
+	// temporary character data
+	SDL_Surface *chars[MAX_FONT_CHARS];
+	stbrp_rect rects[MAX_FONT_CHARS];
+
 	// Load characters
-
-	for (count = 0; count < nCharacters; count++) {
-
+	for (int i = 0; i < nCharacters; i++) {
 		if (file->tell() >= fileSize) {
-
-			nCharacters = count;
+			nCharacters = i;
+			LOG_TRACE("Loaded %d characters from font.", nCharacters);
 
 			break;
-
 		}
 
 		int width = file->loadShort(SW);
 		int height = file->loadShort(SH);
 
+		// adjust
 		if (bonus) width = (width + 3) & ~3;
 		else width <<= 2;
 
 		file->seek(4, false);
 
-		pixels = file->loadPixels(width * height);
+		unsigned char *pixels = file->loadPixels(width * height);
 
-		characters[count] = createSurface(pixels, width, height);
-		enableColorKey(characters[count], 254);
+		chars[i] = createSurface(pixels, width, height);
 
 		delete[] pixels;
 
+		// setup sizes for packing
+		rects[i] = { i, width, height, 0, 0, 0 };
+
+		// save size
+		atlasRects[i] = { -1, -1, width, height };
 	}
 
 	delete file;
 
-	lineHeight = characters[0]->h;
+	spaceWidth = 5;
+	// use "A" as reference
+	lineHeight = atlasRects[0].h;
+	LOG_MAX("spaceWidth: %d, lineHeight: %d", spaceWidth, lineHeight);
 
+	// Pack all characters in a 160x160 pixels surface
+	int aW = 160;
+	int aH = 160;
+	characterAtlas = createSurface(nullptr, aW, aH);
+	enableColorKey(characterAtlas, 254);
 
-	// Create blank character data
+	stbrp_context ctx;
+	stbrp_node nodes[aW];
+	stbrp_init_target(&ctx, aW, aH, nodes, aW);
 
-	pixels = new unsigned char[3];
-	memset(pixels, 254, 3);
-	characters[nCharacters] = createSurface(pixels, 3, 1);
-	enableColorKey(characters[nCharacters], 254);
-	delete[] pixels;
+	bool res = stbrp_pack_rects(&ctx, rects, nCharacters);
+	if(res) {
+		for (int i = 0; i < nCharacters; i++) {
+			// save position
+			atlasRects[i].x = rects[i].x;
+			atlasRects[i].y = rects[i].y;
 
+			// copy char to atlas
+			SDL_BlitSurface(chars[i], nullptr, characterAtlas, &atlasRects[i]);
+		}
+	} else
+		LOG_WARN("Could not pack font atlas!");
+
+	// Delete single char surfaces
+	for (int i = 0; i < nCharacters; i++)
+		SDL_FreeSurface(chars[i]);
 
 	// Create ASCII->font map
-
-	count = 0;
-
 	if (bonus) {
-
-		for (; count < 42; count++) map[count] = nCharacters;
-		map[count++] = 37; // *
-		for (; count < 46; count++) map[count] = nCharacters;
-		map[count++] = 39; // .
-		map[count++] = 38; // /
-		for (; count < 59; count++) map[count] = count - 22; // Numbers and :
-
+		map[42] = 37; // *
+		map[46] = 39; // .
+		map[47] = 38; // /
+		map[58] = 36; // :
 	} else {
-
-		for (; count < 37; count++) map[count] = nCharacters;
-		map[count++] = 36; // %
-		for (; count < 48; count++) map[count] = nCharacters;
-		for (; count < 58; count++) map[count] = count - 22; // Numbers
-
+		map[37] = 36; // %
+	}
+	for (int i = 48; i < 58; i++)
+		map[i] = i - 22; // Numbers
+	for (int i = 65; i < 91; i++) {
+		map[i] = i - 65; // Upper-case letters
+		map[i+32] = map[i]; // Lower-case letters (copy)
 	}
 
-	for (; count < 65; count++) map[count] = nCharacters;
-	for (; count < 91; count++) map[count] = count - 65; // Upper-case letters
-	for (; count < 97; count++) map[count] = nCharacters;
-	for (; count < 123; count++) map[count] = count - 97; // Lower-case letters
-	for (; count < 128; count++) map[count] = nCharacters;
+	cleanMapping();
 
-	nCharacters++;
-
-	for (count = 0; count < 128; count++) {
-
-		if (map[count] >= nCharacters) map[count] = 0;
-
-	}
-
+	isOk = res;
 }
 
 
@@ -348,9 +405,7 @@ Font::Font (bool bonus) {
  * Delete the font.
  */
 Font::~Font () {
-
-	for (int i = 0; i < nCharacters; i++) SDL_FreeSurface(characters[i]);
-
+	SDL_FreeSurface(characterAtlas);
 }
 
 
@@ -364,44 +419,42 @@ Font::~Font () {
  * @return The x-coordinate of the end of the string
  */
 int Font::showString (const char* string, int x, int y) {
-
-	SDL_Surface* surface;
-	SDL_Rect dst;
-	unsigned int count;
-	int xOffset, yOffset;
+	if (!isOk) return x;
 
 	// Determine the position at which to draw the first character
-	xOffset = x;
-	yOffset = y;
+	int xOffset = x;
+	int yOffset = y;
 
 	// Go through each character of the string
-	for (count = 0; string[count]; count++) {
-
-		if (string[count] == '\n') {
-
+	for (int i = 0; string[i]; i++) {
+		if (string[i] == '\n') {
+			// reset after line break
 			xOffset = x;
 			yOffset += lineHeight;
-
 		} else {
+			unsigned int c = map[int(string[i])];
+
+			// skip spaces and invalid
+			if(c == INVALID_FONT_CHAR) {
+				xOffset += spaceWidth;
+				#if DEBUG_FONTS
+				if (string[i] != ' ') // log invalid
+					LOG_MAX("Skipping char %d in %s at index %d", string[i], string, i);
+				#endif
+				continue;
+			}
 
 			// Determine the character's position on the screen
-			dst.y = yOffset;
-			dst.x = xOffset;
-
-			// Determine the character's surface
-			surface = characters[int(map[int(string[count])])];
+			SDL_Rect dst = { xOffset, yOffset, 0, 0 };
 
 			// Draw the character to the screen
-			SDL_BlitSurface(surface, NULL, canvas, &dst);
+			SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
-			xOffset += surface->w + 2;
-
+			xOffset += atlasRects[c].w + normalPadding;
 		}
-
 	}
 
 	return xOffset;
-
 }
 
 
@@ -415,35 +468,32 @@ int Font::showString (const char* string, int x, int y) {
  * @return The x-coordinate of the end of the string
  */
 int Font::showSceneString (const unsigned char* string, int x, int y) {
-
-	SDL_Surface* surface;
-	SDL_Rect dst;
-	unsigned int count;
-	int offset;
+	if (!isOk) return x;
 
 	// Determine the position at which to draw the first character
-	offset = x;
+	int offset = x;
 
 	// Go through each character of the string
-	for (count = 0; string[count]; count++) {
+	for (int i = 0; string[i]; i++) {
 
 		// Determine the character's position on the screen
-		dst.y = y;
-		dst.x = offset;
+		SDL_Rect dst = { offset, y, 0, 0 };
 
-		// Determine the character's surface
-		if (string[count] < nCharacters) surface = characters[int(string[count])];
-		else surface = characters[0];
+		// use space for invalid characters
+		if (string[i] >= nCharacters) {
+			offset += spaceWidth;
+			continue;
+		}
+
+		int c = string[i];
 
 		// Draw the character to the screen
-		SDL_BlitSurface(surface, NULL, canvas, &dst);
+		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
-		offset += surface->w + 1;
-
+		offset += atlasRects[c].w + sceneStringPadding;
 	}
 
 	return offset;
-
 }
 
 
@@ -457,69 +507,59 @@ int Font::showSceneString (const unsigned char* string, int x, int y) {
  * @return The x-coordinate of the end of the number
  */
 void Font::showNumber (int n, int x, int y) {
+	if (!isOk) return;
 
-	SDL_Surface *surface;
 	SDL_Rect dst;
-	int count, offset;
 
 	// n being 0 is a special case. It must not be considered to be a trailing
 	// zero, as these are not displayed.
 	if (!n) {
-
-		// Determine 0's surface
-		surface = characters[int(map[int('0')])];
+		unsigned int c = map[int('0')];
 
 		// Determine 0's position on the screen
 		dst.y = y;
-		dst.x = x - surface->w;
+		dst.x = x - atlasRects[c].w;
 
 		// Draw 0 to the screen
-		SDL_BlitSurface(surface, NULL, canvas, &dst);
+		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
 		return;
-
 	}
 
 	// Determine the length of the number to be drawn
+	int count;
 	if (n > 0) count = n;
 	else count = -n;
 
 	// Determine the position at which to draw the lowest digit
-	offset = x;
+	int offset = x;
 
 	while (count) {
+		unsigned int c = map[int('0' + (count % 10))];
 
-		// Determine the digit's surface
-		surface = characters[int(map['0' + (count % 10)])];
-
-		offset -= surface->w;
+		offset -= atlasRects[c].w;
 
 		// Determine the digit's position on the screen
 		dst.y = y;
 		dst.x = offset;
 
 		// Draw the digit to the screen
-		SDL_BlitSurface(surface, NULL, canvas, &dst);
+		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
 		count /= 10;
-
 	}
 
 	// If needed, draw the negative sign
 	if (n < 0) {
-
-		// Determine the negative sign's surface
-		surface = characters[int(map[int('-')])];
+		unsigned int c = map[int('-')];
 
 		// Determine the negative sign's position on the screen
 		dst.y = y;
-		dst.x = offset - surface->w;
+		dst.x = offset - atlasRects[c].w;
 
 		// Draw the negative sign to the screen
-		SDL_BlitSurface(surface, NULL, canvas, &dst);
-
+		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 	}
-
 }
 
 
@@ -532,17 +572,15 @@ void Font::showNumber (int n, int x, int y) {
  * @param newLength Span of new range
  */
 void Font::mapPalette (int start, int length, int newStart, int newLength) {
+	if (!isOk) return;
 
 	SDL_Color palette[MAX_PALETTE_COLORS];
-	int count;
 
-	for (count = 0; count < length; count++)
-		palette[count].r = palette[count].g = palette[count].b =
-			(count * newLength / length) + newStart;
+	for (int i = 0; i < length; i++) {
+		palette[i].r = palette[i].g = palette[i].b = (i * newLength / length) + newStart;
+	}
 
-	for (count = 0; count < nCharacters; count++)
-		setLogicalPalette(characters[count], palette, start, length);
-
+	setLogicalPalette(characterAtlas, palette, start, length);
 }
 
 
@@ -550,12 +588,9 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
  * Restore a palette to its original state.
  */
 void Font::restorePalette () {
+	if (!isOk) return;
 
-	int count;
-
-	for (count = 0; count < nCharacters; count++)
-		video.restoreSurfacePalette(characters[count]);
-
+	video.restoreSurfacePalette(characterAtlas);
 }
 
 
@@ -572,6 +607,18 @@ int Font::getHeight () {
 
 
 /**
+ * Get the width of a space.
+ *
+ * @return The width
+ */
+int Font::getSpaceWidth () {
+
+	return spaceWidth;
+
+}
+
+
+/**
  * Get the width of a single line of a given string.
  *
  * @param string The string to measure
@@ -579,22 +626,27 @@ int Font::getHeight () {
  * @return The width
  */
 int Font::getStringWidth (const char *string) {
+	if (!isOk) return 0;
 
-	int count;
 	int stringWidth = 0;
 
 	// Go through each character of the string
-	for (count = 0; string[count]; count++) {
-
+	for (int i = 0; string[i]; i++) {
 		// Only get the width of the first line
-		if (string[count] == '\n') return stringWidth;
+		if (string[i] == '\n') return stringWidth;
 
-		stringWidth += characters[int(map[int(string[count])])]->w + 2;
+		unsigned int c = map[int(string[i])];
 
+		// skip spaces
+		if(c == INVALID_FONT_CHAR) {
+			stringWidth += spaceWidth;
+			continue;
+		}
+
+		stringWidth += atlasRects[c].w + normalPadding;
 	}
 
 	return stringWidth;
-
 }
 
 
@@ -606,18 +658,40 @@ int Font::getStringWidth (const char *string) {
  * @return The width
  */
 int Font::getSceneStringWidth (const unsigned char *string) {
+	if (!isOk) return 0;
 
-	int count;
 	int stringWidth = 0;
 
 	// Go through each character of the string
-	for (count = 0; string[count]; count++) {
+	for (int i = 0; string[i]; i++) {
 
-		if (string[count] < nCharacters) stringWidth += characters[int(string[count])]->w + 1;
-		else stringWidth += characters[0]->w + 1;
+		// use space for invalid characters
+		if (string[i] >= nCharacters) {
+			stringWidth += spaceWidth;
+			continue;
+		}
 
+		stringWidth += atlasRects[string[i]].w + sceneStringPadding;
 	}
 
 	return stringWidth;
-
 }
+
+#ifdef DEBUG_FONTS
+
+/**
+ * Save the generated font atlas to a BMP image.
+ *
+ * @param fileName File to save to
+ */
+void Font::saveAtlasAsBMP(const char *fileName) {
+	if (!isOk) {
+		LOG_WARN("Not saving empty font atlas!");
+		return;
+	}
+
+	video.restoreSurfacePalette(characterAtlas);
+	SDL_SaveBMP(characterAtlas, fileName);
+}
+
+#endif
