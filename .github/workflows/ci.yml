@@ -53,7 +53,7 @@ jobs:
           git archive -o openjazz-${SHORT_SHA}.zip --prefix=openjazz-${SHORT_SHA}/ ${GITHUB_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-dist
           path: openjazz-*.*
@@ -109,7 +109,7 @@ jobs:
           cp build-release/OpenJazz README.md COPYING licenses.txt OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-linux-glibc2.31-x86_64
           path: OJ-*/
@@ -148,7 +148,7 @@ jobs:
           mv dist OJ-${SHORT_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
@@ -182,7 +182,7 @@ jobs:
           mv OpenJazz OJ-${SHORT_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-wii
           path: OJ-*/
@@ -216,7 +216,7 @@ jobs:
           mv OpenJazz OJ-${SHORT_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-3ds
           path: OJ-*/
@@ -260,7 +260,7 @@ jobs:
           mv !OpenJazz OJ-${SHORT_SHA}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-riscos
           path: OJ-*/
@@ -293,7 +293,7 @@ jobs:
           mv OpenJazz OJ-${SHORT_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openjazz-psp
           path: OJ-*/
