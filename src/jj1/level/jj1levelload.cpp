@@ -947,7 +947,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	switch (type) {
 
-		case 2:
+		case PE_SKY:
 
 			sky = true;
 
@@ -956,21 +956,21 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 			break;
 
-		case 8:
+		case PE_2D:
 
 			// Parallaxing background effect
 			paletteEffects = new P2DPaletteEffect(128, 64, FE, NULL);
 
 			break;
 
-		case 9:
+		case PE_1D:
 
 			// Diagonal stripes "parallaxing" background effect
 			paletteEffects = new P1DPaletteEffect(128, 32, FH, NULL);
 
 			break;
 
-		case 11:
+		case PE_WATER:
 
 			// The deeper below water, the darker it gets
 			paletteEffects = new WaterPaletteEffect(TTOF(32), NULL);
@@ -981,6 +981,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 			// No effect
 			paletteEffects = NULL;
+			LOG_TRACE("Unknown palette effect: %d", type);
 
 			break;
 
