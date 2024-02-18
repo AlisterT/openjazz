@@ -65,9 +65,9 @@ GameMenu::GameMenu (File *file) {
 
 	}
 
-	episodes = 11;
+	episodes = MAX_EPISODES;
 
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < MAX_EPISODES; i++) {
 
 		episodeScreens[i] = file->loadSurface(134, 110);
 
@@ -75,7 +75,7 @@ GameMenu::GameMenu (File *file) {
 
 			episodes = ++i;
 
-			for (; i < 11; i++) {
+			for (; i < MAX_EPISODES; i++) {
 
 				unsigned char pixel = 0;
 				episodeScreens[i] = createSurface(&pixel, 1, 1);
@@ -94,7 +94,7 @@ GameMenu::GameMenu (File *file) {
  */
 GameMenu::~GameMenu () {
 
-	for (int i = 0; i < 11; i++) SDL_FreeSurface(episodeScreens[i]);
+	for (int i = 0; i < MAX_EPISODES; i++) SDL_FreeSurface(episodeScreens[i]);
 
 	SDL_FreeSurface(difficultyScreen);
 
@@ -302,14 +302,14 @@ int GameMenu::loadGame () {
 
 		if (controls.release(C_LEFT)) {
 
-			if (option) levelNum = ((levelNum + 11) % 11) - 1;
+			if (option) levelNum = ((levelNum + MAX_EPISODES) % MAX_EPISODES) - 1;
 			else worldNum = (worldNum + 999) % 1000;
 
 		}
 
 		if (controls.release(C_RIGHT)) {
 
-			if (option) levelNum = ((levelNum + 2) % 11) - 1;
+			if (option) levelNum = ((levelNum + 2) % MAX_EPISODES) - 1;
 			else worldNum = (worldNum + 1) % 1000;
 
 		}
@@ -493,7 +493,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 	} else exists[10] = false;
 
-	exists[11] = true; // always possible to load custom level
+	exists[MAX_EPISODES] = true; // always possible to load custom level
 
 	episode = 0;
 
@@ -503,7 +503,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
-		if (controls.release(C_UP)) episode = (episode + 11) % 12;
+		if (controls.release(C_UP)) episode = (episode + MAX_EPISODES) % 12;
 
 		if (controls.release(C_DOWN)) episode = (episode + 1) % 12;
 

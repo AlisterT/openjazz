@@ -33,6 +33,8 @@
 
 #define ESCAPE_STRING "(esc) quits"
 
+#define MAX_EPISODES 11
+
 // Demo timeout
 #define T_DEMO 20000
 
@@ -54,7 +56,7 @@ class Menu {
 class GameMenu : public Menu {
 
 	private:
-		SDL_Surface*  episodeScreens[11]; ///< Episode images
+		SDL_Surface*  episodeScreens[MAX_EPISODES]; ///< Episode images
 		SDL_Surface*  difficultyScreen; ///< 4 difficulty images
 		SDL_Color     palette[MAX_PALETTE_COLORS]; ///< Episode selection palette
 		SDL_Color     greyPalette[MAX_PALETTE_COLORS]; ///< Greyed-out episode selection palette
