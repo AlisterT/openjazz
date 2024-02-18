@@ -208,7 +208,7 @@ git_get_exact_tag(GIT_TAG)
 # Do not include a hash, if we are building a release tag
 if(NOT GIT_TAG)
 	# otherwise concatenate a version with hash
-	git_describe(GIT_DESCRIPTION)
+	git_describe(GIT_DESCRIPTION --exclude continuous)
 	if(GIT_DESCRIPTION)
 		string(REPLACE "-" ";" GIT_DESCRIPTION ${GIT_DESCRIPTION})
 		list(LENGTH GIT_DESCRIPTION GIT_DESCRIPTION_PARTS)

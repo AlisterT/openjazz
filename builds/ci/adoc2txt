@@ -2,5 +2,5 @@
 
 test -z $1 && exit 1
 
-exec asciidoctor -a oj_version=$release -b html5 - | \
+exec asciidoctor -a oj_version=$1 -b html5 - | \
   w3m -dump -cols 2147483647 -s -T text/html
