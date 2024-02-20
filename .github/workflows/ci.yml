@@ -222,6 +222,7 @@ jobs:
           path: OJ-*/
 
   riscos-gccsdk:
+    if: ${{ false }} # disable, since svn repository is offline/broken
     name: Build (RISC OS, GCCSDK 4.7)
     needs: prepare
     runs-on: ubuntu-latest
