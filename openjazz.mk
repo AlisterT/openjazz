@@ -3,6 +3,7 @@
 OJEXTLIBOBJ = \
 	ext/argparse/argparse.o \
 	ext/miniz/miniz.o \
+	ext/stb/stb_rect_pack.o \
 	ext/psmplug/fastmix.o \
 	ext/psmplug/load_psm.o \
 	ext/psmplug/psmplug.o \
