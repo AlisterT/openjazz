@@ -174,7 +174,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	// Use any provided paths
 	for (int i = 0; i < pathCount; i++)
-		gamePaths.add(createString(paths[i]), PATH_TYPE_GAME);
+		gamePaths.add(createString(paths[i]), PATH_TYPE_USER|PATH_TYPE_GAME);
 
 
 	// Use the path of the program, but check before, since it is not always available
