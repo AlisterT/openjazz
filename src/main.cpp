@@ -205,6 +205,9 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	gamePaths.add(createString(DATAPATH), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 #endif
 
+	// Enable logfile
+	logger.setFileReady();
+
 	// Default settings
 
 	// Sound settings
