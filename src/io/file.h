@@ -21,12 +21,13 @@
 #ifndef _FILE_H
 #define _FILE_H
 
-
 #include "OpenJazz.h"
 
 #include <SDL.h>
-#include <stdio.h>
 #include <memory>
+#include <cstdio>
+#include <vector>
+#include <string>
 
 // Classes
 
@@ -37,7 +38,7 @@ class File {
 		FILE* file;
 		char* filePath;
 
-		bool open (const char* path, const char* name, bool write);
+		bool open (std::string path, const char* name, bool write);
 
 	public:
 		File                           (const char* name, int pathType, bool write = false);
@@ -73,22 +74,21 @@ using FilePtr = std::unique_ptr<File>;
 
 enum path_type {
 	PATH_TYPE_INVALID = 0,     ///< Invalid directory, do not use
-	PATH_TYPE_SYSTEM = 1 << 0, ///< Read-only system directory
-	PATH_TYPE_CONFIG = 1 << 1, ///< User writable configuration directory
-	PATH_TYPE_GAME = 1 << 2,   ///< Directory containing game data
-	PATH_TYPE_TEMP = 1 << 3,   ///< User writable temporary directory
-	PATH_TYPE_ANY =  1 << 4    ///< Special case: any type
+	PATH_TYPE_SYSTEM = 1 << 0, ///< System directory
+	PATH_TYPE_USER = 1 << 1,   ///< User directory
+	PATH_TYPE_CONFIG = 1 << 2, ///< User writable configuration directory
+	PATH_TYPE_GAME = 1 << 3,   ///< Directory containing game data
+	PATH_TYPE_TEMP = 1 << 4    ///< User writable temporary directory
 };
 
 class Path {
 
 	public:
-		Path* next;      ///< Next path to check
-		char* path;      ///< Path
-		int   pathType;  ///< One or more of path_type enum
+		Path(const char* newPath, int newPathType);
+		Path(std::string const &newPath, int newPathType);
 
-		Path  (Path* newNext, char* newPath, int newPathType);
-		~Path ();
+		std::string path;   ///< Path
+		int pathType;       ///< One or more of path_type enum
 
 };
 
@@ -96,15 +96,18 @@ class Path {
 class PathMgr {
 
 	public:
-		PathMgr();
-		~PathMgr();
+		PathMgr() = default;
 
-		bool add(char* newPath, int newPathType = PATH_TYPE_ANY);
+		bool add(char* newPath, int newPathType);
 
-		Path* paths;
+		const char *getConfig() const { return config.c_str(); };
+		const char *getTemp() const { return temp.c_str(); };
+		std::vector<Path> getPaths(int pathType) const;
 
-		bool has_config;
-		bool has_temp;
+	private:
+		std::vector<Path> paths;
+		std::string config;
+		std::string temp;
 
 };
 

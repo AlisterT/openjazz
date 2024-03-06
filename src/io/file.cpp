@@ -48,22 +48,13 @@
  */
 File::File (const char* name, int pathType, bool write) {
 
-	Path* path = gamePaths.paths;
-
-	while (path) {
-
-		// skip other paths
-		if (pathType != PATH_TYPE_ANY && (path->pathType & pathType) != pathType) {
-			path = path->next;
-			continue;
-		}
+	auto paths = gamePaths.getPaths(pathType);
+	for (const auto &path : paths) {
 
 		// only allow certain write paths
 		if (!write || (pathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
-			if (open(path->path, name, write)) return;
+			if (open(path.path, name, write)) return;
 		} else LOG_FATAL("Not allowed to write to %s", name);
-
-		path = path->next;
 
 	}
 
@@ -95,10 +86,10 @@ File::~File () {
  * @param name File name
  * @param write Whether or not the file can be written to
  */
-bool File::open (const char* path, const char* name, bool write) {
+bool File::open (std::string path, const char* name, bool write) {
 
 	// Create the file path for the given directory
-	filePath = createString(path, name);
+	filePath = createString(path.c_str(), name);
 
 	// Open the file from the path
 	file = fopen(filePath, write ? "wb": "rb");
@@ -106,7 +97,7 @@ bool File::open (const char* path, const char* name, bool write) {
 #ifdef UPPERCASE_FILENAMES
 	if (!file) {
 
-		uppercaseString(filePath + strlen(path));
+		uppercaseString(filePath + path.length());
 		file = fopen(filePath, write ? "wb": "rb");
 
 	}
@@ -115,7 +106,7 @@ bool File::open (const char* path, const char* name, bool write) {
 #ifdef LOWERCASE_FILENAMES
 	if (!file) {
 
-		lowercaseString(filePath + strlen(path));
+		lowercaseString(filePath + path.length());
 		file = fopen(filePath, write ? "wb": "rb");
 
 	}
@@ -123,7 +114,7 @@ bool File::open (const char* path, const char* name, bool write) {
 
 	if (file) {
 
-		LOG_DEBUG("Opened file: %s", filePath);
+		LOG_TRACE("Opened file: %s", filePath);
 
 		return true;
 
@@ -625,16 +616,6 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 
 }
 
-
-PathMgr::PathMgr():
-	paths(NULL), has_config(false), has_temp(false) {
-
-};
-
-PathMgr::~PathMgr() {
-	delete paths;
-};
-
 bool PathMgr::add(char* newPath, int newPathType) {
 
 	// Check for CWD
@@ -665,8 +646,8 @@ bool PathMgr::add(char* newPath, int newPathType) {
 	}
 
 	// ignore, if already present
-	if(has_config) newPathType &= ~PATH_TYPE_CONFIG;
-	if(has_temp) newPathType &= ~PATH_TYPE_TEMP;
+	if(!config.empty()) newPathType &= ~PATH_TYPE_CONFIG;
+	if(!temp.empty()) newPathType &= ~PATH_TYPE_TEMP;
 
 	// config and temp dir need to be writeable
 	if ((newPathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
@@ -678,52 +659,80 @@ bool PathMgr::add(char* newPath, int newPathType) {
 		}
 	}
 
+	// we only need one directory for these
+	if (newPathType & PATH_TYPE_CONFIG) {
+		config = newPath;
+		newPathType &= ~PATH_TYPE_CONFIG;
+
+		LOG_DEBUG("Using directory '%s' for configuration.", newPath);
+	}
+	if (newPathType & PATH_TYPE_TEMP) {
+		temp = newPath;
+		newPathType &= ~PATH_TYPE_TEMP;
+
+		LOG_DEBUG("Using directory '%s' for temporary files.", newPath);
+	}
+
+	// path could have been invalidated above
 	if(newPathType == PATH_TYPE_INVALID) {
 		delete[] newPath;
 		return false;
 	}
 
-	// we only need one directory for these
-	if (newPathType & PATH_TYPE_CONFIG) has_config = true;
-	if (newPathType & PATH_TYPE_TEMP) has_temp = true;
+	// log info
+	char pathInfo[4] = {};
+	if(newPathType & PATH_TYPE_SYSTEM) strcat(pathInfo, "S");
+	if(newPathType & PATH_TYPE_USER) strcat(pathInfo, "U");
+	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "G");
+
+	LOG_DEBUG("Adding '%s' to the path list [%s]", newPath, pathInfo);
 
 	// Finally add
-	paths = new Path(paths, newPath, newPathType);
+	paths.emplace_back(Path(newPath, newPathType));
 
+	delete[] newPath;
 	return true;
+}
+
+std::vector<Path> PathMgr::getPaths(int pathType) const {
+	std::vector<Path> result;
+
+	// special cases
+	if(pathType == PATH_TYPE_CONFIG) {
+		result.emplace_back(Path(config, pathType));
+	} else if(pathType == PATH_TYPE_TEMP) {
+		result.emplace_back(Path(temp, pathType));
+	} else {
+		// search list
+		for (const auto &path : paths) {
+			// skip other paths
+			if ((path.pathType & pathType) != pathType) {
+				continue;
+			}
+
+			result.emplace_back(path);
+		}
+	}
+
+	return result;
 }
 
 
 /**
  * Create a new directory path object.
  *
- * @param newNext Next path
  * @param newPath The new path
  */
-Path::Path (Path* newNext, char* newPath, int newPathType) {
+Path::Path (const char* newPath, int newPathType) {
 
-	char pathInfo[10] = {};
-	if(newPathType & PATH_TYPE_SYSTEM) strcat(pathInfo, "S");
-	if(newPathType & PATH_TYPE_CONFIG) strcat(pathInfo, "C");
-	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "G");
-	if(newPathType & PATH_TYPE_TEMP) strcat(pathInfo, "T");
-	if(newPathType & PATH_TYPE_ANY) strcat(pathInfo, "A");
-
-	LOG_DEBUG("Adding '%s' to the path list [%s]", newPath, pathInfo);
-
-	next = newNext;
-	path = newPath;
+	path = std::string(newPath);
 	pathType = newPathType;
 
 }
 
+Path::Path (std::string const &newPath, int newPathType) {
 
-/**
- * Delete the directory path object.
- */
-Path::~Path () {
-
-	if (next) delete next;
-	delete[] path;
+	path = newPath;
+	pathType = newPathType;
 
 }
