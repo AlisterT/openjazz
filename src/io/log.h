@@ -38,6 +38,8 @@ enum {
 	#define LIKE_PRINTF
 #endif
 
+#define MAX_BUFFERED_MESSAGES 25
+
 // Class
 
 /// Configuration
@@ -50,6 +52,7 @@ class Log {
 		void setLevel(int level);
 		int  getLevel();
 		void setQuiet(bool enable);
+		void setFileReady();
 		void log(int level, const char *file, int line, const char *fmt, ...) LIKE_PRINTF;
 
 	private:

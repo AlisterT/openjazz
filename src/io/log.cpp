@@ -18,11 +18,15 @@
  */
 
 #include "log.h"
+#include "file.h"
+#include "util.h"
 #include <cstdarg>
 #include <ctime>
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
+#include <string>
+#include <queue>
 
 #ifdef __vita__
 #include <psp2/kernel/clib.h>
@@ -41,6 +45,8 @@ static struct level_info {
 	{ "FATAL", "\x1b[35m" }
 };
 
+static std::queue<std::string> buffered_messages;
+
 /**
  * Create logfile, set defaults
  */
@@ -48,7 +54,7 @@ Log::Log () {
 
 	level = LL_DEBUG;
 	quiet = false;
-	logfile = fopen("openjazz.log", "w");
+	logfile = nullptr;
 	color_stdout = false;
 	color_stderr = false;
 
@@ -119,6 +125,25 @@ void Log::setQuiet(bool enable) {
 }
 
 /**
+ * Enable logging to file.
+ *
+ */
+
+void Log::setFileReady() {
+	char *logpath = createString(gamePaths.getTemp(), "openjazz.log");
+	logfile = fopen(logpath, "w");
+	if(!logfile) {
+		LOG_WARN("Could not open logfile: %s", logpath);
+		return;
+	}
+
+	// Replay log buffer
+	for (; !buffered_messages.empty(); buffered_messages.pop())
+		fprintf(logfile, "%s\n", buffered_messages.front().c_str());
+	fflush(logfile);
+}
+
+/**
  * Add a message to the log.
  *
  * @param lvl Verbosity level
@@ -128,10 +153,6 @@ void Log::setQuiet(bool enable) {
  */
 
 void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
-
-	// skip if nothing to write
-	if (!logfile && (lvl < level || quiet)) return;
-
 	// extract file name (like basename)
 	const char *src = strrchr(file, '\\');
 	if (!src) src = strrchr(file, '/');
@@ -141,7 +162,7 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 		src++;
 
 	// get current time
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm *now = localtime(&t);
 
 	// log to console, up to set verbosity
@@ -188,23 +209,35 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 			LOG(" (%s:%d)\n", src, line);
 
 		fflush(stream);
+
+		#undef LOG
 	}
 
 	// Log to file, do debug logs by default, higher if wanted
-	if (logfile && (lvl >= LL_DEBUG || level <= lvl)) {
+	if (lvl >= LL_DEBUG || level <= lvl) {
 		char timebuf[20];
+		char msgstring[1024];
 		strftime(timebuf, 20, "%Y-%m-%d %H:%M:%S", now);
 
-		fprintf(logfile, "%s %-5s %s:%d: ", timebuf, levels[lvl].name, src, line);
+		int len = snprintf(msgstring, sizeof(msgstring), "%s %-5s %s:%d: ", timebuf, levels[lvl].name, src, line);
 
 		va_list args;
 		va_start(args, fmt);
-		vfprintf(logfile, fmt, args);
+		vsnprintf(msgstring + len, sizeof(msgstring) - len, fmt, args);
 		va_end(args);
 
-		fprintf(logfile, "\n");
+		if (logfile) {
+			// print to file
+			fprintf(logfile, "%s\n", msgstring);
+			fflush(logfile);
+		} else {
+			// add to queue
+			buffered_messages.emplace(msgstring);
 
-		fflush(logfile);
+			// trim queue
+			if(buffered_messages.size() > MAX_BUFFERED_MESSAGES)
+				buffered_messages.pop();
+		}
 	}
 
 }
