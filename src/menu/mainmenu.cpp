@@ -45,24 +45,24 @@
 /**
  * Create the main menu.
  */
-MainMenu::MainMenu () {
+MainMenu::MainMenu () :
+	logo(nullptr) {
 
 	File *file;
 	time_t currentTime;
 
 	// Load the OpenJazz logo
 
+	LOG_TRACE("Loading compressed logo.");
 	unsigned char* pixels = new unsigned char[oj_logo.size];
 	size_t res = tinfl_decompress_mem_to_mem(pixels, oj_logo.size, oj_logo.data,
 		oj_logo.compressed_size, TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF|TINFL_FLAG_PARSE_ZLIB_HEADER);
-	if (res == TINFL_DECOMPRESS_MEM_TO_MEM_FAILED || res != oj_logo.size) {
-
-		LOG_WARN("Could not uncompress logo (expected: %d, actual: %zu).", oj_logo.size, res);
-
+	if(res == TINFL_DECOMPRESS_MEM_TO_MEM_FAILED) {
+		LOG_WARN("Could not uncompress logo!");
+	} else if(res != oj_logo.size) {
+		LOG_WARN("Size mismatch while uncompressing logo (expected %d, actual %zu).", oj_logo.size, res);
 	} else {
-
 		logo = createSurface(pixels, oj_logo.width, oj_logo.height);
-
 	}
 	delete[] pixels;
 
