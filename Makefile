@@ -4,7 +4,7 @@
 CXX ?= g++ -std=c++14
 CXXFLAGS ?= -g -Wall -O2
 DEFINES = -DSCALE -DPORTABLE
-CPPFLAGS = $(DEFINES) -Isrc -Iext/scale2x -Iext/psmplug -Iext/miniz -Iext/argparse -Iext/stb
+CPPFLAGS = $(DEFINES) -Isrc -Iext/scale2x -Iext/psmplug -Iext/argparse -Iext/stb -Iext/lodepng -Iext/miniz
 
 # Network support
 CXXFLAGS += -DUSE_SOCKETS
@@ -23,8 +23,10 @@ LIBS += -lm
 # Libraries
 OJEXTLIBOBJ = \
 	ext/argparse/argparse.o \
-	ext/miniz/miniz.o \
 	ext/stb/stb_rect_pack.o \
+	ext/lodepng/lodepng.o \
+	ext/lodepng/lodepng-miniz.o \
+	ext/miniz/miniz.o \
 	ext/psmplug/fastmix.o \
 	ext/psmplug/load_psm.o \
 	ext/psmplug/psmplug.o \

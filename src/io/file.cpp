@@ -365,6 +365,7 @@ void File::skipRLE () {
 }
 
 
+#ifdef ENABLE_JJ2
 /**
  * Load a block of LZ compressed data from the file.
  *
@@ -373,22 +374,21 @@ void File::skipRLE () {
  *
  * @return Buffer containing the uncompressed data
  */
-unsigned char* File::loadLZ (int compressedLength, int length) {
+unsigned char* File::loadLZ (int compressedLength, unsigned int length) {
+	unsigned char* compressedBuffer = loadBlock(compressedLength);
+	unsigned char* buffer = new unsigned char[length];
 
-	unsigned char* compressedBuffer;
-	unsigned char* buffer;
-
-	compressedBuffer = loadBlock(compressedLength);
-
-	buffer = new unsigned char[length];
-
-	uncompress(buffer, (unsigned long int *)&length, compressedBuffer, compressedLength);
+	int res = mz_uncompress(buffer, (unsigned long int *)&length, compressedBuffer, compressedLength);
+	if(res != MZ_OK) {
+		LOG_WARN("Could not uncompress Block: %s (%d)", mz_error(res), res);
+		delete[] buffer;
+		return nullptr;
+	}
 
 	delete[] compressedBuffer;
-
 	return buffer;
-
 }
+#endif
 
 
 /**

@@ -252,7 +252,7 @@ set_property(SOURCE src/main.cpp PROPERTY COMPILE_DEFINITIONS
 	OJ_URL="${PROJECT_HOMEPAGE_URL}"; OJ_BUGREPORT="${OJ_BUGREPORT}")
 
 target_link_libraries(OpenJazz
-	argparse miniz psmplug stb
+	argparse psmplug stb lodepng miniz
 	${OJ_LIBS_SCALE} ${OJ_LIBS_SDL} ${OJ_LIBS_NET} ${OJ_LIBS_HOST})
 
 # platform stuff

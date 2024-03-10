@@ -4,13 +4,6 @@
 add_library(argparse STATIC argparse/argparse.h argparse/argparse.cpp)
 target_include_directories(argparse INTERFACE argparse)
 
-# miniz
-
-add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
-target_compile_definitions(miniz INTERFACE	MINIZ_NO_ARCHIVE_APIS)
-#target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
-target_include_directories(miniz INTERFACE miniz)
-
 # psmplug
 
 add_library(psmplug STATIC
@@ -33,3 +26,27 @@ target_include_directories(psmplug INTERFACE psmplug)
 
 add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp)
 target_include_directories(stb INTERFACE stb)
+
+# miniz
+
+add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
+target_compile_definitions(miniz INTERFACE MINIZ_NO_ARCHIVE_APIS)
+#target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
+target_include_directories(miniz INTERFACE miniz)
+
+# lodepng
+
+add_library(lodepng STATIC
+	lodepng/lodepng.h
+	lodepng/lodepng.cpp
+	lodepng/lodepng-miniz.h
+	lodepng/lodepng-miniz.cpp
+)
+target_compile_definitions(lodepng INTERFACE
+	LODEPNG_NO_COMPILE_ZLIB
+	LODEPNG_NO_COMPILE_DISK
+	LODEPNG_NO_COMPILE_CRC
+	LODEPNG_NO_COMPILE_CPP
+)
+target_include_directories(lodepng INTERFACE lodepng)
+target_link_libraries(lodepng PRIVATE miniz)
