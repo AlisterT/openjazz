@@ -37,6 +37,7 @@ class File {
 	private:
 		FILE* file;
 		char* filePath;
+		bool  forWriting;
 
 		bool open (std::string path, const char* name, bool write);
 
@@ -54,6 +55,7 @@ class File {
 		void               storeShort  (unsigned short int val);
 		signed int         loadInt     ();
 		void               storeInt    (signed int val);
+		void               storeData   (void* data, int length);
 		unsigned char*     loadBlock   (int length);
 		unsigned char*     loadRLE     (int length, bool checkSize = true);
 		void               skipRLE     ();

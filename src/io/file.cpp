@@ -46,7 +46,10 @@
  * @param pathType Kind of directory
  * @param write Whether or not the file can be written to
  */
-File::File (const char* name, int pathType, bool write) {
+File::File (const char* name, int pathType, bool write) :
+	file(nullptr), filePath(nullptr) {
+
+	forWriting = write;
 
 	auto paths = gamePaths.getPaths(pathType);
 	for (const auto &path : paths) {
@@ -87,18 +90,19 @@ File::~File () {
  * @param write Whether or not the file can be written to
  */
 bool File::open (std::string path, const char* name, bool write) {
+	const char *fileMode = write ? "wb": "rb";
 
 	// Create the file path for the given directory
 	filePath = createString(path.c_str(), name);
 
 	// Open the file from the path
-	file = fopen(filePath, write ? "wb": "rb");
+	file = fopen(filePath, fileMode);
 
 #ifdef UPPERCASE_FILENAMES
 	if (!file) {
 
 		uppercaseString(filePath + path.length());
-		file = fopen(filePath, write ? "wb": "rb");
+		file = fopen(filePath, fileMode);
 
 	}
 #endif
@@ -107,7 +111,7 @@ bool File::open (std::string path, const char* name, bool write) {
 	if (!file) {
 
 		lowercaseString(filePath + path.length());
-		file = fopen(filePath, write ? "wb": "rb");
+		file = fopen(filePath, fileMode);
 
 	}
 #endif
@@ -271,6 +275,18 @@ void File::storeInt (signed int val) {
 	fputc((uval >> 8) & 255, file);
 	fputc((uval >> 16) & 255, file);
 	fputc(uval >> 24, file);
+
+}
+
+
+void File::storeData (void* data, int length) {
+
+	if(!forWriting) {
+		LOG_ERROR("File %s not opened for writing!", filePath);
+		return;
+	}
+
+	fwrite (data, length, 1, file);
 
 }
 
