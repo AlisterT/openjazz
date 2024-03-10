@@ -38,32 +38,33 @@
 #include "logo.h"
 #include "version.h"
 
-#include <miniz.h>
+#include <lodepng.h>
 #include <time.h>
 
 
 /**
  * Create the main menu.
  */
-MainMenu::MainMenu () {
+MainMenu::MainMenu () :
+	logo(nullptr) {
 
 	File *file;
 	time_t currentTime;
 
 	// Load the OpenJazz logo
 
-	unsigned char* pixels = new unsigned char[oj_logo.size];
-	size_t res = tinfl_decompress_mem_to_mem(pixels, oj_logo.size, oj_logo.data,
-		oj_logo.compressed_size, TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF|TINFL_FLAG_PARSE_ZLIB_HEADER);
-	if (res == TINFL_DECOMPRESS_MEM_TO_MEM_FAILED || res != oj_logo.size) {
+	size_t len = 0;
+	unsigned char* pixels = nullptr;
 
-		LOG_WARN("Could not uncompress logo (expected: %d, actual: %zu).", oj_logo.size, res);
-
-	} else {
-
+	unsigned int error = lodepng_zlib_decompress(&pixels, &len, oj_logo.data,
+		oj_logo.compressed_size, &lodepng_default_decompress_settings);
+	if(error == 0 && len == oj_logo.size)
 		logo = createSurface(pixels, oj_logo.width, oj_logo.height);
+	if(error != 0)
+		LOG_WARN("Could not uncompress logo: %s (%d)", lodepng_error_text(error), error);
+	if(len != oj_logo.size)
+		LOG_WARN("Size mismatch while uncompressing logo: wanted %d, got %zu.", oj_logo.size, len);
 
-	}
 	delete[] pixels;
 
 	// Load the menu graphics

@@ -31,7 +31,7 @@
 
 #include <string.h>
 #include <unistd.h>
-#include <miniz.h>
+#include <lodepng.h>
 
 #if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
     #define UPPERCASE_FILENAMES
@@ -384,6 +384,7 @@ void File::skipRLE () {
 }
 
 
+#ifdef ENABLE_JJ2
 /**
  * Load a block of LZ compressed data from the file.
  *
@@ -392,22 +393,25 @@ void File::skipRLE () {
  *
  * @return Buffer containing the uncompressed data
  */
-unsigned char* File::loadLZ (int compressedLength, int length) {
+unsigned char* File::loadLZ (int compressedLength, unsigned int length) {
 
-	unsigned char* compressedBuffer;
-	unsigned char* buffer;
+	unsigned char* compressedBuffer = loadBlock(compressedLength);
+	size_t len = 0;
+	unsigned char* buffer = nullptr;
 
-	compressedBuffer = loadBlock(compressedLength);
-
-	buffer = new unsigned char[length];
-
-	uncompress(buffer, (unsigned long int *)&length, compressedBuffer, compressedLength);
+	unsigned int error = lodepng_zlib_decompress(&buffer, &len,
+		compressedBuffer, compressedLength, &lodepng_default_decompress_settings);
+	if(error != 0)
+		LOG_WARN("Could not uncompress Block: %s (%d)", lodepng_error_text(error), error);
+	if(len != length)
+		LOG_WARN("Size mismatch while uncompressing block: wanted %d, got %zu.", length, len);
 
 	delete[] compressedBuffer;
 
 	return buffer;
 
 }
+#endif
 
 
 /**

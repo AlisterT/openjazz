@@ -57,7 +57,9 @@ class File {
 		unsigned char*     loadBlock   (int length);
 		unsigned char*     loadRLE     (int length);
 		void               skipRLE     ();
-		unsigned char*     loadLZ      (int compressedLength, int length);
+#ifdef ENABLE_JJ2
+		unsigned char*     loadLZ      (int compressedLength, unsigned int length);
+#endif
 		char*              loadString  ();
 		SDL_Surface*       loadSurface (int width, int height);
 		unsigned char*     loadPixels  (int length);
