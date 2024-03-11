@@ -368,6 +368,8 @@ void shutDown () {
 
 	closeAudio();
 
+	if (SDL_NumJoysticks() > 0) SDL_JoystickClose(0);
+
 	video.deinit();
 
 	// Save settings to config file
