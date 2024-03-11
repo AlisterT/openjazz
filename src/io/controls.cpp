@@ -25,182 +25,103 @@
 
 #include "controls.h"
 #include "gfx/video.h"
-
+#include "platforms/platforms.h"
 #include "loop.h"
 
-#define DEFAULT_KEY_UP                  (SDLK_UP)
-#define DEFAULT_KEY_DOWN                (SDLK_DOWN)
-#define DEFAULT_KEY_LEFT                (SDLK_LEFT)
-#define DEFAULT_KEY_RIGHT               (SDLK_RIGHT)
-#if defined (_WIN32)
-    #define DEFAULT_KEY_JUMP            (SDLK_RALT)
-    #define DEFAULT_KEY_SWIM            (SDLK_RALT)
-    #define DEFAULT_KEY_FIRE            (SDLK_SPACE)
-    #define DEFAULT_KEY_CHANGE          (SDLK_RCTRL)
-    #define DEFAULT_KEY_ENTER           (SDLK_RETURN)
-    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
-    #define DEFAULT_KEY_STATS           (SDLK_F9)
-    #define DEFAULT_KEY_PAUSE           (SDLK_p)
-    #define DEFAULT_KEY_YES             (SDLK_y)
-    #define DEFAULT_KEY_NO              (SDLK_n)
-#elif defined(DINGOO)
-    #define DEFAULT_KEY_JUMP            (SDLK_LCTRL)
-    #define DEFAULT_KEY_SWIM            (SDLK_LCTRL)
-    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
-    #define DEFAULT_KEY_CHANGE          (SDLK_LSHIFT)
-    #define DEFAULT_KEY_ENTER           (SDLK_LCTRL)
-    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
-    #define DEFAULT_KEY_STATS           (SDLK_TAB)
-    #define DEFAULT_KEY_PAUSE           (SDLK_RETURN)
-    #define DEFAULT_KEY_YES             (SDLK_LCTRL)
-    #define DEFAULT_KEY_NO              (SDLK_LALT)
-#elif defined (ANDROID)
-    #define DEFAULT_KEY_JUMP            (SDLK_SPACE)
-    #define DEFAULT_KEY_SWIM            (SDLK_SPACE)
-    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
-    #define DEFAULT_KEY_CHANGE          (SDLK_RETURN)
-    #define DEFAULT_KEY_ENTER           (SDLK_SPACE)
-    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
-    #define DEFAULT_KEY_STATS           (SDLK_F9)
-    #define DEFAULT_KEY_PAUSE           (SDLK_p)
-    #define DEFAULT_KEY_YES             (SDLK_y)
-    #define DEFAULT_KEY_NO              (SDLK_n)
-#elif defined(GAMESHELL)
-    #define DEFAULT_KEY_JUMP            (SDLK_j)      /* A button */
-    #define DEFAULT_KEY_SWIM            (SDLK_j)      /* A button */
-    #define DEFAULT_KEY_FIRE            (SDLK_k)      /* B button */
-    #define DEFAULT_KEY_CHANGE          (SDLK_o)      /* Y button */
-    #define DEFAULT_KEY_ENTER           (SDLK_RETURN) /* START button */
-    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE) /* MENU button */
-    #define DEFAULT_KEY_STATS           (SDLK_SPACE)  /* SELECT button */
-    #define DEFAULT_KEY_PAUSE           (SDLK_p)
-    #define DEFAULT_KEY_YES             (SDLK_y)
-    #define DEFAULT_KEY_NO              (SDLK_n)
-#else
-    #define DEFAULT_KEY_JUMP            (SDLK_SPACE)
-    #define DEFAULT_KEY_SWIM            (SDLK_SPACE)
-    #define DEFAULT_KEY_FIRE            (SDLK_LALT)
-    #define DEFAULT_KEY_CHANGE          (SDLK_RCTRL)
-    #define DEFAULT_KEY_ENTER           (SDLK_RETURN)
-    #define DEFAULT_KEY_ESCAPE          (SDLK_ESCAPE)
-    #define DEFAULT_KEY_STATS           (SDLK_F9)
-    #define DEFAULT_KEY_PAUSE           (SDLK_p)
-    #define DEFAULT_KEY_YES             (SDLK_y)
-    #define DEFAULT_KEY_NO              (SDLK_n)
+#define DEFAULT_KEY_UP         (SDLK_UP)
+#define DEFAULT_KEY_DOWN       (SDLK_DOWN)
+#define DEFAULT_KEY_LEFT       (SDLK_LEFT)
+#define DEFAULT_KEY_RIGHT      (SDLK_RIGHT)
+#if defined(_WIN32)
+    #define DEFAULT_KEY_JUMP   (SDLK_RALT)
+    #define DEFAULT_KEY_SWIM   (SDLK_RALT)
+    #define DEFAULT_KEY_FIRE   (SDLK_SPACE)
+#elif defined(ANDROID)
+    #define DEFAULT_KEY_CHANGE (SDLK_RETURN)
+    #define DEFAULT_KEY_ENTER  (SDLK_SPACE)
+#endif
+
+/* Default keyboard config */
+#ifndef DEFAULT_KEY_JUMP
+#define DEFAULT_KEY_JUMP       (SDLK_SPACE)
+#endif
+#ifndef DEFAULT_KEY_SWIM
+#define DEFAULT_KEY_SWIM       (SDLK_SPACE)
+#endif
+#ifndef DEFAULT_KEY_FIRE
+#define DEFAULT_KEY_FIRE       (SDLK_LALT)
+#endif
+#ifndef DEFAULT_KEY_CHANGE
+#define DEFAULT_KEY_CHANGE     (SDLK_RCTRL)
+#endif
+#ifndef DEFAULT_KEY_ENTER
+#define DEFAULT_KEY_ENTER      (SDLK_RETURN)
+#endif
+#ifndef DEFAULT_KEY_ESCAPE
+#define DEFAULT_KEY_ESCAPE     (SDLK_ESCAPE)
+#endif
+#ifndef DEFAULT_KEY_STATS
+#define DEFAULT_KEY_STATS      (SDLK_F9)
+#endif
+#ifndef DEFAULT_KEY_PAUSE
+#define DEFAULT_KEY_PAUSE      (SDLK_p)
+#endif
+#ifndef DEFAULT_KEY_YES
+#define DEFAULT_KEY_YES        (SDLK_y)
+#endif
+#ifndef DEFAULT_KEY_NO
+#define DEFAULT_KEY_NO         (SDLK_n)
 #endif
 
 /* These are optional */
-#define DEFAULT_KEY_BLASTER             (SDLK_1)
-#define DEFAULT_KEY_TOASTER             (SDLK_2)
-#define DEFAULT_KEY_MISSILE             (SDLK_3)
-#define DEFAULT_KEY_BOUNCER             (SDLK_4)
-#define DEFAULT_KEY_TNT                 (SDLK_5)
+#define DEFAULT_KEY_BLASTER     (SDLK_1)
+#define DEFAULT_KEY_TOASTER     (SDLK_2)
+#define DEFAULT_KEY_MISSILE     (SDLK_3)
+#define DEFAULT_KEY_BOUNCER     (SDLK_4)
+#define DEFAULT_KEY_TNT         (SDLK_5)
 
-#if defined(GP2X) || defined(WIZ)
-    #define DEFAULT_BUTTON_UP           (0)
-    #define DEFAULT_BUTTON_DOWN         (4)
-    #define DEFAULT_BUTTON_LEFT         (2)
-    #define DEFAULT_BUTTON_RIGHT        (6)
-    #define DEFAULT_BUTTON_JUMP         (12)    /* A */
-    #define DEFAULT_BUTTON_SWIM         (12)    /* A */
-    #define DEFAULT_BUTTON_FIRE         (14)    /* X */
-    #define DEFAULT_BUTTON_CHANGE       (15)    /* Y */
-    #define DEFAULT_BUTTON_ESCAPE       (10)    /* L */
-    #define DEFAULT_BUTTON_ENTER        (11)    /* R */
-    #define DEFAULT_BUTTON_PAUSE        (8)     /* Start */
-    #define DEFAULT_BUTTON_STATS        (9)     /* Select */
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#elif defined(CAANOO)
-    #define DEFAULT_BUTTON_UP           (-1)
-    #define DEFAULT_BUTTON_DOWN         (-1)
-    #define DEFAULT_BUTTON_LEFT         (-1)
-    #define DEFAULT_BUTTON_RIGHT        (-1)
-    #define DEFAULT_BUTTON_JUMP         (0)     /* A? */
-    #define DEFAULT_BUTTON_SWIM         (0)     /* A? */
-    #define DEFAULT_BUTTON_FIRE         (1)     /* X? */
-    #define DEFAULT_BUTTON_CHANGE       (3)     /* Y? */
-    #define DEFAULT_BUTTON_ESCAPE       (6)     /* Home */
-    #define DEFAULT_BUTTON_ENTER        (5)     /* R? */
-    #define DEFAULT_BUTTON_PAUSE        (9)     /* Help 2 */
-    #define DEFAULT_BUTTON_STATS        (8)     /* Help 1 */
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#elif defined(PSP)
-    #define DEFAULT_BUTTON_UP           (8)
-    #define DEFAULT_BUTTON_DOWN         (6)
-    #define DEFAULT_BUTTON_LEFT         (7)
-    #define DEFAULT_BUTTON_RIGHT        (9)
-    #define DEFAULT_BUTTON_JUMP         (2)
-    #define DEFAULT_BUTTON_SWIM         (2)
-    #define DEFAULT_BUTTON_FIRE         (3)
-    #define DEFAULT_BUTTON_CHANGE       (0)
-    #define DEFAULT_BUTTON_ENTER        (5)
-    #define DEFAULT_BUTTON_ESCAPE       (4)
-    #define DEFAULT_BUTTON_STATS        (10)
-    #define DEFAULT_BUTTON_PAUSE        (11)
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#elif defined(__wii__)
-    #define DEFAULT_BUTTON_UP           (-1)
-    #define DEFAULT_BUTTON_DOWN         (-1)
-    #define DEFAULT_BUTTON_LEFT         (-1)
-    #define DEFAULT_BUTTON_RIGHT        (-1)
-    #define DEFAULT_BUTTON_JUMP         (2)
-    #define DEFAULT_BUTTON_SWIM         (2)
-    #define DEFAULT_BUTTON_FIRE         (3)
-    #define DEFAULT_BUTTON_CHANGE       (0)
-    #define DEFAULT_BUTTON_ENTER        (3)
-    #define DEFAULT_BUTTON_ESCAPE       (6)
-    #define DEFAULT_BUTTON_STATS        (4)
-    #define DEFAULT_BUTTON_PAUSE        (5)
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#elif defined (_3DS)
-    #define DEFAULT_BUTTON_UP           (-1)
-    #define DEFAULT_BUTTON_DOWN         (-1)
-    #define DEFAULT_BUTTON_LEFT         (-1)
-    #define DEFAULT_BUTTON_RIGHT        (-1)
-    #define DEFAULT_BUTTON_JUMP         (2)    /* B */
-    #define DEFAULT_BUTTON_SWIM         (2)    /* B */
-    #define DEFAULT_BUTTON_FIRE         (4)    /* Y */
-    #define DEFAULT_BUTTON_CHANGE       (3)    /* X */
-    #define DEFAULT_BUTTON_ENTER        (1)    /* A */
-    #define DEFAULT_BUTTON_ESCAPE       (7)    /* Select */
-    #define DEFAULT_BUTTON_STATS        (5)    /* L */
-    #define DEFAULT_BUTTON_PAUSE        (8)    /* Start */
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#elif defined(__vita__)
-    #define DEFAULT_BUTTON_UP           (8)
-    #define DEFAULT_BUTTON_DOWN         (6)
-    #define DEFAULT_BUTTON_LEFT         (7)
-    #define DEFAULT_BUTTON_RIGHT        (9)
-    #define DEFAULT_BUTTON_JUMP         (2)
-    #define DEFAULT_BUTTON_SWIM         (1)
-    #define DEFAULT_BUTTON_FIRE         (3)
-    #define DEFAULT_BUTTON_CHANGE       (0)
-    #define DEFAULT_BUTTON_ENTER        (5)
-    #define DEFAULT_BUTTON_ESCAPE       (4)
-    #define DEFAULT_BUTTON_STATS        (10)
-    #define DEFAULT_BUTTON_PAUSE        (11)
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
-#else
-    #define DEFAULT_BUTTON_UP           (-1)
-    #define DEFAULT_BUTTON_DOWN         (-1)
-    #define DEFAULT_BUTTON_LEFT         (-1)
-    #define DEFAULT_BUTTON_RIGHT        (-1)
-    #define DEFAULT_BUTTON_JUMP         (1)
-    #define DEFAULT_BUTTON_SWIM         (1)
-    #define DEFAULT_BUTTON_FIRE         (0)
-    #define DEFAULT_BUTTON_CHANGE       (3)
-    #define DEFAULT_BUTTON_ENTER        (0)
-    #define DEFAULT_BUTTON_ESCAPE       (5)
-    #define DEFAULT_BUTTON_STATS        (-1)
-    #define DEFAULT_BUTTON_PAUSE        (4)
-    #define DEFAULT_BUTTON_YES          (-1)
-    #define DEFAULT_BUTTON_NO           (-1)
+/* Arbitrary default button config */
+#ifndef DEFAULT_BUTTON_UP
+#define DEFAULT_BUTTON_UP       (-1)
+#endif
+#ifndef DEFAULT_BUTTON_DOWN
+#define DEFAULT_BUTTON_DOWN     (-1)
+#endif
+#ifndef DEFAULT_BUTTON_LEFT
+#define DEFAULT_BUTTON_LEFT     (-1)
+#endif
+#ifndef DEFAULT_BUTTON_RIGHT
+#define DEFAULT_BUTTON_RIGHT    (-1)
+#endif
+#ifndef DEFAULT_BUTTON_JUMP
+#define DEFAULT_BUTTON_JUMP     (1)
+#endif
+#ifndef DEFAULT_BUTTON_SWIM
+#define DEFAULT_BUTTON_SWIM     (1)
+#endif
+#ifndef DEFAULT_BUTTON_FIRE
+#define DEFAULT_BUTTON_FIRE     (0)
+#endif
+#ifndef DEFAULT_BUTTON_CHANGE
+#define DEFAULT_BUTTON_CHANGE   (3)
+#endif
+#ifndef DEFAULT_BUTTON_ENTER
+#define DEFAULT_BUTTON_ENTER    (0)
+#endif
+#ifndef DEFAULT_BUTTON_ESCAPE
+#define DEFAULT_BUTTON_ESCAPE   (5)
+#endif
+#ifndef DEFAULT_BUTTON_STATS
+#define DEFAULT_BUTTON_STATS    (-1)
+#endif
+#ifndef DEFAULT_BUTTON_PAUSE
+#define DEFAULT_BUTTON_PAUSE    (4)
+#endif
+#ifndef DEFAULT_BUTTON_YES
+#define DEFAULT_BUTTON_YES      (-1)
+#endif
+#ifndef DEFAULT_BUTTON_NO
+#define DEFAULT_BUTTON_NO       (-1)
 #endif
 
 
