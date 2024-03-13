@@ -6,7 +6,7 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
- * Copyright (c) 2015-2023 Carsten Teibes
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -33,6 +33,18 @@ void N3DS_Exit() {
 void N3DS_AddGamePaths() {
 	gamePaths.add(createString("sdmc:/3ds/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 	gamePaths.add(createString("romfs:/"), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
+}
+
+
+void N3DS_ErrorNoDatafiles() {
+	errorConf errCnf;
+	const char *error = "Unable to find game data files.\n\n"
+		"Game files can be shipped inside RomFS and are searched under\n"
+		"sdmc:/3ds/OpenJazz/";
+
+	errorInit(&errCnf, ERROR_TEXT_WORD_WRAP, CFG_LANGUAGE_EN);
+	errorText(&errCnf, error);
+	errorDisp(&errCnf);
 }
 
 int N3DS_InputIP(char*& current_ip, char*& new_ip) {
