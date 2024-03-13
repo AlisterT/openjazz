@@ -98,7 +98,9 @@ inline void PLATFORM_ErrorNoDatafiles() {
 	PSP_ErrorNoDatafiles();
 #endif
 
-	//FIXME: add SDL2 error message box
+#ifdef _3DS
+	N3DS_ErrorNoDatafiles();
+#endif
 }
 
 #endif

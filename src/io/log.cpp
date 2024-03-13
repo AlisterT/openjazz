@@ -172,7 +172,7 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 #ifdef __vita__
 		// use an immediate buffer for output
 		char outbuffer[1024];
-		vsprintf(outbuffer, fmt, args);
+		vsnprintf(outbuffer, sizeof(outbuffer), fmt, args);
 		LOG(outbuffer);
 #else
 		vfprintf(stream, fmt, args);
