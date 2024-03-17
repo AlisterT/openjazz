@@ -5,6 +5,8 @@ openjazz.log
 *.a
 *.o
 
+.mk-stamp-depr
+
 # CMake
 CMakeCache.txt
 CMakeFiles/
@@ -13,6 +15,11 @@ CMakeFiles/
 ext/Makefile
 build.ninja
 CMakeUserPresets.json
+
+build-debug/
+build-*-debug/
+build-release/
+build-*-release/
 
 # homebrew
 *.elf
@@ -37,6 +44,11 @@ EBOOT.PBP
 
 # macos
 .DS_Store
+
+# Android
+builds/android/.gradle/
+builds/android/app/.cxx/
+build-android/
 
 # distribution archives
 openjazz-*.tar.*
