@@ -19,7 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # OpenJazz
 
-add_executable(OpenJazz
+set(OJ_SOURCES
 	# main engine
 	src/game/clientgame.cpp
 	src/game/game.cpp
@@ -105,6 +105,14 @@ add_executable(OpenJazz
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
 	src/jj1/scene/jj1sceneload.cpp)
+if(ANDROID)
+	add_library(OpenJazz SHARED ${OJ_SOURCES})
+
+	enable_language(C)
+	set(BUILD_SHARED_LIBS ON)
+else()
+	add_executable(OpenJazz ${OJ_SOURCES})
+endif()
 target_include_directories(OpenJazz PUBLIC src)
 
 # portable mode
@@ -128,9 +136,16 @@ if(DATAPATH)
 	target_compile_definitions(OpenJazz PRIVATE DATAPATH="${DATAPATH}")
 endif()
 
-# libraries
+# bundled libraries
 
-if(EMSCRIPTEN)
+add_subdirectory(ext)
+
+# external libraries
+
+if(ANDROID)
+	set(OJ_LIBS_SDL SDL2)
+	set(SDL_STATUS "SDL2 (bundled)")
+elseif(EMSCRIPTEN)
 	# emscripten ships a "port" of SDL2
 	set(OJ_LIBS_SDL "SDL2")
 	set(SDL_STATUS "SDL2 (emscripten port)")
@@ -146,10 +161,6 @@ else()
 	set(OJ_LIBS_SDL ${SDL2_LIBRARIES})
 	set(SDL_STATUS "SDL2")
 endif()
-
-# common bundled libraries
-
-add_subdirectory(ext)
 
 # network
 
@@ -323,6 +334,11 @@ elseif(HAIKU)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/haiku.cpp
 		src/platforms/haiku.h)
+elseif(ANDROID)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/android.cpp
+		src/platforms/android.h)
+	target_link_libraries(OpenJazz -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid)
 elseif(UNIX)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/xdg.cpp
@@ -376,6 +392,8 @@ elseif(RISCOS)
 		DESTINATION !OpenJazz COMPONENT riscos)
 elseif(PANDORA OR CANOO OR WIZ OR GP2X OR DINGOO OR GAMESHELL)
 	# left blank for the moment (TODO: opk?)
+elseif(ANDROID)
+	# intentionally disabled
 elseif(UNIX)
 	include(GNUInstallDirs)
 

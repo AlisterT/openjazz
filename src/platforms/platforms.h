@@ -27,6 +27,13 @@
 #include "symbian.h"
 #include "emscripten.h"
 #include "xdg.h"
+#include "android.h"
+#include <SDL.h>
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	#define OJ_SDL2 1
+#else
+	#define OJ_SDL2 0
+#endif
 
 /* additional homebrew platforms */
 
@@ -152,6 +159,10 @@ inline void PLATFORM_AddGamePaths() {
 	SYMBIAN_AddGamePaths();
 #endif
 
+#ifdef __ANDROID__
+	ANDROID_AddGamePaths();
+#endif
+
 // using __unix__ might add too much
 #if (__linux__ && !__ANDROID__) || __FreeBSD__ || __OpenBSD__
 	#ifndef PORTABLE
@@ -164,14 +175,25 @@ inline void PLATFORM_AddGamePaths() {
 inline void PLATFORM_ErrorNoDatafiles() {
 #ifdef __HAIKU__
 	HAIKU_ErrorNoDatafiles();
+	return;
 #endif
 
 #ifdef PSP
 	PSP_ErrorNoDatafiles();
+	return;
 #endif
 
 #ifdef _3DS
 	N3DS_ErrorNoDatafiles();
+	return;
+#endif
+
+#if OJ_SDL2
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+		"OpenJazz",
+		"Unable to find game data files. When launching OpenJazz, \n"
+		"pass the location of the original game data, eg:\n"
+		"  OpenJazz ~/jazz1", nullptr);
 #endif
 }
 

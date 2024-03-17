@@ -47,6 +47,13 @@ elseif(PSP)
 	set(OJ_HOST "PSP")
 	#set(OJ_ALLOW_NEW_SDL TRUE) # fixme
 	set(OJ_ALLOW_SCALE OFF)
+elseif(ANDROID)
+	set(OJ_HOST "Android")
+	set(OJ_ALLOW_NEW_SDL TRUE)
+
+	# armeabi-v7a requires cpufeatures library
+	include(AndroidNdkModules)
+	android_ndk_import_module_cpufeatures()
 endif()
 
 if(NINTENDO_3DS OR NINTENDO_WII OR PSP)

@@ -30,8 +30,11 @@
 #include <psp2/kernel/clib.h>
 #endif
 
-namespace {
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
 
+namespace {
 	struct level_info {
 		const char *name;
 		const char *color;
@@ -163,6 +166,27 @@ void Log::setFileReady() {
  */
 
 void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
+#ifdef __ANDROID__
+	// on android write only to journal, and do not spew for release builds
+	int maxlvl = LL_TRACE; //level;
+	#ifdef NDEBUG
+	maxlvl = LL_WARN;
+	#endif
+	// log up to set verbosity
+	if(lvl < maxlvl) return;
+
+	// use an immediate buffer for output
+	char outbuffer[1024];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(outbuffer, sizeof(outbuffer), fmt, args);
+	va_end(args);
+
+	__android_log_write((lvl == LL_ERROR) ? ANDROID_LOG_ERROR :
+		(lvl == LL_WARN) ? ANDROID_LOG_WARN :
+		(lvl == LL_INFO) ? ANDROID_LOG_INFO : ANDROID_LOG_DEBUG,
+		"OpenJazz", outbuffer);
+#else
 	// extract file name (like basename)
 	const char *src = strrchr(file, '\\');
 	if (!src) src = strrchr(file, '/');
@@ -184,12 +208,12 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 			stream = stderr;
 			color = color_stderr;
 		}
-#ifdef __vita__
+#  ifdef __vita__
 		// on vita we can only read stdout easily (with psp2shell)
 		#define LOG(...) sceClibPrintf(__VA_ARGS__)
-#else
+#  else
 		#define LOG(...) fprintf(stream, __VA_ARGS__)
-#endif
+#  endif
 		char timebuf[9];
 		strftime(timebuf, 9, "%H:%M:%S", now);
 
@@ -200,14 +224,14 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 
 		va_list args;
 		va_start(args, fmt);
-#ifdef __vita__
+#  ifdef __vita__
 		// use an immediate buffer for output
 		char outbuffer[1024];
 		vsnprintf(outbuffer, sizeof(outbuffer), fmt, args);
 		LOG(outbuffer);
-#else
+#  else
 		vfprintf(stream, fmt, args);
-#endif
+#  endif
 		va_end(args);
 
 		// only include source information if doing debug logs
@@ -253,4 +277,5 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 			message_buffer_index = (message_buffer_index + 1) % MAX_BUFFERED_MESSAGES;
 		}
 	}
+#endif
 }

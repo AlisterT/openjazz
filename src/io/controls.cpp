@@ -36,9 +36,6 @@
     #define DEFAULT_KEY_JUMP   (SDLK_RALT)
     #define DEFAULT_KEY_SWIM   (SDLK_RALT)
     #define DEFAULT_KEY_FIRE   (SDLK_SPACE)
-#elif defined(ANDROID)
-    #define DEFAULT_KEY_CHANGE (SDLK_RETURN)
-    #define DEFAULT_KEY_ENTER  (SDLK_SPACE)
 #endif
 
 /* Default keyboard config */
