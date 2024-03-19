@@ -12,15 +12,24 @@
  */
 
 
-#ifndef _SYMBIAN_H
-#define _SYMBIAN_H
+#ifndef OJ_SYMBIAN_H
+#define OJ_SYMBIAN_H
+
+#include "platform_interface.h"
 
 #ifdef __SYMBIAN32__
 
-extern char KOpenJazzPath[256];
 extern float sinf (float);
 
-void SYMBIAN_AddGamePaths();
+// audio config
+
+#define SOUND_FREQ 22050
+#define MUSIC_SETTINGS 1 // Mid
+
+class SymbianPlatform final : public IPlatform {
+	public:
+		void AddGamePaths() override;
+};
 
 #endif
 

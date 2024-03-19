@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include "io/sound.h"
 
-void WIZ_AdjustVolume(int direction) {
+void WizPlatform::AdjustVolume(int direction) {
 	if(direction != VOLUME_NOCHG) {
 		if(volume <= 10) {
 			if(direction == VOLUME_UP)   volume += VOLUME_CHANGE_RATE/2;

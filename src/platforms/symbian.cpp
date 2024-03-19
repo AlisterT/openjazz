@@ -24,6 +24,7 @@
 #include <BAUTILS.H>
 #include <e32math.h>
 
+#include "symbian.h"
 #include "util.h"
 #include "io/file.h"
 
@@ -142,7 +143,7 @@ float sinf(float value)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void SYMBIAN_AddGamePaths() {
+void SymbianPlatform::AddGamePaths() {
 
 #ifdef UIQ3
 	gamePaths.add(createString("c:\\shared\\openjazz\\"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);

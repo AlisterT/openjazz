@@ -23,18 +23,20 @@
 #include "io/file.h"
 #include "io/log.h"
 
-static struct {
-	const char *env;
-	const char *relPath;
-	int type;
-	bool create;
-} xdgSpec[] = {
-	{"XDG_CONFIG_HOME", "/.config", PATH_TYPE_CONFIG, true},
-	{"XDG_CACHE_HOME", "/.cache", PATH_TYPE_TEMP, true},
-	{"XDG_DATA_HOME", "/.local/share", PATH_TYPE_GAME, false}
-};
+namespace {
+	static struct {
+		const char *env;
+		const char *relPath;
+		int type;
+		bool create;
+	} xdgSpec[] = {
+		{"XDG_CONFIG_HOME", "/.config", PATH_TYPE_CONFIG, true},
+		{"XDG_CACHE_HOME", "/.cache", PATH_TYPE_TEMP, true},
+		{"XDG_DATA_HOME", "/.local/share", PATH_TYPE_GAME, false}
+	};
+}
 
-void XDG_AddGamePaths() {
+void XDGPlatform::AddGamePaths() {
 	// first get home directory, will be useful later and serves as sanity check
 	const char *homeDir = getenv("HOME");
 	if (!homeDir) {

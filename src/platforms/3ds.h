@@ -14,20 +14,12 @@
  */
 
 
-#ifndef _3DS_H
-#define _3DS_H
+#ifndef OJ_3DS_H
+#define OJ_3DS_H
 
-#ifdef _3DS
+#include "platform_interface.h"
 
-void N3DS_Init();
-void N3DS_Exit();
-
-void N3DS_AddGamePaths();
-
-void N3DS_ErrorNoDatafiles();
-
-int N3DS_InputIP(char*& current_ip, char*& new_ip);
-int N3DS_InputString(const char* hint, char*& current_string, char*& new_string);
+#ifdef __3DS__
 
 // video config (SDL1.2)
 
@@ -36,6 +28,16 @@ int N3DS_InputString(const char* hint, char*& current_string, char*& new_string)
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 #define FULLSCREEN_FLAGS (SDL_SWSURFACE | SDL_TOPSCR | SDL_CONSOLEBOTTOM)
+
+// audio config
+
+#define SOUND_FREQ 22050
+#define SOUND_SAMPLES 1024
+#define MUSIC_SETTINGS 1 // mid
+
+// keyboard config
+
+#define NO_KEYBOARD_CFG
 
 // controller config (SDL1.2)
 
@@ -47,6 +49,19 @@ int N3DS_InputString(const char* hint, char*& current_string, char*& new_string)
 #define DEFAULT_BUTTON_ESCAPE (7) /* Select */
 #define DEFAULT_BUTTON_STATS  (5) /* L */
 #define DEFAULT_BUTTON_PAUSE  (8) /* Start */
+
+class N3dsPlatform final : public IPlatform {
+	public:
+		N3dsPlatform();
+		~N3dsPlatform();
+
+		void AddGamePaths() override;
+
+		void ErrorNoDatafiles() override;
+
+		bool InputIP(char*& current_ip, char*& new_ip) override;
+		bool InputString(const char* hint, char*& current_string, char*& new_string) override;
+};
 
 #endif
 

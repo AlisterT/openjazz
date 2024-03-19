@@ -35,11 +35,7 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
-#ifdef _3DS
-	#include "platforms/3ds.h"
-#elif defined(__vita__)
-	#include "platforms/psvita.h"
-#endif
+#include "platforms/platforms.h"
 
 #include <string.h>
 
@@ -176,29 +172,18 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	char *input;
 
-#ifdef _3DS
+#if defined(__3DS__)||defined(__vita__)
 
-	int res;
+	bool res;
 
+#ifdef __3DS__
 	if (ip)
-		res = N3DS_InputIP(text, input);
+		res = platform->InputIP(text, input);
 	else
-		res = N3DS_InputString(request, text, input);
+#endif
+		res = platform->InputString(request, text, input);
 
 	if (res) {
-
-		playConfirmSound();
-
-		delete[] text;
-		text = input;
-
-		return E_NONE;
-
-	}
-
-#elif defined(__vita__)
-
-	if (PSVITA_InputString(request, text, input)) {
 
 		playConfirmSound();
 

@@ -15,28 +15,28 @@
 
 #include "3ds.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 
 #include <3ds.h>
 #include "util.h"
 #include "io/file.h"
 
-void N3DS_Init() {
+N3dsPlatform::N3dsPlatform() {
 	// file system
 	romfsInit();
 }
 
-void N3DS_Exit() {
+N3dsPlatform::~N3dsPlatform() {
 	romfsExit();
 }
 
-void N3DS_AddGamePaths() {
+void N3dsPlatform::AddGamePaths() {
 	gamePaths.add(createString("sdmc:/3ds/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 	gamePaths.add(createString("romfs:/"), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 }
 
 
-void N3DS_ErrorNoDatafiles() {
+void N3dsPlatform::ErrorNoDatafiles() {
 	errorConf errCnf;
 	const char *error = "Unable to find game data files.\n\n"
 		"Game files can be shipped inside RomFS and are searched under\n"
@@ -47,7 +47,7 @@ void N3DS_ErrorNoDatafiles() {
 	errorDisp(&errCnf);
 }
 
-int N3DS_InputIP(char*& current_ip, char*& new_ip) {
+bool N3dsPlatform::InputIP(char*& current_ip, char*& new_ip) {
 
 	SwkbdState swkbd;
 	char ip_buf[16];
@@ -63,32 +63,29 @@ int N3DS_InputIP(char*& current_ip, char*& new_ip) {
 	button = swkbdInputText(&swkbd, ip_buf, sizeof(ip_buf));
 	if (button == SWKBD_BUTTON_CONFIRM) {
 		new_ip = createString(ip_buf);
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 
 }
 
-static SwkbdCallbackResult StringFilter(void*, const char** ppMessage, const char* text, size_t textlen) {
+namespace {
+	static SwkbdCallbackResult StringFilter(void*, const char** ppMessage, const char* text, size_t textlen) {
+		for (size_t i = 0; i < textlen; i++) {
+			if ((text[i] != ' ') && (text[i] != '.') &&
+				((text[i] < '0') || (text[i] > '9')) &&
+				((text[i] < 'a') || (text[i] > 'z'))) {
 
-	for (size_t i = 0; i < textlen; i++) {
-
-		if ((text[i] != ' ') && (text[i] != '.') &&
-			((text[i] < '0') || (text[i] > '9')) &&
-			((text[i] < 'a') || (text[i] > 'z'))) {
-
-			*ppMessage = "Invalid character(s) found.\nOnly a-z, 0-9, Dot and Space\nare allowed.";
-			return SWKBD_CALLBACK_CONTINUE;
-
+				*ppMessage = "Invalid character(s) found.\nOnly a-z, 0-9, Dot and Space\nare allowed.";
+				return SWKBD_CALLBACK_CONTINUE;
+			}
 		}
-
+		return SWKBD_CALLBACK_OK;
 	}
-
-	return SWKBD_CALLBACK_OK;
 }
 
-int N3DS_InputString(const char* hint, char*& current_string, char*& new_string) {
+bool N3dsPlatform::InputString(const char* hint, char*& current_string, char*& new_string) {
 
 	SwkbdState swkbd;
 	char string_buf[STRING_LENGTH + 1];
@@ -98,15 +95,15 @@ int N3DS_InputString(const char* hint, char*& current_string, char*& new_string)
 	swkbdSetInitialText(&swkbd, current_string);
 	swkbdSetHintText(&swkbd, hint);
 	swkbdSetValidation(&swkbd, SWKBD_NOTEMPTY_NOTBLANK, 0, 0);
-	swkbdSetFilterCallback(&swkbd, StringFilter, NULL);
+	swkbdSetFilterCallback(&swkbd, StringFilter, nullptr);
 
 	button = swkbdInputText(&swkbd, string_buf, sizeof(string_buf));
 	if (button == SWKBD_BUTTON_CONFIRM) {
 		new_string = createString(string_buf);
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 
 }
 

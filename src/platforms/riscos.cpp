@@ -20,7 +20,7 @@
 #include "util.h"
 #include "io/file.h"
 
-void RISCOS_AddGamePaths() {
+void RiscosPlatform::AddGamePaths() {
 	gamePaths.add(createString("/<Choices$Write>/OpenJazz/"), PATH_TYPE_CONFIG);
 }
 

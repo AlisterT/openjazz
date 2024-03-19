@@ -23,7 +23,7 @@
 #include "util.h"
 #include "io/file.h"
 
-void WII_Init() {
+WiiPlatform::WiiPlatform() {
 	// enable file system
 	fatInitDefault();
 
@@ -41,7 +41,7 @@ void WII_Init() {
 #endif
 }
 
-void WII_AddGamePaths() {
+void WiiPlatform::AddGamePaths() {
 	gamePaths.add(createString("sd:/apps/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 }
 

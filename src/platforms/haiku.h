@@ -14,14 +14,19 @@
  */
 
 
-#ifndef _HAIKU_H
-#define _HAIKU_H
+#ifndef OJ_HAIKU_H
+#define OJ_HAIKU_H
+
+#include "platform_interface.h"
 
 #ifdef __HAIKU__
 
-void HAIKU_AddGamePaths();
+class HaikuPlatform final : public IPlatform {
+	public:
+		void AddGamePaths() override;
 
-void HAIKU_ErrorNoDatafiles();
+		void ErrorNoDatafiles() override;
+};
 
 #endif
 

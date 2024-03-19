@@ -56,7 +56,7 @@
 	#ifndef MSG_NOSIGNAL
 		#define MSG_NOSIGNAL 0
 	#endif
-	#ifdef _3DS
+	#ifdef __3DS__
 		#include <3ds.h>
 		#include <fcntl.h>
 		#include <malloc.h>
@@ -81,7 +81,7 @@ Network::Network () {
 
 	// Start Windows Sockets
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
-	#elif defined(_3DS)
+	#elif defined(__3DS__)
 	socBuffer = static_cast<u32*>(memalign(0x1000, SOC_BUFFERSIZE));
 	socInit(socBuffer, SOC_BUFFERSIZE);
 	#endif
@@ -107,7 +107,7 @@ Network::~Network () {
 	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
-	#elif defined(_3DS)
+	#elif defined(__3DS__)
 	socExit();
 	free(socBuffer);
 	#endif
@@ -136,7 +136,7 @@ int Network::host () {
 
 
 	// Make the socket non-blocking
-#ifdef _3DS
+#ifdef __3DS__
 	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
 #else
 	int nonblock = 1;
@@ -204,7 +204,7 @@ int Network::join (char *address) {
 	if (sock == -1) return E_N_SOCKET;
 
 	// Make socket non-blocking
-#ifdef _3DS
+#ifdef __3DS__
 	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
 #else
 	con = 1;
@@ -321,7 +321,7 @@ int Network::accept (int sock) {
 	if (clientSocket != -1) {
 
 		// Make the socket non-blocking
-#ifdef _3DS
+#ifdef __3DS__
 		fcntl(clientSocket, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
 #else
 		length = 1;

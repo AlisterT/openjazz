@@ -14,12 +14,17 @@
  */
 
 
-#ifndef _RISCOS_H
-#define _RISCOS_H
+#ifndef OJ_RISCOS_H
+#define OJ_RISCOS_H
+
+#include "platform_interface.h"
 
 #ifdef __riscos__
 
-void RISCOS_AddGamePaths();
+class RiscosPlatform final : public IPlatform {
+	public:
+		void AddGamePaths() override;
+};
 
 #endif
 

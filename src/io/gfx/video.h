@@ -18,19 +18,14 @@
  *
  */
 
-#ifndef _VIDEO_H
-#define _VIDEO_H
+#ifndef OJ_VIDEO_H
+#define OJ_VIDEO_H
 
 #include "setup.h"
 #include "paletteeffects.h"
 #include "platforms/platforms.h"
 
 #include <SDL.h>
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	#define OJ_SDL2 1
-#else
-	#define OJ_SDL2 0
-#endif
 
 // Constants
 
@@ -58,7 +53,14 @@
 #endif
 
 // Fullscreen and Window flags are only for SDL1.2 currently
-#if !OJ_SDL2
+#if OJ_SDL2
+	#ifdef WINDOWED_FLAGS
+		#pragma message Ignoring WINDOWED_FLAGS when building with SDL2
+	#endif
+	#ifdef FULLSCREEN_FLAGS
+		#pragma message Ignoring FULLSCREEN_FLAGS when building with SDL2
+	#endif
+#else
 	#ifndef WINDOWED_FLAGS
 		#define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
 	#endif

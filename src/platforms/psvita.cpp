@@ -14,7 +14,6 @@
  */
 
 #include "psvita.h"
-#include "util.h"
 
 #ifdef __vita__
 
@@ -25,29 +24,24 @@
 #include "util.h"
 #include "io/file.h"
 
-void PSVITA_Init() {
-
+VitaPlatform::VitaPlatform() {
 	// controls
 
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
-
 }
 
-void PSVITA_AddGamePaths() {
+void VitaPlatform::AddGamePaths() {
 	gamePaths.add(createString("ux0:data/jazz/"), PATH_TYPE_CONFIG);
 }
 
-int PSVITA_InputString(const char* hint, char*& current_string, char*& new_string) {
-
+bool VitaPlatform::InputString(const char* hint, char*& current_string, char*& new_string) {
 	char* text = kbdvita_get(hint, current_string, STRING_LENGTH);
 	if (text != NULL) {
 		new_string = createString(text);
-		return 1;
+		return true;
 	}
-
-	return 0;
-
+	return false;
 }
 
 #endif
