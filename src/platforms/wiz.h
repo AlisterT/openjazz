@@ -12,10 +12,12 @@
  */
 
 
-#ifndef _WIZ_H
-#define _WIZ_H
+#ifndef OJ_WIZ_H
+#define OJ_WIZ_H
 
 #if defined(WIZ) || defined(GP2X)
+
+// TODO: move this out ouf main loop
 
 #define GP2X_BUTTON_VOLUP           (16)
 #define GP2X_BUTTON_VOLDOWN         (17)
@@ -27,7 +29,9 @@
 #define VOLUME_DOWN 1
 #define VOLUME_UP 2
 
-void WIZ_AdjustVolume(int direction);
+namespace WizPlatform {
+	void AdjustVolume(int direction);
+}
 
 #endif
 

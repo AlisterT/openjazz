@@ -25,149 +25,146 @@
 #include "sound.h"
 #include "util.h"
 #include "io/log.h"
-
+#include "platforms/platforms.h"
 #include <SDL_audio.h>
 #include <psmplug.h>
 #include <cassert>
 
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	#define OJ_SDL2 1
-#else
-	#define OJ_SDL2 0
-#endif
+// default configuration
 
-#if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP) || defined(__vita__)
-	#define SOUND_FREQ 22050
-#else
+#ifndef SOUND_FREQ
 	#define SOUND_FREQ 44100
 #endif
-
-#if defined(GP2X) || defined(PSP) || defined(_3DS) || defined(__vita__)
-	#define SOUND_SAMPLES 512
-#else
+#ifndef SOUND_SAMPLES
 	#define SOUND_SAMPLES 2048
 #endif
-
-#ifdef __SYMBIAN32__
-	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-	#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
-#elif defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(DINGOO) || defined(PSP)
+#if MUSIC_SETTINGS == 0
+	// low
 	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
 	#define MUSIC_FLAGS 0
+#elif MUSIC_SETTINGS == 1
+	// mid
+	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
+	#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
 #else
+	// high
 	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
 	#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
 #endif
 
 #define clamp_vol(vol, min, max) (((vol) < (min)) ? (min) : (((vol) > (max)) ? (max) : (vol)))
 
-// Datatype
+namespace {
 
-/// Raw sound effect data
-typedef struct {
-	unsigned char *data;
-	char          *name;
-	int            length;
-} RawSound;
+	// Datatype
 
-/// Resampled sound effect data
-typedef struct {
-	unsigned char *data;
-	int            length;
-	int            position;
-} Sound;
+	/// Raw sound effect data
+	typedef struct {
+		unsigned char *data;
+		char          *name;
+		int            length;
+	} RawSound;
 
-// Variables
+	/// Resampled sound effect data
+	typedef struct {
+		unsigned char *data;
+		int            length;
+		int            position;
+	} Sound;
 
-static RawSound *rawSounds;
-static int nRawSounds;
-static Sound sounds[SE::MAX] = {};
-static bool soundsLoaded = false;
-static ModPlugFile *musicFile = nullptr;
-static SDL_AudioSpec audioSpec = {};
-static bool musicPaused = false;
-static int musicVolume = MAX_VOLUME >> 1; // 50%
-static int soundVolume = MAX_VOLUME >> 2; // 25%
-static char *currentMusic = nullptr;
-static MusicTempo musicTempo = MusicTempo::NORMAL;
+	// Variables
 
-#if OJ_SDL2
-static SDL_AudioDeviceID audioDevice = 0;
-#endif
+	static RawSound *rawSounds;
+	static int nRawSounds;
+	static Sound sounds[SE::MAX] = {};
+	static bool soundsLoaded = false;
+	static ModPlugFile *musicFile = nullptr;
+	static SDL_AudioSpec audioSpec = {};
+	static bool musicPaused = false;
+	static int musicVolume = MAX_VOLUME >> 1; // 50%
+	static int soundVolume = MAX_VOLUME >> 2; // 25%
+	static char *currentMusic = nullptr;
+	static MusicTempo musicTempo = MusicTempo::NORMAL;
 
-// Helpers
+	#if OJ_SDL2
+	static SDL_AudioDeviceID audioDevice = 0;
+	#endif
 
-static void LockAudio() {
-#if OJ_SDL2
-	SDL_LockAudioDevice(audioDevice);
-#else
-	SDL_LockAudio();
-#endif
-}
-static void UnlockAudio() {
-#if OJ_SDL2
-	SDL_UnlockAudioDevice(audioDevice);
-#else
-	SDL_UnlockAudio();
-#endif
-}
-#if !OJ_SDL2
-int SDL_AUDIO_BITSIZE(int format) {
-	if (format == AUDIO_U8 || audioSpec.format == AUDIO_S8)
-		return 8;
-	else if (format == AUDIO_S16MSB || audioSpec.format == AUDIO_S16LSB ||
-		format == AUDIO_U16MSB || audioSpec.format == AUDIO_U16LSB)
-		return 16;
+	// Helpers
 
-	LOG_ERROR("Unsupported Audio format.");
-	return 0;
-}
-#endif
-
-/**
- * Callback used to provide data to the audio subsystem.
- *
- * @param userdata N/A
- * @param stream Output stream
- * @param len Length of data to be placed in the output stream
- */
-void audioCallback (void * /*userdata*/, unsigned char * stream, int len) {
-	// Clear audio buffer
-	memset(stream, '\0', len * sizeof(unsigned char));
-
-	if (musicFile && !musicPaused) {
-		// Read the next portion of music into the stream
-		ModPlug_Read(musicFile, stream, len);
+	static void LockAudio() {
+	#if OJ_SDL2
+		SDL_LockAudioDevice(audioDevice);
+	#else
+		SDL_LockAudio();
+	#endif
 	}
+	static void UnlockAudio() {
+	#if OJ_SDL2
+		SDL_UnlockAudioDevice(audioDevice);
+	#else
+		SDL_UnlockAudio();
+	#endif
+	}
+	#if !OJ_SDL2
+	static int SDL_AUDIO_BITSIZE(int format) {
+		if (format == AUDIO_U8 || audioSpec.format == AUDIO_S8)
+			return 8;
+		else if (format == AUDIO_S16MSB || audioSpec.format == AUDIO_S16LSB ||
+			format == AUDIO_U16MSB || audioSpec.format == AUDIO_U16LSB)
+			return 16;
 
-	if (!soundsLoaded) return;
+		LOG_ERROR("Unsupported Audio format.");
+		return 0;
+	}
+	#endif
 
-	for (int i = SE::NONE; i < SE::MAX; i++) {
-		if (!sounds[i].data || sounds[i].position < 0) continue;
+	/**
+	 * Callback used to provide data to the audio subsystem.
+	 *
+	 * @param userdata N/A
+	 * @param stream Output stream
+	 * @param len Length of data to be placed in the output stream
+	 */
+	static void audioCallback (void * /*userdata*/, unsigned char * stream, int len) {
+		// Clear audio buffer
+		memset(stream, '\0', len * sizeof(unsigned char));
 
-		int rest = sounds[i].length - sounds[i].position;
-		int length = 0;
-		int position = sounds[i].position;
-
-		if (len < rest) {
-			// Play as much of the clip as possible
-			length = len;
-			sounds[i].position += len;
-		} else {
-			// Play the remainder of the clip
-			length = rest;
-			sounds[i].position = -1;
+		if (musicFile && !musicPaused) {
+			// Read the next portion of music into the stream
+			ModPlug_Read(musicFile, stream, len);
 		}
 
-		// Add the next portion of the sound clip to the audio stream
-#if OJ_SDL2
-		SDL_MixAudioFormat(stream, sounds[i].data + position, audioSpec.format,
-			length, soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
-#else
-		SDL_MixAudio(stream, sounds[i].data + position, length,
-			soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
-#endif
+		if (!soundsLoaded) return;
+
+		for (int i = SE::NONE; i < SE::MAX; i++) {
+			if (!sounds[i].data || sounds[i].position < 0) continue;
+
+			int rest = sounds[i].length - sounds[i].position;
+			int length = 0;
+			int position = sounds[i].position;
+
+			if (len < rest) {
+				// Play as much of the clip as possible
+				length = len;
+				sounds[i].position += len;
+			} else {
+				// Play the remainder of the clip
+				length = rest;
+				sounds[i].position = -1;
+			}
+
+			// Add the next portion of the sound clip to the audio stream
+	#if OJ_SDL2
+			SDL_MixAudioFormat(stream, sounds[i].data + position, audioSpec.format,
+				length, soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+	#else
+			SDL_MixAudio(stream, sounds[i].data + position, length,
+				soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
+	#endif
+		}
 	}
+
 }
 
 

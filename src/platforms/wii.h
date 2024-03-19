@@ -14,14 +14,12 @@
  */
 
 
-#ifndef _WII_H
-#define _WII_H
+#ifndef OJ_WII_H
+#define OJ_WII_H
+
+#include "platform_interface.h"
 
 #ifdef __wii__
-
-void WII_Init();
-
-void WII_AddGamePaths();
 
 // video config (SDL2)
 
@@ -42,6 +40,12 @@ void WII_AddGamePaths();
 #define DEFAULT_BUTTON_ESCAPE (6) /* Home */
 #define DEFAULT_BUTTON_STATS  (4) /* - */
 #define DEFAULT_BUTTON_PAUSE  (5) /* + */
+
+class WiiPlatform final : public IPlatform {
+	public:
+		WiiPlatform();
+		void AddGamePaths() override;
+};
 
 #endif
 

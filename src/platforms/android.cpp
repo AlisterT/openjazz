@@ -21,7 +21,7 @@
 #include "io/file.h"
 #include "util.h"
 
-void ANDROID_AddGamePaths() {
+void AndroidPlatform::AddGamePaths() {
 	const char* pref = SDL_GetPrefPath("eu.alister", "openjazz");
 	if(pref) {
 		gamePaths.add(createString(pref), PATH_TYPE_CONFIG|PATH_TYPE_TEMP);

@@ -14,12 +14,12 @@
  */
 
 
-#ifndef _ANDROID_H
-#define _ANDROID_H
+#ifndef OJ_ANDROID_H
+#define OJ_ANDROID_H
+
+#include "platform_interface.h"
 
 #ifdef __ANDROID__
-
-void ANDROID_AddGamePaths();
 
 // video config (SDL2)
 
@@ -41,6 +41,11 @@ void ANDROID_AddGamePaths();
 #define DEFAULT_BUTTON_ESCAPE (6)
 #define DEFAULT_BUTTON_STATS  (5)
 #define DEFAULT_BUTTON_PAUSE  (7)
+
+class AndroidPlatform final : public IPlatform {
+	public:
+		void AddGamePaths() override;
+};
 
 #endif
 

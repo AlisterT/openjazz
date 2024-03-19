@@ -713,7 +713,7 @@ void Video::clearScreen (int index) {
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	// always 240 lines cleared to black
 	memset(video.screen->pixels, index, 320*240);
-#elif defined (_3DS)
+#elif defined (__3DS__)
 	memset(video.screen->pixels, index, 400*240);
 #else
 	SDL_FillRect(canvas, NULL, index);

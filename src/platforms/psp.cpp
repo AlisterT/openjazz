@@ -31,10 +31,10 @@ PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 PSP_HEAP_SIZE_KB(-2048);
 
-static int exitRequest = 0;
+static bool exitRequest = false;
 
 static int exitCallback(int arg1, int arg2, void *common) {
-	exitRequest = 1;
+	exitRequest = true;
 	return 0;
 }
 
@@ -49,11 +49,11 @@ static int callbackThread(SceSize args, void *argp) {
 	return 0;
 }
 
-int PSP_WantsExit() {
+bool PspPlatform::WantsExit() {
 	return exitRequest;
 }
 
-void PSP_Init() {
+PspPlatform::PspPlatform() {
 	// debug output
 
 	pspDebugScreenInit();
@@ -69,7 +69,7 @@ void PSP_Init() {
 	sceIoChdir("ms0:/PSP/GAME/OpenJazz");
 }
 
-void PSP_ErrorNoDatafiles() {
+void PspPlatform::ErrorNoDatafiles() {
 	pspDebugScreenClear();
 	pspDebugScreenSetXY(12, 0);
 	pspDebugScreenPuts("Unable to find game data files.");

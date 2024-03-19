@@ -169,8 +169,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	SetupOptions config;
 
 	// Determine paths
-
-	PLATFORM_AddGamePaths();
+	platform->AddGamePaths();
 
 	// Use any provided paths
 	for (int i = 0; i < pathCount; i++)
@@ -273,7 +272,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 			"               pass the location of the original game data, eg:\n"
 			"                 OpenJazz ~/jazz1");
 
-		PLATFORM_ErrorNoDatafiles();
+		platform->ErrorNoDatafiles();
 
 		throw;
 
@@ -554,9 +553,9 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 	controls.loop();
 
 #ifdef PSP
-	if (PSP_WantsExit()) return E_QUIT;
+	if (platform->WantsExit()) return E_QUIT;
 #elif defined(WIZ) || defined(GP2X)
-	WIZ_AdjustVolume( volume_direction );
+	WizPlatform::AdjustVolume( volume_direction );
 #endif
 
 	return E_NONE;
@@ -573,7 +572,7 @@ int main(int argc, char *argv[]) {
 	int ret;
 	const char *argv0 = NULL;
 
-	PLATFORM_Init();
+	platform = IPlatform::make();
 
 	// Some platforms (and emulators) do not provide arguments
 
@@ -627,7 +626,7 @@ int main(int argc, char *argv[]) {
 
 	shutDown();
 
-	PLATFORM_Exit();
+	delete platform;
 
 	SDL_Quit();
 
