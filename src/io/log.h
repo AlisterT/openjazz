@@ -31,7 +31,9 @@ enum {
 	LL_FATAL
 };
 
-// Let the compiler help with parameter formats
+/* Let the compiler help with parameter formats
+ * (arguments are shifted by 1, because of hidden "this" pointer)
+ */
 #ifdef __GNUG__
 	#define LIKE_PRINTF __attribute__((format(printf, 5, 6)))
 #else
@@ -76,5 +78,7 @@ EXTERN Log logger;
 #define LOG_WARN(...)  logger.log(LL_WARN,  __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_ERROR(...) logger.log(LL_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_FATAL(...) logger.log(LL_FATAL, __FILE__, __LINE__, __VA_ARGS__)
+
+#undef LIKE_PRINTF
 
 #endif
