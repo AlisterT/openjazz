@@ -327,10 +327,16 @@ jobs:
           repo/builds/ci/dir2zip openjazz-*
           ls -l
 
+      - name: Delete old Tag and Pre-release
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        if: github.ref == 'refs/heads/master' # only on master branch
+        with:
+          tag_name: continuous
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Pre-release and upload artifacts
         uses: softprops/action-gh-release@v2
-        # only on master branch
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' # only on master branch
         with:
           prerelease: true
           tag_name: continuous
