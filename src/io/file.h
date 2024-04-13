@@ -28,6 +28,8 @@
 #include <vector>
 #include <string>
 
+// ct
+#define WANT_ZIP 1
 
 // Classes
 
@@ -35,6 +37,12 @@
 class File {
 
 	private:
+#if WANT_ZIP
+		bool asset_loaded;
+		char* asset_buffer;
+		int asset_size;
+		size_t asset_pos;
+#endif
 		FILE* file;
 		char* filePath;
 		bool  forWriting;
@@ -45,9 +53,9 @@ class File {
 		File                           (const char* name, int pathType, bool write = false);
 		~File                          ();
 
-		int                getSize     ();
-		void               seek        (int offset, bool reset);
-		int                tell        ();
+		size_t             getSize     ();
+		void               seek        (size_t offset, bool reset);
+		size_t             tell        ();
 		unsigned char      loadChar    ();
 		void               storeChar   (unsigned char val);
 		unsigned short int loadShort   ();
@@ -96,7 +104,8 @@ class Path {
 class PathMgr {
 
 	public:
-		PathMgr() = default;
+		PathMgr();
+		~PathMgr();
 
 		bool add(char* newPath, int newPathType);
 
