@@ -152,11 +152,27 @@ jobs:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
 
-  wii-devkitppc:
-    name: Build (Wii, devkitPPC)
+  nintendo-devkitpro:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - shortname: 'wii'
+            image: 'devkitppc:latest'
+            text: '(Wii, devkitPPC)'
+            wrapper: '$DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake'
+          - shortname: '3ds'
+            image: 'devkitarm:latest'
+            text: '(3DS, devkitARM)'
+            wrapper: '$DEVKITPRO/portlibs/3ds/bin/arm-none-eabi-cmake'
+          #- shortname: 'switch'
+          #  image: 'devkita64:latest'
+          #  text: '(Switch, devkitA64)'
+          #  wrapper: '$DEVKITPRO/portlibs/switch/bin/aarch64-none-elf-cmake'
+    name: Build ${{ matrix.settings.text }}
     needs: prepare
     runs-on: ubuntu-latest
-    container: devkitpro/devkitppc:latest
+    container: devkitpro/${{ matrix.settings.image }}
     steps:
       - name: Install dependencies
         run: |
@@ -168,7 +184,7 @@ jobs:
 
       - name: Build OpenJazz
         run: |
-          $DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          ${{ matrix.settings.wrapper }} -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build
 
       - name: Prepare artifact
@@ -183,41 +199,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: openjazz-wii
-          path: OJ-*/
-
-  n3ds-devkitarm:
-    name: Build (3DS, devkitARM)
-    needs: prepare
-    runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
-    steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -yqq ninja-build dos2unix asciidoctor w3m
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build OpenJazz
-        run: |
-          $DEVKITPRO/portlibs/3ds/bin/arm-none-eabi-cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --build build
-
-      - name: Prepare artifact
-        env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
-        run: |
-          cmake --install build --prefix $PWD
-          builds/ci/adoc2txt ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > OpenJazz/Manual.txt
-          builds/ci/docs2dist OpenJazz
-          mv OpenJazz OJ-${SHORT_SHA}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: openjazz-3ds
+          name: openjazz-${{ matrix.settings.shortname }}
           path: OJ-*/
 
   riscos-gccsdk:
@@ -304,8 +286,7 @@ jobs:
       - dist
       - linux-clang
       - windows-mingw-gcc
-      - wii-devkitppc
-      - n3ds-devkitarm
+      - nintendo-devkitpro
       - riscos-gccsdk
       - psp-pspdev
     # allow run when some platform jobs failed, but not for tags
