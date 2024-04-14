@@ -142,7 +142,6 @@ jobs:
           SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
         run: |
           cmake --install build-release --prefix $PWD
-          cp /mingw64/bin/SDL2.dll dist/
           builds/ci/adoc2html ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > dist/OpenJazzManual.html
           builds/ci/docs2dist dist
           mv dist OJ-${SHORT_SHA}

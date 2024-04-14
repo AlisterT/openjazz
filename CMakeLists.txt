@@ -315,7 +315,29 @@ endif()
 
 if(WIN32)
 	# put everything in a folder
-	install(TARGETS OpenJazz DESTINATION dist)
+	install(TARGETS OpenJazz RUNTIME DESTINATION dist)
+	install(CODE [[
+		file(GET_RUNTIME_DEPENDENCIES
+			EXECUTABLES
+				$<TARGET_FILE:OpenJazz>
+			RESOLVED_DEPENDENCIES_VAR _r_deps
+			UNRESOLVED_DEPENDENCIES_VAR _u_deps
+			DIRECTORIES
+				$<TARGET_FILE_DIR:SDL2::SDL2>
+		)
+		foreach(_file ${_r_deps})
+			string(TOLOWER ${_file} _file_lower)
+			if(NOT ${_file_lower} MATCHES "c:[\\/]windows[\\/]system32.*")
+				file(INSTALL
+					DESTINATION dist
+					TYPE SHARED_LIBRARY
+					FOLLOW_SYMLINK_CHAIN
+					FILES "${_file}"
+				)
+			endif()
+		endforeach()
+		#message("UNRESOLVED_DEPENDENCIES_VAR: ${_u_deps}")
+		]])
 elseif(3DS)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenJazz.3dsx
 		DESTINATION OpenJazz COMPONENT 3ds)
