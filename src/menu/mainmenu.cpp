@@ -81,7 +81,7 @@ MainMenu::MainMenu () :
 	}
 
 	// only available in Holiday Hare 94/95
-	if (file->getSize() > 200000) {
+	if (file->getSize() > 200000u) {
 
 		time(&currentTime);
 

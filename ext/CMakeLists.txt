@@ -30,7 +30,7 @@ target_include_directories(stb INTERFACE stb)
 # miniz
 
 add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
-target_compile_definitions(miniz INTERFACE MINIZ_NO_ARCHIVE_APIS)
+target_compile_definitions(miniz INTERFACE MINIZ_NO_ZLIB_COMPATIBLE_NAMES)
 #target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
 target_include_directories(miniz INTERFACE miniz)
 
@@ -50,6 +50,22 @@ target_compile_definitions(lodepng INTERFACE
 )
 target_include_directories(lodepng INTERFACE lodepng)
 target_link_libraries(lodepng PRIVATE miniz)
+
+# mg
+
+add_library(mg STATIC
+	mg/assetsys.cpp
+	mg/assetsys.h
+	mg/strpool.cpp
+	mg/strpool.h
+)
+#target_compile_definitions(mg INTERFACE
+#	ASSETSYS_U64 uint64_t
+#	STRPOOL_U32 uint32_t
+#	STRPOOL_U64 uint64_t
+#)
+target_include_directories(mg INTERFACE mg)
+target_link_libraries(mg PRIVATE miniz)
 
 if(ANDROID)
 	include(FetchContent)

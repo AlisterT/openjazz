@@ -276,7 +276,7 @@ void playMusic (const char * fileName, bool restart) {
 	currentMusic = createString(fileName);
 
 	// Find the size of the file
-	int size = file->getSize();
+	size_t size = file->getSize();
 
 	// Read the entire file into memory
 	file->seek(0, true);
@@ -421,7 +421,7 @@ bool loadSounds (const char *fileName) {
 
 	// Locate the header data
 	file->seek(file->getSize() - 4, true);
-	int headerOffset = file->loadInt();
+	size_t headerOffset = file->loadInt();
 
 	// Calculate number of sounds
 	nRawSounds = (file->getSize() - headerOffset) / 18;

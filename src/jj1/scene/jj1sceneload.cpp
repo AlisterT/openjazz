@@ -278,8 +278,8 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 			}
 
 		} else if (type == EPlayListAniHeader) {
-			int nextPos = f->tell();
-			LOG_ANIM("PL Read position: %d", nextPos);
+			size_t nextPos = f->tell();
+			LOG_ANIM("PL Read position: %zu", nextPos);
 			f->loadShort(); // Length
 
 			palettes.emplace_back(dataIndex);
@@ -289,7 +289,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 #if DEBUG_ANIM
 			int items = 0;
 #endif
-			LOG_ANIM("PL Read position start: %d", f->tell());
+			LOG_ANIM("PL Read position start: %zu", f->tell());
 
 			int validValue = true;
 			while (validValue) {
@@ -406,7 +406,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 
 				}
 
-				LOG_ANIM("PL Read position after block should be: %d", nextPos);
+				LOG_ANIM("PL Read position after block should be: %zu", nextPos);
 				f->seek(nextPos, true);
 
 #if DEBUG_ANIM
@@ -416,7 +416,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 			}
 
 			LOG_ANIM("PL Parsed through number of items skipping 0 items: %d", items);
-			LOG_ANIM("PL Read position after parsing anim blocks: %d", f->tell());
+			LOG_ANIM("PL Read position after parsing anim blocks: %zu", f->tell());
 
 		}
 
@@ -527,7 +527,7 @@ void JJ1Scene::loadScripts (File *f) {
 			page.paletteIndex = palette;
 
 			bool breakloop = false;
-			int pos = f->tell();
+			size_t pos = f->tell();
 
 			int textPosX = -1;
 			int textPosY = -1;
@@ -812,7 +812,7 @@ void JJ1Scene::loadScripts (File *f) {
 					case 0x3e:
 
 						pos = f->tell();
-						LOG_SCRIPT("Parse script end at position: %d, with: 0x%x", pos, type);
+						LOG_SCRIPT("Parse script end at position: %zu, with: 0x%x", pos, type);
 						breakloop = true;
 						f->loadChar();
 
@@ -821,7 +821,7 @@ void JJ1Scene::loadScripts (File *f) {
 					default:
 
 						pos = f->tell();
-						LOG_SCRIPT("Parse script end at position: %d, breaker: 0x%x", pos, type);
+						LOG_SCRIPT("Parse script end at position: %zu, breaker: 0x%x", pos, type);
 						breakloop = true;
 
 						break;

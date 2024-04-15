@@ -114,7 +114,7 @@ int JJ1Level::loadPanel () {
 void JJ1Level::loadSprite (File* file, Sprite* sprite) {
 
 	unsigned char* pixels;
-	int pos, maskOffset;
+	size_t pos, maskOffset;
 	int width, height;
 
 	// Load dimensions
@@ -333,7 +333,7 @@ int JJ1Level::loadTiles (char* fileName) {
 	file->seek(4, false);
 
 	int pos = 0;
-	int fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 
 	// Read the RLE pixels
 	// file::loadRLE() cannot be used, for reasons that will become clear

@@ -79,7 +79,7 @@ int JJ1BonusLevel::loadSprites () {
 			// Masked
 			width <<= 2;
 
-			int pos = file->tell() + (pixelsLength << 2) + maskLength;
+			size_t pos = file->tell() + (pixelsLength << 2) + maskLength;
 
 			// Read scrambled, masked pixel data
 			pixels = file->loadPixels(width * height, 0);

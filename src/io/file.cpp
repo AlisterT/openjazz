@@ -33,11 +33,19 @@
 #include <unistd.h>
 #include <miniz.h>
 
+
 #if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(__3DS__))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
 #endif
 
+#if WANT_ZIP
+#include <assetsys.h>
+
+namespace {
+	static assetsys_t* asset_context = nullptr;
+}
+#endif
 
 /**
  * Try opening a file from the available paths.
@@ -47,8 +55,44 @@
  * @param write Whether or not the file can be written to
  */
 File::File (const char* name, int pathType, bool write) :
+#if WANT_ZIP
+	asset_loaded(false), asset_buffer(nullptr), asset_size(0), asset_pos(0),
+#endif
 	file(nullptr), filePath(nullptr) {
+#if WANT_ZIP
+	if(!write && pathType & PATH_TYPE_GAME) {
+		assetsys_error_t err;
+		assetsys_file_t asset_file;
 
+		// Create the file path for the given directory
+		filePath = createString("/GAME/", name);
+
+		err = assetsys_file(asset_context, filePath, &asset_file);
+		if(err != ASSETSYS_SUCCESS) {
+			LOG_WARN("Could not find file: %s (%d)", name, err);
+			delete[] filePath;
+			throw E_FILE;
+		}
+
+        asset_size = assetsys_file_size(asset_context, asset_file);
+		asset_buffer = new char[asset_size];
+		const char *f = assetsys_file_to_path(asset_context, asset_file);
+
+        int loaded_size = 0;
+		err = assetsys_file_load(asset_context, asset_file, &loaded_size, asset_buffer, asset_size);
+		if(err != ASSETSYS_SUCCESS || (size_t)loaded_size != asset_size) {
+			delete[] asset_buffer;
+			asset_size = 0;
+			LOG_WARN("Could not open file: %s (%d)", f, err);
+			delete[] filePath;
+			throw E_FILE;
+		}
+
+		LOG_TRACE("Opened file: %s", f);
+		asset_loaded = true;
+		return;
+	}
+#endif
 	forWriting = write;
 
 	auto paths = gamePaths.getPaths(pathType);
@@ -72,13 +116,18 @@ File::File (const char* name, int pathType, bool write) :
  * Delete the file object.
  */
 File::~File () {
-
+#if WANT_ZIP
+	if (asset_loaded) {
+		delete[] asset_buffer;
+		asset_size = asset_pos = 0;
+		asset_loaded = false;
+	} else
+#endif
 	fclose(file);
 
 	LOG_TRACE("Closed file: %s", filePath);
 
 	delete[] filePath;
-
 }
 
 
@@ -121,7 +170,6 @@ bool File::open (std::string path, const char* name, bool write) {
 		LOG_TRACE("Opened file: %s", filePath);
 
 		return true;
-
 	}
 
 	delete[] filePath;
@@ -136,20 +184,18 @@ bool File::open (std::string path, const char* name, bool write) {
  *
  * @return The size of the file
  */
-int File::getSize () {
-
-	int pos, size;
-
-	pos = ftell(file);
-
+size_t File::getSize () {
+#if WANT_ZIP
+	if (asset_loaded) {
+		return asset_size;
+	}
+#endif
+	size_t pos = tell();
 	fseek(file, 0, SEEK_END);
-
-	size = ftell(file);
-
-	fseek(file, pos, SEEK_SET);
+	size_t size = tell();
+	seek(pos, true);
 
 	return size;
-
 }
 
 
@@ -158,10 +204,13 @@ int File::getSize () {
  *
  * @return The current location
  */
-int File::tell () {
-
+size_t File::tell () {
+#if WANT_ZIP
+	if(asset_loaded) {
+		return asset_pos;
+	}
+#endif
 	return ftell(file);
-
 }
 
 
@@ -171,10 +220,14 @@ int File::tell () {
  * @param offset The new offset
  * @param reset Whether to offset from the current location or the start of the file
  */
-void File::seek (int offset, bool reset) {
-
+void File::seek (size_t offset, bool reset) {
+#if WANT_ZIP
+	if(asset_loaded) {
+		asset_pos = reset ? offset : asset_pos + offset;
+		return;
+	}
+#endif
 	fseek(file, offset, reset ? SEEK_SET: SEEK_CUR);
-
 }
 
 
@@ -184,16 +237,19 @@ void File::seek (int offset, bool reset) {
  * @return The value read
  */
 unsigned char File::loadChar () {
-
+#if WANT_ZIP
+	if(asset_loaded) {
+		if (asset_pos <= asset_size)
+			return asset_buffer[asset_pos++];
+		return EOF;
+	}
+#endif
 	return fgetc(file);
-
 }
 
 
 void File::storeChar (unsigned char val) {
-
 	fputc(val, file);
-
 }
 
 
@@ -203,14 +259,10 @@ void File::storeChar (unsigned char val) {
  * @return The value read
  */
 unsigned short int File::loadShort () {
-
-	unsigned short int val;
-
-	val = fgetc(file);
-	val += fgetc(file) << 8;
+	unsigned short int val = loadChar();
+	val += loadChar() << 8;
 
 	return val;
-
 }
 
 
@@ -220,29 +272,19 @@ unsigned short int File::loadShort () {
  * @return The value read
  */
 unsigned short int File::loadShort (unsigned short int max) {
-
-	unsigned short int val;
-
-	val = loadShort();
-
+	unsigned short int val = loadShort();
 	if (val > max) {
-
 		LOG_ERROR("Oversized value %d>%d in file %s", val, max, filePath);
-
 		return max;
-
 	}
 
 	return val;
-
 }
 
 
 void File::storeShort (unsigned short int val) {
-
 	fputc(val & 255, file);
 	fputc(val >> 8, file);
-
 }
 
 
@@ -252,42 +294,32 @@ void File::storeShort (unsigned short int val) {
  * @return The value read
  */
 signed int File::loadInt () {
-
-	unsigned int val;
-
-	val = fgetc(file);
-	val += fgetc(file) << 8;
-	val += fgetc(file) << 16;
-	val += fgetc(file) << 24;
+	unsigned int val = loadChar();
+	val += loadChar() << 8;
+	val += loadChar() << 16;
+	val += loadChar() << 24;
 
 	return *((signed int *)&val);
-
 }
 
 
 void File::storeInt (signed int val) {
-
-	unsigned int uval;
-
-	uval = *((unsigned int *)&val);
+	unsigned int uval = *((unsigned int *)&val);
 
 	fputc(uval & 255, file);
 	fputc((uval >> 8) & 255, file);
 	fputc((uval >> 16) & 255, file);
 	fputc(uval >> 24, file);
-
 }
 
 
 void File::storeData (void* data, int length) {
-
 	if(!forWriting) {
 		LOG_ERROR("File %s not opened for writing!", filePath);
 		return;
 	}
 
 	fwrite (data, length, 1, file);
-
 }
 
 
@@ -299,18 +331,26 @@ void File::storeData (void* data, int length) {
  * @return Buffer containing the block of data
  */
 unsigned char * File::loadBlock (int length) {
+	unsigned char *buffer = new unsigned char[length];
 
-	unsigned char *buffer;
+#if WANT_ZIP
+	if(asset_loaded) {
+		int l = length;
+		if(asset_pos + length > asset_size)
+			l = asset_size - asset_pos;
 
-	buffer = new unsigned char[length];
+		memcpy(buffer, (void*)(asset_buffer + asset_pos), l);
 
+		asset_pos += l;
+		return buffer;
+	}
+#endif
 	int res = fread(buffer, 1, length, file);
 
 	if (res != length)
 		LOG_ERROR("Could not read whole block (%d of %d bytes read)", res, length);
 
 	return buffer;
-
 }
 
 
@@ -323,7 +363,8 @@ unsigned char * File::loadBlock (int length) {
  * @return Buffer containing the uncompressed data
  */
 unsigned char* File::loadRLE (int length, bool checkSize) {
-	int start = 0, size = 0;
+	size_t start = 0;
+	int size = 0;
 
 	if (checkSize) {
 		// Determine the offset that follows the block
@@ -348,21 +389,26 @@ unsigned char* File::loadRLE (int length, bool checkSize) {
 		} else if (amount) {
 			if (pos + amount >= length) break;
 
+#if WANT_ZIP
+			for (int i = 0; i < amount; i++) {
+				buffer[pos++] = loadChar();
+			}
+#else
 			fread(buffer + pos, 1, amount, file);
 			pos += amount;
+#endif
 		} else
 			buffer[pos++] = loadChar();
 	}
 
 	if (checkSize) {
 		if (tell() != start + size)
-			LOG_DEBUG("RLE block has incorrect size: %d vs. %d", tell() - start, size);
+			LOG_DEBUG("RLE block has incorrect size: %zu vs. %d", tell() - start, size);
 
 		seek(start + size, true);
 	}
 
 	return buffer;
-
 }
 
 
@@ -370,14 +416,9 @@ unsigned char* File::loadRLE (int length, bool checkSize) {
  * Skip past a block of RLE compressed data in the file.
  */
 void File::skipRLE () {
+	int next = loadShort();
 
-	int next;
-
-	next = fgetc(file);
-	next += fgetc(file) << 8;
-
-	fseek(file, next, SEEK_CUR);
-
+	seek(next, false);
 }
 
 
@@ -413,14 +454,28 @@ unsigned char* File::loadLZ (int compressedLength, unsigned int length) {
  * @return The new string
  */
 char * File::loadString () {
-
 	char *string;
 
-	int length = fgetc(file);
+	int length = loadChar();
 
 	if (length) {
 
 		string = new char[length + 1];
+
+#if WANT_ZIP
+		if(asset_loaded) {
+			int l = length;
+			if(asset_pos + length > asset_size)
+				l = asset_size - asset_pos;
+
+			memcpy(string, (void*)(asset_buffer + asset_pos), l);
+
+			asset_pos += l;
+			string[length] = 0;
+			return string;
+		}
+#endif
+
 		int res = fread(string, 1, length, file);
 
 		if (res != length)
@@ -435,13 +490,13 @@ char * File::loadString () {
 		int count;
 		for (count = 0; count < 9; count++) {
 
-			string[count] = fgetc(file);
+			string[count] = loadChar();
 
 			if (string[count] == '.') {
 
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
+				string[++count] = loadChar();
+				string[++count] = loadChar();
+				string[++count] = loadChar();
 				count++;
 
 				break;
@@ -457,7 +512,6 @@ char * File::loadString () {
 	string[length] = 0;
 
 	return string;
-
 }
 
 
@@ -468,6 +522,21 @@ char * File::loadString () {
  */
 char * File::loadString (int length) {
 	char *string = new char[length + 1];
+
+#if WANT_ZIP
+	if(asset_loaded) {
+		int l = length;
+		if(asset_pos + length > asset_size)
+			l = asset_size - asset_pos;
+
+		memcpy(string, (void*)(asset_buffer + asset_pos), l);
+
+		asset_pos += l;
+		string[length] = 0;
+		return string;
+	}
+#endif
+
 	int res = fread(string, 1, length, file);
 
 	if (res != length)
@@ -560,7 +629,7 @@ unsigned char* File::loadPixels (int length, int key) {
 	// Four pixels are packed into the lower end of each byte
 	for (count = 0; count < length; count++) {
 
-		if (!(count & 3)) mask = fgetc(file);
+		if (!(count & 3)) mask = loadChar();
 		pixels[count] = (mask >> (count & 3)) & 1;
 
 	}
@@ -584,7 +653,7 @@ unsigned char* File::loadPixels (int length, int key) {
 
 			// The unmasked portions are transparent, so no masked
 			// portion should be transparent.
-			while (pixels[count] == key) pixels[count] = fgetc(file);
+			while (pixels[count] == key) pixels[count] = loadChar();
 
 		}
 
@@ -632,6 +701,43 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 
 }
 
+PathMgr::PathMgr() :
+	paths(), config(""), temp("") {
+#if WANT_ZIP
+	asset_context = assetsys_create(nullptr);
+#endif
+}
+
+#if WANT_ZIP
+static void list_assets( assetsys_t* assetsys, char const* path, int indent ) {
+    // Print folder names and recursively list assets
+    for( int i = 0; i < assetsys_subdir_count( assetsys, path ); ++i ) {
+        char const* subdir_name = assetsys_subdir_name( assetsys, path, i );
+        for( int j = 0; j < indent; ++j ) printf( "  " );
+        printf( "%s/\n", subdir_name );
+
+        char const* subdir_path = assetsys_subdir_path( assetsys, path, i );
+        list_assets( assetsys, subdir_path, indent + 1 );
+    }
+
+    // Print file names
+    for( int i = 0; i < assetsys_file_count( assetsys, path ); ++i ) {
+        char const* file_name = assetsys_file_name( assetsys, path, i );
+        for( int j = 0; j < indent; ++j ) printf( "  " );
+        printf( "%s\n", file_name );
+    }
+}
+#endif
+
+PathMgr::~PathMgr() {
+#if WANT_ZIP
+
+	//list_assets(asset_context, "/", 0);
+
+	assetsys_destroy(asset_context);
+#endif
+}
+
 bool PathMgr::add(char* newPath, int newPathType) {
 
 	// Check for CWD
@@ -648,11 +754,11 @@ bool PathMgr::add(char* newPath, int newPathType) {
 	}
 
 	// Append a directory separator if necessary
-	if (newPath[strlen(newPath) - 1] != OJ_DIR_SEP) {
+	/*if (newPath[strlen(newPath) - 1] != OJ_DIR_SEP) {
 		char* tmp = createString(newPath, OJ_DIR_SEP_STR);
 		delete[] newPath;
 		newPath = tmp;
-	}
+	}*/
 
 	// all paths need to be readable
 	if (access(newPath, R_OK) != 0) {
@@ -705,6 +811,15 @@ bool PathMgr::add(char* newPath, int newPathType) {
 
 	// Finally add
 	paths.emplace_back(Path(newPath, newPathType));
+#if WANT_ZIP
+	//newPath[strlen(newPath) - 1] = '\0';
+	if(newPathType & PATH_TYPE_GAME) {
+		assetsys_error_t err = assetsys_mount(asset_context, newPath, "/game");
+		if(err != ASSETSYS_SUCCESS) {
+			LOG_WARN("Could not add path %s to asset loader.", newPath);
+		}
+	}
+#endif
 
 	delete[] newPath;
 	return true;

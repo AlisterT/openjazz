@@ -115,9 +115,12 @@
 */
 #pragma once
 
-// OpenJazz modification
-#ifndef MINIZ_NO_ARCHIVE_APIS
-#define MINIZ_NO_ARCHIVE_APIS
+// OpenJazz Modification
+#ifndef MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#  define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#endif
+#if WORDS_BIGENDIAN==1
+#  define MINIZ_LITTLE_ENDIAN 0
 #endif
 #if defined(__3DS__) || defined(__wii__)
 #  define OJ_NO_LARGE_FILE

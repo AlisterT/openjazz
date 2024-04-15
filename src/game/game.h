@@ -159,7 +159,7 @@ class ServerGame : public Game {
 		unsigned char  recvBuffers[MAX_CLIENTS][BUFFER_LENGTH]; ///< Array of buffers containing data received from clients
 		int            received[MAX_CLIENTS]; ///< Array containing the amount of data received from each client
 		unsigned char *levelData; ///< Contents of the current level file
-		int            levelSize; ///< Size of the current level file
+		size_t         levelSize; ///< Size of the current level file
 		int            sock; ///< Server socket
 
 	public:

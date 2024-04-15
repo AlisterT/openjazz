@@ -62,7 +62,7 @@ Font::Font (const char* fileName) {
 
 	// Load font from a font file
 	File* file = new File(fileName, PATH_TYPE_GAME);
-	int fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 
 	// Checking font file
 	unsigned char *identifier1 = file->loadBlock(18);
@@ -292,7 +292,7 @@ Font::Font (bool bonus) {
 	// Load font from FONTS.000 or BONUS.000
 	File* file = new File(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
 
-	int fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 	nCharacters = file->loadShort(256);
 
 	if (bonus) {

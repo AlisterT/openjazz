@@ -249,7 +249,7 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	dataOffsets.resize(dataItems);
 	for (int i = 0; i < dataItems; i++) {
 		dataOffsets[i] = file->loadInt(); // Load offset to script
-		LOG_MAX("dataOffsets: %ld", dataOffsets[i]);
+		LOG_MAX("dataOffsets: %zu", dataOffsets[i]);
 	}
 
 	loadData(file.get());

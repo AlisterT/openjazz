@@ -210,10 +210,11 @@ class JJ1Scene {
 		std::list<JJ1SceneFont>      fonts;
 
 		/// Scripts all information needed to render script pages, text etc
-		std::vector<JJ1ScenePage>      pages;
+		std::vector<JJ1ScenePage>    pages;
 
 		unsigned short int scriptItems, dataItems;
-		std::vector<signed long int> scriptStarts, dataOffsets;
+		std::vector<signed long int> scriptStarts;
+		std::vector<size_t> dataOffsets;
 
 		void               loadScripts      (File* f);
 		void               loadData         (File* f);
