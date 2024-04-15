@@ -21,13 +21,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set outputs
+      - name: Get version (tag)
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: echo "OJ_GITVER=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Get version (hash)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: echo "OJ_GITVER=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+      - name: Set version
         id: vars
-        run: echo "short_sha=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
-      - name: Check outputs
-        run: echo "short_sha = ${{ steps.vars.outputs.short_sha }}"
+        run: echo "oj_version=${{ env.OJ_GITVER }}" >> $GITHUB_OUTPUT
+      - name: Check version
+        run: echo "oj_version = ${{ steps.vars.outputs.oj_version }}"
     outputs:
-      short_sha: ${{ steps.vars.outputs.short_sha }}
+      oj_version: ${{ steps.vars.outputs.oj_version }}
 
   dist:
     name: Distribution archives
@@ -44,13 +50,13 @@ jobs:
 
       - name: Generate Archives
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
-          builds/ci/adoc2man ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > OpenJazz.6
-          git archive -o openjazz-${SHORT_SHA}.tar.gz \
-            --prefix=openjazz-${SHORT_SHA}/res/unix/ --add-file=OpenJazz.6 \
-            --prefix=openjazz-${SHORT_SHA}/ ${GITHUB_SHA}
-          git archive -o openjazz-${SHORT_SHA}.zip --prefix=openjazz-${SHORT_SHA}/ ${GITHUB_SHA}
+          builds/ci/adoc2man ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OpenJazz.6
+          git archive -o openjazz-${OJ_VERSION}.tar.gz \
+            --prefix=openjazz-${OJ_VERSION}/res/unix/ --add-file=OpenJazz.6 \
+            --prefix=openjazz-${OJ_VERSION}/ ${GITHUB_SHA}
+          git archive -o openjazz-${OJ_VERSION}.zip --prefix=openjazz-${OJ_VERSION}/ ${GITHUB_SHA}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -102,11 +108,11 @@ jobs:
 
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
-          mkdir OJ-${SHORT_SHA}
-          builds/ci/adoc2txt ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > OJ-${SHORT_SHA}/Manual.txt
-          cp build-release/OpenJazz README.md COPYING licenses.txt OJ-${SHORT_SHA}/
+          mkdir OJ-${OJ_VERSION}
+          builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OJ-${OJ_VERSION}/Manual.txt
+          cp build-release/OpenJazz README.md COPYING licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -139,12 +145,12 @@ jobs:
 
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
           cmake --install build-release --prefix $PWD
-          builds/ci/adoc2html ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > dist/OpenJazzManual.html
+          builds/ci/adoc2html ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > dist/OpenJazzManual.html
           builds/ci/docs2dist dist
-          mv dist OJ-${SHORT_SHA}
+          mv dist OJ-${OJ_VERSION}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -189,12 +195,12 @@ jobs:
 
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
           cmake --install build --prefix $PWD
-          builds/ci/adoc2txt ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > OpenJazz/Manual.txt
+          builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OpenJazz/Manual.txt
           builds/ci/docs2dist OpenJazz
-          mv OpenJazz OJ-${SHORT_SHA}
+          mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -233,12 +239,12 @@ jobs:
 
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
           cmake --install build --prefix $PWD
           cp README.md COPYING licenses.txt !OpenJazz/
-          mkdir OJ-${SHORT_SHA}
-          mv !OpenJazz OJ-${SHORT_SHA}/
+          mkdir OJ-${OJ_VERSION}
+          mv !OpenJazz OJ-${OJ_VERSION}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -266,12 +272,12 @@ jobs:
 
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
           cmake --install build-psp-release --prefix $PWD
-          builds/ci/adoc2txt ${SHORT_SHA} < res/unix/OpenJazz.6.adoc > OpenJazz/Manual.txt
+          builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OpenJazz/Manual.txt
           builds/ci/docs2dist OpenJazz
-          mv OpenJazz OJ-${SHORT_SHA}
+          mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -289,8 +295,8 @@ jobs:
       - nintendo-devkitpro
       - riscos-gccsdk
       - psp-pspdev
-    # allow run when some platform jobs failed, but not for tags
-    if: always() && !startsWith(github.ref, 'refs/tags/')
+    # allow run when some platform jobs failed, but only on master branch in main repo
+    if: ${{ !cancelled() && github.ref == 'refs/heads/master' && github.repository_owner == 'AlisterT' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -305,22 +311,77 @@ jobs:
         run: |
           mv openjazz-dist dist
           repo/builds/ci/dir2zip openjazz-*
-          ls -l
+          tree -aL 2
 
-      - name: Delete old Tag and Pre-release
+      - name: Delete old tag and Pre-release
         uses: dev-drprasad/delete-tag-and-release@v1.1
-        if: github.ref == 'refs/heads/master' # only on master branch
         with:
           tag_name: continuous
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create new tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/continuous',
+              sha: context.sha
+            })
+
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: continuous
+          writeToFile: false
+          includeInvalidCommits: true
+
       - name: Create Pre-release and upload artifacts
         uses: softprops/action-gh-release@v2
-        if: github.ref == 'refs/heads/master' # only on master branch
         with:
           prerelease: true
           tag_name: continuous
+          body: ${{ steps.changelog.outputs.changes }}
           generate_release_notes: true
+          files: |
+            openjazz-*.*
+            dist/*.*
+
+  release:
+    name: Create Release
+    needs:
+      # all
+      - dist
+      - linux-clang
+      - windows-mingw-gcc
+      - nintendo-devkitpro
+      - riscos-gccsdk
+      - psp-pspdev
+    # allow run when some platform jobs failed, but only for tags in main repo
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'AlisterT' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Zip artifacts and inspect directory
+        run: |
+          mv openjazz-dist dist
+          repo/builds/ci/dir2zip openjazz-*
+          tree -aL 2
+
+      - name: Create Release and upload artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.oj_version }}
           files: |
             openjazz-*.*
             dist/*.*
