@@ -48,7 +48,7 @@
  */
 JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner) {
 
-	File* file;
+	std::unique_ptr<File> file;
 	char* levelFile;
 	int lNum, wNum, ret;
 
@@ -56,7 +56,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -67,7 +67,6 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 	// Check this is a normal level
 	if (file->loadShort() == 0) {
 
-		delete file;
 		throw E_DEMOTYPE;
 
 	}
@@ -82,7 +81,7 @@ JJ1DemoLevel::JJ1DemoLevel (Game* owner, const char* fileName) : JJ1Level(owner)
 
 	macro = file->loadBlock(1024);
 
-	delete file;
+	file.reset();
 
 	// Load level data
 

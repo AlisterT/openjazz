@@ -44,13 +44,13 @@
  */
 JJ1Planet::JJ1Planet (char * fileName, int previous) {
 
-	File *file;
+	std::unique_ptr<File> file;
 	unsigned char *pixels;
 	int count;
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -63,8 +63,6 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 	if (id == previous) {
 
 		// Not approaching a planet if already there
-
-		delete file;
 
 		throw E_NONE;
 
@@ -87,9 +85,6 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 	pixels = file->loadBlock(64 * 55);
 	sprite.setPixels(pixels, 64, 55, 0);
 	delete[] pixels;
-
-
-	delete file;
 
 }
 

@@ -74,7 +74,7 @@ Setup::~Setup () {
  */
 SetupOptions Setup::load () {
 
-	File* file;
+	std::unique_ptr<File> file;
 	SetupOptions cfg = { false, 0, 0, false, 0 };
 #ifdef FULLSCREEN_ONLY
 	cfg.fullScreen = true;
@@ -84,7 +84,7 @@ SetupOptions Setup::load () {
 
 	try {
 
-		file = new File(CONFIG_FILE, PATH_TYPE_CONFIG, false);
+		file = File::open(CONFIG_FILE, PATH_TYPE_CONFIG, false);
 
 	} catch (int e) {
 
@@ -98,7 +98,6 @@ SetupOptions Setup::load () {
 	if (file->loadChar() != 6) {
 
 		LOG_WARN("Valid configuration file not found.");
-		delete file;
 
 		return cfg;
 
@@ -168,8 +167,6 @@ SetupOptions Setup::load () {
 	setup.slowMotion = ((opt & 4) != 0);
 	setup.scale2x = ((opt & 8) == 0);
 
-	delete file;
-
 	return cfg;
 
 }
@@ -180,14 +177,14 @@ SetupOptions Setup::load () {
  */
 void Setup::save () {
 
-	File *file;
+	std::unique_ptr<File> file;
 	int count;
 	int videoScale;
 
 	// Open config file
 	try {
 
-		file = new File(CONFIG_FILE, PATH_TYPE_CONFIG, true);
+		file = File::open(CONFIG_FILE, PATH_TYPE_CONFIG, true);
 
 	} catch (int e) {
 
@@ -268,7 +265,5 @@ void Setup::save () {
 	if (!setup.scale2x) count |= 8;
 
 	file->storeChar(count);
-
-	delete file;
 
 }

@@ -32,6 +32,10 @@ add_executable(OpenJazz
 	src/io/controls.h
 	src/io/file.cpp
 	src/io/file.h
+	src/io/file_dir.cpp
+	src/io/file_dir.h
+	#src/io/file_zip.cpp
+	#src/io/file_zip.h
 	src/io/gfx/anim.cpp
 	src/io/gfx/anim.h
 	src/io/gfx/font.cpp

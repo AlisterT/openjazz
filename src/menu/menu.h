@@ -72,7 +72,7 @@ class GameMenu : public Menu {
 		int joinGame          ();
 
 	public:
-		explicit GameMenu(File* file);
+		explicit GameMenu(const std::unique_ptr<File> &file);
 		~GameMenu();
 
 		int newGame  ();

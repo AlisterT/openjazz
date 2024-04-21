@@ -256,7 +256,7 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
  * @param f File from which to load animation
  * @param dataIndex Index
  */
-void JJ1Scene::loadAni (File *f, int dataIndex) {
+void JJ1Scene::loadAni (const std::unique_ptr<File> &f, int dataIndex) {
 
 	LOG_MAX("ParseAni DataLen: %x", f->loadShort()); // should be 0x02
 	LOG_MAX("ParseAni Frames(?): %d", f->loadShort()); // unknown, number of frames?
@@ -295,7 +295,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			int items = 0;
 			int validValue = true;
 
-			LOG_MAX("PL Read position start: %d", f->tell());
+			LOG_MAX("PL Read position start: %zu", f->tell());
 
 			while (validValue) {
 
@@ -430,7 +430,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			}
 
 			LOG_MAX("PL Parsed through number of items skipping 0 items: %d", items);
-			LOG_MAX("PL Read position after parsing anim blocks: %d", f->tell());
+			LOG_MAX("PL Read position after parsing anim blocks: %zu", f->tell());
 
 		}
 
@@ -444,7 +444,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
  *
  * @param f File from which to load the data
  */
-void JJ1Scene::loadData (File *f) {
+void JJ1Scene::loadData (const std::unique_ptr<File> &f) {
 
 	int loop;
 
@@ -519,7 +519,7 @@ void JJ1Scene::loadData (File *f) {
  *
  * @param f File from which to load the scripts
  */
-void JJ1Scene::loadScripts (File *f) {
+void JJ1Scene::loadScripts (const std::unique_ptr<File> &f) {
 
 	int loop;
 	/*int bgIndex = 0;*/

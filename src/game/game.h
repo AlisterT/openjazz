@@ -179,12 +179,12 @@ class ServerGame : public Game {
 class ClientGame : public Game {
 
 	private:
-		File          *file; ///< File to which the incoming level will be written
-		unsigned char  recvBuffer[BUFFER_LENGTH]; ///< Buffer containing data received from server
-		int            received; ///< Amount of data received from server
-		int            clientID; ///< Client's index on the server
-		int            maxPlayers; ///< The maximum number of players in the game
-		int            sock; ///< Client socket
+		std::unique_ptr<File> file; ///< File to which the incoming level will be written
+		unsigned char         recvBuffer[BUFFER_LENGTH]; ///< Buffer containing data received from server
+		int                   received; ///< Amount of data received from server
+		int                   clientID; ///< Client's index on the server
+		int                   maxPlayers; ///< The maximum number of players in the game
+		int                   sock; ///< Client socket
 
 	public:
 		explicit ClientGame(char *address);

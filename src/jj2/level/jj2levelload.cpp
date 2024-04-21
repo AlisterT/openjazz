@@ -153,7 +153,7 @@ int JJ2Level::loadSprites () {
 
 	try {
 
-		file = new File("anims.j2a", PATH_TYPE_GAME);
+		file = File::open("anims.j2a", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -295,7 +295,7 @@ int JJ2Level::loadTiles (char* fileName) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -562,7 +562,7 @@ int JJ2Level::load (char *fileName, bool checkpoint) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 

@@ -55,7 +55,7 @@
  */
 int JJ1Level::loadPanel () {
 
-	File* file;
+	std::unique_ptr<File> file;
 	unsigned char* pixels;
 	unsigned char* sorted;
 	int type, x, y;
@@ -63,7 +63,7 @@ int JJ1Level::loadPanel () {
 
 	try {
 
-		file = new File("PANEL.000", PATH_TYPE_GAME);
+		file = File::open("PANEL.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -73,7 +73,7 @@ int JJ1Level::loadPanel () {
 
 	pixels = file->loadRLE(46272);
 
-	delete file;
+	file.reset();
 
 
 	// Create the panel background
@@ -111,7 +111,7 @@ int JJ1Level::loadPanel () {
  * @param file File from which to load the sprite data
  * @param sprite Sprite that will receive the loaded data
  */
-void JJ1Level::loadSprite (File* file, Sprite* sprite) {
+void JJ1Level::loadSprite (const std::unique_ptr<File> &file, Sprite* sprite) {
 
 	unsigned char* pixels;
 	int pos, maskOffset;
@@ -172,15 +172,15 @@ void JJ1Level::loadSprite (File* file, Sprite* sprite) {
  */
 int JJ1Level::loadSprites (char * fileName) {
 
-	File* mainFile = NULL;
-	File* specFile = NULL;
+	std::unique_ptr<File> specFile;
+	std::unique_ptr<File> mainFile;
 	unsigned char* buffer;
 	int count;
 
 	// Open fileName
 	try {
 
-		specFile = new File(fileName, PATH_TYPE_GAME);
+		specFile = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -192,11 +192,9 @@ int JJ1Level::loadSprites (char * fileName) {
 	// This function loads all the sprites, not just those in fileName
 	try {
 
-		mainFile = new File("MAINCHAR.000", PATH_TYPE_GAME);
+		mainFile = File::open("MAINCHAR.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
-
-		delete specFile;
 
 		return e;
 
@@ -280,10 +278,6 @@ int JJ1Level::loadSprites (char * fileName) {
 
 	}
 
-	delete mainFile;
-	delete specFile;
-
-
 	// Include a blank sprite at the end
 	spriteSet[sprites].clearPixels();
 
@@ -301,11 +295,11 @@ int JJ1Level::loadSprites (char * fileName) {
  */
 int JJ1Level::loadTiles (char* fileName) {
 
-	File* file;
+	std::unique_ptr<File> file;
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -333,7 +327,7 @@ int JJ1Level::loadTiles (char* fileName) {
 	file->seek(4, false);
 
 	int pos = 0;
-	int fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 
 	// Read the RLE pixels
 	// file::loadRLE() cannot be used, for reasons that will become clear
@@ -368,7 +362,7 @@ int JJ1Level::loadTiles (char* fileName) {
 
 	}
 
-	delete file;
+	file.reset();
 
 	// Work out how many tiles were actually loaded
 	// Should be a multiple of 60
@@ -396,7 +390,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	Anim* pAnims[JJ1PANIMS];
 	unsigned short int soundRates[32];
-	File* file;
+	std::unique_ptr<File> file;
 	unsigned char* buffer;
 	const char* ext;
 	char* string = NULL;
@@ -451,11 +445,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		try {
 
-			file = new File(string, PATH_TYPE_GAME);
+			file = File::open(string, PATH_TYPE_GAME);
 
 		} catch (int e) {
-
-			file = NULL;
 
 		}
 
@@ -466,7 +458,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 			file->seek(2, true);
 			string = file->loadString();
 
-			delete file;
+			file.reset();
 
 		} else {
 
@@ -532,7 +524,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -590,7 +582,6 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	if (tiles < 0) {
 
-		delete file;
 		deletePanel();
 		delete font;
 
@@ -610,7 +601,6 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	if (count < 0) {
 
 		SDL_FreeSurface(tileSet);
-		delete file;
 		deletePanel();
 		delete font;
 
@@ -1051,12 +1041,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	// And that's us done!
 
-	delete file;
-
-
 	// Set the tick at which the level will end
 	endTime = (5 - game->getDifficulty()) * 2 * 60 * 1000;
-
 
 	events = NULL;
 	bullets = NULL;

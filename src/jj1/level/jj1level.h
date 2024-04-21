@@ -203,7 +203,7 @@ class JJ1Level : public Level {
 
 		void deletePanel  ();
 		int  loadPanel    ();
-		void loadSprite   (File* file, Sprite* sprite);
+		void loadSprite   (const std::unique_ptr<File> &file, Sprite* sprite);
 		int  loadSprites  (char* fileName);
 		int  loadTiles    (char* fileName);
 		int  playBonus    ();

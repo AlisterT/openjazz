@@ -47,7 +47,7 @@
  */
 MainMenu::MainMenu () {
 
-	File *file;
+	std::unique_ptr<File> file;
 	time_t currentTime;
 
 	// Load the OpenJazz logo
@@ -70,7 +70,7 @@ MainMenu::MainMenu () {
 
 	try {
 
-		file = new File("MENU.000", PATH_TYPE_GAME);
+		file = File::open("MENU.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -123,8 +123,6 @@ MainMenu::MainMenu () {
 	if (logo) enableColorKey(logo, 28);
 
 	gameMenu = new GameMenu(file);
-
-	delete file;
 
 }
 
@@ -258,7 +256,7 @@ int MainMenu::main () {
 		{82, 137, 156, 26},
 		{78, 166, 166, 29}};
 	int macroType[4];
-	File* file;
+	std::unique_ptr<File> file;
 	char* fileName;
 	Plasma plasma;
 	SDL_Rect dst;
@@ -284,9 +282,8 @@ int MainMenu::main () {
 
 		try {
 
-			file = new File(fileName, PATH_TYPE_GAME);
+			file = File::open(fileName, PATH_TYPE_GAME);
 			macroType[macro] = file->loadChar();
-			delete file;
 
 		} catch (int e) {
 

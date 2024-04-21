@@ -46,12 +46,12 @@
  */
 int JJ1BonusLevel::loadSprites () {
 
-	File *file;
+	std::unique_ptr<File> file;
 	unsigned char* pixels;
 
 	try {
 
-		file = new File("BONUS.000", PATH_TYPE_GAME);
+		file = File::open("BONUS.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -110,8 +110,6 @@ int JJ1BonusLevel::loadSprites () {
 
 	}
 
-	delete file;
-
 	return E_NONE;
 
 }
@@ -126,7 +124,7 @@ int JJ1BonusLevel::loadSprites () {
  */
 int JJ1BonusLevel::loadTiles (char *fileName) {
 
-	File *file;
+	std::unique_ptr<File> file;
 	unsigned char *pixels;
 	unsigned char *sorted;
 	int count, x, y;
@@ -135,7 +133,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -181,8 +179,6 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	delete[] pixels;
 
-	delete file;
-
 	return E_NONE;
 
 }
@@ -198,7 +194,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(owner) {
 
 	Anim* pAnims[BPANIMS];
-	File *file;
+	std::unique_ptr<File> file;
 	unsigned char *buffer;
 	char *string, *fileString;
 	int count, x, y;
@@ -216,7 +212,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -231,7 +227,6 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	if (count < 0) {
 
-		delete file;
 		delete font;
 
 		throw count;
@@ -351,9 +346,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	createLevelPlayers(LT_JJ1BONUS, pAnims, NULL, false, x, y);
 
-
-	delete file;
-
+	file.reset();
 
 	// Palette animations
 

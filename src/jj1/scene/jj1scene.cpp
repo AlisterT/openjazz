@@ -249,13 +249,13 @@ JJ1ScenePage::~JJ1ScenePage() {
  */
 JJ1Scene::JJ1Scene (const char * fileName) {
 
-	File *file;
+	std::unique_ptr<File> file;
 	nFonts = 0;
 	LOG_TRACE("Scene: %s", fileName);
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -301,7 +301,6 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 
 	delete[] scriptStarts;
 	delete[] dataOffsets;
-	delete file;
 
 }
 

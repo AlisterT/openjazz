@@ -118,7 +118,7 @@ ServerGame::~ServerGame () {
  */
 int ServerGame::setLevel (char* fileName) {
 
-	File* file;
+	std::unique_ptr<File> file;
 	int count;
 
 	if (levelFile) delete[] levelFile;
@@ -142,7 +142,7 @@ int ServerGame::setLevel (char* fileName) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -159,7 +159,7 @@ int ServerGame::setLevel (char* fileName) {
 	levelSize = file->getSize();
 	levelData = file->loadBlock(levelSize);
 
-	delete file;
+	file.reset();
 
 	levelType = getLevelType(fileName);
 

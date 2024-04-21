@@ -5,14 +5,9 @@
  *
  * Part of the OpenJazz project
  *
- * @par History:
- * - 23rd August 2005: Created main.c
- * - 22nd July 2008: Created util.c from parts of main.c
- * - 3rd February 2009: Renamed util.c to util.cpp
- * - 3rd February 2009: Created file.cpp from parts of util.cpp
- *
  * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -24,7 +19,7 @@
 
 
 #include "file.h"
-
+#include "file_dir.h"
 #include "io/gfx/video.h"
 #include "util.h"
 #include "io/log.h"
@@ -33,274 +28,92 @@
 #include <unistd.h>
 #include <miniz.h>
 
-#if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
-    #define UPPERCASE_FILENAMES
-    #define LOWERCASE_FILENAMES
+std::unique_ptr<File> File::open (const char* name, int pathType, bool write) {
+#ifdef WANT_ZIP
+
 #endif
-
-
-/**
- * Try opening a file from the available paths.
- *
- * @param name File name
- * @param pathType Kind of directory
- * @param write Whether or not the file can be written to
- */
-File::File (const char* name, int pathType, bool write) {
 
 	Path* path = gamePaths.paths;
 
 	while (path) {
-
 		// skip other paths
-		if (pathType != PATH_TYPE_ANY && (path->pathType & pathType) != pathType) {
+		if ((path->pathType & pathType) != pathType) {
 			path = path->next;
 			continue;
 		}
 
 		// only allow certain write paths
 		if (!write || (pathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
-			if (open(path->path, name, write)) return;
+			try {
+				return std::unique_ptr<File>(new DirFile(path->path, name, write));
+			} catch (int e) {
+			}
 		} else LOG_FATAL("Not allowed to write to %s", name);
 
 		path = path->next;
-
 	}
 
 	LOG_WARN("Could not open file: %s", name);
 
 	throw E_FILE;
-
 }
 
+bool File::exists (const char * fileName, int pathType) {
+	std::unique_ptr<File> file;
 
-/**
- * Delete the file object.
- */
-File::~File () {
-
-	fclose(file);
-
-	LOG_TRACE("Closed file: %s", filePath);
-
-	delete[] filePath;
-
-}
-
-
-/**
- * Try opening a file from the given path
- *
- * @param path Directory path
- * @param name File name
- * @param write Whether or not the file can be written to
- */
-bool File::open (const char* path, const char* name, bool write) {
-
-#if defined(UPPERCASE_FILENAMES) || defined(LOWERCASE_FILENAMES)
-	int count;
+#ifdef VERBOSE
+	printf("Check: ");
 #endif
 
-	// Create the file path for the given directory
-	filePath = createString(path, name);
-
-	// Open the file from the path
-	file = fopen(filePath, write ? "wb": "rb");
-
-#ifdef UPPERCASE_FILENAMES
-    if (!file) {
-
-        // Convert the file name to upper case
-        for (count = strlen(path); filePath[count]; count++) {
-
-            if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
-
-        }
-
-        // Open the file from the path
-        file = fopen(filePath, write ? "wb": "rb");
-
-    }
-#endif
-
-#ifdef LOWERCASE_FILENAMES
-    if (!file) {
-
-        // Convert the file name to lower case
-        for (count = strlen(path); filePath[count]; count++) {
-
-            if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
-
-        }
-
-        // Open the file from the path
-        file = fopen(filePath, write ? "wb": "rb");
-
-    }
-#endif
-
-	if (file) {
-
-        LOG_DEBUG("Opened file: %s", filePath);
-
-		return true;
-
+	try {
+		file = File::open(fileName, pathType);
+	} catch (int e) {
+		return false;
 	}
 
-	delete[] filePath;
-
-	return false;
-
+	return true;
 }
 
-
-/**
- * Get the size of the file.
- *
- * @return The size of the file
- */
-int File::getSize () {
-
-	int pos, size;
-
-	pos = ftell(file);
-
-	fseek(file, 0, SEEK_END);
-
-	size = ftell(file);
-
-	fseek(file, pos, SEEK_SET);
-
-	return size;
-
-}
-
-
-/**
- * Get the current read/write location within the file.
- *
- * @return The current location
- */
-int File::tell () {
-
-	return ftell(file);
-
-}
-
-
-/**
- * Set the read/write location within the file.
- *
- * @param offset The new offset
- * @param reset Whether to offset from the current location or the start of the file
- */
-void File::seek (int offset, bool reset) {
-
-	fseek(file, offset, reset ? SEEK_SET: SEEK_CUR);
-
-}
-
-
-/**
- * Load an unsigned char from the file.
- *
- * @return The value read
- */
-unsigned char File::loadChar () {
-
-	return fgetc(file);
-
-}
-
-
-void File::storeChar (unsigned char val) {
-
-	fputc(val, file);
-
-}
-
-
-/**
- * Load an unsigned short int from the file.
- *
- * @return The value read
- */
 unsigned short int File::loadShort () {
-
-	unsigned short int val;
-
-	val = fgetc(file);
-	val += fgetc(file) << 8;
+	unsigned short int val = loadChar();
+	val += loadChar() << 8;
 
 	return val;
-
 }
 
-
-/**
- * Load an unsigned short int with an upper limit from the file.
- *
- * @return The value read
- */
 unsigned short int File::loadShort (unsigned short int max) {
-
-	unsigned short int val;
-
-	val = loadShort();
-
+	unsigned short int val = loadShort();
 	if (val > max) {
-
 		LOG_ERROR("Oversized value %d>%d in file %s", val, max, filePath);
 
 		return max;
-
 	}
 
 	return val;
-
 }
-
 
 void File::storeShort (unsigned short int val) {
-
-	fputc(val & 255, file);
-	fputc(val >> 8, file);
-
+	storeChar(val & 255);
+	storeChar(val >> 8);
 }
 
-
-/**
- * Load a signed int from the file.
- *
- * @return The value read
- */
 signed int File::loadInt () {
-
-	unsigned int val;
-
-	val = fgetc(file);
-	val += fgetc(file) << 8;
-	val += fgetc(file) << 16;
-	val += fgetc(file) << 24;
+	unsigned int val = loadChar();
+	val += loadChar() << 8;
+	val += loadChar() << 16;
+	val += loadChar() << 24;
 
 	return *((signed int *)&val);
-
 }
-
 
 void File::storeInt (signed int val) {
+	unsigned int uval = *((unsigned int *)&val);
 
-	unsigned int uval;
-
-	uval = *((unsigned int *)&val);
-
-	fputc(uval & 255, file);
-	fputc((uval >> 8) & 255, file);
-	fputc((uval >> 16) & 255, file);
-	fputc(uval >> 24, file);
-
+	storeChar(uval & 255);
+	storeChar((uval >> 8) & 255);
+	storeChar((uval >> 16) & 255);
+	storeChar(uval >> 24);
 }
-
 
 /**
  * Load a block of uncompressed data from the file.
@@ -310,20 +123,14 @@ void File::storeInt (signed int val) {
  * @return Buffer containing the block of data
  */
 unsigned char * File::loadBlock (int length) {
+	unsigned char *buffer = new unsigned char[length];
 
-	unsigned char *buffer;
-
-	buffer = new unsigned char[length];
-
-	int res = fread(buffer, 1, length, file);
-
+	int res = readBlock(buffer, length);
 	if (res != length)
 		LOG_ERROR("Could not read whole block (%d of %d bytes read)", res, length);
 
 	return buffer;
-
 }
-
 
 /**
  * Load a block of RLE compressed data from the file.
@@ -333,48 +140,35 @@ unsigned char * File::loadBlock (int length) {
  * @return Buffer containing the uncompressed data
  */
 unsigned char* File::loadRLE (int length) {
-
 	// Determine the offset that follows the block
-	int next = fgetc(file);
-	next += fgetc(file) << 8;
-	next += ftell(file);
+	size_t next = loadChar();
+	next += loadChar() << 8;
+	next += tell();
 
 	unsigned char* buffer = new unsigned char[length];
-
 	int pos = 0;
 
 	while (pos < length) {
-
-		int rle = fgetc(file);
+		int rle = loadChar();
 
 		if (rle & 128) {
-
-			int byte = fgetc(file);
+			int byte = loadChar();
 
 			for (int i = 0; i < (rle & 127); i++) {
-
 				buffer[pos++] = byte;
 				if (pos >= length) break;
-
 			}
-
 		} else if (rle) {
-
 			for (int i = 0; i < rle; i++) {
-
-				buffer[pos++] = fgetc(file);
+				buffer[pos++] = loadChar();
 				if (pos >= length) break;
-
 			}
-
-		} else buffer[pos++] = fgetc(file);
-
+		} else buffer[pos++] = loadChar();
 	}
 
-	fseek(file, next, SEEK_SET);
+	seek(next, true);
 
 	return buffer;
-
 }
 
 
@@ -382,14 +176,10 @@ unsigned char* File::loadRLE (int length) {
  * Skip past a block of RLE compressed data in the file.
  */
 void File::skipRLE () {
+	size_t next = loadChar();
+	next += loadChar() << 8;
 
-	int next;
-
-	next = fgetc(file);
-	next += fgetc(file) << 8;
-
-	fseek(file, next, SEEK_CUR);
-
+	seek(next);
 }
 
 
@@ -402,22 +192,14 @@ void File::skipRLE () {
  * @return Buffer containing the uncompressed data
  */
 unsigned char* File::loadLZ (int compressedLength, int length) {
-
-	unsigned char* compressedBuffer;
-	unsigned char* buffer;
-
-	compressedBuffer = loadBlock(compressedLength);
-
-	buffer = new unsigned char[length];
+	unsigned char* compressedBuffer = loadBlock(compressedLength);
+	unsigned char* buffer = new unsigned char[length];
 
 	uncompress(buffer, (unsigned long int *)&length, compressedBuffer, compressedLength);
-
 	delete[] compressedBuffer;
 
 	return buffer;
-
 }
-
 
 /**
  * Load a string from the file.
@@ -425,52 +207,35 @@ unsigned char* File::loadLZ (int compressedLength, int length) {
  * @return The new string
  */
 char * File::loadString () {
-
 	char *string;
-
-	int length = fgetc(file);
+	size_t length = loadChar();
 
 	if (length) {
-
 		string = new char[length + 1];
-		int res = fread(string, 1, length, file);
-
+		size_t res = readBlock(string, length);
 		if (res != length)
-			LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
-
+			LOG_ERROR("Could not read whole string (%zu of %zu bytes read)", res, length);
 	} else {
-
 		// If the length is not given, assume it is an 8.3 file name
 		string = new char[13];
-
-		int count;
-		for (count = 0; count < 9; count++) {
-
-			string[count] = fgetc(file);
-
-			if (string[count] == '.') {
-
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
-				count++;
+		int i;
+		for (i = 0; i < 9; i++) {
+			string[i] = loadChar();
+			if (string[i] == '.') {
+				string[++i] = loadChar();
+				string[++i] = loadChar();
+				string[++i] = loadChar();
+				i++;
 
 				break;
-
 			}
-
 		}
-
-		length = count;
-
+		length = i;
 	}
-
-	string[length] = 0;
+	string[length] = '\0';
 
 	return string;
-
 }
-
 
 /**
  * Load RLE compressed graphical data from the file.
@@ -480,21 +245,14 @@ char * File::loadString () {
  *
  * @return SDL surface containing the loaded image
  */
+// TODO: maybe move to graphics class?
 SDL_Surface* File::loadSurface (int width, int height) {
-
-	SDL_Surface* surface;
-	unsigned char* pixels;
-
-	pixels = loadRLE(width * height);
-
-	surface = createSurface(pixels, width, height);
-
+	unsigned char* pixels = loadRLE(width * height);
+	SDL_Surface* surface = createSurface(pixels, width, height);
 	delete[] pixels;
 
 	return surface;
-
 }
-
 
 /**
  * Load a block of scrambled pixel data from the file.
@@ -504,28 +262,17 @@ SDL_Surface* File::loadSurface (int width, int height) {
  * @return Buffer containing the de-scrambled data
  */
 unsigned char* File::loadPixels  (int length) {
-
-	unsigned char* pixels;
-	unsigned char* sorted;
-	int count;
-
-	sorted = new unsigned char[length];
-
-	pixels = loadBlock(length);
+	unsigned char* sorted = new unsigned char[length];
+	unsigned char* pixels = loadBlock(length);
 
 	// Rearrange pixels in correct order
-	for (count = 0; count < length; count++) {
-
-		sorted[count] = pixels[(count >> 2) + ((count & 3) * (length >> 2))];
-
+	for (int i = 0; i < length; i++) {
+		sorted[i] = pixels[(i >> 2) + ((i & 3) * (length >> 2))];
 	}
-
 	delete[] pixels;
 
 	return sorted;
-
 }
-
 
 /**
  * Load a block of scrambled and masked pixel data from the file.
@@ -536,65 +283,47 @@ unsigned char* File::loadPixels  (int length) {
  * @return Buffer containing the de-scrambled data
  */
 unsigned char* File::loadPixels (int length, int key) {
-
-	unsigned char* pixels;
-	unsigned char* sorted;
 	unsigned char mask = 0;
-	int count;
-
-
-	sorted = new unsigned char[length];
-	pixels = new unsigned char[length];
-
+	unsigned char* sorted = new unsigned char[length];
+	unsigned char* pixels = new unsigned char[length];
 
 	// Read the mask
 	// Each mask pixel is either 0 or 1
 	// Four pixels are packed into the lower end of each byte
-	for (count = 0; count < length; count++) {
-
-		if (!(count & 3)) mask = fgetc(file);
-		pixels[count] = (mask >> (count & 3)) & 1;
-
+	for (int i = 0; i < length; i++) {
+		if (!(i & 3))
+			mask = loadChar();
+		pixels[i] = (mask >> (i & 3)) & 1;
 	}
 
 	// Pixels are loaded if the corresponding mask pixel is 1, otherwise
 	// the transparent index is used. Pixels are scrambled, so the mask
 	// has to be scrambled the same way.
-	for (count = 0; count < length; count++) {
-
-		sorted[(count >> 2) + ((count & 3) * (length >> 2))] = pixels[count];
-
+	for (int i = 0; i < length; i++) {
+		sorted[(i >> 2) + ((i & 3) * (length >> 2))] = pixels[i];
 	}
 
 	// Read pixels according to the scrambled mask
-	for (count = 0; count < length; count++) {
+	for (int i = 0; i < length; i++) {
 
 		// Use the transparent pixel
-		pixels[count] = key;
-
-		if (sorted[count] == 1) {
-
+		pixels[i] = key;
+		if (sorted[i] == 1) {
 			// The unmasked portions are transparent, so no masked
 			// portion should be transparent.
-			while (pixels[count] == key) pixels[count] = fgetc(file);
-
+			while (pixels[i] == key)
+				pixels[i] = loadChar();
 		}
-
 	}
 
 	// Rearrange pixels in correct order
-	for (count = 0; count < length; count++) {
-
-		sorted[count] = pixels[(count >> 2) + ((count & 3) * (length >> 2))];
-
+	for (int i = 0; i < length; i++) {
+		sorted[i] = pixels[(i >> 2) + ((i & 3) * (length >> 2))];
 	}
-
 	delete[] pixels;
 
 	return sorted;
-
 }
-
 
 /**
  * Load a palette from the file.
@@ -602,26 +331,22 @@ unsigned char* File::loadPixels (int length, int key) {
  * @param palette The palette to be filled with loaded colours
  * @param rle Whether or not the palette data is RLE-encoded
  */
+//TODO: maybe return palette instead
 void File::loadPalette (SDL_Color* palette, bool rle) {
-
 	unsigned char* buffer;
-	int count;
 
 	if (rle) buffer = loadRLE(MAX_PALETTE_COLORS * 3);
 	else buffer = loadBlock(MAX_PALETTE_COLORS * 3);
 
-	for (count = 0; count < MAX_PALETTE_COLORS; count++) {
-
+	for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 		// Palette entries are 6-bit
 		// Shift them upwards to 8-bit, and fill in the lower 2 bits
-		palette[count].r = (buffer[count * 3] << 2) + (buffer[count * 3] >> 4);
-		palette[count].g = (buffer[(count * 3) + 1] << 2) + (buffer[(count * 3) + 1] >> 4);
-		palette[count].b = (buffer[(count * 3) + 2] << 2) + (buffer[(count * 3) + 2] >> 4);
-
+		palette[i].r = (buffer[i * 3] << 2) + (buffer[i * 3] >> 4);
+		palette[i].g = (buffer[(i * 3) + 1] << 2) + (buffer[(i * 3) + 1] >> 4);
+		palette[i].b = (buffer[(i * 3) + 2] << 2) + (buffer[(i * 3) + 2] >> 4);
 	}
 
 	delete[] buffer;
-
 }
 
 
@@ -706,7 +431,6 @@ Path::Path (Path* newNext, char* newPath, int newPathType) {
 	if(newPathType & PATH_TYPE_CONFIG) strcat(pathInfo, "C");
 	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "G");
 	if(newPathType & PATH_TYPE_TEMP) strcat(pathInfo, "T");
-	if(newPathType & PATH_TYPE_ANY) strcat(pathInfo, "A");
 
 	LOG_DEBUG("Adding '%s' to the path list [%s]", newPath, pathInfo);
 

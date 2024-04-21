@@ -35,17 +35,16 @@
  */
 Font::Font (const char* fileName) {
 
-	File* file;
+	std::unique_ptr<File> file;
 	unsigned char* pixels;
 	unsigned char* blank;
-	int fileSize;
 	int count, width, height;
 
 	// Load font from a font file
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -53,7 +52,7 @@ Font::Font (const char* fileName) {
 
 	}
 
-	fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 
 	nCharacters = 128;
 
@@ -106,7 +105,7 @@ Font::Font (const char* fileName) {
 
 	delete[] blank;
 
-	delete file;
+	file.reset();
 
 
 	// Create ASCII->font map
@@ -220,16 +219,15 @@ Font::Font (unsigned char* pixels, bool big) {
  */
 Font::Font (bool bonus) {
 
-	File* file;
+	std::unique_ptr<File> file;
 	unsigned char* pixels;
-	int fileSize;
 	int count;
 
 	// Load font from FONTS.000 or BONUS.000
 
 	try {
 
-		file = new File(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
+		file = File::open(bonus? "BONUS.000": "FONTS.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -238,7 +236,7 @@ Font::Font (bool bonus) {
 	}
 
 
-	fileSize = file->getSize();
+	size_t fileSize = file->getSize();
 
 	nCharacters = file->loadShort(256);
 
@@ -291,7 +289,7 @@ Font::Font (bool bonus) {
 
 	}
 
-	delete file;
+	file.reset();
 
 	lineHeight = characters[0]->h;
 

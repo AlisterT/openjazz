@@ -237,9 +237,9 @@ class JJ1Scene {
 		JJ1Scene(const JJ1Scene&); // non construction-copyable
 		JJ1Scene& operator=(const JJ1Scene&); // non copyable
 
-		void               loadScripts      (File* f);
-		void               loadData         (File* f);
-		void               loadAni          (File* f, int dataIndex);
+		void               loadScripts      (const std::unique_ptr<File> &f);
+		void               loadData         (const std::unique_ptr<File> &f);
+		void               loadAni          (const std::unique_ptr<File> &f, int dataIndex);
 		void               loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixdata);
 		void               loadFFMem        (int size, unsigned char* frameData, unsigned char* pixdata);
 		unsigned short int loadShortMem     (unsigned char **data);

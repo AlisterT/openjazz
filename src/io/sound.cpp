@@ -264,9 +264,9 @@ void playMusic (const char * fileName, bool restart) {
 	LockAudio();
 
 	// Load the music file
-	File *file;
+	std::unique_ptr<File> file;
 	try {
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 	} catch (int e) {
 		UnlockAudio();
 		return;
@@ -283,7 +283,7 @@ void playMusic (const char * fileName, bool restart) {
 	file->seek(0, true);
 	unsigned char *psmData = file->loadBlock(size);
 
-	delete file;
+	file.reset();
 
 	// Set up libpsmplug
 	ModPlug_Settings settings = {};
@@ -412,10 +412,10 @@ void setMusicTempo (MusicTempo tempo) {
  * @param fileName Name of a file containing sound clips
  */
 bool loadSounds (const char *fileName) {
-	File *file;
+	std::unique_ptr<File> file;
 
 	try {
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = File::open(fileName, PATH_TYPE_GAME);
 	} catch (int e) {
 		return false;
 	}
@@ -451,7 +451,7 @@ bool loadSounds (const char *fileName) {
 		rawSounds[i].data = file->loadBlock(rawSounds[i].length);
 
 	}
-	delete file;
+	file.reset();
 
 	resampleSounds();
 

@@ -150,15 +150,12 @@ ClientGame::ClientGame (char* address) {
 	// Download the level from the server
 
 	levelFile = createString(LEVEL_FILE);
-	file = NULL;
 
 	ret = setLevel(NULL);
 
 	if (ret < 0) {
 
 		net->close(sock);
-
-		if (file) delete file;
 
 		delete mode;
 
@@ -188,8 +185,6 @@ ClientGame::ClientGame (char* address) {
 
 			net->close(sock);
 
-			if (file) delete file;
-
 			delete mode;
 
 			throw E_QUIT;
@@ -199,8 +194,6 @@ ClientGame::ClientGame (char* address) {
 		if (controls.release(C_ESCAPE)) {
 
 			net->close(sock);
-
-			if (file) delete file;
 
 			delete mode;
 
@@ -216,8 +209,6 @@ ClientGame::ClientGame (char* address) {
 		if (ret < 0) {
 
 			net->close(sock);
-
-			if (file) delete file;
 
 			delete mode;
 
@@ -236,8 +227,6 @@ ClientGame::ClientGame (char* address) {
 ClientGame::~ClientGame () {
 
 	net->close(sock);
-
-	if (file) delete file;
 
 	delete mode;
 
@@ -367,7 +356,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							try {
 
-								file = new File(levelFile, PATH_TYPE_TEMP, true);
+								file = File::open(levelFile, PATH_TYPE_TEMP, true);
 
 							} catch (int e) {
 
@@ -402,8 +391,7 @@ int ClientGame::step (unsigned int ticks) {
 
 							}
 
-							delete file;
-							file = NULL;
+							file.reset();
 
 						}
 
@@ -514,8 +502,7 @@ int ClientGame::step (unsigned int ticks) {
 
 		if (!(net->isConnected(sock))) {
 
-			if (file) delete file;
-			file = NULL;
+			file.reset();
 
 			return E_N_DISCONNECT;
 

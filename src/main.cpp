@@ -164,7 +164,7 @@ int checkOptions (int argc, char *argv[]) {
  */
 void startUp (const char *argv0, int pathCount, char *paths[]) {
 
-	File* file;
+	std::unique_ptr<File> file;
 	unsigned char* pixels = NULL;
 	SetupOptions config;
 
@@ -260,7 +260,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	try {
 
-		file = new File("PANEL.000", PATH_TYPE_GAME);
+		file = File::open("PANEL.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -278,7 +278,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 
 	pixels = file->loadRLE(46272);
 
-	delete file;
+	file.reset();
 
 	panelBigFont = NULL;
 	panelSmallFont = NULL;
