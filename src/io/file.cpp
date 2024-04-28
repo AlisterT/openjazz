@@ -29,6 +29,21 @@
 #include <miniz.h>
 
 std::unique_ptr<File> File::open (const char* name, int pathType, bool write) {
+	// shortcuts for special paths
+	if (pathType & PATH_TYPE_CONFIG) {
+		return std::unique_ptr<File>(new DirFile(gamePaths.config, name, write));
+	}
+	if (pathType & PATH_TYPE_TEMP) {
+		return std::unique_ptr<File>(new DirFile(gamePaths.temp, name, write));
+	}
+
+	// we do not allow writing anywhere else
+	if (write) {
+		LOG_FATAL("Not allowed to write to %s", name);
+
+		throw E_FILE;
+	}
+
 #ifdef WANT_ZIP
 
 #endif
@@ -42,13 +57,10 @@ std::unique_ptr<File> File::open (const char* name, int pathType, bool write) {
 			continue;
 		}
 
-		// only allow certain write paths
-		if (!write || (pathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
-			try {
-				return std::unique_ptr<File>(new DirFile(path->path, name, write));
-			} catch (int e) {
-			}
-		} else LOG_FATAL("Not allowed to write to %s", name);
+		try {
+			return std::unique_ptr<File>(new DirFile(path->path, name, write));
+		} catch (int e) {
+		}
 
 		path = path->next;
 	}
@@ -351,11 +363,15 @@ void File::loadPalette (SDL_Color* palette, bool rle) {
 
 
 PathMgr::PathMgr():
-	paths(NULL), has_config(false), has_temp(false) {
+	paths(NULL), config(nullptr), temp(nullptr) {
 
 };
 
 PathMgr::~PathMgr() {
+	if(config)
+		delete[] config;
+	if(temp)
+		delete[] temp;
 	delete paths;
 };
 
@@ -389,8 +405,8 @@ bool PathMgr::add(char* newPath, int newPathType) {
 	}
 
 	// ignore, if already present
-	if(has_config) newPathType &= ~PATH_TYPE_CONFIG;
-	if(has_temp) newPathType &= ~PATH_TYPE_TEMP;
+	if(config) newPathType &= ~PATH_TYPE_CONFIG;
+	if(temp) newPathType &= ~PATH_TYPE_TEMP;
 
 	// config and temp dir need to be writeable
 	if ((newPathType & (PATH_TYPE_CONFIG|PATH_TYPE_TEMP)) > 0) {
@@ -402,14 +418,25 @@ bool PathMgr::add(char* newPath, int newPathType) {
 		}
 	}
 
+	// we only need one directory for these
+	if (newPathType & PATH_TYPE_CONFIG) {
+		config = createString(newPath);
+		newPathType &= ~PATH_TYPE_CONFIG;
+
+		LOG_DEBUG("Using directory '%s' for configuration.", config);
+	}
+	if (newPathType & PATH_TYPE_TEMP) {
+		temp = createString(newPath);
+		newPathType &= ~PATH_TYPE_TEMP;
+
+		LOG_DEBUG("Using directory '%s' for temporary files.", temp);
+	}
+
+	// path could have been invalidated above
 	if(newPathType == PATH_TYPE_INVALID) {
 		delete[] newPath;
 		return false;
 	}
-
-	// we only need one directory for these
-	if (newPathType & PATH_TYPE_CONFIG) has_config = true;
-	if (newPathType & PATH_TYPE_TEMP) has_temp = true;
 
 	// Finally add
 	paths = new Path(paths, newPath, newPathType);
@@ -426,11 +453,10 @@ bool PathMgr::add(char* newPath, int newPathType) {
  */
 Path::Path (Path* newNext, char* newPath, int newPathType) {
 
-	char pathInfo[10] = {};
-	if(newPathType & PATH_TYPE_SYSTEM) strcat(pathInfo, "S");
-	if(newPathType & PATH_TYPE_CONFIG) strcat(pathInfo, "C");
-	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "G");
-	if(newPathType & PATH_TYPE_TEMP) strcat(pathInfo, "T");
+	char pathInfo[11] = {};
+	if(newPathType & PATH_TYPE_SYSTEM) strcat(pathInfo, "Sys");
+	if(newPathType & PATH_TYPE_USER) strcat(pathInfo, "Usr");
+	if(newPathType & PATH_TYPE_GAME) strcat(pathInfo, "Game");
 
 	LOG_DEBUG("Adding '%s' to the path list [%s]", newPath, pathInfo);
 

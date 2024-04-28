@@ -117,10 +117,11 @@ class File {
 
 enum path_type {
 	PATH_TYPE_INVALID = 0,     ///< Invalid directory, do not use
-	PATH_TYPE_SYSTEM = 1 << 0, ///< Read-only system directory
-	PATH_TYPE_CONFIG = 1 << 1, ///< User writable configuration directory
-	PATH_TYPE_GAME = 1 << 2,   ///< Directory containing game data
-	PATH_TYPE_TEMP = 1 << 3,   ///< User writable temporary directory
+	PATH_TYPE_SYSTEM = 1 << 0, ///< System directory
+	PATH_TYPE_USER = 1 << 1,   ///< User directory
+	PATH_TYPE_CONFIG = 1 << 2, ///< User writable configuration directory
+	PATH_TYPE_GAME = 1 << 3,   ///< Directory containing game data
+	PATH_TYPE_TEMP = 1 << 4    ///< User writable temporary directory
 };
 
 
@@ -147,8 +148,8 @@ class PathMgr {
 
 		Path* paths;
 
-		bool has_config;
-		bool has_temp;
+		char *config;
+		char *temp;
 
 };
 
