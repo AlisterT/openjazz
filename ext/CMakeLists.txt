@@ -28,3 +28,8 @@ add_library(psmplug STATIC
 	psmplug/tables.h
 )
 target_include_directories(psmplug PUBLIC psmplug)
+
+# hashmap
+
+add_library(hashmap STATIC hashmap/hashmap.h hashmap/hashmap.cpp)
+target_include_directories(hashmap PUBLIC hashmap)
