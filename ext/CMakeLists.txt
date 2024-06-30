@@ -4,6 +4,10 @@
 add_library(argparse STATIC argparse/argparse.h argparse/argparse.cpp)
 target_include_directories(argparse PUBLIC argparse)
 
+# confuse
+
+add_subdirectory(confuse)
+
 # miniz
 
 add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
