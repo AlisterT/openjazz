@@ -3,17 +3,24 @@
 
 add_library(argparse STATIC argparse/argparse.h argparse/argparse.cpp)
 target_include_directories(argparse PUBLIC argparse)
+target_link_libraries(OpenJazz argparse)
 
 # confuse
 
-add_subdirectory(confuse)
+find_package(confuse)
+if(NOT TARGET CONFUSE::libconfuse)
+	add_subdirectory(confuse)
+	add_library(CONFUSE::libconfuse ALIAS confuse)
+endif()
+target_link_libraries(OpenJazz CONFUSE::libconfuse)
 
 # miniz
 
 add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
-target_compile_definitions(miniz PUBLIC	MINIZ_NO_ARCHIVE_APIS)
+target_compile_definitions(miniz PUBLIC MINIZ_NO_ARCHIVE_APIS)
 #target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
 target_include_directories(miniz PUBLIC miniz)
+target_link_libraries(OpenJazz miniz)
 
 # psmplug
 
@@ -32,3 +39,4 @@ add_library(psmplug STATIC
 	psmplug/tables.h
 )
 target_include_directories(psmplug PUBLIC psmplug)
+target_link_libraries(OpenJazz psmplug)
