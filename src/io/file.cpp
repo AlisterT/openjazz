@@ -153,6 +153,10 @@ bool File::open (const char* path, const char* name, bool write) {
 
 }
 
+FILE *File::getFP() {
+	return file;
+}
+
 
 /**
  * Get the size of the file.

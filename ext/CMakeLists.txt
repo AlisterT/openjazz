@@ -13,6 +13,7 @@ if(NOT TARGET CONFUSE::libconfuse)
 	add_library(CONFUSE::libconfuse ALIAS confuse)
 endif()
 target_link_libraries(OpenJazz CONFUSE::libconfuse)
+target_compile_definitions(OpenJazz PRIVATE USE_CONFUSE)
 
 # miniz
 

@@ -43,6 +43,7 @@ class File {
 		File                           (const char* name, int pathType, bool write = false);
 		~File                          ();
 
+		FILE*              getFP       ();
 		int                getSize     ();
 		void               seek        (int offset, bool reset);
 		int                tell        ();
