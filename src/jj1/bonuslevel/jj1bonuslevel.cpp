@@ -373,7 +373,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	multiplayer = multi;
 
-	video.setTitle("BONUS LEVEL");
+	video.setTitle("Bonus Level");
 
 }
 

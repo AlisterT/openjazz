@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16...3.27)
+cmake_minimum_required(VERSION 3.16...3.29)
 
 project(OpenJazz
 	VERSION 20231028
@@ -12,9 +12,9 @@ include(CMakeDependentOption)
 include(OJ-misc)
 include(Platform-Helpers)
 
-# We are in the process to migrate to C++11
+# We are in the process to migrate to C++14
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # OpenJazz
@@ -99,6 +99,8 @@ add_executable(OpenJazz
 	src/jj1/level/jj1levelload.cpp
 	src/jj1/planet/jj1planet.cpp
 	src/jj1/planet/jj1planet.h
+	src/jj1/save/jj1save.cpp
+	src/jj1/save/jj1save.h
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
 	src/jj1/scene/jj1sceneload.cpp)

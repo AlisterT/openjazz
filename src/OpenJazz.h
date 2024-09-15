@@ -58,6 +58,8 @@
 #define E_DEMOTYPE     -(0x12)
 #define E_FILE         -(0x11)
 #define E_VIDEO        -(0x10)
+#define E_SAVE         -(0x0F)
+#define E_LOAD         -(0x0E)
 #define E_RETURN       -(0x02)
 #define E_QUIT         -(0x01)
 

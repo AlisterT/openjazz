@@ -70,6 +70,7 @@ class GameMenu : public Menu {
 		int selectEpisode     (GameModeType mode, int episode);
 		int newGameEpisode    (GameModeType mode);
 		int joinGame          ();
+		int loadGameCustom    ();
 
 	public:
 		explicit GameMenu(File* file);

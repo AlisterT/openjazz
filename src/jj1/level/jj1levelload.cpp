@@ -510,6 +510,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	}
 
 	strcat(levelname, ext);
+	camelcaseString(levelname);
 
 	video.setPalette(menuPalette);
 	video.clearScreen(0);

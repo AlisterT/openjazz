@@ -97,10 +97,6 @@ File::~File () {
  */
 bool File::open (const char* path, const char* name, bool write) {
 
-#if defined(UPPERCASE_FILENAMES) || defined(LOWERCASE_FILENAMES)
-	int count;
-#endif
-
 	// Create the file path for the given directory
 	filePath = createString(path, name);
 
@@ -108,40 +104,26 @@ bool File::open (const char* path, const char* name, bool write) {
 	file = fopen(filePath, write ? "wb": "rb");
 
 #ifdef UPPERCASE_FILENAMES
-    if (!file) {
+	if (!file) {
 
-        // Convert the file name to upper case
-        for (count = strlen(path); filePath[count]; count++) {
+		uppercaseString(filePath + strlen(path));
+		file = fopen(filePath, write ? "wb": "rb");
 
-            if ((filePath[count] >= 97) && (filePath[count] <= 122)) filePath[count] -= 32;
-
-        }
-
-        // Open the file from the path
-        file = fopen(filePath, write ? "wb": "rb");
-
-    }
+	}
 #endif
 
 #ifdef LOWERCASE_FILENAMES
-    if (!file) {
+	if (!file) {
 
-        // Convert the file name to lower case
-        for (count = strlen(path); filePath[count]; count++) {
+		lowercaseString(filePath + strlen(path));
+		file = fopen(filePath, write ? "wb": "rb");
 
-            if ((filePath[count] >= 65) && (filePath[count] <= 90)) filePath[count] += 32;
-
-        }
-
-        // Open the file from the path
-        file = fopen(filePath, write ? "wb": "rb");
-
-    }
+	}
 #endif
 
 	if (file) {
 
-        LOG_DEBUG("Opened file: %s", filePath);
+		LOG_DEBUG("Opened file: %s", filePath);
 
 		return true;
 
@@ -442,6 +424,7 @@ char * File::loadString () {
 
 		// If the length is not given, assume it is an 8.3 file name
 		string = new char[13];
+		LOG_TRACE("Assuming reading a filename from %s", filePath);
 
 		int count;
 		for (count = 0; count < 9; count++) {
@@ -469,6 +452,24 @@ char * File::loadString () {
 
 	return string;
 
+}
+
+
+/**
+ * Load a string with given length from the file.
+ *
+ * @return The new string
+ */
+char * File::loadString (int length) {
+	char *string = new char[length + 1];
+	int res = fread(string, 1, length, file);
+
+	if (res != length)
+		LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
+
+	string[length] = '\0';
+
+	return string;
 }
 
 

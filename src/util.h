@@ -21,7 +21,6 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-
 #include "OpenJazz.h"
 #include "io/file.h"
 
@@ -33,17 +32,19 @@ EXTERN fixed sinLut[1024];
 
 // Functions
 
-EXTERN bool               fileExists           (const char *fileName, int pathType = PATH_TYPE_ANY);
-EXTERN unsigned short int createShort          (const unsigned char* data);
-EXTERN int                createInt            (const unsigned char* data);
-EXTERN char*              createString         (const char *string);
-EXTERN char*              createString         (const char *first, const char *second);
-EXTERN char*              createFileName       (const char *type, int extension);
-EXTERN char*              createFileName       (const char *type, const char *extension);
-EXTERN char*              createFileName       (const char *type, int level, int extension);
-EXTERN char*              createEditableString (const char *string);
-EXTERN fixed              fSin                 (fixed angle);
-EXTERN fixed              fCos                 (fixed angle);
+bool               fileExists           (const char *fileName, int pathType = PATH_TYPE_ANY);
+unsigned short int createShort          (const unsigned char* data);
+int                createInt            (const unsigned char* data);
+char*              createString         (const char *string);
+char*              createString         (const char *first, const char *second);
+char*              createFileName       (const char *type, int extension);
+char*              createFileName       (const char *type, const char *extension);
+char*              createFileName       (const char *type, int level, int extension);
+char*              createEditableString (const char *string);
+void               lowercaseString      (char *string);
+void               uppercaseString      (char *string);
+void               camelcaseString      (char *string);
+fixed              fSin                 (fixed angle);
+fixed              fCos                 (fixed angle);
 
 #endif
-

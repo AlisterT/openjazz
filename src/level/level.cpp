@@ -326,10 +326,12 @@ int Level::select (bool& menu, int option) {
 
 		case 2: // Save
 
+			//return E_SAVE;
 			// FALLTHROUGH
 
 		case 3: // Load
 
+			//return E_LOAD;
 			playSound(SE::WAIT);
 
 			break;

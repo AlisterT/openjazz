@@ -1,7 +1,7 @@
 # OpenJazz makefile
 
 # Sane defaults
-CXX ?= g++ -std=c++11
+CXX ?= g++ -std=c++14
 CXXFLAGS ?= -g -Wall -O2
 DEFINES = -DSCALE -DPORTABLE
 CPPFLAGS = $(DEFINES) -Isrc -Iext/scale2x -Iext/psmplug -Iext/miniz -Iext/argparse
@@ -83,6 +83,7 @@ OJ1OBJS = \
 	src/jj1/level/jj1levelplayer.o \
 	src/jj1/level/jj1levelplayerframe.o \
 	src/jj1/planet/jj1planet.o \
+	src/jj1/save/jj1save.o \
 	src/jj1/scene/jj1scene.o \
 	src/jj1/scene/jj1sceneload.o
 

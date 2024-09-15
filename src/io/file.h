@@ -44,7 +44,7 @@ class File {
 		~File                          ();
 
 		int                getSize     ();
-		void               seek        (int offset, bool reset);
+		void               seek        (int offset, bool reset = false);
 		int                tell        ();
 		unsigned char      loadChar    ();
 		void               storeChar   (unsigned char val);
@@ -58,6 +58,7 @@ class File {
 		void               skipRLE     ();
 		unsigned char*     loadLZ      (int compressedLength, int length);
 		char*              loadString  ();
+		char*              loadString  (int length);
 		SDL_Surface*       loadSurface (int width, int height);
 		unsigned char*     loadPixels  (int length);
 		unsigned char*     loadPixels  (int length, int key);

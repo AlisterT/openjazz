@@ -31,6 +31,7 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "jj1/save/jj1save.h"
 #include "loop.h"
 #include "util.h"
 
@@ -281,6 +282,58 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
  * @return Error code
  */
 int GameMenu::loadGame () {
+	int ret, option = 0;
+	JJ1Save* save[4];
+	char* fileName;
+
+	// load save games
+
+	fileName = createString("SAVE.0");
+	for (int i = 0; i < 4; i++)	{
+		save[i] = new JJ1Save(fileName);
+		fileName[5]++;
+	}
+	delete[] fileName;
+
+	const char *loadGameOptions[5] = {save[0]->name, save[1]->name, save[2]->name, save[3]->name, "custom"};
+
+	while (true) {
+		video.setPalette(menuPalette);
+
+		ret = generic(loadGameOptions, 5, option);
+		if (ret < 0) break;
+
+		if (option == 4) {
+			if (loadGameCustom() == E_QUIT) ret = E_QUIT;
+			if (ret < 0) break;
+		} else {
+			if(save[option]->valid) {
+				char* firstLevel = createFileName("LEVEL", save[option]->level, save[option]->planet);
+				difficulty = save[option]->difficulty;
+				ret = playNewGame(M_SINGLE, firstLevel);
+				delete[] firstLevel;
+
+				break;
+			} else {
+				playSound(SE::WAIT);
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++) {
+		delete save[i];
+	}
+
+	return ret;
+}
+
+
+/**
+ * Run the custom game loading menu.
+ *
+ * @return Error code
+ */
+int GameMenu::loadGameCustom () {
 
 	/// @todo Actual loading of saved games
 

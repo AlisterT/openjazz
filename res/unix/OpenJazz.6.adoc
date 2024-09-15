@@ -145,3 +145,4 @@ Ricerind:: Mac OS X port
 Slaanesh:: GP32 port
 GPF:: Dreamcast port
 Cameron Cawley (ccawley2011):: RISC OS, SDL2 port
+CYBERDEViL:: Savegame support

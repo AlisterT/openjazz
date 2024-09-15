@@ -240,6 +240,37 @@ char * createEditableString (const char *string) {
 
 }
 
+void lowercaseString (char *string) {
+	for (int i = 0; string[i]; i++) {
+		if ((string[i] >= 65) && (string[i] <= 90))
+			string[i] += 32;
+	}
+}
+
+void uppercaseString (char *string) {
+	for (int i = 0; string[i]; i++) {
+		if ((string[i] >= 97) && (string[i] <= 122))
+			string[i] -= 32;
+	}
+}
+
+void camelcaseString (char *string) {
+	bool isFirst = true;
+
+	for (int i = 0; string[i]; i++) {
+		if(isFirst) {
+			if ((string[i] >= 97) && (string[i] <= 122))
+				string[i] -= 32;
+			isFirst = false;
+		} else {
+			if ((string[i] >= 65) && (string[i] <= 90))
+				string[i] += 32;
+		}
+		if(string[i] == 32)
+			isFirst = true;
+	}
+}
+
 
 /**
  * Get the sine of the given angle
