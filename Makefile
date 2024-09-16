@@ -56,6 +56,7 @@ OJOBJS = \
 	src/level/level.o \
 	src/level/movable.o \
 	src/main.o \
+	src/menu/filemenu.o \
 	src/menu/gamemenu.o \
 	src/menu/mainmenu.o \
 	src/menu/menu.o \

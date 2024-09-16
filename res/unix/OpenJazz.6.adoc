@@ -135,6 +135,7 @@ Additional coding (logger, CLI, ...) +
 Modernizing +
 UI improvements
 Lars Persson (anotherguest):: Movie playback fixes
+CYBERDEViL:: Savegame algorithm
 Scott Smith (Pickle):: GP2X/WIZ, Canoo, Pandora ports
 Przemysław Buczkowski (przemub):: Android, Haiku ports
 Matthieu Milan (usineur):: PSVita port
@@ -145,4 +146,3 @@ Ricerind:: Mac OS X port
 Slaanesh:: GP32 port
 GPF:: Dreamcast port
 Cameron Cawley (ccawley2011):: RISC OS, SDL2 port
-CYBERDEViL:: Savegame support

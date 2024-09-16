@@ -56,6 +56,7 @@ add_executable(OpenJazz
 	src/logo.h
 	src/loop.h
 	src/main.cpp
+	src/menu/filemenu.cpp
 	src/menu/gamemenu.cpp
 	src/menu/mainmenu.cpp
 	src/menu/menu.cpp

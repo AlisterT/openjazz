@@ -52,6 +52,14 @@ class Menu {
 
 };
 
+/// Saving and loading menu
+class FileMenu : public Menu {
+
+	public:
+		int main (bool forSaving, bool showCustom);
+
+};
+
 /// New game menus
 class GameMenu : public Menu {
 
@@ -62,6 +70,7 @@ class GameMenu : public Menu {
 		SDL_Color     greyPalette[MAX_PALETTE_COLORS]; ///< Greyed-out episode selection palette
 		int           episodes; ///< Number of episodes
 		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
+		FileMenu*     fileMenu; ///< Load menu
 
 		int playNewGame       (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, char* firstLevel);

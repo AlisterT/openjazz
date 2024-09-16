@@ -34,7 +34,8 @@
 #include "jj1/save/jj1save.h"
 #include "loop.h"
 #include "util.h"
-
+#include "io/log.h"
+#include <memory>
 
 /**
  * Create the game menu.
@@ -87,6 +88,8 @@ GameMenu::GameMenu (File *file) {
 
 	}
 
+	fileMenu = new FileMenu();
+
 }
 
 
@@ -98,6 +101,8 @@ GameMenu::~GameMenu () {
 	for (int i = 0; i < MAX_EPISODES; i++) SDL_FreeSurface(episodeScreens[i]);
 
 	SDL_FreeSurface(difficultyScreen);
+
+	delete fileMenu;
 
 }
 
@@ -157,6 +162,11 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 	if (ret != E_QUIT) playMusic("MENUSNG.PSM");
 
 	switch (ret) {
+
+		case E_LOAD:
+
+			LOG_WARN("Implement in-game loading");
+			return E_LOAD;
 
 		case E_QUIT:
 
@@ -282,46 +292,35 @@ int GameMenu::newGameDifficulty (GameModeType mode, int levelNum, int worldNum) 
  * @return Error code
  */
 int GameMenu::loadGame () {
-	int ret, option = 0;
-	JJ1Save* save[4];
-	char* fileName;
-
-	// load save games
-
-	fileName = createString("SAVE.0");
-	for (int i = 0; i < 4; i++)	{
-		save[i] = new JJ1Save(fileName);
-		fileName[5]++;
-	}
-	delete[] fileName;
-
-	const char *loadGameOptions[5] = {save[0]->name, save[1]->name, save[2]->name, save[3]->name, "custom"};
+	int ret;
 
 	while (true) {
-		video.setPalette(menuPalette);
+		ret = fileMenu->main(false, true);
+		if (ret < 0) return ret;
 
-		ret = generic(loadGameOptions, 5, option);
-		if (ret < 0) break;
-
-		if (option == 4) {
-			if (loadGameCustom() == E_QUIT) ret = E_QUIT;
-			if (ret < 0) break;
+		if (ret == 4) {
+			while (true) {
+				ret = loadGameCustom();
+				if (ret == E_QUIT) return E_QUIT; // return to main menu
+				if (ret <= 0) break; // return to load menu
+			}
 		} else {
-			if(save[option]->valid) {
-				char* firstLevel = createFileName("LEVEL", save[option]->level, save[option]->planet);
-				difficulty = save[option]->difficulty;
+			// load save game
+			char* fileName = createString("SAVE.0");
+			fileName[5] += ret;
+			auto save = std::make_unique<JJ1Save>(fileName);
+			delete[] fileName;
+
+			if(save->valid) {
+				char* firstLevel = createFileName("LEVEL", save->level, save->planet);
+				difficulty = save->difficulty;
 				ret = playNewGame(M_SINGLE, firstLevel);
 				delete[] firstLevel;
+			} else
+				ret = E_NONE;
 
-				break;
-			} else {
-				playSound(SE::WAIT);
-			}
+			break;
 		}
-	}
-
-	for (int i = 0; i < 4; i++) {
-		delete save[i];
 	}
 
 	return ret;
@@ -334,8 +333,6 @@ int GameMenu::loadGame () {
  * @return Error code
  */
 int GameMenu::loadGameCustom () {
-
-	/// @todo Actual loading of saved games
 
 	int option, worldNum, levelNum, x, y;
 

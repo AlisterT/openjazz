@@ -278,9 +278,9 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		for (count = 0; count < 6; count++) {
 
-			// Gray out Save and Load options, as they are unimplemented
+			// Gray out options in multiplayer and Save (unimplemented)
 
-			if (count == 2 || count == 3) {
+			if ((multiplayer && count >= 2 && count <= 4) || count == 2) {
 
 				drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
 
@@ -326,13 +326,35 @@ int Level::select (bool& menu, int option) {
 
 		case 2: // Save
 
-			//return E_SAVE;
-			// FALLTHROUGH
+			if (!multiplayer) {
+
+				int ret = fileMenu.main(true, false);
+				if (ret == E_QUIT) return E_QUIT;
+				if (ret >= 0) {
+					// TODO
+				}
+
+				// Restore level palette
+				video.setPalette(palette);
+
+			}
+
+			break;
 
 		case 3: // Load
 
-			//return E_LOAD;
-			playSound(SE::WAIT);
+			if (!multiplayer) {
+
+				int ret = fileMenu.main(false, false);
+				if (ret == E_QUIT) return E_QUIT;
+				if (ret >= 0) {
+					return E_LOAD; // TODO
+				}
+
+				// Restore level palette
+				video.setPalette(palette);
+
+			}
 
 			break;
 

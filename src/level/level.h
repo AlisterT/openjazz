@@ -89,6 +89,7 @@ class Level {
 	private:
 		const char* menuOptions[6];
 		SetupMenu   setupMenu; ///< Setup menu to run on the player's command
+		FileMenu    fileMenu; ///< Save and Load menus to run on the player's command
 
 		int select (bool& menu, int option);
 
