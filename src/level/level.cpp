@@ -348,7 +348,7 @@ int Level::select (bool& menu, int option) {
 				int ret = fileMenu.main(false, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
-					return E_LOAD; // TODO
+					return E_LOAD0 + ret;
 				}
 
 				// Restore level palette

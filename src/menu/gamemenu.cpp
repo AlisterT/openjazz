@@ -37,6 +37,25 @@
 #include "io/log.h"
 #include <memory>
 
+static bool getSaveData(int slot, int &lvl, int &plnt, int &dffclty) {
+	// load save game
+	char* fileName = createString("SAVE.0");
+	fileName[5] += slot;
+	auto save = std::make_unique<JJ1Save>(fileName);
+	delete[] fileName;
+
+	if(save->valid) {
+		lvl = save->level;
+		plnt = save->planet;
+		dffclty = save->difficulty;
+
+		return true;
+	}
+
+	return false;
+}
+
+
 /**
  * Create the game menu.
  *
@@ -163,10 +182,24 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 	switch (ret) {
 
-		case E_LOAD:
+		case E_LOAD0:
+		case E_LOAD1:
+		case E_LOAD2:
+		case E_LOAD3:
+			{
+				// FIXME: Rewrite load logic, save state in memory
 
-			LOG_WARN("Implement in-game loading");
-			return E_LOAD;
+				int lvl, plnt, dffclty;
+				if (getSaveData(ret - E_LOAD0, lvl, plnt, dffclty)) {
+					char* firstLevel = createFileName("LEVEL", lvl, plnt);
+					difficulty = dffclty;
+					ret = playNewGame(M_SINGLE, firstLevel); // recursive call
+					delete[] firstLevel;
+				} else
+					ret = E_NONE;
+
+				return ret;
+			}
 
 		case E_QUIT:
 
@@ -306,14 +339,10 @@ int GameMenu::loadGame () {
 			}
 		} else {
 			// load save game
-			char* fileName = createString("SAVE.0");
-			fileName[5] += ret;
-			auto save = std::make_unique<JJ1Save>(fileName);
-			delete[] fileName;
-
-			if(save->valid) {
-				char* firstLevel = createFileName("LEVEL", save->level, save->planet);
-				difficulty = save->difficulty;
+			int lvl, plnt, dffclty;
+			if (getSaveData(ret, lvl, plnt, dffclty)) {
+				char* firstLevel = createFileName("LEVEL", lvl, plnt);
+				difficulty = dffclty;
 				ret = playNewGame(M_SINGLE, firstLevel);
 				delete[] firstLevel;
 			} else
