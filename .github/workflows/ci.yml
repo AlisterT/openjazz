@@ -211,6 +211,7 @@ jobs:
   riscos-gccsdk:
     name: Build (RISC OS, GCCSDK 4.7)
     needs: prepare
+    if: false # disabled, no c++14
     runs-on: ubuntu-latest
     container: riscosdotinfo/riscos-gccsdk-4.7:latest
     steps:
