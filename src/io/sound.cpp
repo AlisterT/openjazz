@@ -194,6 +194,8 @@ void openAudio () {
 		(SDL_AUDIO_BITSIZE(audioSpec.format) != 8 && SDL_AUDIO_BITSIZE(audioSpec.format) != 16)) {
 		LOG_DEBUG("SDL audio format unsupported, letting SDL convert it.");
 
+		if(audioDevice) SDL_CloseAudioDevice(audioDevice);
+
 		audioDevice = SDL_OpenAudioDevice(nullptr, 0, &asDesired, &audioSpec, 0);
 	}
 	audioOk = (audioDevice != 0);

@@ -158,6 +158,40 @@ jobs:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
 
+  web-emscripten:
+    name: Build (Emscripten)
+    needs: prepare
+    runs-on: emscripten/emsdk
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -yqq
+          sudo apt-get install -yqq build-essential cmake ninja-build \
+            asciidoctor w3m
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenJazz
+        run: |
+          emcmake cmake --workflow --preset release -DDATAPATH=/data -DNETWORK=OFF
+          touch build-release/data.js # dummy data
+          ls -l build-release
+
+      - name: Prepare artifact
+        env:
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
+        run: |
+          mkdir OJ-${OJ_VERSION}
+          builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OJ-${OJ_VERSION}/Manual.txt
+          cp build-release/*.{wasm,js,html,data} README.md COPYING licenses.txt OJ-${OJ_VERSION}/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openjazz-web
+          path: OJ-*/
+
   nintendo-devkitpro:
     strategy:
       fail-fast: false

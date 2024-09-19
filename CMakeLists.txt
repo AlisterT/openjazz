@@ -130,7 +130,12 @@ endif()
 
 # libraries
 
-if(LEGACY_SDL)
+if(EMSCRIPTEN)
+	# emscripten ships a "port" of SDL2
+	set(OJ_LIBS_SDL "SDL2")
+	set(SDL_STATUS "SDL2 (emscripten port)")
+	target_compile_options(OpenJazz PRIVATE "--use-port=sdl2;-flto;-fexceptions")
+elseif(LEGACY_SDL)
 	find_package(SDL REQUIRED)
 	target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
 	set(OJ_LIBS_SDL ${SDL_LIBRARY})
@@ -260,6 +265,16 @@ if(WIN32)
 	set_target_properties(OpenJazz PROPERTIES WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>)
 	# add icon
 	target_sources(OpenJazz PRIVATE res/windows/OpenJazz.rc)
+elseif(EMSCRIPTEN)
+	set_target_properties(OpenJazz PROPERTIES SUFFIX ".html")
+	set(JS_SHELL "${CMAKE_CURRENT_SOURCE_DIR}/res/emscripten/shell.html")
+
+	set_property(TARGET OpenJazz PROPERTY LINK_FLAGS
+		"--shell-file ${JS_SHELL} -sMINIFY_HTML=0 -flto --use-port=sdl2
+		 -sFORCE_FILESYSTEM -sEXIT_RUNTIME=1 -sASYNCIFY
+		 -sENVIRONMENT=web --closure 1 -sEXPORTED_RUNTIME_METHODS=['allocate']
+		 -sASSERTIONS -sNO_DISABLE_EXCEPTION_CATCHING")
+	set_source_files_properties("src/main.cpp" PROPERTIES OBJECT_DEPENDS "${JS_SHELL}")
 elseif(RISCOS)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/riscos.cpp
