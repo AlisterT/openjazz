@@ -161,7 +161,8 @@ jobs:
   web-emscripten:
     name: Build (Emscripten)
     needs: prepare
-    runs-on: emscripten/emsdk
+    runs-on: ubuntu-latest
+    container: emscripten/emsdk
     steps:
       - name: Install dependencies
         run: |
@@ -174,9 +175,11 @@ jobs:
 
       - name: Build OpenJazz
         run: |
-          emcmake cmake --workflow --preset release -DDATAPATH=/data -DNETWORK=OFF
-          touch build-release/data.js # dummy data
-          ls -l build-release
+          emcmake cmake -B build-web . -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DDATAPATH=/data -DNETWORK=OFF
+          cmake --build build-web
+          touch build-web/data.{js,data} # dummy data
+          ls -l build-web/OpenJazz*
 
       - name: Prepare artifact
         env:
@@ -184,7 +187,7 @@ jobs:
         run: |
           mkdir OJ-${OJ_VERSION}
           builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OJ-${OJ_VERSION}/Manual.txt
-          cp build-release/*.{wasm,js,html,data} README.md COPYING licenses.txt OJ-${OJ_VERSION}/
+          cp build-web/*.{wasm,js,html,data} README.md COPYING licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -327,6 +330,7 @@ jobs:
       - dist
       - linux-clang
       - windows-mingw-gcc
+      - web-emscripten
       - nintendo-devkitpro
       - riscos-gccsdk
       - psp-pspdev
@@ -392,6 +396,7 @@ jobs:
       - dist
       - linux-clang
       - windows-mingw-gcc
+      - web-emscripten
       - nintendo-devkitpro
       - riscos-gccsdk
       - psp-pspdev

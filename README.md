@@ -8,7 +8,7 @@
 OpenJazz can be compiled on a wide range of operating systems, including
 Windows, macOS, GNU/Linux and BSD flavors. Also ports are available for some
 homebrew platforms, consoles and handhelds. See [Platforms](PLATFORMS.md) for
-details.
+details. You can even play it [inside your web browser][web port].
 
 To play, you will need the files from one of the original games.
 
@@ -53,7 +53,7 @@ software.
 
 ## [Building](BUILDING.md)
 
-## Running
+## Running [![Play in Browser][web badge]][web port]
 
 Execute `OpenJazz`. Depending on the platform and compile time options, the
 data files are expected to be under different paths (alongside the executable
@@ -71,3 +71,5 @@ Original author: Alister Thomson (alister_j_t at yahoo dot com)
 http://alister.eu/jazz/oj/
 
 [logo]: res/unix/OpenJazz.png
+[web badge]: https://img.shields.io/badge/Play_in-Browser-blue?style=plastic
+[web port]: https://openjazz.github.io
