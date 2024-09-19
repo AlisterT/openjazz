@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 
 project(OpenJazz
-	VERSION 20231028
+	VERSION 20240919
 	LANGUAGES CXX
 	HOMEPAGE_URL http://alister.eu/jazz/oj/)
 
