@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [master, dev, development, feature/**, bugfix/**, pr/**]
+    tags:
+      - 20[0-9][0-9][0-1][0-9][0-3][0-9]
   pull_request:
   workflow_dispatch:
 
@@ -21,19 +23,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Get version (tag)
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        run: echo "OJ_GITVER=${{ github.ref_name }}" >> $GITHUB_ENV
-      - name: Get version (hash)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: echo "OJ_GITVER=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
-      - name: Set version
+      - name: Retrieve tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - name: Get version, tag and pull request info
         id: vars
-        run: echo "oj_version=${{ env.OJ_GITVER }}" >> $GITHUB_OUTPUT
-      - name: Check version
-        run: echo "oj_version = ${{ steps.vars.outputs.oj_version }}"
+        run: |
+          tag=""
+          pull="no"
+          if [[ "${{ github.ref }}" == refs/heads/* ]]; then
+            # branch build, check if tag exists
+            tag="$(git tag --points-at HEAD)"
+            oj_version="$(git rev-parse --short "$GITHUB_SHA")"
+          elif [[ "${{ github.ref }}" == refs/pull/* ]]; then
+            # pull request
+            pull="yes"
+            oj_version="pull${{ github.event.number }}"
+          else
+            # tag
+            tag="$(git tag --points-at HEAD)"
+            oj_version="${{ github.ref_name }}"
+          fi
+          echo "oj_version=${oj_version}" >> $GITHUB_OUTPUT
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "pull=${pull}" >> $GITHUB_OUTPUT
+      - name: Check version, tag and pull request info
+        run: |
+          echo "oj_version = ${{ steps.vars.outputs.oj_version }}"
+          echo "tag = ${{ steps.vars.outputs.tag }}"
+          echo "pull = ${{ steps.vars.outputs.pull }}"
     outputs:
       oj_version: ${{ steps.vars.outputs.oj_version }}
+      tag: ${{ steps.vars.outputs.tag }}
+      pull: ${{ steps.vars.outputs.pull }}
 
   dist:
     name: Distribution archives
@@ -335,7 +356,7 @@ jobs:
       - riscos-gccsdk
       - psp-pspdev
     # allow run when some platform jobs failed, but only on master branch in main repo
-    if: ${{ !cancelled() && github.ref == 'refs/heads/master' && github.repository_owner == 'AlisterT' }}
+    if: ${{ !cancelled() && github.ref == 'refs/heads/master' && needs.prepare.outputs.tag == '' && github.repository_owner == 'AlisterT' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
