@@ -205,7 +205,8 @@ class JJ1SceneAnimation {
 		JJ1SceneFrame*      sceneFrames;
 		JJ1SceneFrame*      lastFrame;
 
-		SDL_Surface*       background;
+		SDL_Surface*        background;
+		SDL_Surface*        scratch;
 		int id;
 		int frames;
 		int reverseAnimation;

@@ -311,49 +311,54 @@ unsigned char * File::loadBlock (int length) {
  * Load a block of RLE compressed data from the file.
  *
  * @param length The length of the uncompressed block
+ * @param checkSize Whether or not the RLE block is terminated
  *
  * @return Buffer containing the uncompressed data
  */
-unsigned char* File::loadRLE (int length) {
+unsigned char* File::loadRLE (int length, bool checkSize) {
+	int start = 0, size = 0;
 
-	// Determine the offset that follows the block
-	int next = fgetc(file);
-	next += fgetc(file) << 8;
-	next += ftell(file);
+	if (checkSize) {
+		// Determine the offset that follows the block
+		size = loadShort();
+		start = tell();
+	}
 
 	unsigned char* buffer = new unsigned char[length];
 
 	int pos = 0;
-
 	while (pos < length) {
 
-		int rle = fgetc(file);
+		int rle = loadChar();
 
 		if (rle & 128) {
 
-			int byte = fgetc(file);
+			int byte = loadChar();
+			int amount = rle & 127;
 
-			for (int i = 0; i < (rle & 127); i++) {
+			if (pos + amount >= length) break;
 
-				buffer[pos++] = byte;
-				if (pos >= length) break;
-
-			}
+			memset(buffer + pos, byte, amount);
+			pos += amount;
 
 		} else if (rle) {
 
-			for (int i = 0; i < rle; i++) {
+			if (pos + rle >= length) break;
 
-				buffer[pos++] = fgetc(file);
-				if (pos >= length) break;
+			fread(buffer + pos, 1, rle, file);
 
-			}
+			pos += rle;
 
-		} else buffer[pos++] = fgetc(file);
+		} else buffer[pos++] = loadChar();
 
 	}
 
-	fseek(file, next, SEEK_SET);
+	if (checkSize) {
+		if (tell() != start + size)
+			LOG_DEBUG("RLE block has incorrect size: %d vs. %d", tell() - start, size);
+
+		seek(start + size, true);
+	}
 
 	return buffer;
 
@@ -478,15 +483,16 @@ char * File::loadString (int length) {
  *
  * @param width The width of the image to load
  * @param height The height of the image to load
+ * @param checkSize Whether or not the RLE block is terminated
  *
  * @return SDL surface containing the loaded image
  */
-SDL_Surface* File::loadSurface (int width, int height) {
+SDL_Surface* File::loadSurface (int width, int height, bool checkSize) {
 
 	SDL_Surface* surface;
 	unsigned char* pixels;
 
-	pixels = loadRLE(width * height);
+	pixels = loadRLE(width * height, checkSize);
 
 	surface = createSurface(pixels, width, height);
 

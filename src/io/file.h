@@ -26,7 +26,7 @@
 
 #include <SDL.h>
 #include <stdio.h>
-
+#include <memory>
 
 // Classes
 
@@ -54,17 +54,20 @@ class File {
 		signed int         loadInt     ();
 		void               storeInt    (signed int val);
 		unsigned char*     loadBlock   (int length);
-		unsigned char*     loadRLE     (int length);
+		unsigned char*     loadRLE     (int length, bool checkSize = true);
 		void               skipRLE     ();
 		unsigned char*     loadLZ      (int compressedLength, int length);
 		char*              loadString  ();
 		char*              loadString  (int length);
-		SDL_Surface*       loadSurface (int width, int height);
+		SDL_Surface*       loadSurface (int width, int height, bool checkSize = true);
 		unsigned char*     loadPixels  (int length);
 		unsigned char*     loadPixels  (int length, int key);
 		void               loadPalette (SDL_Color* palette, bool rle = true);
 
 };
+
+using FilePtr = std::unique_ptr<File>;
+
 
 /// Directory path
 

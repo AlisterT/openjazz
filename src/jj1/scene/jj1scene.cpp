@@ -104,6 +104,7 @@ JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext) {
 
 	next = newNext;
 	background = NULL;
+	scratch = createSurface(NULL, SW, SH);
 	lastFrame = sceneFrames = NULL;
 	frames = reverseAnimation = 0;
 	id = -1;
@@ -131,6 +132,7 @@ JJ1SceneAnimation::~JJ1SceneAnimation () {
 		}
 
 	if (background) SDL_FreeSurface(background);
+	if (scratch) SDL_FreeSurface(scratch);
 
 }
 
@@ -249,13 +251,13 @@ JJ1ScenePage::~JJ1ScenePage() {
  */
 JJ1Scene::JJ1Scene (const char * fileName) {
 
-	File *file;
+	FilePtr file;
 	nFonts = 0;
 	LOG_TRACE("Scene: %s", fileName);
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -268,7 +270,7 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	animations = NULL;
 
 	file->seek(0x13, true); // Skip Digital Dimensions header
-	signed long int dataOffset = file->loadInt(); //get offset pointer to first data block
+	signed long int dataOffset = file->loadInt(); // Get offset pointer to first data block
 
 	scriptItems = file->loadShort(); // Get number of script items
 	scriptStarts = new signed long int[scriptItems];
@@ -278,8 +280,8 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 
 	for (int i = 0; i < scriptItems; i++) {
 
-		scriptStarts[i] = file->loadInt();// Load offset to script
-		LOG_TRACE("scriptStart: %ld", scriptStarts[i]);
+		scriptStarts[i] = file->loadInt(); // Load offset to script
+		LOG_MAX("scriptStart: %ld", scriptStarts[i]);
 
 	}
 
@@ -291,18 +293,16 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 
 	for (int i = 0; i < dataItems; i++) {
 
-		dataOffsets[i] = file->loadInt();// Load offset to script
-		LOG_TRACE("dataOffsets: %ld", dataOffsets[i]);
+		dataOffsets[i] = file->loadInt(); // Load offset to script
+		LOG_MAX("dataOffsets: %ld", dataOffsets[i]);
 
 	}
 
-	loadData(file);
-	loadScripts(file);
+	loadData(file.get());
+	loadScripts(file.get());
 
 	delete[] scriptStarts;
 	delete[] dataOffsets;
-	delete file;
-
 }
 
 
@@ -478,6 +478,7 @@ int JJ1Scene::play () {
 					dst.y = (canvasH - SH) >> 1;
 					frameDelay = 1000 / (pages[sceneIndex].animSpeed >> 8);
 					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
+					SDL_BlitSurface(animation->background, NULL, animation->scratch, NULL);
 					currentFrame = animation->sceneFrames;
 					SDL_Delay(frameDelay);
 
@@ -486,19 +487,19 @@ int JJ1Scene::play () {
 			} else {
 
 				// Upload pixel data to the surface
-				if (SDL_MUSTLOCK(animation->background)) SDL_LockSurface(animation->background);
+				if (SDL_MUSTLOCK(animation->scratch)) SDL_LockSurface(animation->scratch);
 
 				switch (currentFrame->frameType) {
 
 					case ESquareAniHeader:
 
-						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->background->pixels));
+						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->scratch->pixels));
 
 						break;
 
 					case EFFAniHeader:
 
-						loadFFMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->background->pixels));
+						loadFFMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->scratch->pixels));
 
 						break;
 
@@ -510,11 +511,11 @@ int JJ1Scene::play () {
 
 				}
 
-				if (SDL_MUSTLOCK(animation->background)) SDL_UnlockSurface(animation->background);
+				if (SDL_MUSTLOCK(animation->scratch)) SDL_UnlockSurface(animation->scratch);
 
 				dst.x = (canvasW - SW) >> 1;
 				dst.y = (canvasH - SH) >> 1;
-				SDL_BlitSurface(animation->background, NULL, canvas, &dst);
+				SDL_BlitSurface(animation->scratch, NULL, canvas, &dst);
 
 				playSound(currentFrame->soundId);
 

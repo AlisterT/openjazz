@@ -35,6 +35,25 @@
 
 #include <string.h>
 
+#define DEBUG_CM 0
+#define DEBUG_FF 0
+#define DEBUG_ANIM 0
+
+#if DEBUG_CM
+	#define LOG_CM(...) LOG_MAX(__VA_ARGS__)
+#else
+	#define LOG_CM(...)
+#endif
+#if DEBUG_FF
+	#define LOG_FF(...) LOG_MAX(__VA_ARGS__)
+#else
+	#define LOG_FF(...)
+#endif
+#if DEBUG_ANIM
+	#define LOG_ANIM(...) LOG_MAX(__VA_ARGS__)
+#else
+	#define LOG_ANIM(...)
+#endif
 
 /**
  * Load a short from a buffer and advance the pointer past it.
@@ -65,69 +84,64 @@ unsigned short int JJ1Scene::loadShortMem (unsigned char** data) {
  * @param pixels Buffer to contain the decompressed data
  */
 void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
-
 	unsigned char* nextPixel = pixels;
 	unsigned char* nextData = frameData;
 	int fillWidth = 0;
 	bool trans = true;
 
-	/*FILE* out = fopen("c:\\output.dat", "wb");
+#if DEBUG_FF
+	FILE* out = fopen("ff-output.dat", "wb");
 	fwrite(frameData, size, 1, out);
-	fclose(out);*/
+	fclose(out);
+#endif
 
 	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
 		unsigned char header = *nextData;
 		nextData++;
-		LOG_MAX("PL FF frame header: %x", header);
+		LOG_FF("PL FF Frame header: %x", header);
 
 		if ((header & 0x7F) == 0x7F) {
-
 			fillWidth = loadShortMem(&nextData);
-
 			if (trans) fillWidth += 255;
 
-			LOG_MAX("PL FF 0x7f skip: %d", fillWidth);
-
+			LOG_FF("PL FF Skip %d pixels", fillWidth);
 		} else if (header) {
 
 			if(trans) {
 				fillWidth = header;
-				LOG_MAX("PL FF SKIP bytes: %d", fillWidth);
-			}
-			else {
+				LOG_FF("PL FF SKIP %d transparent pixels", fillWidth);
+			} else {
 				fillWidth = header & 0x1F;
 
 				switch (header & 0x60) {
 				default:
+					LOG_FF("PL FF Unknown operation: %x", header);
 					break;
 
 				case 0x00:
-					LOG_MAX("PL FF 0x00 Copy bytes: %x", header);
+					LOG_FF("PL FF Copy %d pixels", fillWidth);
 					memcpy(nextPixel, nextData, fillWidth);
 					nextData += fillWidth;
 					break;
 
 				case 0x20:
-					LOG_MAX("PL FF 0x20 copy previous line op: %d", fillWidth);
-					if (nextPixel - 320 >= pixels) memcpy(nextPixel, nextPixel - 320, fillWidth);
-					break;
-
-				case 0x40:
-					LOG_MAX("PL FF 0x40 fillWidth: %d", fillWidth);
-					memset(nextPixel, *nextData, fillWidth);
-					nextData++;
+					LOG_FF("PL FF Copy %d pixels of previous line", fillWidth);
+					if (nextPixel - SW >= pixels)
+						memcpy(nextPixel, nextPixel - SW, fillWidth);
 					break;
 
 				case 0x60:
-					LOG_MAX("PL FF 0x60 header: %x", header);
 					fillWidth = header&0x3F;
+					/* FALLTHROUGH */
+				case 0x40:
+					LOG_FF("PL FF Fill %d pixels of row with color 0x%x", fillWidth, *nextData);
 					memset(nextPixel, *nextData, fillWidth);
 					nextData++;
 					break;
 				}
 			}
 		} else {
-			LOG_MAX("PL FF FAULTY END OF STREAM: %d", size);
+			LOG_FF("PL FF FAULTY END OF STREAM: %d", size);
 			return;
 		}
 
@@ -137,18 +151,10 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 		else trans = !trans;
 	}
 
-	LOG_MAX("PL FF pixels: %d", (unsigned int)(nextPixel - pixels));
-
+	LOG_FF("PL FF pixels: %d", (unsigned int)(nextPixel - pixels));
 }
 
 
-/*
- * $0x $...	Next x + 1 bytes are 'literals'; each byte colors 1 column (Max val $3F)
- * $4x $yy        Next x + 1 columns drawn in color yy (Max value $7E)
- * $7F $xxxx $yy	Next xxxx columns colored with color yy
- * $8x		Next x + 1 pixels are skipped, they're already the right color (Max val $FE)
- * $FF $xxxx	Skip next xxxx pixels of picture, they're already the right color
- */
 /**
  * Decompress JJ1 cutscene graphical data.
  *
@@ -163,90 +169,79 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 	unsigned char* fillstart = NULL;
 	int fillWidth;
 
+#if DEBUG_CM
+	FILE* out = fopen("cm-output.dat", "wb");
+	fwrite(frameData, size, 1, out);
+	fclose(out);
+#endif
+
+	auto fillColumns = [&](unsigned char color, int columns) {
+		LOG_CM("PL CM Fill %d columns with color 0x%x", columns, color);
+
+		fillstart = nextPixel;
+		while (fillstart + columns <= endpixdata) {
+			memset(fillstart, color, columns);
+			fillstart += SW;
+		}
+		if(fillstart < endpixdata) {
+			// Filling bottom row
+			memset(fillstart, color, endpixdata-fillstart);
+		}
+	};
+
 	while (size > 0) {
 
 		unsigned char header = *frameData;
 		frameData++;
 
 		if (header == 0x7F) {
-
 			fillWidth = loadShortMem(&frameData);
 			unsigned char fillColor = *frameData;
 			frameData++;
-
-			fillstart = nextPixel;
-
-			while (fillstart + fillWidth <= endpixdata) {
-
-				memset(fillstart, fillColor, fillWidth);
-				fillstart += SW;
-
-			}
+			fillColumns(fillColor, fillWidth);
 
 			size -= 3;
-
 		} else if (header == 0xFF) {
-
 			fillWidth = loadShortMem(&frameData);
+			LOG_CM("PL CM Skip %d pixels", fillWidth);
+
 			size -= 2;
-
 		} else if (header & 0x80) {
-
-			fillWidth = (header - 0x80) + 1;
-
+			fillWidth = (header - 0x80) + 1; // max 0xFE
+			LOG_CM("PL CM Skip %d pixels", fillWidth);
 		} else if (header & 0x40) {
-
 			unsigned char fillColor = *frameData;
 			frameData++;
-			fillWidth = (header - 0x40) + 1;
-
-			fillstart = nextPixel;
-
-			while (fillstart + fillWidth <= endpixdata) {
-
-				memset(fillstart, fillColor, fillWidth);
-				fillstart += SW;
-
-			}
+			fillWidth = (header - 0x40) + 1; // max 0x7E
+			fillColumns(fillColor, fillWidth);
 
 			size--;
-
 		} else {
-
-			fillWidth = (header & 0x3F) + 1;
+			fillWidth = (header & 0x3F) + 1; // max 0x3F
+			LOG_CM("PL CM Fill %d columns with raw pixels", fillWidth);
 
 			for (int col = 0; col < fillWidth; col++) {
-
 				unsigned char color = *frameData;
 				frameData++;
 
 				if (color != 0xFF) {
-
 					fillstart = nextPixel + col;
 
 					while (fillstart < endpixdata) {
-
 						*fillstart = color;
 						fillstart += SW;
-
 					}
-
 				}
 
 				size--;
-
 			}
-
 		}
 
 		nextPixel += fillWidth;
-
 		size--;
-
 	}
 
-	LOG_MAX("PL Compacts pixels: %d", (unsigned int)(nextPixel - pixels));
-
+	LOG_CM("PL CM pixels: %d", (unsigned int)(nextPixel - pixels));
 }
 
 
@@ -258,8 +253,8 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
  */
 void JJ1Scene::loadAni (File *f, int dataIndex) {
 
-	LOG_MAX("ParseAni DataLen: %x", f->loadShort()); // should be 0x02
-	LOG_MAX("ParseAni Frames(?): %d", f->loadShort()); // unknown, number of frames?
+	LOG_ANIM("ParseAni DataLen: %x", f->loadShort()); // should be 0x02
+	LOG_ANIM("ParseAni Frames: %d", f->loadShort());
 	unsigned short int type = 0;
 	int loop;
 
@@ -275,7 +270,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			for(loop = 0; loop < nSounds; loop++) {
 
 				char* soundName = f->loadString();
-				LOG_MAX("Soundname: %s", soundName);
+				LOG_ANIM("Soundname: %s", soundName);
 				resampleSound(loop, soundName, 11025);
 				delete[] soundName;
 
@@ -283,7 +278,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 		} else if (type == EPlayListAniHeader) {// PL
 			int nextPos = f->tell();
-			LOG_MAX("PL Read position: %d", nextPos);
+			LOG_ANIM("PL Read position: %d", nextPos);
 			f->loadShort(); // Length
 
 			palettes = new JJ1ScenePalette(palettes);
@@ -295,14 +290,14 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 			int items = 0;
 			int validValue = true;
 
-			LOG_MAX("PL Read position start: %d", f->tell());
+			LOG_ANIM("PL Read position start: %d", f->tell());
 
 			while (validValue) {
 
 				unsigned short int value = f->loadShort();
-				LOG_MAX("PL Read block start tag: %x", value);
+				LOG_ANIM("PL Read block start tag: %x", value);
 			    int size = f->loadShort();
-				LOG_MAX("PL Anim block size: %d", size);
+				LOG_ANIM("PL Anim block size: %d", size);
 				nextPos = f->tell();
 				// next pos is intial position + size and four bytes header
 				nextPos += size;
@@ -310,26 +305,19 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 				switch (value) {
 
 					case E_EHeader: // END MARKER
-
 						validValue = false;
-
 						break;
 
 					case E11AniHeader: //11
-
-						// Skip back size header, this is read by the surface reader
-						LOG_MAX("PL 11 Background Type: 0");
-						f->seek(-2, false);
-
-						animations->background = f->loadSurface(SW, SH);
+						LOG_ANIM("PL 11 Background Type: 0");
+						animations->background = f->loadSurface(SW, SH, false);
 
 						// Use the most recently loaded palette
 						video.setPalette(palettes->palette);
-
 						break;
 
 					case E1LAniHeader: {
-						LOG_MAX("PL 1L Background Type: 0");
+						LOG_ANIM("PL 1L Background Type: 0");
 						unsigned char* pixels;
 						pixels = new unsigned char[SW* SH];
 						memset(pixels, 0, SW*SH);
@@ -355,7 +343,9 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 					case ERBAniHeader:
 					case ERLAniHeader:
 					case EMXAniHeader:
+						LOG_DEBUG("PL Read Unsupported animation type 0x%x", value);
 						break;
+
 					case ERRAniHeader: // Reverse animation when end found
 						animations->reverseAnimation = 1;
 						break;
@@ -364,37 +354,33 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 						{
 						unsigned char* blockData = f->loadBlock(size);
 						animations->addFrame(ERCAniHeader, blockData, size);
-						}break;
-					case ESquareAniHeader: // Full screen animation frame, that does n't clear the screen first.
+						}
+						break;
 
+					case ESquareAniHeader: // Full screen animation frame, that does n't clear the screen first.
 						{
 							unsigned char* blockData = f->loadBlock(size);
 							animations->addFrame(ESquareAniHeader, blockData, size);
 						}
-
 						break;
 
 					case ESTAniHeader: // Sound item
-
 						{
 							auto se = static_cast<SE::Type>(f->loadChar());
 							if (!isValidSoundIndex(se)) {
 								LOG_WARN("PL Audio tag with invalid index: %d", se);
 								animations->lastFrame->soundId = SE::NONE;
 							} else {
-								LOG_MAX("PL Audio tag with index: %d", se);
+								LOG_ANIM("PL Audio tag with index: %d", se);
 								animations->lastFrame->soundId = se;
 							}
-							LOG_MAX("PL Audio tag play at: %x", f->loadChar());
-							LOG_MAX("PL Audio tag play offset: %x", f->loadChar());
+							LOG_ANIM("PL Audio tag play at: %x", f->loadChar());
+							LOG_ANIM("PL Audio tag play offset: %x", f->loadChar());
 						}
-
 						break;
 
 					case 0:
-
 						{
-
 							int longvalue = f->loadInt();
 
 							while (longvalue == 0) {
@@ -407,30 +393,28 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 							f->seek(-4, false);
 							value = longvalue;
 
-							LOG_MAX("PL Read Long: %x", value);
-
+							LOG_ANIM("PL Read Long: %x", value);
 						}
-
 						break;
 
 					default:
 
-						LOG_MAX("PL Read Unknown type: %x", value);
+						LOG_ANIM("PL Read Unknown type: %x", value);
 						validValue = false;
 
 						break;
 
 				}
 
-				LOG_MAX("PL Read position after block should be: %d", nextPos);
+				LOG_ANIM("PL Read position after block should be: %d", nextPos);
 				f->seek(nextPos, true);
 
 				if(validValue) items++;
 
 			}
 
-			LOG_MAX("PL Parsed through number of items skipping 0 items: %d", items);
-			LOG_MAX("PL Read position after parsing anim blocks: %d", f->tell());
+			LOG_ANIM("PL Parsed through number of items skipping 0 items: %d", items);
+			LOG_ANIM("PL Read position after parsing anim blocks: %d", f->tell());
 
 		}
 
@@ -476,17 +460,16 @@ void JJ1Scene::loadData (File *f) {
 
 					{
 
-						LOG_MAX("Data Type: Image");
-						LOG_MAX("Data Type Image index: %d", loop);
-						unsigned short int width = f->loadShort(SW); // get width
+						LOG_MAX("Data Type: Image, index: %d", loop);
+						unsigned short int width = f->loadShort(SW); // Get width
 						unsigned short int height;
 
-						if (type == 3) height = f->loadChar(); // Get height
-						else height = f->loadShort(SH); // Get height
+						// Get height
+						if (type == 3) height = f->loadChar();
+						else height = f->loadShort(SH);
 
-						f->seek(-2, false);
 						images = new JJ1SceneImage(images);
-						images->image = f->loadSurface(width, height);
+						images->image = f->loadSurface(width, height, false);
 						images->id = loop;
 
 					}
@@ -495,9 +478,8 @@ void JJ1Scene::loadData (File *f) {
 
 				default:
 
-					LOG_MAX("Data Type: Palette");
-					LOG_MAX("Data Type Palette index: %d", loop);
-					f->seek(-3, false);
+					LOG_MAX("Data Type: Palette, index: %d", loop);
+					f->seek(-3, false); // fake an RLE block size marker and use first palette byte
 
 					palettes = new JJ1ScenePalette(palettes);
 					f->loadPalette(palettes->palette);

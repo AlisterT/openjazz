@@ -20,8 +20,6 @@
 #include "util.h"
 #include "io/log.h"
 
-#include <memory>
-
 /* This algorithm has been found out by CYBERDEViL by analysing the Assembly in
  * DoxBox-X. For more information see: https://codeberg.org/CYBERDEV/JJSave/
  */
@@ -78,7 +76,7 @@ static unsigned short dataOffset(unsigned short key, bool skipGarbage = false) {
 JJ1Save::JJ1Save (const char* fileName) :
 	valid(false) {
 
-	std::unique_ptr<File> file;
+	FilePtr file;
 	LOG_TRACE("Save: %s", fileName);
 
 	try {
