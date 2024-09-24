@@ -161,7 +161,8 @@ JJ1SceneFont::JJ1SceneFont(int id) :
  */
 JJ1SceneText::JJ1SceneText() :
 	text(nullptr), alignment(0), fontId(-1), x(-1), y(-1),
-	textRect({-1, -1, 0, 0}), extraLineHeight(-1), shadowColour(0) {
+	textRect({-1, -1, 0, 0}), extraLineHeight(-1),
+	textColour(0), shadowColour(-1) {
 
 }
 
@@ -530,12 +531,20 @@ int JJ1Scene::play () {
 					}
 
 					// Drop shadow
-					font->mapPalette(0, MAX_PALETTE_COLORS, 0, 1);
-					font->showSceneString(sceneText.text, xOffset + 1, yOffset + 1);
-					font->restorePalette();
+					if(sceneText.shadowColour != -1) {
+						font->mapPalette(0, MAX_PALETTE_COLORS, 0, 1);
+						font->showSceneString(sceneText.text, xOffset - 1, yOffset + 2);
+						font->restorePalette();
+					}
 
 					// Text itself
+					if(sceneText.textColour) {
+						font->mapPalette(0, MAX_PALETTE_COLORS, sceneText.textColour, MAX_PALETTE_COLORS);
+					}
 					font->showSceneString(sceneText.text, xOffset, yOffset);
+					if(sceneText.textColour) {
+						font->restorePalette();
+					}
 				}
 
 				y += extraLineHeight + font->getHeight() / 2;

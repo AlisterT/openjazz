@@ -92,6 +92,7 @@ class JJ1SceneText {
 		int            y;
 		SDL_Rect       textRect;
 		int            extraLineHeight;
+		int            textColour;
 		int            shadowColour;
 
 		JJ1SceneText ();

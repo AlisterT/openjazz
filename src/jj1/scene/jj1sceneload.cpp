@@ -510,6 +510,7 @@ void JJ1Scene::loadScripts (File *f) {
 	int textAlignment = 0;
 	int textFont = 0;
 	int textShadow = -1;
+	int textColour = 0;
 	int loop = 0;
 
 	for(auto &page : pages) {
@@ -652,7 +653,8 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneTextColour:
 
-						LOG_TRACE("Unimplemented ESceneTextColour: 0x%x", f->loadShort());
+						textColour = f->loadShort();
+						LOG_SCRIPT("ESceneTextColour: %d", textColour);
 
 						break;
 
@@ -737,36 +739,40 @@ void JJ1Scene::loadScripts (File *f) {
 							auto &sceneText = page.texts.back();
 
 							if (datalen > 0) {
-
 								sceneText.text = reinterpret_cast<unsigned char *>(f->loadString(datalen));
 
 								// Convert number placeholders
-								for (int textPos = 1; textPos < datalen; textPos++) {
+								if (type == ESceneTextLine) {
+									for (int textPos = 1; textPos < datalen; textPos++) {
 
-									if (sceneText.text[textPos] == 0x8B) {
-										// Current page
+										if (sceneText.text[textPos] == 0x8B) {
+											// Current page
+											if (loop >= 9)
+												sceneText.text[textPos - 1] = ((loop + 1) / 10) + 53;
 
-										if (loop >= 9)
-											sceneText.text[textPos - 1] = ((loop + 1) / 10) + 53;
+											sceneText.text[textPos] = ((loop + 1) % 10) + 53;
+										} else if (sceneText.text[textPos] == 0x8A) {
+											// Number of pages
+											if (scriptItems >= 10)
+												sceneText.text[textPos - 1] = (scriptItems / 10) + 53;
 
-										sceneText.text[textPos] = ((loop + 1) % 10) + 53;
-
-									} else if (sceneText.text[textPos] == 0x8A) {
-										// Number of pages
-
-										if (scriptItems >= 10)
-											sceneText.text[textPos - 1] = (scriptItems / 10) + 53;
-
-										sceneText.text[textPos] = (scriptItems % 10) + 53;
-
+											sceneText.text[textPos] = (scriptItems % 10) + 53;
+										} else if (sceneText.text[textPos] == 0x8C) {
+											// FIXME: seems not used at all
+											sceneText.text[textPos-2] = '0';
+											sceneText.text[textPos-1] = '0';
+											sceneText.text[textPos] = '0';
+										} else if (sceneText.text[textPos] > 0x8C) {
+											// internal
+											sceneText.text[textPos] = '0';
+										}
 									}
-
 								}
-
 							}
 
 							sceneText.alignment = textAlignment;
 							sceneText.fontId = textFont;
+							sceneText.textColour = textColour;
 							sceneText.shadowColour = textShadow;
 
 							if(textPosX != -1) {
