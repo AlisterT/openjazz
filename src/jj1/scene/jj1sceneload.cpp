@@ -5,15 +5,9 @@
  *
  * Part of the OpenJazz project
  *
- * @par History:
- * - 23rd August 2005: Created scene.c
- * - 3rd February 2009: Created scene.h from parts of scene.c
- * - 3rd February 2009: Renamed scene.c to scene.cpp
- * - 27th March 2010: Created sceneload.cpp from parts of scene.cpp
- * - 1st August 2012: Renamed sceneload.cpp to jj1sceneload.cpp
- *
  * @par Licence:
  * Copyright (c) 2005-2012 Alister Thomson
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -38,6 +32,7 @@
 #define DEBUG_CM 0
 #define DEBUG_FF 0
 #define DEBUG_ANIM 0
+#define DEBUG_SCRIPT 0
 
 #if DEBUG_CM
 	#define LOG_CM(...) LOG_MAX(__VA_ARGS__)
@@ -53,6 +48,11 @@
 	#define LOG_ANIM(...) LOG_MAX(__VA_ARGS__)
 #else
 	#define LOG_ANIM(...)
+#endif
+#if DEBUG_SCRIPT
+	#define LOG_SCRIPT(...) LOG_MAX(__VA_ARGS__)
+#else
+	#define LOG_SCRIPT(...)
 #endif
 
 /**
@@ -83,7 +83,7 @@ unsigned short int JJ1Scene::loadShortMem (unsigned char** data) {
  * @param frameData The compressed data
  * @param pixels Buffer to contain the decompressed data
  */
-void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pixels) {
+void JJ1Scene::loadFullFrameMem (int size, unsigned char* frameData, unsigned char* pixels) {
 	unsigned char* nextPixel = pixels;
 	unsigned char* nextData = frameData;
 	int fillWidth = 0;
@@ -98,7 +98,7 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 	while ((nextData < frameData + size) && (nextPixel < pixels + (SW * SH))) {
 		unsigned char header = *nextData;
 		nextData++;
-		LOG_FF("PL FF Frame header: %x", header);
+		LOG_FF("PL FF Frame header: 0x%x", header);
 
 		if ((header & 0x7F) == 0x7F) {
 			fillWidth = loadShortMem(&nextData);
@@ -115,7 +115,7 @@ void JJ1Scene::loadFFMem (int size, unsigned char* frameData, unsigned char* pix
 
 				switch (header & 0x60) {
 				default:
-					LOG_FF("PL FF Unknown operation: %x", header);
+					LOG_FF("PL FF Unknown operation: 0x%x", header);
 					break;
 
 				case 0x00:
@@ -248,12 +248,13 @@ void JJ1Scene::loadCompactedMem (int size, unsigned char* frameData, unsigned ch
 /**
  * Load JJ1 cutscene animation.
  *
+ * @param scene Object to hold animation data
  * @param f File from which to load animation
  * @param dataIndex Index
  */
-void JJ1Scene::loadAni (File *f, int dataIndex) {
+void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 
-	LOG_ANIM("ParseAni DataLen: %x", f->loadShort()); // should be 0x02
+	LOG_ANIM("ParseAni DataLen: 0x%x", f->loadShort()); // should be 0x02
 	LOG_ANIM("ParseAni Frames: %d", f->loadShort());
 	unsigned short int type = 0;
 	int loop;
@@ -262,7 +263,7 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 		type = f->loadShort();
 
-		if (type == ESoundListAniHeader) { // SL
+		if (type == ESoundListAniHeader) {
 
 			/*unsigned short int offset =*/ f->loadShort();
 			unsigned char nSounds = f->loadChar();
@@ -276,26 +277,25 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 			}
 
-		} else if (type == EPlayListAniHeader) {// PL
+		} else if (type == EPlayListAniHeader) {
 			int nextPos = f->tell();
 			LOG_ANIM("PL Read position: %d", nextPos);
 			f->loadShort(); // Length
 
-			palettes = new JJ1ScenePalette(palettes);
+			palettes.emplace_back(dataIndex);
+			auto &scenePalette = palettes.back();
+			f->loadPalette(scenePalette.palette, false);
 
-			f->loadPalette(palettes->palette, false);
-
-			palettes->id = dataIndex;
-
+#if DEBUG_ANIM
 			int items = 0;
-			int validValue = true;
-
+#endif
 			LOG_ANIM("PL Read position start: %d", f->tell());
 
+			int validValue = true;
 			while (validValue) {
 
 				unsigned short int value = f->loadShort();
-				LOG_ANIM("PL Read block start tag: %x", value);
+				LOG_ANIM("PL Read block start tag: 0x%x", value);
 			    int size = f->loadShort();
 				LOG_ANIM("PL Anim block size: %d", size);
 				nextPos = f->tell();
@@ -304,38 +304,38 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 
 				switch (value) {
 
-					case E_EHeader: // END MARKER
+					case EEndAniHeader: // END MARKER
 						validValue = false;
 						break;
 
-					case E11AniHeader: //11
+					case E11AniHeader:
 						LOG_ANIM("PL 11 Background Type: 0");
-						animations->background = f->loadSurface(SW, SH, false);
+						scene.background = f->loadSurface(SW, SH, false);
 
 						// Use the most recently loaded palette
-						video.setPalette(palettes->palette);
+						video.setPalette(scenePalette.palette);
 						break;
 
-					case E1LAniHeader: {
-						LOG_ANIM("PL 1L Background Type: 0");
-						unsigned char* pixels;
-						pixels = new unsigned char[SW* SH];
-						memset(pixels, 0, SW*SH);
-						unsigned char* frameData;
-						frameData = f->loadBlock(size);
-						loadCompactedMem(size, frameData, pixels);
-						delete[] frameData;
-						animations->background = createSurface(pixels, SW, SH);
-						delete[] pixels;
-						// Use the most recently loaded palette
-						video.setPalette(palettes->palette);
+					case E1LAniHeader:
+						{
+							LOG_ANIM("PL 1L Background Type: 0");
+							unsigned char* pixels = new unsigned char[SW* SH];
+							memset(pixels, 0, SW*SH);
+							unsigned char* frameData = f->loadBlock(size);
+							loadCompactedMem(size, frameData, pixels);
+							delete[] frameData;
+							scene.background = createSurface(pixels, SW, SH);
+							delete[] pixels;
+
+							// Use the most recently loaded palette
+							video.setPalette(scenePalette.palette);
 						}
 						break;
 
-					case EFFAniHeader:
+					case EFullFrameAniHeader:
 						{
-						unsigned char* blockData = f->loadBlock(size);
-						animations->addFrame(EFFAniHeader, blockData, size);
+							unsigned char* blockData = f->loadBlock(size);
+							scene.addFrame(EFullFrameAniHeader, blockData, size);
 						}
 						break;
 
@@ -346,40 +346,40 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 						LOG_DEBUG("PL Read Unsupported animation type 0x%x", value);
 						break;
 
-					case ERRAniHeader: // Reverse animation when end found
-						animations->reverseAnimation = 1;
+					case EReverseAniHeader:
+						scene.reverseAnimation = 1;
 						break;
 
 					case ERCAniHeader:
 						{
-						unsigned char* blockData = f->loadBlock(size);
-						animations->addFrame(ERCAniHeader, blockData, size);
+							unsigned char* blockData = f->loadBlock(size);
+							scene.addFrame(ERCAniHeader, blockData, size);
 						}
 						break;
 
-					case ESquareAniHeader: // Full screen animation frame, that does n't clear the screen first.
+					case ECompactedAniHeader:
 						{
 							unsigned char* blockData = f->loadBlock(size);
-							animations->addFrame(ESquareAniHeader, blockData, size);
+							scene.addFrame(ECompactedAniHeader, blockData, size);
 						}
 						break;
 
-					case ESTAniHeader: // Sound item
+					case ESoundTagAniHeader:
 						{
 							auto se = static_cast<SE::Type>(f->loadChar());
 							if (!isValidSoundIndex(se)) {
 								LOG_WARN("PL Audio tag with invalid index: %d", se);
-								animations->lastFrame->soundId = SE::NONE;
+								scene.lastFrame->soundId = SE::NONE;
 							} else {
 								LOG_ANIM("PL Audio tag with index: %d", se);
-								animations->lastFrame->soundId = se;
+								scene.lastFrame->soundId = se;
 							}
-							LOG_ANIM("PL Audio tag play at: %x", f->loadChar());
-							LOG_ANIM("PL Audio tag play offset: %x", f->loadChar());
+							LOG_ANIM("PL Audio tag play at: 0x%x", f->loadChar());
+							LOG_ANIM("PL Audio tag play offset: 0x%x", f->loadChar());
 						}
 						break;
 
-					case 0:
+					case E00AniHeader: // FIXME: wait command?
 						{
 							int longvalue = f->loadInt();
 
@@ -393,13 +393,13 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 							f->seek(-4, false);
 							value = longvalue;
 
-							LOG_ANIM("PL Read Long: %x", value);
+							LOG_ANIM("PL Read Long: 0x%x", value);
 						}
 						break;
 
 					default:
 
-						LOG_ANIM("PL Read Unknown type: %x", value);
+						LOG_DEBUG("PL Read Unknown type: 0x%x", value);
 						validValue = false;
 
 						break;
@@ -409,8 +409,10 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
 				LOG_ANIM("PL Read position after block should be: %d", nextPos);
 				f->seek(nextPos, true);
 
-				if(validValue) items++;
-
+#if DEBUG_ANIM
+				if(validValue)
+					items++;
+#endif
 			}
 
 			LOG_ANIM("PL Parsed through number of items skipping 0 items: %d", items);
@@ -430,21 +432,18 @@ void JJ1Scene::loadAni (File *f, int dataIndex) {
  */
 void JJ1Scene::loadData (File *f) {
 
-	int loop;
-
-	for (loop = 0; loop < dataItems; loop++) {
+	for (int loop = 0; loop < dataItems; loop++) {
 
 		f->seek(dataOffsets[loop], true); // Seek to data start
 		unsigned short int dataLen = f->loadShort(); // Get get the length of the datablock
 		LOG_MAX("Data dataLen: %d", dataLen);
-		// AN
 
-		if (dataLen == 0x4e41) {
+		if (dataLen == EAniHeader) {
 
 			LOG_MAX("Data Type: ANI");
-			animations = new JJ1SceneAnimation(animations);
-			animations->id = loop;
-			loadAni(f, loop);
+			animations.emplace_back(loop);
+			auto &sceneAnimation = animations.back();
+			loadAni(sceneAnimation, f, loop);
 
 		} else {
 
@@ -458,7 +457,6 @@ void JJ1Scene::loadData (File *f) {
 				case 5:
 				case 6:
 				case 7:
-
 					{
 						LOG_MAX("Data Type: Image, index: %d", loop);
 						unsigned short int width = f->loadShort(SW); // Get width
@@ -468,20 +466,18 @@ void JJ1Scene::loadData (File *f) {
 						if (type == 3) height = f->loadChar();
 						else height = f->loadShort(SH);
 
-						images = new JJ1SceneImage(images);
+						images.emplace_back(loop);
+						auto& sceneImage = images.back();
+
 						if (type >= 5 && type <= 7) {
 							f->seek(-5, false); // account for metadata 2 + 2
 							unsigned char* pixels = unpackRLE(f->loadBlock(dataLen), dataLen, width * height + 4);
-							images->image = createSurface(pixels + 4, width, height);
+							sceneImage.image = createSurface(pixels + 4, width, height);
 							delete[] pixels;
 						} else {
-							images->image = f->loadSurface(width, height, false);
+							sceneImage.image = f->loadSurface(width, height, false);
 						}
-
-						images->id = loop;
-
 					}
-
 					break;
 
 				default:
@@ -489,9 +485,9 @@ void JJ1Scene::loadData (File *f) {
 					LOG_MAX("Data Type: Palette, index: %d", loop);
 					f->seek(-3, false); // fake an RLE block size marker and use first palette byte
 
-					palettes = new JJ1ScenePalette(palettes);
-					f->loadPalette(palettes->palette);
-					palettes->id = loop;
+					palettes.emplace_back(loop);
+					auto& palette = palettes.back();
+					f->loadPalette(palette.palette);
 
 					break;
 
@@ -511,14 +507,12 @@ void JJ1Scene::loadData (File *f) {
  */
 void JJ1Scene::loadScripts (File *f) {
 
-	int loop;
-	/*int bgIndex = 0;*/
 	int textAlignment = 0;
 	int textFont = 0;
 	int textShadow = -1;
+	int loop = 0;
 
-	for(loop = 0; loop < scriptItems; loop++) {
-
+	for(auto &page : pages) {
 	    LOG_MAX("Parse Script: %d", loop);
 
 	    SDL_Rect textRect = { 0,0,0,0 };
@@ -526,10 +520,10 @@ void JJ1Scene::loadScripts (File *f) {
 
 		if (f->loadChar() == 0x50) { // Script tag
 
-			LOG_MAX("Script id: %x", f->loadShort());
+			LOG_MAX("Script id: 0x%x", f->loadShort());
 			int palette = f->loadShort();
-			LOG_MAX("Script default palette: %x", palette);
-			pages[loop].paletteIndex = palette;
+			LOG_SCRIPT("Script default palette: %d", palette);
+			page.paletteIndex = palette;
 
 			bool breakloop = false;
 			int pos = f->tell();
@@ -547,140 +541,124 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneYesNo:
 						{
-						pages[loop].askForYesNo = 1;
-						LOG_MAX("ESceneYesNo");
-						}break;
+							page.askForYesNo = 1;
+							LOG_SCRIPT("ESceneYesNo");
+						}
+						break;
 					case ESceneStopMusic:
 						{
-						pages[loop].stopMusic = 1;
-						LOG_MAX("ESceneStopMusic");
-						}break;
+							page.stopMusic = 1;
+							LOG_SCRIPT("ESceneStopMusic");
+						}
+						break;
 					case ESceneAnimation:
 						{
-							pages[loop].animLoops = f->loadInt();
-							pages[loop].animSpeed = f->loadShort();
-							pages[loop].animIndex = f->loadShort();
+							page.animLoops = f->loadInt();
+							page.animSpeed = f->loadShort();
+							page.animIndex = f->loadShort();
 
-							LOG_MAX("ESceneAnimation - loops: %d", pages[loop].animLoops);
-							LOG_MAX("ESceneAnimation - speed: %d", pages[loop].animSpeed);
-							LOG_MAX("ESceneAnimation - anim num: %d", pages[loop].animIndex);
+							LOG_SCRIPT("ESceneAnimation: loops %d, speed %d, anim num %d",
+								page.animLoops, page.animSpeed, page.animIndex);
 						}
 						break;
 
 					case ESceneAnimationPlayAndContinue:
 						{
-						pages[loop].nextPageAfterAnim = f->loadChar();
-						LOG_MAX("ESceneAnimationPlayAndContinue: %d", pages[loop].nextPageAfterAnim);
+							page.nextPageAfterAnim = f->loadChar();
+							LOG_SCRIPT("ESceneAnimationPlayAndContinue: %d", page.nextPageAfterAnim);
 						}
-
 						break;
 
 					case ESceneFadeType:
-
 						{
-							LOG_MAX("ESceneFadeType: %x", f->loadChar());
-
+							LOG_TRACE("Unimplemented ESceneFadeType: %x", f->loadChar());
 						}
-
 						break;
 
 					case ESceneBackground:
 
-						pages[loop].bgX[pages[loop].backgrounds] = f->loadShort();
-						pages[loop].bgY[pages[loop].backgrounds] = f->loadShort();
-						pages[loop].bgIndex[pages[loop].backgrounds] = f->loadShort();
+						page.bgX[page.backgrounds] = f->loadShort();
+						page.bgY[page.backgrounds] = f->loadShort();
+						page.bgIndex[page.backgrounds] = f->loadShort();
 
-						LOG_MAX("ESceneBackground - xpos: %d", pages[loop].bgX[pages[loop].backgrounds]);
-						LOG_MAX("ESceneBackground - ypos: %d", pages[loop].bgY[pages[loop].backgrounds]);
-						LOG_MAX("ESceneBackground - index: %d", pages[loop].bgIndex[pages[loop].backgrounds]);
+						LOG_SCRIPT("ESceneBackground: x %d, y %d, index %d", page.bgX[page.backgrounds],
+							page.bgY[page.backgrounds], page.bgIndex[page.backgrounds]);
 
-						pages[loop].backgrounds++;
+						page.backgrounds++;
 
 						break;
 
 					case ESceneMusic:
 
-						// Music file name
-						pages[loop].musicFile = f->loadString();
-						LOG_MAX("ESceneMusic: %s", pages[loop].musicFile);
+						page.musicFile = f->loadString();
+						LOG_SCRIPT("ESceneMusic: %s", page.musicFile);
 
 						break;
 
 					case ESceneSomethingElse:
-
 						{
-
-							LOG_MAX("ESceneSomethingElse");
-
+							LOG_TRACE("Unimplemented ESceneSomethingElse");
 						}
-
 						break;
 
-					case ESceneTextRect: // String
+					case ESceneTextRect:
 
 						textRect.x = f->loadShort();
 						textRect.y = f->loadShort();
 						textRect.w = f->loadShort() - textRect.x;
 						textRect.h = f->loadShort() - textRect.y;
 						textRectValid = true;
-						LOG_MAX("Text rectangle (x, y, w, h): %d, %d, %d, %d",
+						LOG_SCRIPT("ESceneTextRect: x %d, y %d, w %d, h %d",
 							textRect.x, textRect.y, textRect.w, textRect.h);
 
 						break;
 
-					case ESceneFontDefine: // Font defnition
+					case ESceneFontDefine:
 
-						if (nFonts < 5) {
-
-							fonts[nFonts].id = f->loadShort();
+						if (fonts.size() < 5) {
+							int id = f->loadShort();
+							fonts.emplace_back(id);
+							auto &sceneFont = fonts.back();
 							char *fontname = f->loadString();
 
-							LOG_MAX("ESceneFontDefine: %s", fontname);
-							LOG_MAX("ESceneFontDefine with id: %d", fonts[nFonts].id);
+							LOG_SCRIPT("ESceneFontDefine: %s with id %d", fontname, sceneFont.id);
 
 							if (strcmp(fontname, "FONT2") == 0)
-								fonts[nFonts].font = font2;
+								sceneFont.font = font2;
 							else if (strcmp(fontname, "FONTBIG") == 0)
-								fonts[nFonts].font = fontbig;
-							else if (strcmp(fontname, "FONTTINY") == 0)
-								fonts[nFonts].font = fontiny;
+								sceneFont.font = fontbig;
+							else if (strcmp(fontname, "FONTINY") == 0)
+								sceneFont.font = fontiny;
 							else if (strcmp(fontname, "FONTMN1") == 0)
-								fonts[nFonts].font = fontmn1;
+								sceneFont.font = fontmn1;
 							else if (strcmp(fontname, "FONTMN2") == 0)
-								fonts[nFonts].font = fontmn2;
-							else fonts[nFonts].font = font2;
-
-							nFonts++;
+								sceneFont.font = fontmn2;
+							else {
+								LOG_WARN("ESceneFontDefine: Unknown font name, using font2");
+								sceneFont.font = font2;
+							}
 
 							delete[] fontname;
-
 						}
-
 						break;
 
 					case ESceneTextPosition:
 
 						textPosX = f->loadShort();
 						textPosY = f->loadShort();
-						LOG_MAX("TextPosition (x, y): %d, %d", textPosX, textPosY);
+						LOG_SCRIPT("ESceneTextPosition: x %d, y %d", textPosX, textPosY);
 
 						break;
 
 					case ESceneTextColour:
 
-						{
-
-							LOG_MAX("ESceneTextColour: %x", f->loadShort());
-
-						}
+						LOG_TRACE("Unimplemented ESceneTextColour: 0x%x", f->loadShort());
 
 						break;
 
 					case ESceneFontFun:
-
 						{
-
-							LOG_MAX("ESceneFontFun len: %d", f->loadShort());
+							LOG_TRACE("Unimplemented ESceneFontFun len: %d", f->loadShort());
 
 							/*while (len) {
 
@@ -688,134 +666,113 @@ void JJ1Scene::loadScripts (File *f) {
 								len--;
 
 							}*/
-
 						}
-
 						break;
 
 					case ESceneFontIndex:
 
 						textFont = f->loadShort();
-						LOG_MAX("ESceneFontIndex: %d", textFont);
+						LOG_SCRIPT("ESceneFontIndex: %d", textFont);
 
 						break;
 
 					case ESceneTextVAdjust:
 
 						extraheight = f->loadShort();
-						LOG_MAX("ESceneTextVAdjust: %d", extraheight);
+						LOG_SCRIPT("ESceneTextVAdjust: %d", extraheight);
 
 						break;
 
 					case ESceneBackgroundFade:
-
 						{
-							pages[loop].backgroundFade =  f->loadShort();
-							LOG_MAX("ESceneBackgroundFade: %d", pages[loop].backgroundFade);
+							page.backgroundFade =  f->loadShort();
+							LOG_SCRIPT("ESceneBackgroundFade: %d", page.backgroundFade);
 						}
-
 						break;
 
 					case ESceneTextShadow:
-
 						{
 							char enableShadow = f->loadChar();
 							if(enableShadow) {
 								textShadow = f->loadChar();
-							}
-							else
-								{
+							} else {
 								f->loadChar(); // Skip this value since shadows are turned off
 								textShadow = -1; // Turn off shadow , -1 means no shadow colour
-								}
+							}
 
-							LOG_MAX("ESceneTextShadow: %d", textShadow);
+							LOG_SCRIPT("ESceneTextShadow: %d", textShadow);
 						}
-
 						break;
 
 					case ESceneTextAlign:
 
 						textAlignment = f->loadChar();
-						LOG_MAX("ESceneTextAlign: %d", textAlignment);
+						LOG_SCRIPT("ESceneTextAlign: %d", textAlignment);
 
 						break;
 
 					case ESceneTextAlign2:
-
 						{
 							char a = f->loadChar();
 							int b = f->loadShort();
-							LOG_MAX("ESceneTextAlign2 (a, b): %x, %x", a, b);
-
+							LOG_TRACE("Unimplemented ESceneTextAlign2: a 0x%x, b 0x%x", a, b);
 						}
-
 						break;
 
 					case ESceneTextSomething:
-
 						{
-
 							char a = f->loadChar();
 							int b = f->loadShort();
-							LOG_MAX("ESceneTextSomething (a, b): %x, %x", a, b);
-
+							LOG_TRACE("Unimplemented ESceneTextSomething: a 0x%x, b 0x%x", a, b);
 						}
-
 						break;
 
 					case ESceneTextLine:
 					case ESceneTextBlock:
-
 						{
 							unsigned char datalen = f->loadChar();
-							LOG_MAX("Text len: %d", datalen);
+							LOG_SCRIPT("Text len: %d", datalen);
 
-							JJ1SceneText *text = pages[loop].texts + pages[loop].nTexts;
+							page.texts.emplace_back();
+							auto &sceneText = page.texts.back();
 
 							if (datalen > 0) {
 
-								text->text = f->loadBlock(datalen + 1);
-								f->seek(-1, false);
+								sceneText.text = reinterpret_cast<unsigned char *>(f->loadString(datalen));
 
 								// Convert number placeholders
 								for (int textPos = 1; textPos < datalen; textPos++) {
 
-									if (text->text[textPos] == 0x8B) {
+									if (sceneText.text[textPos] == 0x8B) {
+										// Current page
 
 										if (loop >= 9)
-											text->text[textPos - 1] = ((loop + 1) / 10) + 53;
+											sceneText.text[textPos - 1] = ((loop + 1) / 10) + 53;
 
-										text->text[textPos] = ((loop + 1) % 10) + 53;
+										sceneText.text[textPos] = ((loop + 1) % 10) + 53;
 
-									} else if (text->text[textPos] == 0x8A) {
+									} else if (sceneText.text[textPos] == 0x8A) {
+										// Number of pages
 
 										if (scriptItems >= 10)
-											text->text[textPos - 1] = (scriptItems / 10) + 53;
+											sceneText.text[textPos - 1] = (scriptItems / 10) + 53;
 
-										text->text[textPos] = (scriptItems % 10) + 53;
+										sceneText.text[textPos] = (scriptItems % 10) + 53;
 
 									}
 
 								}
 
-								text->text[datalen] = 0;
-
-							} else {
-
-								text->text = new unsigned char[1];
-								text->text[0] = 0;
-
 							}
 
-							text->alignment = textAlignment;
-							text->fontId = textFont;
-							text->shadowColour = textShadow;
+							sceneText.alignment = textAlignment;
+							sceneText.fontId = textFont;
+							sceneText.shadowColour = textShadow;
 
 							if(textPosX != -1) {
 
-								text->x = textPosX;
-								text->y = textPosY;
+								sceneText.x = textPosX;
+								sceneText.y = textPosY;
 								textPosX = -1;
 								textPosY = -1;
 
@@ -823,36 +780,33 @@ void JJ1Scene::loadScripts (File *f) {
 
 							if(textRectValid) {
 
-								text->textRect = textRect;
+								sceneText.textRect = textRect;
 								textRectValid = false;
 
 							}
 
 							if(extraheight != -1) {
 
-								text->extraLineHeight = extraheight;
+								sceneText.extraLineHeight = extraheight;
 								extraheight = -1;
 
 							}
-
-							pages[loop].nTexts++;
-
 						}
 
 						break;
 
 					case ESceneTime:
 
-						pages[loop].pageTime = (f->loadShort());
-						LOG_MAX("Scene time: %d", pages[loop].pageTime);
-						pages[loop].pageTime&=255;
+						page.pageTime = (f->loadShort());
+						LOG_SCRIPT("Scene time: %d", page.pageTime);
+						page.pageTime&=255;
 						break;
 
 					case ESceneBreaker:
 					case 0x3e:
 
 						pos = f->tell();
-						LOG_MAX("Parse script end at position: %d, with: %x", pos, type);
+						LOG_SCRIPT("Parse script end at position: %d, with: 0x%x", pos, type);
 						breakloop = true;
 						f->loadChar();
 
@@ -861,7 +815,7 @@ void JJ1Scene::loadScripts (File *f) {
 					default:
 
 						pos = f->tell();
-						LOG_MAX("Parse script end at position: %d, breaker: %x", pos, type);
+						LOG_SCRIPT("Parse script end at position: %d, breaker: 0x%x", pos, type);
 						breakloop = true;
 
 						break;
@@ -874,6 +828,7 @@ void JJ1Scene::loadScripts (File *f) {
 
 		}
 
+		loop++;
 	}
 
 }

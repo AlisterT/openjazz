@@ -5,15 +5,9 @@
  *
  * Part of the OpenJazz project
  *
- * @par History:
- * - 23rd August 2005: Created scene.c
- * - 3rd February 2009: Created scene.h from parts of scene.c
- * - 3rd February 2009: Renamed scene.c to scene.cpp
- * - 27th March 2010: Created sceneload.cpp from parts of scene.cpp
- * - 1st August 2012: Renamed scene.cpp to jj1scene.cpp
- *
  * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -36,6 +30,7 @@
 #include "io/log.h"
 
 #include <string.h>
+#include <algorithm> // std::find_if
 
 
 /**
@@ -45,14 +40,9 @@
  * @param newFrameData The frame's data buffer
  * @param newFrameSize The size of the frame's data buffer
  */
-JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int newFrameSize) {
-
-	soundId = SE::NONE;
-	frameData = newFrameData;
-	frameType = newFrameType;
-	frameSize = newFrameSize;
-	prev = NULL;
-	next = NULL;
+JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int newFrameSize) :
+	next(nullptr), prev(nullptr), frameData(newFrameData),
+	frameSize(newFrameSize), frameType(newFrameType), soundId(SE::NONE) {
 
 }
 
@@ -61,9 +51,7 @@ JJ1SceneFrame::JJ1SceneFrame(int newFrameType, unsigned char* newFrameData, int 
  * Delete the JJ1 cutscene frame.
  */
 JJ1SceneFrame::~JJ1SceneFrame() {
-
-	delete [] frameData;
-
+	delete[] frameData;
 }
 
 
@@ -97,18 +85,12 @@ void JJ1SceneAnimation::addFrame(int frameType, unsigned char* frameData, int fr
 
 /**
  * Create a JJ1 cutscene animation.
- *
- * @param newNext The next animation
  */
-JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext) {
+JJ1SceneAnimation::JJ1SceneAnimation (int id) :
+	sceneFrames(nullptr), lastFrame(nullptr), background(nullptr),
+	id(id), frames(0), reverseAnimation(0) {
 
-	next = newNext;
-	background = NULL;
-	scratch = createSurface(NULL, SW, SH);
-	lastFrame = sceneFrames = NULL;
-	frames = reverseAnimation = 0;
-	id = -1;
-
+	scratch = createSurface(nullptr, SW, SH);
 }
 
 
@@ -116,37 +98,33 @@ JJ1SceneAnimation::JJ1SceneAnimation  (JJ1SceneAnimation* newNext) {
  * Delete the JJ1 cutscene animation.
  */
 JJ1SceneAnimation::~JJ1SceneAnimation () {
-
-	if (next) delete next;
-
 	if(sceneFrames) {
 		JJ1SceneFrame* frame = sceneFrames;
 		JJ1SceneFrame* nextFrame = NULL;
-		while(frame)
-			{
+		while(frame) {
 			nextFrame = frame->next;
 			delete frame;
 			frame = NULL;
 			frame = nextFrame;
-			}
 		}
+	}
 
-	if (background) SDL_FreeSurface(background);
-	if (scratch) SDL_FreeSurface(scratch);
-
+	if (background) {
+		SDL_FreeSurface(background);
+		background = nullptr;
+	}
+	if (scratch) {
+		SDL_FreeSurface(scratch);
+		scratch = nullptr;
+	}
 }
 
 
 /**
  * Create a JJ1 cutscene image.
- *
- * @param newNext The next image
  */
-JJ1SceneImage::JJ1SceneImage (JJ1SceneImage *newNext) {
-
-	next = newNext;
-	image = NULL;
-	id = -1;
+JJ1SceneImage::JJ1SceneImage (int id) :
+	image(nullptr), id(id) {
 
 }
 
@@ -155,50 +133,35 @@ JJ1SceneImage::JJ1SceneImage (JJ1SceneImage *newNext) {
  * Delete the JJ1 cutscene image.
  */
 JJ1SceneImage::~JJ1SceneImage () {
-
-	if (next) delete next;
-	if (image) SDL_FreeSurface(image);
-
+	if (image) {
+		SDL_FreeSurface(image);
+		image = nullptr;
+	}
 }
 
 
 /**
  * Create a JJ1 cutscene palette.
- *
- * @param newNext The next palette
  */
-JJ1ScenePalette::JJ1ScenePalette (JJ1ScenePalette *newNext) {
-
-	next = newNext;
-	id = -1;
+JJ1ScenePalette::JJ1ScenePalette(int id) :
+	id(id) {
 
 }
-
 
 /**
- * Delete the JJ1 cutscene palette.
+ * Create a JJ1 cutscene font.
  */
-JJ1ScenePalette::~JJ1ScenePalette () {
-
-	if (next) delete next;
+JJ1SceneFont::JJ1SceneFont(int id) :
+	id(id) {
 
 }
-
 
 /**
  * Create a JJ1 cutscene text object.
  */
-JJ1SceneText::JJ1SceneText() {
-
-	x = -1;
-	y = -1;
-	textRect.x = -1;
-	textRect.y = -1;
-	extraLineHeight = -1;
-	text = NULL;
-	shadowColour = 0;
-	alignment = 0;
-	fontId = -1;
+JJ1SceneText::JJ1SceneText() :
+	text(nullptr), alignment(0), fontId(-1), x(-1), y(-1),
+	textRect({-1, -1, 0, 0}), extraLineHeight(-1), shadowColour(0) {
 
 }
 
@@ -207,29 +170,21 @@ JJ1SceneText::JJ1SceneText() {
  * Delete the JJ1 cutscene text object.
  */
 JJ1SceneText::~JJ1SceneText() {
-
-	if (text) delete[] text;
-
+	if (text) {
+		delete[] text;
+		text = nullptr;
+	}
 }
 
 
 /**
  * Create a JJ1 cutscene page.
  */
-JJ1ScenePage::JJ1ScenePage() {
-
-	pageTime = 0;
-	nTexts = 0;
-	backgrounds = 0;
-	musicFile = NULL;
-	paletteIndex = 0;
-	askForYesNo = 0;
-	stopMusic = 0;
-	animIndex = -1; // no anim
-	animLoops = 0;
-	animSpeed = 0;
-	nextPageAfterAnim = 0;
-	backgroundFade = 255;
+JJ1ScenePage::JJ1ScenePage() :
+	backgrounds(0), animLoops(0), animSpeed(0), animIndex(-1), // no anim
+	nextPageAfterAnim(0), pageTime(0), musicFile(nullptr),
+	paletteIndex(0), askForYesNo(0), stopMusic(0), backgroundFade(255)
+	{
 
 }
 
@@ -238,9 +193,10 @@ JJ1ScenePage::JJ1ScenePage() {
  * Delete the JJ1 cutscene page.
  */
 JJ1ScenePage::~JJ1ScenePage() {
-
-	if (musicFile) delete[] musicFile;
-
+	if (musicFile) {
+		delete[] musicFile;
+		musicFile = nullptr;
+	}
 }
 
 
@@ -252,7 +208,6 @@ JJ1ScenePage::~JJ1ScenePage() {
 JJ1Scene::JJ1Scene (const char * fileName) {
 
 	FilePtr file;
-	nFonts = 0;
 	LOG_TRACE("Scene: %s", fileName);
 
 	try {
@@ -265,58 +220,39 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 
 	}
 
-	images = NULL;
-	palettes = NULL;
-	animations = NULL;
+	// Checking scene file
+	unsigned char *identifier1 = file->loadBlock(18);
+	char identifier2 = file->loadChar();
+	if (memcmp(identifier1, "Digital Dimensions", 18) != 0 || identifier2 != 0x1A) {
+		LOG_ERROR("Scene not valid!");
+		delete[] identifier1;
+		return;
+	}
+	delete[] identifier1;
 
-	file->seek(0x13, true); // Skip Digital Dimensions header
 	signed long int dataOffset = file->loadInt(); // Get offset pointer to first data block
 
 	scriptItems = file->loadShort(); // Get number of script items
-	scriptStarts = new signed long int[scriptItems];
-	pages = new JJ1ScenePage[scriptItems];
-
+	scriptStarts.resize(scriptItems);
+	pages.resize(scriptItems);
 	LOG_TRACE("Scene: Script items: %d", scriptItems);
-
 	for (int i = 0; i < scriptItems; i++) {
-
 		scriptStarts[i] = file->loadInt(); // Load offset to script
 		LOG_MAX("scriptStart: %ld", scriptStarts[i]);
-
 	}
 
 	// Seek to datastart now
 	file->seek(dataOffset, true); // Seek to data offsets
 	dataItems = file->loadShort() + 1; // Get number of data items
 	LOG_TRACE("Scene: Data items %d", dataItems);
-	dataOffsets = new signed long int[dataItems];
-
+	dataOffsets.resize(dataItems);
 	for (int i = 0; i < dataItems; i++) {
-
 		dataOffsets[i] = file->loadInt(); // Load offset to script
 		LOG_MAX("dataOffsets: %ld", dataOffsets[i]);
-
 	}
 
 	loadData(file.get());
 	loadScripts(file.get());
-
-	delete[] scriptStarts;
-	delete[] dataOffsets;
-}
-
-
-/**
- * Delete the JJ1 cutscene.
- */
-JJ1Scene::~JJ1Scene () {
-
-	delete[] pages;
-
-	if (images) delete images;
-	if (palettes) delete palettes;
-	if (animations) delete animations;
-
 }
 
 
@@ -329,9 +265,8 @@ int JJ1Scene::play () {
 
 	SDL_Rect dst;
 	unsigned int sceneIndex = 0;
-	JJ1SceneImage *image;
-	JJ1SceneAnimation* animation = NULL;
 	JJ1SceneFrame* currentFrame = NULL;
+	auto sceneAnimation = animations.end();
 	PaletteEffect* paletteEffect = NULL;
 	int	frameDelay = 0;
 	int prevFrame = 0;
@@ -421,13 +356,12 @@ int JJ1Scene::play () {
 			textRect.y = 0;
 			textRect.w = SW;
 			textRect.h = SH;
-			JJ1ScenePalette *palette = palettes;
 
-			while (palette && (palette->id != pages[sceneIndex].paletteIndex)) palette = palette->next;
+			auto scenePalette = std::find_if(palettes.begin(), palettes.end(),
+				[&](const auto& pal) { return pal.id == pages[sceneIndex].paletteIndex; });
+			if (scenePalette != palettes.end()) {
 
-			if (palette) {
-
-				video.setPalette(palette->palette);
+				video.setPalette(scenePalette->palette);
 
 				// Fade in from black
 				if (paletteEffect) delete paletteEffect;
@@ -448,16 +382,13 @@ int JJ1Scene::play () {
 
 			for (int bg = 0; bg < pages[sceneIndex].backgrounds; bg++) {
 
-				image = images;
-
-				while (image && (image->id != pages[sceneIndex].bgIndex[bg]))
-					image = image->next;
-
-				if (image) {
+				const auto sceneImage = std::find_if(images.begin(), images.end(),
+					[&](const auto& img) { return img.id == pages[sceneIndex].bgIndex[bg]; });
+				if (sceneImage != images.end()) {
 
 					dst.x = pages[sceneIndex].bgX[bg] + ((canvasW - SW) >> 1);
 					dst.y = pages[sceneIndex].bgY[bg] + ((canvasH - SH) >> 1);
-					SDL_BlitSurface(image->image, NULL, canvas, &dst);
+					SDL_BlitSurface(sceneImage->image, nullptr, canvas, &dst);
 
 				}
 
@@ -467,19 +398,16 @@ int JJ1Scene::play () {
 
 			if (currentFrame == NULL) {
 
-				animation = animations;
-
-				while (animation && (animation->id != pages[sceneIndex].animIndex))
-					animation = animation->next;
-
-				if (animation && animation->background) {
+				sceneAnimation = std::find_if(animations.begin(), animations.end(),
+					[&](const auto& anim) { return anim.id == pages[sceneIndex].animIndex; });
+				if (sceneAnimation != animations.end() && sceneAnimation->background) {
 
 					dst.x = (canvasW - SW) >> 1;
 					dst.y = (canvasH - SH) >> 1;
 					frameDelay = 1000 / (pages[sceneIndex].animSpeed >> 8);
-					SDL_BlitSurface(animation->background, NULL, canvas, &dst);
-					SDL_BlitSurface(animation->background, NULL, animation->scratch, NULL);
-					currentFrame = animation->sceneFrames;
+					SDL_BlitSurface(sceneAnimation->background, NULL, canvas, &dst);
+					SDL_BlitSurface(sceneAnimation->background, NULL, sceneAnimation->scratch, NULL);
+					currentFrame = sceneAnimation->sceneFrames;
 					SDL_Delay(frameDelay);
 
 				}
@@ -487,19 +415,19 @@ int JJ1Scene::play () {
 			} else {
 
 				// Upload pixel data to the surface
-				if (SDL_MUSTLOCK(animation->scratch)) SDL_LockSurface(animation->scratch);
+				if (SDL_MUSTLOCK(sceneAnimation->scratch)) SDL_LockSurface(sceneAnimation->scratch);
 
 				switch (currentFrame->frameType) {
 
-					case ESquareAniHeader:
+					case ECompactedAniHeader:
 
-						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->scratch->pixels));
+						loadCompactedMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(sceneAnimation->scratch->pixels));
 
 						break;
 
-					case EFFAniHeader:
+					case EFullFrameAniHeader:
 
-						loadFFMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(animation->scratch->pixels));
+						loadFullFrameMem(currentFrame->frameSize, currentFrame->frameData, static_cast<unsigned char*>(sceneAnimation->scratch->pixels));
 
 						break;
 
@@ -511,11 +439,11 @@ int JJ1Scene::play () {
 
 				}
 
-				if (SDL_MUSTLOCK(animation->scratch)) SDL_UnlockSurface(animation->scratch);
+				if (SDL_MUSTLOCK(sceneAnimation->scratch)) SDL_UnlockSurface(sceneAnimation->scratch);
 
 				dst.x = (canvasW - SW) >> 1;
 				dst.y = (canvasH - SH) >> 1;
-				SDL_BlitSurface(animation->scratch, NULL, canvas, &dst);
+				SDL_BlitSurface(sceneAnimation->scratch, NULL, canvas, &dst);
 
 				playSound(currentFrame->soundId);
 
@@ -524,13 +452,13 @@ int JJ1Scene::play () {
 
 				SDL_Delay(frameDelay);
 
-				if (currentFrame == NULL && animation->reverseAnimation) {
+				if (currentFrame == NULL && sceneAnimation->reverseAnimation) {
 
 					//prevFrame = 1 - prevFrame;
 
 					/*if(prevFrame) currentFrame = lastFrame->prev;
 					else currentFrame = lastFrame->next;*/
-					currentFrame = NULL;//animation->sceneFrames;
+					currentFrame = NULL;//sceneAnimation->sceneFrames;
 
 				} else if (currentFrame == NULL && !pageTime && !pages[sceneIndex].askForYesNo && pages[sceneIndex].nextPageAfterAnim) {
 
@@ -548,78 +476,70 @@ int JJ1Scene::play () {
 		y = 0;
 		int extraLineHeight = 0;
 
-		for (int count = 0; count < pages[sceneIndex].nTexts; count++) {
+		for (const auto& sceneText : pages[sceneIndex].texts) {
 
-			JJ1SceneText *text = pages[sceneIndex].texts + count;
-			Font *font = NULL;
-			int xOffset, yOffset;
+			const auto sceneFont = std::find_if(fonts.begin(), fonts.end(),
+				[&](const auto& fnt) { return fnt.id == sceneText.fontId; });
+			if (sceneFont != fonts.end()) {
+				Font* font = sceneFont->font;
 
-			for (int index = 0; index < nFonts; index++) {
+				if (sceneText.x != -1) {
 
-				if (text->fontId == fonts[index].id) {
-
-					font = fonts[index].font;
-
-					continue;
+					x = sceneText.x;
+					y = sceneText.y;
 
 				}
 
+				if (sceneText.textRect.x != -1) {
+
+					textRect = sceneText.textRect;
+					x = 0;
+					y = 0;
+
+				}
+
+				if (sceneText.extraLineHeight != -1) {
+
+					extraLineHeight = sceneText.extraLineHeight;
+
+				}
+
+				// Actual drawing is only needed when there is text provided
+				if(sceneText.text) {
+					int xOffset = ((canvasW - SW) >> 1) + textRect.x + x;
+					int yOffset = ((canvasH - SH) >> 1) + textRect.y + y;
+
+					switch (sceneText.alignment) {
+
+						case 0: // left
+
+							break;
+
+						case 1: // right
+
+							xOffset += textRect.w - font->getSceneStringWidth(sceneText.text);
+
+							break;
+
+						case 2: // center
+
+							xOffset += (textRect.w - font->getSceneStringWidth(sceneText.text)) >> 1;
+
+							break;
+
+					}
+
+					// Drop shadow
+					font->mapPalette(0, MAX_PALETTE_COLORS, 0, 1);
+					font->showSceneString(sceneText.text, xOffset + 1, yOffset + 1);
+					font->restorePalette();
+
+					// Text itself
+					font->showSceneString(sceneText.text, xOffset, yOffset);
+				}
+
+				y += extraLineHeight + font->getHeight() / 2;
 			}
-
-			if (text->x != -1) {
-
-				x = text->x;
-				y = text->y;
-
-			}
-
-			if (text->textRect.x != -1) {
-
-				textRect = text->textRect;
-				x = 0;
-				y = 0;
-
-			}
-
-			if (text->extraLineHeight != -1) {
-
-				extraLineHeight = text->extraLineHeight;
-
-			}
-
-			xOffset = ((canvasW - SW) >> 1) + textRect.x + x;
-			yOffset = ((canvasH - SH) >> 1) + textRect.y + y;
-
-			switch (text->alignment) {
-
-				case 0: // left
-
-					break;
-
-				case 1: // right
-
-					xOffset += textRect.w - font->getSceneStringWidth(text->text);
-
-					break;
-
-				case 2: // center
-
-					xOffset += (textRect.w - font->getSceneStringWidth(text->text)) >> 1;
-
-					break;
-
-			}
-
-			// Drop shadow
-			font->mapPalette(0, MAX_PALETTE_COLORS, 0, 1);
-			font->showSceneString(text->text, xOffset + 1, yOffset + 1);
-			font->restorePalette();
-
-			// Text itself
-			font->showSceneString(text->text, xOffset, yOffset);
-
-			y += extraLineHeight + font->getHeight() / 2;
-
 		}
 
 	}

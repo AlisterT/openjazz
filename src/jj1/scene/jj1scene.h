@@ -5,13 +5,9 @@
  *
  * Part of the OpenJazz project
  *
- * @par History:
- * - 23rd August 2005: Created scene.c
- * - 3rd February 2009: Created scene.h from parts of scene.c
- * - 1st August 2012: Renamed scene.h to jj1scene.h
- *
  * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -24,75 +20,60 @@
 
 #include "io/file.h"
 #include "types.h"
+#include <list>
+#include <vector>
 
 // Enums
 
-/**
- * Cutscene file animation headers
-11
-1L
-/0/0
-PB
-FF
-RN
-RB
-RC
-RL
-RR
-][
-PL
-AN
-_E
-MX
-ST
-SL
-*/
-enum ANIHeaders
-	{
-	E11AniHeader = 0x3131, ///< Background/start image
-	E1LAniHeader = 0x4c31,
-	EPBAniHeader = 0x4250,
-	EFFAniHeader = 0x4646, ///< Floodfill? or full frame?
-	ERNAniHeader = 0x4e52,
-	ERBAniHeader = 0x4252,
-	ERCAniHeader = 0x4352,
-	ERLAniHeader = 0x4c52,
-	ERRAniHeader = 0x5252,
-	E_EHeader = 0x455F, ///< ANI End
-	ESquareAniHeader = 0x5b5d,
-	EMXAniHeader = 0x584d,
-	ESTAniHeader = 0x5453, ///< Sound tag
-	ESoundListAniHeader = 0x4C53,
-	EPlayListAniHeader = 0x4C50
-	};
+#define MAKE_0SC_HEADER(BEG, END) (BEG | END << 8)
+
+/// Cutscene file animation headers
+enum ANIHeaders	{
+	EAniHeader = MAKE_0SC_HEADER('A', 'N'),
+	E11AniHeader = MAKE_0SC_HEADER('1', '1'), ///< Background/start image
+	E1LAniHeader = MAKE_0SC_HEADER('1', 'L'),
+	E00AniHeader = MAKE_0SC_HEADER(0, 0),
+	EPBAniHeader = MAKE_0SC_HEADER('P', 'B'),
+	EFullFrameAniHeader = MAKE_0SC_HEADER('F', 'F'), ///< Floodfill?
+	ERNAniHeader = MAKE_0SC_HEADER('R', 'N'),
+	ERBAniHeader = MAKE_0SC_HEADER('R', 'B'),
+	ERCAniHeader = MAKE_0SC_HEADER('R', 'C'),
+	ERLAniHeader = MAKE_0SC_HEADER('R', 'L'),
+	EReverseAniHeader = MAKE_0SC_HEADER('R', 'R'), ///< Reverse animation when end found
+	EEndAniHeader = MAKE_0SC_HEADER('_', 'E'), ///< End of animation
+	ECompactedAniHeader = MAKE_0SC_HEADER(']', '['), ///< Full screen animation frame, does not clear the screen first
+	EMXAniHeader = MAKE_0SC_HEADER('M', 'X'),
+	ESoundTagAniHeader = MAKE_0SC_HEADER('S', 'T'), ///< Sound tag
+	ESoundListAniHeader = MAKE_0SC_HEADER('S', 'L'), ///< Sound list
+	EPlayListAniHeader = MAKE_0SC_HEADER('P', 'L') ///< Playlist
+};
 
 /// Cutscene script types - these are the known types
 enum {
-	ESceneYesNo = 0x23,
-	ESceneMusic = 0x2A,
-	ESceneStopMusic = 0x2D,
-	ESceneFadeType = 0x3F,
-	ESceneTextBlock = 0x40,
-	ESceneTextColour = 0x41,
-	ESceneFontFun = 0x45,
-	ESceneFontIndex = 0x46,
-	ESceneTextPosition = 0x47,
-	ESceneTextAlign = 0x4A,
-	ESceneTextAlign2 = 0x4B,
-	ESceneBackground = 0x4c,
-	ESceneBreaker = 0x50,
-	ESceneSomethingElse = 0x51,
-	ESceneTextRect = 0x57,
-	ESceneFontDefine = 0x58,
-	ESceneTime = 0x5d,
-	ESceneTextLine = 0x5e,
-	ESceneTextVAdjust = 0x5f,
-	ESceneAnimationPlayAndContinue = 0xA7,
+	ESceneYesNo = 0x23, // #
+	ESceneMusic = 0x2A, // *
+	ESceneStopMusic = 0x2D, // -
+	ESceneFadeType = 0x3F, // ?
+	ESceneTextBlock = 0x40, // @
+	ESceneTextColour = 0x41, // A
+	ESceneFontFun = 0x45, // E
+	ESceneFontIndex = 0x46, // F
+	ESceneTextPosition = 0x47, // G
+	ESceneTextAlign = 0x4A, // J
+	ESceneTextAlign2 = 0x4B, // K
+	ESceneBackground = 0x4C, // L
+	ESceneBreaker = 0x50, // P
+	ESceneSomethingElse = 0x51, // Q
+	ESceneTextRect = 0x57, // W
+	ESceneFontDefine = 0x58, // X
+	ESceneTime = 0x5D, // ]
+	ESceneTextLine = 0x5E, // ^
+	ESceneTextVAdjust = 0x5F, // _ = move "line"
 	ESceneAnimation = 0xA6,
-	ESceneBackgroundFade = 0xb1,
-	ESceneTextSomething = 0xd9,
-	ESceneTextShadow = 0xdb
-
+	ESceneAnimationPlayAndContinue = 0xA7,
+	ESceneBackgroundFade = 0xB1,
+	ESceneTextSomething = 0xD9,
+	ESceneTextShadow = 0xDB
 };
 
 
@@ -111,11 +92,10 @@ class JJ1SceneText {
 		int            y;
 		SDL_Rect       textRect;
 		int            extraLineHeight;
-		int			   shadowColour;
+		int            shadowColour;
 
-		JJ1SceneText  ();
+		JJ1SceneText ();
 		~JJ1SceneText ();
-
 };
 
 /// Cutscene page
@@ -133,43 +113,40 @@ class JJ1ScenePage {
 		int nextPageAfterAnim;
 
 		/// Length of the scene in seconds, or if zero = anim complete, or 256 = user interaction
-		int                pageTime;
-		JJ1SceneText       texts[100];
-		int                nTexts;
-		char*              musicFile;
-		int                paletteIndex;
-		int				   askForYesNo;
-		int				   stopMusic;
-		int					backgroundFade;
-		JJ1ScenePage  ();
+		int                     pageTime;
+		std::list<JJ1SceneText> texts;
+		char*                   musicFile;
+		int                     paletteIndex;
+		int                     askForYesNo;
+		int                     stopMusic;
+		int                     backgroundFade;
+		JJ1ScenePage ();
 		~JJ1ScenePage ();
-
 };
 
 /// Cutscene background image
 class JJ1SceneImage {
 
 	public:
-		JJ1SceneImage* next;
 		SDL_Surface* image;
 		int id;
 
-		explicit JJ1SceneImage (JJ1SceneImage* newNext);
+		explicit JJ1SceneImage (int id);
 		~JJ1SceneImage ();
-
+		JJ1SceneImage (const JJ1SceneImage&) = delete; // non construction-copyable
+		JJ1SceneImage& operator=(const JJ1SceneImage&) = delete; // non copyable
 };
 
 /// Cutscene palette
 class JJ1ScenePalette {
 
 	public:
-		JJ1ScenePalette* next;
 		SDL_Color palette[MAX_PALETTE_COLORS];
 		int id;
 
-		explicit JJ1ScenePalette (JJ1ScenePalette* newNext);
-		~JJ1ScenePalette ();
-
+		explicit JJ1ScenePalette (int id);
+		JJ1ScenePalette (const JJ1ScenePalette&) = delete; // non construction-copyable
+		JJ1ScenePalette& operator=(const JJ1ScenePalette&) = delete; // non copyable
 };
 
 /// Cutscene font
@@ -179,6 +156,9 @@ class JJ1SceneFont {
 		Font *font;
 		int   id;
 
+		explicit JJ1SceneFont (int id);
+		JJ1SceneFont (const JJ1SceneFont&) = delete; // non construction-copyable
+		JJ1SceneFont& operator=(const JJ1SceneFont&) = delete; // non copyable
 };
 
 /// Cutscene animation frame
@@ -192,16 +172,16 @@ class JJ1SceneFrame {
 		unsigned int   frameType;
 		SE::Type       soundId;
 
-		JJ1SceneFrame  (int frameType, unsigned char* frameData, int frameSize);
+		JJ1SceneFrame (int frameType, unsigned char* frameData, int frameSize);
 		~JJ1SceneFrame ();
-
+		JJ1SceneFrame (const JJ1SceneFrame&) = delete; // non construction-copyable
+		JJ1SceneFrame& operator=(const JJ1SceneFrame&) = delete; // non copyable
 };
 
 /// Cutscene animation
 class JJ1SceneAnimation {
 
 	public:
-		JJ1SceneAnimation*  next;
 		JJ1SceneFrame*      sceneFrames;
 		JJ1SceneFrame*      lastFrame;
 
@@ -211,47 +191,42 @@ class JJ1SceneAnimation {
 		int frames;
 		int reverseAnimation;
 
-		explicit JJ1SceneAnimation (JJ1SceneAnimation* newNext);
+		explicit JJ1SceneAnimation (int id);
 		~JJ1SceneAnimation ();
+		JJ1SceneAnimation (const JJ1SceneAnimation&) = delete; // non construction-copyable
+		JJ1SceneAnimation& operator=(const JJ1SceneAnimation&) = delete; // non copyable
 
 		void addFrame (int frameType, unsigned char* frameData, int frameSize);
-
 };
 
 /// Cutscene
 class JJ1Scene {
 
 	private:
-		JJ1SceneAnimation* animations;
-		JJ1SceneImage*     images;
-		JJ1ScenePalette*   palettes;
-		JJ1SceneFont       fonts[5];
-		int                nFonts;
-		unsigned short int scriptItems;
-		unsigned short int dataItems;
-		signed long int*   scriptStarts;
-		signed long int*   dataOffsets;
+		std::list<JJ1SceneAnimation> animations;
+		std::list<JJ1SceneImage>     images;
+		std::list<JJ1ScenePalette>   palettes;
+		std::list<JJ1SceneFont>      fonts;
 
 		/// Scripts all information needed to render script pages, text etc
-		JJ1ScenePage*      pages;
+		std::vector<JJ1ScenePage>      pages;
 
-		JJ1Scene(const JJ1Scene&); // non construction-copyable
-		JJ1Scene& operator=(const JJ1Scene&); // non copyable
+		unsigned short int scriptItems, dataItems;
+		std::vector<signed long int> scriptStarts, dataOffsets;
 
 		void               loadScripts      (File* f);
 		void               loadData         (File* f);
-		void               loadAni          (File* f, int dataIndex);
+		void               loadAni          (JJ1SceneAnimation &animation, File* f, int dataIndex);
 		void               loadCompactedMem (int size, unsigned char* frameData, unsigned char* pixdata);
-		void               loadFFMem        (int size, unsigned char* frameData, unsigned char* pixdata);
+		void               loadFullFrameMem (int size, unsigned char* frameData, unsigned char* pixdata);
 		unsigned short int loadShortMem     (unsigned char **data);
 
 	public:
 		explicit JJ1Scene (const char* fileName);
-		~JJ1Scene ();
+		JJ1Scene (const JJ1Scene&) = delete; // non construction-copyable
+		JJ1Scene& operator=(const JJ1Scene&) = delete; // non copyable
 
 		int play ();
-
 };
 
 #endif
-
