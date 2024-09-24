@@ -279,6 +279,7 @@ int JJ1Scene::play () {
 	SDL_Rect textRect = {0, 0, SW, SH};
 
 	video.clearScreen(0);
+	video.moviePlayback(true);
 
 	while (true) {
 
@@ -289,6 +290,7 @@ int JJ1Scene::play () {
 		if (loop(NORMAL_LOOP, paletteEffect) == E_QUIT) {
 
 			if (paletteEffect) delete paletteEffect;
+			video.moviePlayback(false);
 
 			return E_QUIT;
 
@@ -306,6 +308,7 @@ int JJ1Scene::play () {
 			(downOrRight && (x >= 0) && (x < 100) && (y >= SH - 12) && (y < SH))) {
 
 			if (paletteEffect) delete paletteEffect;
+			video.moviePlayback(false);
 
 			return E_NONE;
 
@@ -335,6 +338,7 @@ int JJ1Scene::play () {
 			if (sceneIndex == scriptItems) {
 
 				if (paletteEffect) delete paletteEffect;
+				video.moviePlayback(false);
 
 				return E_NONE;
 
@@ -552,6 +556,8 @@ int JJ1Scene::play () {
 		}
 
 	}
+
+	video.moviePlayback(false);
 
 	return E_NONE;
 

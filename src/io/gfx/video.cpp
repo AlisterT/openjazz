@@ -91,6 +91,7 @@ Video::Video () {
 	scaleFactor = 1;
 #endif
 	fullscreen = false;
+	isPlayingMovie = false;
 
 	// Generate the logical palette
 	for (int i = 0; i < MAX_PALETTE_COLORS; i++)
@@ -296,6 +297,7 @@ bool Video::reset (int width, int height) {
 
 #if OJ_SDL2
 	SDL_SetWindowSize(window, screenW, screenH);
+	SDL_RenderSetLogicalSize(renderer, screenW, screenH);
 	SDL_SetWindowFullscreen(window, fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP: 0);
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
@@ -658,7 +660,7 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	SDL_Color shownPalette[MAX_PALETTE_COLORS];
 
 #ifdef SCALE
-	if (canvas != NULL && canvas != screen) {
+	if (canvas != nullptr && canvas != screen) {
 
 		// Copy everything that has been drawn so far
 		if (setup.scale2x)
@@ -667,7 +669,7 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 				canvas->pixels, canvas->pitch,
 				screen->format->BytesPerPixel, canvas->w, canvas->h);
 		else
-			SDL_SoftStretch(canvas, NULL, screen, NULL);
+			SDL_SoftStretch(canvas, nullptr, screen, nullptr);
 
 	}
 #endif
@@ -682,10 +684,15 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 
 	// Show what has been drawn
 #if OJ_SDL2
-	SDL_BlitSurface(screen, NULL, textureSurface, NULL);
-	SDL_UpdateTexture(texture, NULL, textureSurface->pixels, textureSurface->pitch);
+	SDL_BlitSurface(screen, nullptr, textureSurface, nullptr);
+	SDL_UpdateTexture(texture, nullptr, textureSurface->pixels, textureSurface->pitch);
 	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	if (isPlayingMovie) {
+		SDL_Rect src = {0, 0, canvasW, canvasH};
+		SDL_RenderCopy(renderer, texture, &src, nullptr);
+	} else {
+		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+	}
 	SDL_RenderPresent(renderer);
 #else
 	SDL_Flip(screen);
@@ -710,6 +717,38 @@ void Video::clearScreen (int index) {
 	SDL_FillRect(canvas, NULL, index);
 #endif
 
+}
+
+
+/**
+ * Sets up scaling for movie mode.
+ *
+ * @param status Whether or not movie mode will be enabled
+ */
+void Video::moviePlayback (bool status) {
+#if OJ_SDL2
+	static int movieW = SW;
+	static int movieH = SH;
+
+	if(isPlayingMovie == status)
+		return;
+
+	isPlayingMovie = status;
+
+	if (isPlayingMovie) {
+		// save size
+		movieW = canvasW;
+		movieH = canvasH;
+
+		canvasW = SW;
+		canvasH = SH;
+	} else {
+		// reset
+		canvasW = movieW;
+		canvasH = movieH;
+	}
+	SDL_RenderSetLogicalSize(renderer, canvasW, canvasH);
+#endif
 }
 
 

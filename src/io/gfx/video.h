@@ -144,6 +144,7 @@ class Video {
 		int           scaleFactor; ///< Scaling factor
 #endif
 		bool          fullscreen; ///< Full-screen mode
+		bool          isPlayingMovie;
 
 		void findResolutions ();
 		void expose          ();
@@ -175,6 +176,8 @@ class Video {
 #ifndef FULLSCREEN_ONLY
 		bool       isFullscreen          ();
 #endif
+
+		void       moviePlayback         (bool status);
 
 		void       update                (SDL_Event *event);
 		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
