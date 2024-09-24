@@ -328,29 +328,23 @@ unsigned char* File::loadRLE (int length, bool checkSize) {
 
 	int pos = 0;
 	while (pos < length) {
+		unsigned char code = loadChar();
+		unsigned char amount = code & 127;
 
-		int rle = loadChar();
-
-		if (rle & 128) {
-
-			int byte = loadChar();
-			int amount = rle & 127;
+		if (code & 128) {
+			unsigned char value = loadChar();
 
 			if (pos + amount >= length) break;
 
-			memset(buffer + pos, byte, amount);
+			memset(buffer + pos, value, amount);
 			pos += amount;
+		} else if (amount) {
+			if (pos + amount >= length) break;
 
-		} else if (rle) {
-
-			if (pos + rle >= length) break;
-
-			fread(buffer + pos, 1, rle, file);
-
-			pos += rle;
-
-		} else buffer[pos++] = loadChar();
-
+			fread(buffer + pos, 1, amount, file);
+			pos += amount;
+		} else
+			buffer[pos++] = loadChar();
 	}
 
 	if (checkSize) {

@@ -457,9 +457,9 @@ void JJ1Scene::loadData (File *f) {
 				case 4: // image
 				case 5:
 				case 6:
+				case 7:
 
 					{
-
 						LOG_MAX("Data Type: Image, index: %d", loop);
 						unsigned short int width = f->loadShort(SW); // Get width
 						unsigned short int height;
@@ -469,7 +469,15 @@ void JJ1Scene::loadData (File *f) {
 						else height = f->loadShort(SH);
 
 						images = new JJ1SceneImage(images);
-						images->image = f->loadSurface(width, height, false);
+						if (type >= 5 && type <= 7) {
+							f->seek(-5, false); // account for metadata 2 + 2
+							unsigned char* pixels = unpackRLE(f->loadBlock(dataLen), dataLen, width * height + 4);
+							images->image = createSurface(pixels + 4, width, height);
+							delete[] pixels;
+						} else {
+							images->image = f->loadSurface(width, height, false);
+						}
+
 						images->id = loop;
 
 					}

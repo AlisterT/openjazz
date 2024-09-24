@@ -27,6 +27,7 @@
 
 #include "util.h"
 #include "io/file.h"
+#include "io/log.h"
 
 #include <string.h>
 
@@ -297,4 +298,62 @@ fixed fCos (fixed angle) {
 
 	return sinLut[(angle + 256) & 1023];
 
+}
+
+
+/**
+ * Unpack a block of RLE compressed data.
+ *
+ * @param data Buffer containing compressed data
+ * @param size The length of the compressed block
+ * @param outSize The length of the uncompressed block
+ *
+ * @return Buffer containing the uncompressed data
+ */
+unsigned char* unpackRLE (unsigned char* data, unsigned int size, unsigned int outSize) {
+	unsigned char* buffer = new unsigned char[outSize];
+
+	unsigned int posIn = 0, posOut = 0;
+	while (posIn < size) {
+		unsigned char code = data[posIn];
+		unsigned char amount = code & 127;
+
+		if (code & 128) { // repeat
+			unsigned char value = data[posIn+1];
+
+			if (posOut + amount >= outSize) {
+				LOG_WARN("Exceeding write buffer while RLE unpacking.");
+				break;
+			}
+
+			memset(buffer + posOut, value, amount);
+
+			posIn += 2;
+			posOut += amount;
+		} else if (amount) { // copy
+
+			if (posOut + amount >= outSize) {
+				LOG_WARN("Exceeding write buffer while RLE unpacking.");
+				break;
+			}
+
+			memcpy(buffer + posOut, data + posIn + 1, amount);
+
+			posIn += amount + 1;
+			posOut += amount;
+		} else { // end marker
+			buffer[posOut++] = data[posIn+1];
+			posIn += 2;
+
+			//LOG_MAX("End marker found while RLE unpacking.");
+			break;
+		}
+	}
+
+	if(size != posIn || outSize != posOut) {
+		LOG_DEBUG("RLE block has incorrect size: in %d/%d out %d/%d", size, posIn, outSize, posOut);
+	}
+
+	delete[] data;
+	return buffer;
 }
