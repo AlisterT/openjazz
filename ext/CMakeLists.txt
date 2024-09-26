@@ -3,13 +3,15 @@
 
 add_library(argparse STATIC argparse/argparse.h argparse/argparse.cpp)
 target_include_directories(argparse INTERFACE argparse)
+target_link_libraries(OpenJazz argparse)
 
 # miniz
 
 add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
-target_compile_definitions(miniz INTERFACE	MINIZ_NO_ARCHIVE_APIS)
+target_compile_definitions(miniz INTERFACE MINIZ_NO_ARCHIVE_APIS)
 #target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
 target_include_directories(miniz INTERFACE miniz)
+target_link_libraries(OpenJazz miniz)
 
 # psmplug
 
@@ -28,8 +30,10 @@ add_library(psmplug STATIC
 	psmplug/tables.h
 )
 target_include_directories(psmplug INTERFACE psmplug)
+target_link_libraries(OpenJazz psmplug)
 
 # stb
 
 add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp)
 target_include_directories(stb INTERFACE stb)
+target_link_libraries(OpenJazz stb)

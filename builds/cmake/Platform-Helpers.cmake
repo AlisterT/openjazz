@@ -48,7 +48,7 @@ elseif(PSP)
 endif()
 
 if(NINTENDO_3DS OR NINTENDO_WII OR PSP)
-	add_compile_options(-fno-rtti)
+	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 endif()
 
 if(PANDORA OR CANOO OR WIZ OR GP2X)

@@ -106,6 +106,7 @@ add_executable(OpenJazz
 	src/jj1/scene/jj1scene.h
 	src/jj1/scene/jj1sceneload.cpp)
 target_include_directories(OpenJazz PUBLIC src)
+target_link_libraries(OpenJazz ${OJ_LIBS_HOST})
 
 # portable mode
 
@@ -131,19 +132,24 @@ endif()
 # libraries
 
 if(EMSCRIPTEN)
-	# emscripten ships a "port" of SDL2
-	set(OJ_LIBS_SDL "SDL2")
-	set(SDL_STATUS "SDL2 (emscripten port)")
+	# emscripten ships a "port" of SDL2, no linking necessary
 	target_compile_options(OpenJazz PRIVATE "--use-port=sdl2;-flto;-fexceptions")
+	set(SDL_STATUS "SDL2 (emscripten port)")
 elseif(LEGACY_SDL)
 	find_package(SDL REQUIRED)
 	target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
-	set(OJ_LIBS_SDL ${SDL_LIBRARY})
+	target_link_libraries(OpenJazz ${SDL_LIBRARY})
 	set(SDL_STATUS "SDL1.2 (legacy)")
 else()
 	find_package(SDL2 REQUIRED)
+	# FIXME: use targets after moving from Ubuntu 20.04 LTS to 22.04 LTS
+	#if(WIN32)
+	#	target_link_libraries(OpenJazz SDL2::SDL2 SDL2::SDLmain)
+	#else()
+	#	target_link_libraries(OpenJazz SDL2::SDL2)
+	#endif()
 	target_include_directories(OpenJazz PRIVATE ${SDL2_INCLUDE_DIRS})
-	set(OJ_LIBS_SDL ${SDL2_LIBRARIES})
+	target_link_libraries(OpenJazz ${SDL2_LIBRARIES})
 	set(SDL_STATUS "SDL2")
 endif()
 
@@ -157,7 +163,9 @@ set(NETWORK_STATUS "Disabled")
 option(NETWORK "Enable Network support" ON)
 if(NETWORK)
 	set(NETWORK_STATUS "Enabled, platform specific")
-	if(NOT OJ_LIBS_NET)
+	if(OJ_LIBS_NET)
+		target_link_libraries(OpenJazz ${OJ_LIBS_NET})
+	else()
 		# sockets
 		include(CheckIncludeFileCXX)
 		check_include_file_cxx(sys/socket.h HAVE_SOCKETS)
@@ -184,7 +192,7 @@ cmake_dependent_option(SCALE "Allow scaling" ON "OJ_ALLOW_SCALE;LEGACY_SDL" OFF)
 if(SCALE)
 	set(SCALE_STATUS "Enabled, scale2x")
 	target_compile_definitions(OpenJazz PRIVATE SCALE)
-	set(OJ_LIBS_SCALE scale2x)
+	target_link_libraries(OpenJazz scale2x)
 	add_subdirectory(ext/scale2x)
 elseif(NOT LEGACY_SDL)
 	# FIXME: add codepath for gpu scaling
@@ -250,10 +258,6 @@ set_property(SOURCE src/version.cpp PROPERTY COMPILE_DEFINITIONS
 set(OJ_BUGREPORT "https://github.com/AlisterT/openjazz/issues")
 set_property(SOURCE src/main.cpp PROPERTY COMPILE_DEFINITIONS
 	OJ_URL="${PROJECT_HOMEPAGE_URL}"; OJ_BUGREPORT="${OJ_BUGREPORT}")
-
-target_link_libraries(OpenJazz
-	argparse miniz psmplug stb
-	${OJ_LIBS_SCALE} ${OJ_LIBS_SDL} ${OJ_LIBS_NET} ${OJ_LIBS_HOST})
 
 # platform stuff
 
