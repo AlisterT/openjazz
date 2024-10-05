@@ -338,7 +338,7 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 			eventType = JJ1PE_NONE;
 
-			playSound(SE::PHOTON);
+			playSound(level->getLevelSound(LSND_JUMP));
 
 		} else if (((eventType == JJ1PE_NONE) || (eventType == JJ1PE_PLATFORM)) &&
 			!player->pcontrols[C_JUMP]) {
@@ -516,8 +516,10 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 
 	// Replay sound effect before invincibility wears off
 
-	if ((reaction == PR_INVINCIBLE) && (reactionTime < ticks + 2200))
+	if ((reaction == PR_INVINCIBLE) && (reactionTime < ticks + 2200)) {
+		// FIXME: This is hardcoded for now
 		if (!isSoundPlaying(SE::INVULN)) playSound(SE::INVULN);
+	}
 
 }
 
@@ -944,7 +946,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 	if (flying) {
 
-		an = level->getMiscAnim(facing? MA_RBOARD: MA_LBOARD);
+		an = level->getLevelAnim(facing? LA_RBOARD: LA_LBOARD);
 
 		an->setFrame(ticks >> 4, true);
 		an->draw(drawX, drawY + F10);
@@ -976,7 +978,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 
 		// Show the 4-hit shield
 
-		an = level->getMiscAnim(MA_4SHIELD);
+		an = level->getLevelAnim(LA_4SHIELD);
 
 		if (shield == 4) {
 
@@ -1024,7 +1026,7 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 		xOffset = fCos(ticks) * 20;
 		yOffset = fSin(ticks) * 20;
 
-		an = level->getMiscAnim(MA_1SHIELD);
+		an = level->getLevelAnim(LA_1SHIELD);
 
 		if (!facing) yOffset = -yOffset;
 

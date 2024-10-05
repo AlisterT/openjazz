@@ -47,7 +47,12 @@
 #define BULLETS    32
 #define BLENGTH    20 /* Length of bullets, in bytes */
 #define ANIMS     128
+#define SOUNDS     32
+#define SHORTNAME   8
+#define LONGNAME   16
 #define PATHS      16
+#define TNUM       60 /* Number of tiles in tileset */
+#define TSETS       4 /* Maximum number of tilesets (each 60 entries) */
 #define TKEY      127 /* Tileset colour key */
 
 // Player animations
@@ -97,14 +102,35 @@
 #define MA_DEVHEAD    1
 #define MA_EXPLOSION1 2
 #define MA_EXPLOSION2 3
-#define MA_4SHIELD    4
-#define MA_LBOARD     5
-#define MA_RBOARD     6
-#define MA_LBIRD      7
-#define MA_RBIRD      8
-#define MA_ICY        9
-#define MA_1SHIELD    10
-#define JJ1MANIMS     11
+#define JJ1MANIMS     4
+
+// Level Sounds
+#define LSND_NOTHING1  0 // usually empty
+#define LSND_JUMP      1
+#define LSND_HURT      2
+#define LSND_BORED1    3
+#define LSND_BORED2    4
+#define LSND_UNKNOWN6  5
+#define LSND_ENDCOUNT  6
+#define LSND_DONE      7
+#define LSND_UNKNOWN9  8
+#define LSND_LOOSEBIRD 9
+#define LSND_UPLOOP    10
+#define JJ1LSOUNDS     11
+
+// Level animations
+#define LA_NOTHING1 0 // usually empty
+#define LA_NOTHING2 1 // usually empty
+#define LA_NOTHING3 2 // usually empty
+#define LA_4SHIELD  3
+#define LA_LBOARD   4
+#define LA_RBOARD   5
+#define LA_LBIRD    6
+#define LA_RBIRD    7
+#define LA_UNKNOWN9 8 // usually empty animation 31
+#define LA_ICY      9 // 0 = normal, 1 = shiver and slide, >1 only shiver
+#define LA_1SHIELD  10
+#define JJ1LANIMS   11
 
 // Black palette index
 #define LEVEL_BLACK 31
@@ -181,8 +207,10 @@ class JJ1Level : public Level {
 		Sprite*       spriteSet; ///< Sprites
 		Anim          animSet[ANIMS]; ///< Animations
 		char          miscAnims[JJ1MANIMS]; ///< Further animations
+		char          levelAnims[JJ1LANIMS]; ///< Level animations
 		char          playerAnims[JJ1PANIMS]; ///< Default player animations
 		signed char   bulletSet[BULLETS][BLENGTH]; ///< Bullet types
+		char          levelSounds[JJ1LSOUNDS]; ///< Level sounds
 		JJ1EventType  eventSet[EVENTS]; ///< Event types
 		char          mask[240][64]; ///< Tile masks. At most 240 tiles, all with 8 * 8 masks
 		GridElement   grid[LH][LW]; ///< Level grid. All levels are the same size
@@ -245,6 +273,8 @@ class JJ1Level : public Level {
 		Anim*         getAnim       (unsigned char anim);
 		Anim*         getMiscAnim   (unsigned char anim);
 		Anim*         getPlayerAnim (unsigned char anim);
+		Anim*         getLevelAnim  (unsigned char anim);
+		SE::Type      getLevelSound (unsigned char sound);
 		void          createBullet  (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time);
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();

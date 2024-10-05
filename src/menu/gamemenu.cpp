@@ -207,7 +207,7 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 
 		case E_FILE:
 
-			return message("FILE NOT FOUND");
+			return message("FILE NOT FOUND OR CORRUPTED");
 
 	}
 

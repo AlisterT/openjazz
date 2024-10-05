@@ -314,12 +314,16 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 	if (player->hit(source)) {
 
 		// Hits don't cause damage with a bird, but do scare the bird away
-		if (birds) birds->hit();
+		if (birds) {
+			birds->hit();
+
+			playSound(level->getLevelSound(LSND_LOOSEBIRD));
+		}
 		else energy--;
 
 	}
 
-	playSound(SE::UPLOOP);
+	playSound(level->getLevelSound(LSND_HURT));
 
 	if (energy) {
 

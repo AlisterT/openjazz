@@ -501,6 +501,32 @@ Anim* JJ1Level::getPlayerAnim (unsigned char anim) {
 
 }
 
+/**
+ * Get a level animation.
+ *
+ * @param anim Animation number
+ *
+ * @return Animation
+ */
+Anim* JJ1Level::getLevelAnim (unsigned char anim) {
+
+	return animSet + levelAnims[anim];
+
+}
+
+/**
+ * Get a level sound.
+ *
+ * @param sound Sound number
+ *
+ * @return Sound
+ */
+SE::Type JJ1Level::getLevelSound (unsigned char sound) {
+
+	return static_cast<SE::Type>(levelSounds[sound]);
+
+}
+
 
 /**
  * Set the water level.
@@ -827,6 +853,10 @@ int JJ1Level::play () {
 					localPlayer->addScore(bonusCount * 10);
 					timeBonus -= bonusCount;
 
+					auto se = getLevelSound(LSND_ENDCOUNT);
+					if(!isSoundPlaying(se))
+						playSound(se);
+
 				} else {
 
 					localPlayer->addScore(timeBonus * 10);
@@ -838,7 +868,7 @@ int JJ1Level::play () {
 
 					returnTime = ticks + T_END;
 					paletteEffects = new WhiteOutPaletteEffect(T_END, paletteEffects);
-					playSound(SE::ORB);
+					playSound(getLevelSound(LSND_DONE));
 
 				}
 
