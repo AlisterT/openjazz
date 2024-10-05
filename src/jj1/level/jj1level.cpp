@@ -5,24 +5,9 @@
  *
  * Part of the OpenJazz project
  *
- * @par History:
- * - 23rd August 2005: Created level.c
- * - 1st January 2006: Created events.c from parts of level.c
- * - 22nd July 2008: Created levelload.c from parts of level.c
- * - 3rd February 2009: Renamed level.c to level.cpp
- * - 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
- * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
- * - 18th July 2009: Created demolevel.cpp from parts of level.cpp and
- *                 levelload.cpp
- * - 19th July 2009: Created levelframe.cpp from parts of level.cpp
- * - 19th July 2009: Added parts of levelload.cpp to level.cpp
- * - 30th March 2010: Created baselevel.cpp from parts of level.cpp and
- *                  levelframe.cpp
- * - 29th June 2010: Created jj2level.cpp from parts of level.cpp
- * - 1st August 2012: Renamed level.cpp to jj1level.cpp
- *
  * @par Licence:
  * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -47,6 +32,7 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "io/log.h"
 #include "util.h"
 
 #include <string.h>
@@ -100,12 +86,8 @@ JJ1Level::JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
 void JJ1Level::deletePanel () {
 
 	SDL_FreeSurface(panel);
-	SDL_FreeSurface(panelAmmo[0]);
-	SDL_FreeSurface(panelAmmo[1]);
-	SDL_FreeSurface(panelAmmo[2]);
-	SDL_FreeSurface(panelAmmo[3]);
-	SDL_FreeSurface(panelAmmo[4]);
-	SDL_FreeSurface(panelAmmo[5]);
+	for (int i = 0; i < 6; i++)
+		SDL_FreeSurface(panelAmmo[i]);
 
 }
 
@@ -242,6 +224,12 @@ void JJ1Level::setNext (int nextLevel, int nextWorld) {
 
 	nextLevelNum = nextLevel;
 	nextWorldNum = nextWorld;
+
+	if(nextLevelNum == 99 || nextWorldNum == 99) {
+		LOG_MAX("No next level available, episode/game will end");
+	} else {
+		LOG_MAX("Next level is LEVEL%d.%03d", nextLevelNum, nextWorldNum);
+	}
 
 	if (multiplayer) {
 
@@ -716,7 +704,7 @@ int JJ1Level::play () {
 
 	unsigned int returnTime = 0;
 	int timeBonus = -1;
-	int perfect = 0;
+	int perfect = 0, enemyPercent = 0, itemPercent = 0;
 
 	video.setPalette(palette);
 
@@ -814,8 +802,25 @@ int JJ1Level::play () {
 					if (ticks < endTime) timeBonus = ((endTime - ticks) / 60000) * 100;
 					else timeBonus = 0;
 
-					if ((levelPlayer->getEnemies() == enemies) &&
-						(levelPlayer->getItems() == items)) perfect = 100;
+					LOG_DEBUG("Killed %d of %d enemies, needed %d",
+						levelPlayer->getEnemies(), enemies, nEnemies[game->getDifficulty()]);
+					LOG_DEBUG("Collected %d of %d items, needed %d",
+						levelPlayer->getItems(), items, nItems);
+
+					if (nEnemies[game->getDifficulty()]) {
+						enemyPercent = (levelPlayer->getEnemies() * 100) / (float) nEnemies[game->getDifficulty()];
+						if (enemyPercent > 100) enemyPercent = 100;
+					}
+					if (nItems) {
+						itemPercent = (levelPlayer->getItems() * 100) / (float) nItems;
+						if (itemPercent > 100) itemPercent = 100;
+					}
+
+					// FIXME: check if JJ1 shows perfect score when there are no enemies or items
+					if (enemyPercent == 100 && itemPercent == 100) {
+						perfect = 100;
+						LOG_DEBUG("Reached a perfect (100%%) score");
+					}
 
 				} else if (timeBonus - bonusCount >= 0) {
 
@@ -845,19 +850,11 @@ int JJ1Level::play () {
 			font->showNumber(timeBonus, (canvasW >> 1) + 124, (canvasH >> 1) - 60);
 
 			font->showString("enemies", (canvasW >> 1) - 152, (canvasH >> 1) - 40);
-
-			if (enemies)
-				font->showNumber((levelPlayer->getEnemies() * 100) / enemies, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
-			else
-				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
+			font->showNumber(enemyPercent, (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 40);
 
 			font->showString("items", (canvasW >> 1) - 152, (canvasH >> 1) - 20);
-
-			if (items)
-				font->showNumber((levelPlayer->getItems() * 100) / items, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
-			else
-				font->showNumber(0, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
+			font->showNumber(itemPercent, (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 			font->showString("%", (canvasW >> 1) + 124, (canvasH >> 1) - 20);
 
 			font->showString("perfect", (canvasW >> 1) - 152, canvasH >> 1);

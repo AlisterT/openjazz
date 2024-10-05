@@ -200,6 +200,10 @@ class JJ1Level : public Level {
 		fixed         energyBar; ///< HUD energy bar fullness
 		int           ammoType; ///< HUD ammo type
 		fixed         ammoOffset; ///< HUD ammo offset
+		int           nEnemies[4]; // Easy, Medium, Hard, Turbo
+		int           nItems;
+		// FIXME: actually use these
+		int animSpeed, jumpHeight;
 
 		void deletePanel  ();
 		int  loadPanel    ();
