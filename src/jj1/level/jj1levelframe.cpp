@@ -353,6 +353,7 @@ void JJ1Level::draw () {
 				else src.y = TTOI(eventSet[ge->event].multiA);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
+				//drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
 			}
 
 			// If this is a foreground tile, draw it
@@ -366,13 +367,14 @@ void JJ1Level::draw () {
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
+				//drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
 			}
 
 		}
 
 	}
 
-	// Temporary lines showing the water level
+	// FIXME: Temporary lines showing the water level
 	drawRect(0, FTOI(waterLevel - viewY), canvasW, 2, 24);
 	drawRect(0, FTOI(waterLevel - viewY) + 3, canvasW, 1, 24);
 	drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 24);

@@ -760,18 +760,34 @@ void Video::moviePlayback (bool status) {
  * @param width Width of the rectangle
  * @param height Height of the rectangle
  * @param index Index of the colour to use
+ * @param fill Whether to fill or only color the borders
  */
-void drawRect (int x, int y, int width, int height, int index) {
+void drawRect (int x, int y, int width, int height, int index, bool fill) {
+	SDL_Rect dst = { x, y, width, height };
 
-	SDL_Rect dst;
+	if (fill) {
+		SDL_FillRect(canvas, &dst, index);
+	} else {
+		// draw each border
 
-	dst.x = x;
-	dst.y = y;
-	dst.w = width;
-	dst.h = height;
+		// left
+		dst.w = 1;
+		SDL_FillRect(canvas, &dst, index);
 
-	SDL_FillRect(canvas, &dst, index);
+		// right
+		dst.x = x + width - 1;
+		SDL_FillRect(canvas, &dst, index);
 
+		// top
+		dst.x = x;
+		dst.w = width;
+		dst.h = 1;
+		SDL_FillRect(canvas, &dst, index);
+
+		// bottom
+		dst.y = y + height - 1;
+		SDL_FillRect(canvas, &dst, index);
+	}
 }
 
 /**

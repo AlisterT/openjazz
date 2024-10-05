@@ -199,7 +199,7 @@ EXTERN Video video; ///< Video output
 // Functions
 
 EXTERN SDL_Surface* createSurface     (unsigned char* pixels, int width, int height);
-EXTERN void         drawRect          (int x, int y, int width, int height, int index);
+EXTERN void         drawRect          (int x, int y, int width, int height, int index, bool fill = true);
 EXTERN void         enableColorKey    (SDL_Surface* surface, unsigned int index);
 EXTERN unsigned int getColorKey       (SDL_Surface* surface);
 EXTERN void         setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length);
