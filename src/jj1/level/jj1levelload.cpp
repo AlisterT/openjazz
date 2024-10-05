@@ -55,7 +55,7 @@
  */
 int JJ1Level::loadPanel () {
 
-	File* file;
+	FilePtr file;
 	unsigned char* pixels;
 	unsigned char* sorted;
 	int type, x, y;
@@ -63,7 +63,7 @@ int JJ1Level::loadPanel () {
 
 	try {
 
-		file = new File("PANEL.000", PATH_TYPE_GAME);
+		file = std::make_unique<File>("PANEL.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -72,8 +72,6 @@ int JJ1Level::loadPanel () {
 	}
 
 	pixels = file->loadRLE(46272);
-
-	delete file;
 
 
 	// Create the panel background
@@ -172,15 +170,14 @@ void JJ1Level::loadSprite (File* file, Sprite* sprite) {
  */
 int JJ1Level::loadSprites (char * fileName) {
 
-	File* mainFile = NULL;
-	File* specFile = NULL;
+	FilePtr mainFile, specFile;
 	unsigned char* buffer;
 	int count;
 
 	// Open fileName
 	try {
 
-		specFile = new File(fileName, PATH_TYPE_GAME);
+		specFile = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -192,11 +189,9 @@ int JJ1Level::loadSprites (char * fileName) {
 	// This function loads all the sprites, not just those in fileName
 	try {
 
-		mainFile = new File("MAINCHAR.000", PATH_TYPE_GAME);
+		mainFile = std::make_unique<File>("MAINCHAR.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
-
-		delete specFile;
 
 		return e;
 
@@ -238,7 +233,7 @@ int JJ1Level::loadSprites (char * fileName) {
 			mainFile->seek(-1, false);
 
 			// Load the individual sprite data
-			loadSprite(mainFile, spriteSet + count);
+			loadSprite(mainFile.get(), spriteSet + count);
 
 			loaded = true;
 
@@ -255,7 +250,7 @@ int JJ1Level::loadSprites (char * fileName) {
 			specFile->seek(-1, false);
 
 			// Load the individual sprite data
-			loadSprite(specFile, spriteSet + count);
+			loadSprite(specFile.get(), spriteSet + count);
 
 			loaded = true;
 
@@ -280,10 +275,6 @@ int JJ1Level::loadSprites (char * fileName) {
 
 	}
 
-	delete mainFile;
-	delete specFile;
-
-
 	// Include a blank sprite at the end
 	spriteSet[sprites].clearPixels();
 
@@ -301,11 +292,11 @@ int JJ1Level::loadSprites (char * fileName) {
  */
 int JJ1Level::loadTiles (char* fileName) {
 
-	File* file;
+	FilePtr file;
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -316,71 +307,57 @@ int JJ1Level::loadTiles (char* fileName) {
 	// Load the palette
 	file->loadPalette(palette);
 
-
 	// Load the background palette
 	file->loadPalette(skyPalette);
 
-
-	// Skip the second, identical, background palette
+	/* Skip the second, sometimes identical, background palette
+	   FIXME: These are actually alternating, needs rewritten `SkyPaletteEffect` */
 	file->skipRLE();
 
 	// Load the tile pixel indices
+	int tiles = 0;
+	unsigned char* pixels[TSETS * TNUM] = {0};
 
-	int tiles = 240; // Never more than 240 tiles
-
-	unsigned char* buffer = new unsigned char[tiles << 10];
-
-	file->seek(4, false);
-
-	int pos = 0;
-	int fileSize = file->getSize();
-
-	// Read the RLE pixels
-	// file::loadRLE() cannot be used, for reasons that will become clear
-	while ((pos < (tiles << 10)) && (file->tell() < fileSize)) {
-
-		int rle = file->loadChar();
-
-		if (rle & 128) {
-
-			int index = file->loadChar();
-
-			for (int i = 0; i < (rle & 127); i++) buffer[pos++] = index;
-
-		} else if (rle) {
-
-			for (int i = 0; i < rle; i++)
-				buffer[pos++] = file->loadChar();
-
-		} else { // This happens at the end of each tile
-
-			// 0 pixels means 1 pixel, apparently
-			buffer[pos++] = file->loadChar();
-
-			file->seek(2, false); /* I assume this is the length of the next
-				tile block */
-
-			if (pos == (60 << 10)) file->seek(2, false);
-			if (pos == (120 << 10)) file->seek(2, false);
-			if (pos == (180 << 10)) file->seek(2, false);
-
+	for (int i = 0; i < TSETS; i++) {
+		// Check if this tileset is enabled
+		char * marker = file->loadString(2);
+		if(strncmp(marker, "ok", 2) == 0) {
+			for(int j = 0; j < TNUM; j++) {
+				// Read the RLE pixels
+				pixels[i * TNUM + j] = file->loadRLE(TTOI(1) * TTOI(1));
+			}
+			tiles += TNUM;
+			LOG_MAX("Loaded tileset %d", i);
+		} else if (strncmp(marker, "  ", 2) == 0) { // Empty tilesets have marker of 2 spaces
+			LOG_TRACE("Skipping empty tileset %d", i);
 		}
-
+		delete[] marker;
 	}
 
-	delete file;
+	if (file->getSize() != file->tell()) {
+		LOG_WARN("Tileset data is corrupted");
 
-	// Work out how many tiles were actually loaded
-	// Should be a multiple of 60
-	tiles = pos >> 10;
+		for (int i = 0; i < tiles; i++)
+			delete[] pixels[i];
+
+		return E_FILE;
+	}
+
+	LOG_DEBUG("Loaded %d tiles", tiles);
+
+	// Create combined buffer
+	unsigned char* buffer = new unsigned char[TTOI(1) * TTOI(tiles)];
+	for (int i = 0; i < tiles; i++) {
+		memcpy(buffer + TTOI(1) * TTOI(1) * i,
+			pixels[i], TTOI(1) * TTOI(1));
+		delete[] pixels[i];
+	}
 
 	tileSet = createSurface(buffer, TTOI(1), TTOI(tiles));
 	enableColorKey(tileSet, TKEY);
-
 	delete[] buffer;
 
 	return tiles;
-
 }
 
 
