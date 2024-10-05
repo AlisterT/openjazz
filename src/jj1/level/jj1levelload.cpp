@@ -56,11 +56,6 @@
 int JJ1Level::loadPanel () {
 
 	FilePtr file;
-	unsigned char* pixels;
-	unsigned char* sorted;
-	int type, x, y;
-
-
 	try {
 
 		file = std::make_unique<File>("PANEL.000", PATH_TYPE_GAME);
@@ -71,7 +66,7 @@ int JJ1Level::loadPanel () {
 
 	}
 
-	pixels = file->loadRLE(46272);
+	unsigned char* pixels = file->loadRLE(46272);
 
 
 	// Create the panel background
@@ -79,27 +74,20 @@ int JJ1Level::loadPanel () {
 
 
 	// De-scramble the panel's ammo graphics
+	unsigned char* sorted = new unsigned char[64 * 26];
 
-	sorted = new unsigned char[64 * 26];
-
-	for (type = 0; type < 6; type++) {
-
-		for (y = 0; y < 26; y++) {
-
-			for (x = 0; x < 64; x++)
+	for (int type = 0; type < 6; type++) {
+		for (int y = 0; y < 26; y++) {
+			for (int x = 0; x < 64; x++)
 				sorted[(y * 64) + x] = pixels[(type * 64 * 32) + (y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
-
 		}
-
 		panelAmmo[type] = createSurface(sorted, 64, 26);
-
 	}
 
 	delete[] sorted;
 	delete[] pixels;
 
 	return E_NONE;
-
 }
 
 
@@ -170,11 +158,8 @@ void JJ1Level::loadSprite (File* file, Sprite* sprite) {
  */
 int JJ1Level::loadSprites (char * fileName) {
 
-	FilePtr mainFile, specFile;
-	unsigned char* buffer;
-	int count;
-
 	// Open fileName
+	FilePtr specFile;
 	try {
 
 		specFile = std::make_unique<File>(fileName, PATH_TYPE_GAME);
@@ -187,6 +172,7 @@ int JJ1Level::loadSprites (char * fileName) {
 
 
 	// This function loads all the sprites, not just those in fileName
+	FilePtr mainFile;
 	try {
 
 		mainFile = std::make_unique<File>("MAINCHAR.000", PATH_TYPE_GAME);
@@ -205,10 +191,10 @@ int JJ1Level::loadSprites (char * fileName) {
 
 
 	// Read offsets
-	buffer = specFile->loadBlock(sprites * 2);
+	unsigned char* buffer = specFile->loadBlock(sprites * 2);
 
-	for (count = 0; count < sprites; count++)
-		spriteSet[count].setOffset(buffer[count] << 2, buffer[sprites + count]);
+	for (int i = 0; i < sprites; i++)
+		spriteSet[i].setOffset(buffer[i] << 2, buffer[sprites + i]);
 
 	delete[] buffer;
 
@@ -218,7 +204,7 @@ int JJ1Level::loadSprites (char * fileName) {
 
 
 	// Loop through all the sprites to be loaded
-	for (count = 0; count < sprites; count++) {
+	for (int i = 0; i < sprites; i++) {
 
 		bool loaded = false;
 
@@ -233,7 +219,7 @@ int JJ1Level::loadSprites (char * fileName) {
 			mainFile->seek(-1, false);
 
 			// Load the individual sprite data
-			loadSprite(mainFile.get(), spriteSet + count);
+			loadSprite(mainFile.get(), spriteSet + i);
 
 			loaded = true;
 
@@ -250,7 +236,7 @@ int JJ1Level::loadSprites (char * fileName) {
 			specFile->seek(-1, false);
 
 			// Load the individual sprite data
-			loadSprite(specFile.get(), spriteSet + count);
+			loadSprite(specFile.get(), spriteSet + i);
 
 			loaded = true;
 
@@ -258,16 +244,16 @@ int JJ1Level::loadSprites (char * fileName) {
 
 		/* If both fileName and mainchar.000 have file indicators, create a
 		blank sprite */
-		if (!loaded) spriteSet[count].clearPixels();
+		if (!loaded) spriteSet[i].clearPixels();
 
 
 		// Check if the next sprite exists
 		// If not, create blank sprites for the remainder
 		if (specFile->tell() >= specFile->getSize()) {
 
-			for (count++; count < sprites; count++) {
+			for (i++; i < sprites; i++) {
 
-				spriteSet[count].clearPixels();
+				spriteSet[i].clearPixels();
 
 			}
 
@@ -370,22 +356,9 @@ int JJ1Level::loadTiles (char* fileName) {
  * @return Error code
  */
 int JJ1Level::load (char* fileName, bool checkpoint) {
-
-	Anim* pAnims[JJ1PANIMS];
-	unsigned short int soundRates[32];
-	File* file;
 	unsigned char* buffer;
-	const char* ext;
-	char* string = NULL;
-	char* levelname = NULL;
-	int tiles;
-	int count, x, y, type;
-	unsigned char startX, startY;
-	// FIXME: actually use these
-	int animSpeed, jumpHeight;
 
 	// Load font
-
 	try {
 
 		font = new Font(false);
@@ -400,22 +373,18 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	#endif
 
 	// Load panel
-
-	count = loadPanel();
-
-	if (count < 0) {
-
+	int res = loadPanel();
+	if (res < 0) {
 		delete font;
 
-		return count;
-
+		return res;
 	}
 
 
 	// Show loading screen
 
 	// Open planet.### file
-
+	char* string = nullptr;
 	if (!strcmp(fileName, LEVEL_FILE)) {
 
 		// Using the downloaded level file
@@ -426,26 +395,25 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 		// Load the planet's name from the planet.### file
 
+		FilePtr planetFile;
 		string = createFileName("PLANET", fileName + strlen(fileName) - 3);
 
 		try {
 
-			file = new File(string, PATH_TYPE_GAME);
+			planetFile = std::make_unique<File>(string, PATH_TYPE_GAME);
 
 		} catch (int e) {
 
-			file = NULL;
+			planetFile = nullptr;
 
 		}
 
 		delete[] string;
 
-		if (file) {
+		if (planetFile) {
 
-			file->seek(2, true);
-			string = file->loadString();
-
-			delete file;
+			planetFile->seek(2, true);
+			string = planetFile->loadTerminatedString();
 
 		} else {
 
@@ -455,25 +423,22 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	}
 
-	levelname = new char[strlen(string) + 14];
+	char* levelname = new char[strlen(string) + 14];
 	strcpy(levelname, string);
 
+	const char* ext;
 	switch (fileName[5]) {
-
 		case '0':
-
 			ext = " LEVEL ONE";
 
 			break;
 
 		case '1':
-
 			ext = " LEVEL TWO";
 
 			break;
 
 		case '2':
-
 			string[0] = 0;
 			ext = "SECRET LEVEL";
 			strcat(levelname, " ");
@@ -481,11 +446,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 			break;
 
 		default:
-
 			ext = " LEVEL";
 
 			break;
-
 	}
 
 	strcat(levelname, ext);
@@ -497,10 +460,10 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] levelname;
 
-	x = (canvasW >> 1) - ((strlen(string) + strlen(ext)) << 2);
-	x = fontmn2->showString("LOADING ", x - 60, (canvasH >> 1) - 16);
-	x = fontmn2->showString(string, x, (canvasH >> 1) - 16);
-	fontmn2->showString(ext, x, (canvasH >> 1) - 16);
+	int xPos = (canvasW >> 1) - ((strlen(string) + strlen(ext)) << 2);
+	xPos = fontmn2->showString("LOADING ", xPos - 60, (canvasH >> 1) - 16);
+	xPos = fontmn2->showString(string, xPos, (canvasH >> 1) - 16);
+	fontmn2->showString(ext, xPos, (canvasH >> 1) - 16);
 
 	delete[] string;
 
@@ -509,10 +472,10 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Open level file
-
+	FilePtr file;
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -523,6 +486,15 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	}
 
+	// Checking level file header
+	char *identifier1 = file->loadString(2);
+	char identifier2 = file->loadChar();
+	if (strncmp(identifier1, "DD", 2) != 0 || identifier2 != 0x1A) {
+		LOG_ERROR("Level not valid!");
+		delete[] identifier1;
+		return E_FILE;
+	}
+	delete[] identifier1;
 
 	// Load the blocks.### extension
 
@@ -551,12 +523,17 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Load the world number
 	worldNum = file->loadChar() ^ 4;
 
+	// Load 100% counters
+	nEnemies[0] = file->loadShort(); // Easy
+	nEnemies[1] = nEnemies[0]; // Medium is same as Easy
+	nEnemies[2] = file->loadShort(); // Hard
+	nEnemies[3] = file->loadShort(); // Turbo
+	nItems = file->loadShort();
 
 	// Load tile set from appropriate blocks.###
 
 	// Load tile set extension
-	file->seek(8, false);
-	ext = file->loadString();
+	ext = file->loadTerminatedString(3);
 
 	// Create tile set file name
 	if (!strcmp(ext, "999")) string = createFileName("BLOCKS", worldNum);
@@ -564,13 +541,12 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] ext;
 
-	tiles = loadTiles(string);
+	int tiles = loadTiles(string);
 
 	delete[] string;
 
 	if (tiles < 0) {
 
-		delete file;
 		deletePanel();
 		delete font;
 
@@ -582,20 +558,16 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Load sprite set from corresponding Sprites.###
 
 	string = createFileName("SPRITES", worldNum);
-
-	count = loadSprites(string);
+	res = loadSprites(string);
 
 	delete[] string;
 
-	if (count < 0) {
-
+	if (res < 0) {
 		SDL_FreeSurface(tileSet);
-		delete file;
 		deletePanel();
 		delete font;
 
-		return count;
-
+		return res;
 	}
 
 
@@ -607,9 +579,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	buffer = file->loadRLE(LW * LH * 2);
 
 	// Create grid from data
-	for (x = 0; x < LW; x++) {
+	for (int x = 0; x < LW; x++) {
 
-		for (y = 0; y < LH; y++) {
+		for (int y = 0; y < LH; y++) {
 
 			grid[y][x].tile = buffer[(y + (x * LH)) << 1];
 			grid[y][x].bg = buffer[((y + (x * LH)) << 1) + 1] >> 7;
@@ -623,7 +595,8 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] buffer;
 
-	// Ignore tile transparency settings (FIXME: needed for sun tiles at least)
+	// Ignore tile transparency settings, these are applied based on event type/behaviour
+
 	file->skipRLE();
 
 
@@ -632,15 +605,11 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	buffer = file->loadRLE(tiles * 8);
 
 	// Unpack bits
-	for (count = 0; count < tiles; count++) {
-
-		for (y = 0; y < 8; y++) {
-
-			for (x = 0; x < 8; x++)
-				mask[count][(y << 3) + x] = (buffer[(count << 3) + y] >> x) & 1;
-
+	for (int i = 0; i < tiles; i++) {
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++)
+				mask[i][(y << 3) + x] = (buffer[(i << 3) + y] >> x) & 1;
 		}
-
 	}
 
 	delete[] buffer;
@@ -650,15 +619,15 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	/*if (SDL_MUSTLOCK(tileSet)) SDL_LockSurface(tileSet);
 
-	for (count = 0; count < tiles; count++) {
+	for (int i = 0; i < tiles; i++) {
 
-		for (y = 0; y < 32; y++) {
+		for (int y = 0; y < 32; y++) {
 
-			for (x = 0; x < 32; x++) {
+			for (int x = 0; x < 32; x++) {
 
-				if (mask[count][((y >> 2) << 3) + (x >> 2)] == 1)
+				if (mask[i][((y >> 2) << 3) + (x >> 2)] == 1)
 					((char *)(tileSet->pixels))
-						[(count * 1024) + (y * 32) + x] = 88;
+						[(i * 1024) + (y * 32) + x] = 88;
 
 			}
 
@@ -670,20 +639,19 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Load special event path
-
 	buffer = file->loadRLE(PATHS << 9);
 
-	for (type = 0; type < PATHS; type++) {
+	for (int type = 0; type < PATHS; type++) {
 
 		path[type].length = buffer[type << 9] + (buffer[(type << 9) + 1] << 8);
 		if (path[type].length < 1) path[type].length = 1;
 		path[type].x = new short int[path[type].length];
 		path[type].y = new short int[path[type].length];
 
-		for (count = 0; count < path[type].length; count++) {
+		for (int i = 0; i < path[type].length; i++) {
 
-			path[type].x[count] = reinterpret_cast<signed char*>(buffer)[(type << 9) + (count << 1) + 3] << 2;
-			path[type].y[count] = reinterpret_cast<signed char*>(buffer)[(type << 9) + (count << 1) + 2];
+			path[type].x[i] = reinterpret_cast<signed char*>(buffer)[(type << 9) + (i << 1) + 3] << 2;
+			path[type].y[i] = reinterpret_cast<signed char*>(buffer)[(type << 9) + (i << 1) + 2];
 
 		}
 
@@ -693,41 +661,40 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Load event set
-
 	buffer = file->loadRLE(EVENTS * ELENGTH);
 
 	// Fill event set with data
-	for (count = 0; count < EVENTS; count++) {
+	for (int i = 0; i < EVENTS; i++) {
 
-		eventSet[count].difficulty           = buffer[count * ELENGTH];
-		eventSet[count].reflection           = buffer[(count * ELENGTH) + 2];
-		eventSet[count].movement             = buffer[(count * ELENGTH) + 4];
-		eventSet[count].anims[E_LEFTANIM]    = buffer[(count * ELENGTH) + 5];
-		eventSet[count].anims[E_RIGHTANIM]   = buffer[(count * ELENGTH) + 6];
-		eventSet[count].magnitude            = buffer[(count * ELENGTH) + 8];
-		eventSet[count].strength             = buffer[(count * ELENGTH) + 9];
-		eventSet[count].modifier             = buffer[(count * ELENGTH) + 10];
-		eventSet[count].points               = buffer[(count * ELENGTH) + 11];
-		eventSet[count].bullet               = buffer[(count * ELENGTH) + 12];
-		eventSet[count].bulletPeriod         = buffer[(count * ELENGTH) + 13];
-		eventSet[count].speed                = buffer[(count * ELENGTH) + 15] + 1;
-		eventSet[count].animSpeed            = buffer[(count * ELENGTH) + 17] + 1;
-		auto se = static_cast<SE::Type>(buffer[(count * ELENGTH) + 21]);
+		eventSet[i].difficulty           = buffer[i* ELENGTH];
+		eventSet[i].reflection           = buffer[(i* ELENGTH) + 2];
+		eventSet[i].movement             = buffer[(i* ELENGTH) + 4];
+		eventSet[i].anims[E_LEFTANIM]    = buffer[(i* ELENGTH) + 5];
+		eventSet[i].anims[E_RIGHTANIM]   = buffer[(i* ELENGTH) + 6];
+		eventSet[i].magnitude            = buffer[(i* ELENGTH) + 8];
+		eventSet[i].strength             = buffer[(i* ELENGTH) + 9];
+		eventSet[i].modifier             = buffer[(i* ELENGTH) + 10];
+		eventSet[i].points               = buffer[(i* ELENGTH) + 11];
+		eventSet[i].bullet               = buffer[(i* ELENGTH) + 12];
+		eventSet[i].bulletPeriod         = buffer[(i* ELENGTH) + 13];
+		eventSet[i].speed                = buffer[(i* ELENGTH) + 15] + 1;
+		eventSet[i].animSpeed            = buffer[(i* ELENGTH) + 17] + 1;
+		auto se = static_cast<SE::Type>(buffer[(i * ELENGTH) + 21]);
 		if (!isValidSoundIndex(se)) {
-			eventSet[count].sound = SE::NONE;
-			LOG_WARN("Event %d has invalid sound effect %d.", count, se);
+			eventSet[i].sound = SE::NONE;
+			LOG_WARN("Event %d has invalid sound effect %d.", i, se);
 		} else {
-			eventSet[count].sound = se;
+			eventSet[i].sound = se;
 		}
-		eventSet[count].multiA               = buffer[(count * ELENGTH) + 22];
-		eventSet[count].multiB               = buffer[(count * ELENGTH) + 23];
-		eventSet[count].pieceSize            = buffer[(count * ELENGTH) + 24];
-		eventSet[count].pieces               = buffer[(count * ELENGTH) + 25];
-		eventSet[count].angle                = buffer[(count * ELENGTH) + 26];
-		eventSet[count].anims[E_LFINISHANIM] = buffer[(count * ELENGTH) + 28];
-		eventSet[count].anims[E_RFINISHANIM] = buffer[(count * ELENGTH) + 29];
-		eventSet[count].anims[E_LSHOOTANIM]  = buffer[(count * ELENGTH) + 30];
-		eventSet[count].anims[E_RSHOOTANIM]  = buffer[(count * ELENGTH) + 31];
+		eventSet[i].multiA               = buffer[(i * ELENGTH) + 22];
+		eventSet[i].multiB               = buffer[(i * ELENGTH) + 23];
+		eventSet[i].pieceSize            = buffer[(i * ELENGTH) + 24];
+		eventSet[i].pieces               = buffer[(i * ELENGTH) + 25];
+		eventSet[i].angle                = buffer[(i * ELENGTH) + 26];
+		eventSet[i].anims[E_LFINISHANIM] = buffer[(i * ELENGTH) + 28];
+		eventSet[i].anims[E_RFINISHANIM] = buffer[(i * ELENGTH) + 29];
+		eventSet[i].anims[E_LSHOOTANIM]  = buffer[(i * ELENGTH) + 30];
+		eventSet[i].anims[E_RSHOOTANIM]  = buffer[(i * ELENGTH) + 31];
 
 	}
 
@@ -735,54 +702,62 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	enemies = items = 0;
 
-	for (x = 0; x < LW; x++) {
+	for (int x = 0; x < LW; x++) {
+		for (int y = 0; y < LH; y++) {
 
-		for (y = 0; y < LH; y++) {
-
-			type = grid[y][x].event;
-
+			int type = grid[y][x].event;
 			if (type) {
-
 				// If the event hurts and can be killed, it is an enemy
 				// Anything else that scores is an item
 				if ((eventSet[type].modifier == 0) && eventSet[type].strength) enemies++;
 				else if (eventSet[type].points) items++;
-
 			}
-
 		}
-
 	}
 
 	delete[] buffer;
 
+#if DEBUG_LOAD
+	// Show event names
+	buffer = file->loadRLE(EVENTS * LONGNAME);
 
+	for (int i = 0; i < EVENTS; i++) {
+		char displayName[LONGNAME] = {0};
+		strncpy(displayName, reinterpret_cast<char *>(buffer + i * LONGNAME + 1), buffer[i * LONGNAME]);
+		displayName[LONGNAME-1] = '\0';
+
+		if (strlen(displayName)) {
+			LOG_MAX("Event id %d is named \"%s\"", i, displayName);
+		}
+	}
+	delete[] buffer;
+#else
 	// Skip (usually empty) event names
 	file->skipRLE();
-
+#endif
 
 	// Load animation set
 
 	buffer = file->loadRLE(ANIMS << 6);
 
 	// Create animation set based on that data
-	for (count = 0; count < ANIMS; count++) {
+	for (int i = 0; i < ANIMS; i++) {
 
-		animSet[count].setData(buffer[(count << 6) + 6],
-			buffer[count << 6], buffer[(count << 6) + 1],
-			buffer[(count << 6) + 3], buffer[(count << 6) + 4],
-			buffer[(count << 6) + 2], buffer[(count << 6) + 5]);
+		animSet[i].setData(buffer[(i << 6) + 6],
+			buffer[i << 6], buffer[(i << 6) + 1],
+			buffer[(i << 6) + 3], buffer[(i << 6) + 4],
+			buffer[(i << 6) + 2], buffer[(i << 6) + 5]);
 
-		for (y = 0; y < buffer[(count << 6) + 6]; y++) {
+		for (int y = 0; y < buffer[(i << 6) + 6]; y++) {
 
 			// Get frame
-			x = buffer[(count << 6) + 7 + y];
+			int x = buffer[(i << 6) + 7 + y];
 			if (x > sprites) x = sprites;
 
 			// Assign sprite and vertical offset
-			animSet[count].setFrame(y, true);
-			animSet[count].setFrameData(spriteSet + x,
-				buffer[(count << 6) + 26 + y], buffer[(count << 6) + 45 + y]);
+			animSet[i].setFrame(y, true);
+			animSet[i].setFrameData(spriteSet + x,
+				buffer[(i << 6) + 26 + y], buffer[(i << 6) + 45 + y]);
 
 		}
 
@@ -790,56 +765,81 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] buffer;
 
+#if DEBUG_LOAD
+	// Show animation names
+	buffer = file->loadRLE(ANIMS * LONGNAME);
+
+	for (int i = 0; i < ANIMS; i++) {
+		char displayName[LONGNAME] = {0};
+		strncpy(displayName, reinterpret_cast<char *>(buffer + i * LONGNAME + 1), buffer[i * LONGNAME]);
+		displayName[LONGNAME-1] = '\0';
+
+		if (strlen(displayName)) {
+			LOG_MAX("Animation id %d is named \"%s\"", i, displayName);
+		}
+	}
+	delete[] buffer;
+
+	// Show level block names
+	for (int i = 0; i < 16; i++) {
+		char *tmpName = file->loadTerminatedString(SHORTNAME);
+		if (strlen(tmpName)) {
+			LOG_MAX("Level block id %d is named \"%s\"", i, tmpName);
+		}
+		delete[] tmpName;
+	}
+
+	// Skip compression info
+	file->seek(9);
+#else
 	// Skip (usually empty) animation names
 	file->skipRLE();
 
-	// Skip level block names
-	file->seek(153, false);
+	// Skip level block names and compression info
+	file->seek(16 * (SHORTNAME + 1) + 9);
+#endif
 
 	// Load sound map
-
-	for (count = 0; count < 32; count++) soundRates[count] = file->loadShort();
-
-	x = file->tell();
-
-	for (count = 0; count < 32; count++) {
-
-		file->seek(x + (count * 9), true);
-
-		string = file->loadString();
-
-		resampleSound(count, string, soundRates[count]);
-
-		delete[] string;
-
+	unsigned short int soundRates[SOUNDS];
+	for (int i = 0; i < SOUNDS; i++) {
+		soundRates[i] = file->loadShort();
+	}
+	for (int i = 0; i < SOUNDS; i++) {
+		char *tmpName = file->loadTerminatedString(SHORTNAME);
+		resampleSound(i, tmpName, soundRates[i]);
+		delete[] tmpName;
 	}
 
-	file->seek(x + 288, true);
-
 	// Music file
-	musicFile = file->loadString();
-
+	musicFile = file->loadTerminatedString(12);
+#if DEBUG_LOAD
+	if (strlen(musicFile)) {
+		LOG_MAX("Music is \"%s\"", musicFile);
+	}
+#endif
 
 	// Skip (usually empty) level start cutscene
-	file->seek(x + 314, true);
+	file->seek(13);
 
 	// End of episode cutscene
-	sceneFile = file->loadString();
+	sceneFile = file->loadTerminatedString(12);
+#if DEBUG_LOAD
+	if (strlen(sceneFile)) {
+		LOG_MAX("End scene is \"%s\"", sceneFile);
+	}
+#endif
 
-
-	// Skip blank bytes
-	file->seek(x + 366, true);
-
+	// Skip level editor tileset files
+	file->seek(39);
 
 	// The players' initial coordinates
-	startX = file->loadShort(LW);
-	startY = file->loadShort(LH) + 1;
-
+	unsigned char startX = file->loadShort(LW);
+	unsigned char startY = file->loadShort(LH) + 1;
 
 	// Next level
-	x = file->loadChar();
-	y = file->loadChar();
-	setNext(x, y);
+	int l = file->loadChar();
+	int w = file->loadChar();
+	setNext(l, w);
 
 	// jump height
 	jumpHeight = (file->loadShort() - 0xFFFF) / 2;
@@ -847,7 +847,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 		LOG_TRACE("Uncommon jumpHeight: %i", jumpHeight);
 
 	// skip some unknown level
-	file->seek(2, false);
+	file->seek(2);
 
 	// Thanks to Doubble Dutch for the water level bytes
 	waterLevelTarget = ITOF(file->loadShort() + 17);
@@ -860,21 +860,20 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 		LOG_TRACE("Uncommon animationSpeed: %i", animSpeed);
 
 	// Skip an unknown value (end marker?)
-	file->seek(2, false);
+	file->seek(2);
 
 
 	// Thanks to Feline and the JCS94 team for the next bits:
 
 	// Load player's animation set references (always left + right)
-
+	Anim* pAnims[JJ1PANIMS];
 	buffer = file->loadRLE(JJ1PANIMS * 2);
 	string = new char[MTL_P_ANIMS + JJ1PANIMS];
 
-	for (x = 0; x < JJ1PANIMS; x++) {
-
-		playerAnims[x] = buffer[x << 1];
-		pAnims[x] = animSet + playerAnims[x];
-		string[MTL_P_ANIMS + x] = playerAnims[x];
+	for (int i = 0; i < JJ1PANIMS; i++) {
+		playerAnims[i] = buffer[i << 1];
+		pAnims[i] = animSet + playerAnims[i];
+		string[MTL_P_ANIMS + i] = playerAnims[i];
 	}
 
 	delete[] buffer;
@@ -895,38 +894,49 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Load miscellaneous animations
-	miscAnims[MA_SPARKLE] = file->loadChar();
-	miscAnims[MA_DEVHEAD] = file->loadChar();
-	miscAnims[MA_EXPLOSION1] = file->loadChar();
-	miscAnims[MA_EXPLOSION2] = file->loadChar();
+	for (int i = 0; i < JJ1MANIMS; i++) {
+		miscAnims[i] = file->loadChar();
+	}
 
 
 	// Load bullet set
 	buffer = file->loadRLE(BULLETS * BLENGTH);
 
-	for (count = 0; count < BULLETS; count++) {
+	for (int i = 0; i < BULLETS; i++) {
 
-		memcpy(bulletSet[count], buffer + (count * BLENGTH), BLENGTH);
+		memcpy(bulletSet[i], buffer + (i * BLENGTH), BLENGTH);
 
 	}
 
 	delete[] buffer;
 
+#if DEBUG_LOAD
+	// Show attack names
+	buffer = file->loadRLE(BULLETS * 21);
 
+	for (int i = 0; i < BULLETS; i++) {
+		char displayName[20] = {0};
+		strncpy(displayName, reinterpret_cast<char *>(buffer + i * 21 + 1), buffer[i * 21]);
+		displayName[20-1] = '\0';
+
+		if (strlen(displayName)) {
+			LOG_MAX("Attack id %d is named \"%s\"", i, displayName);
+		}
+	}
+	delete[] buffer;
+#else
 	// Skip (usually empty) attack names
 	file->skipRLE();
+#endif
 
 	// Load level properties (magic)
 
 	// First byte is the background palette effect type
-	type = file->loadChar();
-
+	int type = file->loadChar();
 	sky = false;
 
 	switch (type) {
-
 		case PE_SKY:
-
 			sky = true;
 
 			// Sky background effect
@@ -935,34 +945,29 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 			break;
 
 		case PE_2D:
-
 			// Parallaxing background effect
 			paletteEffects = new P2DPaletteEffect(128, 64, FE, NULL);
 
 			break;
 
 		case PE_1D:
-
 			// Diagonal stripes "parallaxing" background effect
 			paletteEffects = new P1DPaletteEffect(128, 32, FH, NULL);
 
 			break;
 
 		case PE_WATER:
-
 			// The deeper below water, the darker it gets
 			paletteEffects = new WaterPaletteEffect(TTOF(32), NULL);
 
 			break;
 
 		default:
-
 			// No effect
 			paletteEffects = NULL;
 			LOG_TRACE("Unknown palette effect: %d", type);
 
 			break;
-
 	}
 
 	// Palette animations
@@ -1005,41 +1010,39 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	if (skyOrb) skyOrb = file->loadChar();
 	else file->loadChar();
 
+	// Load level sound effects
+	for (int i = 0; i < JJ1LSOUNDS; i++) {
+		levelSounds[i] = file->loadChar();
+#if 1//DEBUG_LOAD
+		if (i == LSND_NOTHING1 || i == LSND_UNKNOWN6 || i == LSND_UNKNOWN9) {
+			if (levelSounds[i])
+				LOG_MAX("Level Sound %d is %d", i, levelSounds[i]);
+		}
+#endif
+	}
 
-	// Skip some sound effects and empty animations
-	file->seek(14, false);
-
-	// 4 shield gem
-	miscAnims[MA_4SHIELD] = file->loadChar();
-
-	// Board
-	miscAnims[MA_LBOARD] = file->loadChar();
-	miscAnims[MA_RBOARD] = file->loadChar();
-
-	// Bird
-	miscAnims[MA_LBIRD] = file->loadChar();
-	miscAnims[MA_RBIRD] = file->loadChar();
-
-	// Skip unknown animation
-	file->seek(1, false);
-
-	// Shiver and slide: 2, only shiver: 1
-	miscAnims[MA_ICY] = file->loadChar();
-
-	// 1 shield gem
-	miscAnims[MA_1SHIELD] = file->loadChar();
+	// Load level animations (shield gems, board, bird, shiver/slide)
+	for (int i = 0; i < JJ1LANIMS; i++) {
+		levelAnims[i] = file->loadChar();
+#if 1//DEBUG_LOAD
+		if (i == LA_NOTHING1 || i == LA_NOTHING2 || i == LA_NOTHING3) {
+			if (levelAnims[i])
+				LOG_MAX("Level Animation %d is %d", i, levelAnims[i]);
+		}
+#endif
+	}
+	if (levelAnims[LA_UNKNOWN9] != 31)
+		LOG_TRACE("Uncommon level animation 9: %i", levelAnims[LA_UNKNOWN9]);
 
 	// And that's us done!
-
-	delete file;
 
 
 	// Set the tick at which the level will end
 	endTime = (5 - game->getDifficulty()) * 2 * 60 * 1000;
 
 
-	events = NULL;
-	bullets = NULL;
+	events = nullptr;
+	bullets = nullptr;
 
 	energyBar = 0;
 	ammoType = 0;
