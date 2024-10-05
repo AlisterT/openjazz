@@ -71,7 +71,7 @@ JJ1Planet::JJ1Planet (char * fileName, int previous) {
 	}
 
 	// Load planet name
-	name = file->loadString();
+	name = file->loadTerminatedString();
 
 	// Lower-case the name
 	for (count = 0; name[count]; count++) {

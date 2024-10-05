@@ -266,9 +266,9 @@ void playMusic (const char * fileName, bool restart) {
 	LockAudio();
 
 	// Load the music file
-	File *file;
+	FilePtr file;
 	try {
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 	} catch (int e) {
 		UnlockAudio();
 		return;
@@ -284,8 +284,6 @@ void playMusic (const char * fileName, bool restart) {
 	// Read the entire file into memory
 	file->seek(0, true);
 	unsigned char *psmData = file->loadBlock(size);
-
-	delete file;
 
 	// Set up libpsmplug
 	ModPlug_Settings settings = {};
@@ -414,13 +412,24 @@ void setMusicTempo (MusicTempo tempo) {
  * @param fileName Name of a file containing sound clips
  */
 bool loadSounds (const char *fileName) {
-	File *file;
+	FilePtr file;
 
 	try {
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 	} catch (int e) {
 		return false;
 	}
+
+	// Checking sound file header
+	char *identifier1 = file->loadString(3);
+	char identifier2 = file->loadChar();
+	if (strncmp(identifier1, "sfx", 2) != 0 || identifier2 != 0x1A) {
+		LOG_ERROR("Sound data not valid!");
+		delete[] identifier1;
+		return false;
+	}
+	delete[] identifier1;
+
 
 	// Locate the header data
 	file->seek(file->getSize() - 4, true);
@@ -440,7 +449,7 @@ bool loadSounds (const char *fileName) {
 		file->seek(headerOffset + (i * 18), true);
 
 		// Read the name of the clip
-		rawSounds[i].name = reinterpret_cast<char*>(file->loadBlock(12));
+		rawSounds[i].name = file->loadString(12);
 
 		// Read the offset of the clip
 		int offset = file->loadInt();
@@ -453,7 +462,6 @@ bool loadSounds (const char *fileName) {
 		rawSounds[i].data = file->loadBlock(rawSounds[i].length);
 
 	}
-	delete file;
 
 	resampleSounds();
 

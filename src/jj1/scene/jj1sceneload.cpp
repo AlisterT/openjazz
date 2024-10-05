@@ -270,7 +270,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 
 			for(loop = 0; loop < nSounds; loop++) {
 
-				char* soundName = f->loadString();
+				char* soundName = f->loadTerminatedString();
 				LOG_ANIM("Soundname: %s", soundName);
 				resampleSound(loop, soundName, 11025);
 				delete[] soundName;
@@ -591,7 +591,7 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneMusic:
 
-						page.musicFile = f->loadString();
+						page.musicFile = f->loadTerminatedString();
 						LOG_SCRIPT("ESceneMusic: %s", page.musicFile);
 
 						break;
@@ -620,7 +620,7 @@ void JJ1Scene::loadScripts (File *f) {
 							int id = f->loadShort();
 							fonts.emplace_back(id);
 							auto &sceneFont = fonts.back();
-							char *fontname = f->loadString();
+							char *fontname = f->loadTerminatedString();
 
 							LOG_SCRIPT("ESceneFontDefine: %s with id %d", fontname, sceneFont.id);
 

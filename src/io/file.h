@@ -59,7 +59,8 @@ class File {
 		unsigned char*     loadRLE     (int length, bool checkSize = true);
 		void               skipRLE     ();
 		unsigned char*     loadLZ      (int compressedLength, int length);
-		char*              loadString  ();
+		char*              loadTerminatedString (int maxSize = 0);
+		char*              loadFileName();
 		char*              loadString  (int length);
 		SDL_Surface*       loadSurface (int width, int height, bool checkSize = true);
 		unsigned char*     loadPixels  (int length);

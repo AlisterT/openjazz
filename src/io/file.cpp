@@ -323,13 +323,13 @@ unsigned char * File::loadBlock (int length) {
  * @return Buffer containing the uncompressed data
  */
 unsigned char* File::loadRLE (int length, bool checkSize) {
-	int start = 0, size = 0;
+	int size = 0;
 
 	if (checkSize) {
 		// Determine the offset that follows the block
 		size = loadShort();
-		start = tell();
 	}
+	int start = tell();
 
 	unsigned char* buffer = new unsigned char[length];
 
@@ -338,20 +338,22 @@ unsigned char* File::loadRLE (int length, bool checkSize) {
 		unsigned char code = loadChar();
 		unsigned char amount = code & 127;
 
-		if (code & 128) {
+		if (code & 128) { // repeat
 			unsigned char value = loadChar();
 
 			if (pos + amount >= length) break;
 
 			memset(buffer + pos, value, amount);
 			pos += amount;
-		} else if (amount) {
+		} else if (amount) { // copy
 			if (pos + amount >= length) break;
 
 			fread(buffer + pos, 1, amount, file);
 			pos += amount;
-		} else
+		} else { // end marker
 			buffer[pos++] = loadChar();
+			break;
+		}
 	}
 
 	if (checkSize) {
@@ -359,6 +361,8 @@ unsigned char* File::loadRLE (int length, bool checkSize) {
 			LOG_DEBUG("RLE block has incorrect size: %d vs. %d", tell() - start, size);
 
 		seek(start + size, true);
+	} else {
+		LOG_MAX("RLE block was %d bytes long", tell() - start);
 	}
 
 	return buffer;
@@ -408,57 +412,66 @@ unsigned char* File::loadLZ (int compressedLength, int length) {
 
 
 /**
- * Load a string from the file.
+ * Load a terminated string from the file.
+ *
+ * @param maxSize maximum length of field in the file
  *
  * @return The new string
  */
-char * File::loadString () {
-
+char * File::loadTerminatedString (int maxSize) {
 	char *string;
+	int length = loadChar();
 
-	int length = fgetc(file);
+	if (maxSize > 0 && length > maxSize) {
+		LOG_WARN("Trimming oversized terminated string (%d > %d)", length, maxSize);
+		length = maxSize;
+	}
 
 	if (length) {
-
-		string = new char[length + 1];
-		int res = fread(string, 1, length, file);
-
-		if (res != length)
-			LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
-
+		string = loadString(length);
 	} else {
+		string = new char[1];
+		string[0] = '\0';
+	}
 
-		// If the length is not given, assume it is an 8.3 file name
-		string = new char[13];
-		LOG_TRACE("Assuming reading a filename from %s", filePath);
+	// Skip until end of field
+	if(maxSize > length) {
+		seek(maxSize - length);
+	}
 
-		int count;
-		for (count = 0; count < 9; count++) {
+	return string;
+}
 
-			string[count] = fgetc(file);
 
-			if (string[count] == '.') {
+/**
+ * Load a 8.3 file name from the file.
+ *
+ * @return The new string
+ */
+char * File::loadFileName () {
+	int length;
+	char *string = new char[13];
 
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
-				string[++count] = fgetc(file);
-				count++;
+	for (int i = 0; i < 9; i++) {
+		string[i] = loadChar();
 
-				break;
+		if (string[i] == '.') {
+			string[++i] = loadChar();
+			string[++i] = loadChar();
+			string[++i] = loadChar();
+			i++;
 
-			}
-
+			break;
 		}
 
-		length = count;
-
+		length = i;
 	}
 
 	string[length] = 0;
 
 	return string;
-
 }
+
 
 
 /**

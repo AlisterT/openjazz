@@ -222,9 +222,9 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	}
 
 	// Checking scene file
-	unsigned char *identifier1 = file->loadBlock(18);
+	char *identifier1 = file->loadString(18);
 	char identifier2 = file->loadChar();
-	if (memcmp(identifier1, "Digital Dimensions", 18) != 0 || identifier2 != 0x1A) {
+	if (strncmp(identifier1, "Digital Dimensions", 18) != 0 || identifier2 != 0x1A) {
 		LOG_ERROR("Scene not valid!");
 		delete[] identifier1;
 		return;
