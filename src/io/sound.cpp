@@ -481,16 +481,33 @@ void resampleSound (int index, const char* name, int rate) {
 		return;
 	}
 
-	if (sounds[se].data) {
-		LOG_TRACE("Overwriting Sound index %d: %s", se, name);
+	// Empty names will just delete sounds
+	bool forDeletion = !strlen(name);
 
+	if (sounds[se].data) {
 		delete[] sounds[se].data;
 		sounds[se].data = nullptr;
+
+		if(forDeletion)
+			LOG_TRACE("Deleting Sound index %d", se);
+		else
+			LOG_TRACE("Overwriting Sound index %d: %s", se, name);
+	} else if(!forDeletion) {
+		LOG_MAX("Resampling Sound index %d: %s", se, name);
 	}
+
+	if (forDeletion)
+		return;
 
 	// Search for matching sound
 	for (int i = 0; i < nRawSounds; i++) {
-		if (strcmp(name, rawSounds[i].name) != 0) continue;
+		if(strcmp(name, rawSounds[i].name) != 0) {
+			if (i == nRawSounds-1) {
+				LOG_WARN("Cannot find sound %s!", name);
+				return;
+			}
+			continue;
+		}
 
 #if OJ_SDL2
 		// We let SDL2 resample as needed
@@ -583,10 +600,18 @@ void freeSounds() {
  * @param index Number of the sound to play
  */
 void playSound(SE::Type index) {
-	if (!soundsLoaded) return;
+	// silently ignore
+	if (!soundsLoaded || index == SE::NONE) return;
 
+	// out of range
 	if (!isValidSoundIndex(index)) {
 		LOG_WARN("Cannot play invalid sound %d", index);
+		return;
+	}
+
+	// sound was deleted
+	if (!sounds[index].data) {
+		LOG_MAX("Cannot play empty sound %d", index);
 		return;
 	}
 
