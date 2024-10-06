@@ -357,3 +357,46 @@ unsigned char* unpackRLE (unsigned char* data, unsigned int size, unsigned int o
 	delete[] data;
 	return buffer;
 }
+
+
+int episodeToWorld (int episode) {
+	if(episode < 0 || episode > 9) {
+		LOG_WARN("Invalid Episode");
+
+		return 0;
+	}
+
+	// 1-6
+	if (episode < 6)
+		return episode * 3;
+
+	// A-C
+	if (episode < 9)
+		return (episode + 4) * 3;
+
+	// X
+	return 50;
+}
+
+
+int worldToEpisode (int world) {
+	if(world < 0 || world > 50) {
+		LOG_WARN("Invalid World");
+
+		return 0;
+	}
+
+	// X
+	if (world == 50)
+		return 9;
+
+	int episode = world / 3;
+
+	// A-C
+	if (episode > 8)
+		return episode - 4;
+
+	// 1-6
+	return episode;
+}
+

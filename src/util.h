@@ -47,5 +47,7 @@ void               camelcaseString      (char *string);
 fixed              fSin                 (fixed angle);
 fixed              fCos                 (fixed angle);
 unsigned char*     unpackRLE            (unsigned char* data, unsigned int size, unsigned int outSize);
+int                episodeToWorld       (int episode);
+int                worldToEpisode       (int world);
 
 #endif

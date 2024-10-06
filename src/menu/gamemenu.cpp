@@ -502,11 +502,7 @@ int GameMenu::selectEpisode (GameModeType mode, int episode) {
 
 	if (episode < 10) {
 
-		int worldNum;
-
-		if (episode < 6) worldNum = episode * 3;
-		else if (episode < 9) worldNum = (episode + 4) * 3;
-		else worldNum = 50;
+		int worldNum = episodeToWorld(episode);
 
 		if (newGameDifficulty(mode, 0, worldNum) == E_QUIT) return E_QUIT;
 
@@ -551,11 +547,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 	for (count = 0; count < 10; count++) {
 
-		if (count < 6) x = count * 3;
-		else if (count < 9) x = (count + 4) * 3;
-		else x = 50;
-
-		check = createFileName("LEVEL", 0, x);
+		check = createFileName("LEVEL", 0, episodeToWorld(count));
 		exists[count] = fileExists(check, PATH_TYPE_GAME);
 		delete[] check;
 

@@ -653,7 +653,7 @@ int JJ1Level::playBonus () {
 	delete paletteEffects;
 	paletteEffects = NULL;
 
-	bonusFile = createFileName("BONUSMAP", 0);
+	bonusFile = createFileName("BONUSMAP", worldToEpisode(worldNum));
 
 	// If the gem has been collected, play the bonus level
 	ret = game->playLevel(bonusFile);
