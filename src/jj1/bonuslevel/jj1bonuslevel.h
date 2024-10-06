@@ -31,6 +31,8 @@
 #define BLW    256 /* Bonus level width */
 #define BLH    256 /* Bonus level height */
 #define BANIMS  32
+#define BEVENTS 16
+#define BSOUNDS 16
 
 #define T_BONUS_END 2000
 
@@ -45,6 +47,16 @@ typedef struct {
 
 } JJ1BonusLevelGridElement;
 
+/// JJ1 bonus level event type
+typedef struct {
+
+	unsigned char anim; ///< Index of animation
+	unsigned char type; ///< Type: time, gem, pole-bounce, exit, hand-bounce
+	unsigned char passable; ///< Whether Jazz bounces back
+	unsigned char used; ///< Whether this is a real event
+	SE::Type      sound; ///< The sound played on the appropriate trigger
+
+} JJ1BonusEventType;
 
 // Classes
 
@@ -59,6 +71,7 @@ class JJ1BonusLevel : public Level {
 		Font*                    font; ///< On-screen message font
 		Sprite*                  spriteSet; ///< Sprite images
 		Anim                     animSet[BANIMS]; ///< Animations
+		JJ1BonusEventType        eventSet[BEVENTS]; ///< Event types
 		JJ1BonusLevelGridElement grid[BLH][BLW]; ///< Level grid
 		char                     mask[60][64]; ///< Tile masks (at most 60 tiles, all with 8 * 8 masks)
 		fixed                    direction; ///< Player's direction

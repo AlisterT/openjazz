@@ -30,6 +30,7 @@
 #include "io/log.h"
 
 #include <string.h>
+#include <cstdio>
 
 /**
  * Check if a file exists.
@@ -400,3 +401,54 @@ int worldToEpisode (int world) {
 	return episode;
 }
 
+/**
+ * Make a hex dump of data
+ *
+ * @param desc if non-NULL, printed as a description before hex dump
+ * @param addr Address to start dumping from
+ * @param size Number of bytes to dump
+ * @param perLine Number of bytes on each output line
+ */
+void hexDump (const char * desc, const void * addr, const int size, int perLine) {
+	// Length check
+	if (!(size > 0)) {
+		LOG_WARN("Cannot hexdump");
+		return;
+	}
+
+	if (desc != nullptr)
+		printf("\x1b[34m%s:\x1b[0m\n", desc);
+
+	unsigned char buffer[perLine + 1];
+	const unsigned char * pc = (const unsigned char *)addr;
+
+	// Process every byte in the data.
+	int i;
+	for (i = 0; i < size; i++) {
+		// Multiple of perLine means new or first line (with line offset).
+		if ((i % perLine) == 0) {
+			// Only print previous-line ASCII buffer for lines beyond first.
+			if (i != 0)
+				printf("  \x1b[32m%s\n", buffer);
+
+			// Output the offset of current line.
+			printf("\x1b[90m  %04x \x1b[35m", i);
+		}
+
+		// Now the hex code for the specific character.
+		printf(" %02x", pc[i]);
+
+		// And buffer a printable ASCII character for later.
+		buffer[i % perLine] = isprint(pc[i]) ? pc[i] : '.';
+		buffer[(i % perLine) + 1] = '\0';
+	}
+
+	// Pad out last line if not exactly perLine characters.
+	while ((i % perLine) != 0) {
+		printf("   ");
+		i++;
+	}
+
+	// And print the final ASCII buffer.
+	printf("  \x1b[32m%s\x1b[0m\n", buffer);
+}

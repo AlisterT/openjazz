@@ -49,5 +49,6 @@ fixed              fCos                 (fixed angle);
 unsigned char*     unpackRLE            (unsigned char* data, unsigned int size, unsigned int outSize);
 int                episodeToWorld       (int episode);
 int                worldToEpisode       (int world);
+void               hexDump              (const char * desc, const void * addr, const int len, int perLine = 16);
 
 #endif

@@ -34,6 +34,7 @@
 #include "io/gfx/sprite.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "io/log.h"
 #include "util.h"
 
 #include <string.h>
@@ -46,12 +47,12 @@
  */
 int JJ1BonusLevel::loadSprites () {
 
-	File *file;
+	FilePtr file;
 	unsigned char* pixels;
 
 	try {
 
-		file = new File("BONUS.000", PATH_TYPE_GAME);
+		file = std::make_unique<File>("BONUS.000", PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -110,8 +111,6 @@ int JJ1BonusLevel::loadSprites () {
 
 	}
 
-	delete file;
-
 	return E_NONE;
 
 }
@@ -126,7 +125,7 @@ int JJ1BonusLevel::loadSprites () {
  */
 int JJ1BonusLevel::loadTiles (char *fileName) {
 
-	File *file;
+	FilePtr file;
 	unsigned char *pixels;
 	unsigned char *sorted;
 	int count, x, y;
@@ -135,7 +134,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -181,8 +180,6 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	delete[] pixels;
 
-	delete file;
-
 	return E_NONE;
 
 }
@@ -198,11 +195,11 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(owner) {
 
 	Anim* pAnims[BPANIMS];
-	File *file;
+	unsigned short int soundRates[BSOUNDS];
+	FilePtr file;
 	unsigned char *buffer;
 	char *string, *fileString;
 	int count, x, y;
-
 
 	try {
 
@@ -219,7 +216,7 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	try {
 
-		file = new File(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
@@ -234,18 +231,17 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	if (count < 0) {
 
-		delete file;
 		delete font;
 
 		throw count;
 
 	}
 
+	// Skip Editor data files
+	file->seek(10 * 9, true);
 
 	// Load tileset
-
-	file->seek(90, true);
-	string = file->loadString();
+	string = file->loadTerminatedString(8);
 	fileString = createFileName(string, 0);
 	x = loadTiles(fileString);
 	delete[] string;
@@ -253,18 +249,16 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 	if (x != E_NONE) throw x;
 
+	// Skip Editor tileset files
+	file->seek(9 + 13);
 
 	// Load music
-
-	file->seek(121, true);
-	fileString = file->loadString();
+	fileString = file->loadTerminatedString(12);
 	playMusic(fileString);
 	delete[] fileString;
 
 
 	// Load animations
-
-	file->seek(134, true);
 	buffer = file->loadBlock(BANIMS << 6);
 
 	// Create animation set based on that data
@@ -279,7 +273,10 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 
 			// Get frame
 			x = buffer[(count << 6) + 7 + y];
-			if (x > sprites) x = sprites;
+			if (x > sprites){
+				LOG_DEBUG("Clipping Sprite index %d > %d", x, sprites);
+				x = sprites;
+			}
 
 			// Assign sprite and vertical offset
 			animSet[count].setFrame(y, true);
@@ -293,47 +290,98 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 	delete[] buffer;
 
 
-	// Load tiles
+#if DEBUG_LOAD
+	// Show animation names
+	for (count = 0; count < BANIMS; count++) {
+		char *tmpName = file->loadTerminatedString(15);
+		if(strlen(tmpName)) {
+			LOG_MAX("Animation id %d is named \"%s\"", count, tmpName);
+		}
+		delete[] tmpName;
+	}
+#else
+	// Skip animation names
+	file->seek(BANIMS * 16);
+#endif
 
-	file->seek(2694, true);
+
+	// Load tiles
 	buffer = file->loadRLE(BLW * BLH);
 
 	for (y = 0; y < BLH; y++) {
-
 		for (x = 0; x < BLW; x++) {
 
 			grid[y][x].tile = buffer[x + (y * BLW)];
-
-			if (grid[y][x].tile > 59) grid[y][x].tile = 59;
+			if (grid[y][x].tile > 59) {
+				LOG_DEBUG("Clipping Tile index %d > %d", grid[y][x].tile, 59);
+				grid[y][x].tile = 59;
+			}
 
 		}
-
 	}
 
 	delete[] buffer;
 
 
-	file->skipRLE(); // Mysterious block
+	// Load event properties
+	buffer = file->loadRLE(BEVENTS * 16);
+	for (count = 0; count < BEVENTS; count++) {
+		eventSet[count].anim = buffer[(count * BEVENTS) + 5];
+		eventSet[count].type = buffer[(count * BEVENTS) + 7];
+		eventSet[count].passable = buffer[(count * BEVENTS) + 8];
+		eventSet[count].used = buffer[(count * BEVENTS) + 9];
+
+		auto se = static_cast<SE::Type>(buffer[(count * BEVENTS) + 13]);
+		if (!isValidSoundIndex(se)) {
+			eventSet[count].sound = SE::NONE;
+			LOG_WARN("Event %d has invalid sound effect %d.", count, se);
+		} else {
+			eventSet[count].sound = se;
+		}
+
+		// This is a hack to make "exit signs" work in OJ
+		if(eventSet[count].type == 7)
+			eventSet[count].passable = 1;
+
+#if DEBUG_LOAD
+		//hexDump(nullptr, buffer + count * BEVENTS, 16);
+		LOG_MAX("Event %d: anim=%d, type=%d, passable=%d, sound=%d",
+			count, eventSet[count].anim, eventSet[count].type,
+			eventSet[count].passable, eventSet[count].sound);
+#endif
+	}
+	delete[] buffer;
 
 
-	// Load events
-
+	// Load event mapping
 	buffer = file->loadRLE(BLW * BLH);
 
 	for (y = 0; y < BLW; y++) {
-
 		for (x = 0; x < BLH; x++) {
 
 			grid[y][x].event = buffer[x + (y * BLW)];
 
 		}
-
 	}
 
 	delete[] buffer;
 
 
-	file->seek(178, false);
+	// Load sound map
+	for (count = 0; count < BSOUNDS; count++) {
+		soundRates[count] = file->loadShort();
+	}
+	for (count = 0; count < BSOUNDS; count++) {
+		char *tmpName = file->loadTerminatedString(8);
+		resampleSound(count, tmpName, soundRates[count]);
+		delete[] tmpName;
+	}
+
+	// Unknown marker
+	if(file->loadShort() != 0xFFFF) {
+		LOG_WARN("Invalid bonus level");
+		throw E_FILE;
+	}
 
 	// Set the tick at which the level will end
 	endTime = file->loadShort() * 1000;
@@ -347,15 +395,13 @@ JJ1BonusLevel::JJ1BonusLevel (Game* owner, char * fileName, bool multi) : Level(
 	x = file->loadShort();
 	y = file->loadShort();
 
-	// Generate player's animation set references
 
-	for (count = 0; count < BPANIMS; count++) pAnims[count] = animSet + count;
+	// Generate player's animation set references
+	for (count = 0; count < BPANIMS; count++)
+		pAnims[count] = animSet + count;
 
 
 	createLevelPlayers(LT_JJ1BONUS, pAnims, NULL, false, x, y);
-
-
-	delete file;
 
 
 	// Palette animations
@@ -390,10 +436,13 @@ JJ1BonusLevel::~JJ1BonusLevel () {
 	panelBigFont->restorePalette();
 
 	SDL_FreeSurface(tileSet);
+	SDL_FreeSurface(background);
 
 	delete[] spriteSet;
 
 	delete font;
+
+	resampleSounds();
 
 	video.setTitle(NULL);
 
@@ -426,12 +475,11 @@ bool JJ1BonusLevel::isEvent (fixed x, fixed y) {
  */
 bool JJ1BonusLevel::checkMask (fixed x, fixed y) {
 
-	JJ1BonusLevelGridElement *ge;
+	JJ1BonusLevelGridElement *ge = grid[FTOT(y) & 255] + (FTOT(x) & 255);
 
-	ge = grid[FTOT(y) & 255] + (FTOT(x) & 255);
-
-	// Hand
-	if ((ge->event == 3) && isEvent(x, y)) return true;
+	// Bounce back
+	if ((eventSet[ge->event].used) && !(eventSet[ge->event].passable) && isEvent(x, y))
+		return true;
 
 	// Check the mask in the tile in question
 	return mask[ge->tile][((y >> 9) & 56) + ((x >> 12) & 7)];
@@ -485,7 +533,11 @@ void JJ1BonusLevel::receive (unsigned char* buffer) {
  */
 int JJ1BonusLevel::step () {
 	// Check if time has run out
-	if (ticks > endTime) return LOST;
+	if (ticks > endTime) {
+		playSound(SE::OW);
+
+		return LOST;
+	}
 
 	// Apply controls to local player
 	for (int i = 0; i < PCONTROLS; i++)
@@ -506,7 +558,10 @@ int JJ1BonusLevel::step () {
 			int gridX = FTOT(playerX) & 255;
 			int gridY = FTOT(playerY) & 255;
 
-			switch (grid[gridY][gridX].event) {
+			// Play sound if available
+			playSound(eventSet[grid[gridY][gridX].event].sound);
+
+			switch (eventSet[grid[gridY][gridX].event].type) {
 
 				case 1: // Extra time
 
@@ -530,7 +585,12 @@ int JJ1BonusLevel::step () {
 
 					break;
 
-				case 4: // Exit
+				case 5: // Hand
+				case 8:
+
+					break;
+
+				case 7: // Exit
 
 					return LOST;
 
@@ -559,7 +619,7 @@ int JJ1BonusLevel::step () {
 void JJ1BonusLevel::draw () {
 
 	JJ1BonusLevelPlayer *bonusPlayer;
-	Sprite* sprite;
+	Anim *anim;
 	SDL_Rect dst;
 	int x, y;
 
@@ -622,76 +682,29 @@ void JJ1BonusLevel::draw () {
 	// Draw nearby events
 
 	for (y = -6; y < 6; y++) {
-
-		fixed sY = TTOF(((direction - FQ) & 512)? y: -y) + F16 - (playerY & 32767);
+		int evY = (((direction - FQ) & 512)? y: -y);
+		fixed sY = TTOF(evY) + F16 - (playerY & 32767);
 
 		for (x = -6; x < 6; x++) {
-
-			fixed sX = TTOF((direction & 512)? x: -x) + F16 - (playerX & 32767);
+			int evX = ((direction & 512)? x: -x);
+			fixed sX = TTOF(evX) + F16 - (playerX & 32767);
 
 			fixed divisor = F16 + MUL(sX, playerSin) - MUL(sY, playerCos);
 
 			if (FTOI(divisor) > 8) {
+				unsigned char event = grid
+					[(evY + FTOT(playerY)) & 255][(evX + FTOT(playerX)) & 255].event;
 
-				switch (grid[((((direction - FQ) & 512)? y: -y) + FTOT(playerY)) & 255][(((direction & 512)? x: -x) + FTOT(playerX)) & 255].event) {
+				if (eventSet[event].type > 0) {
+					anim = animSet + eventSet[event].anim;
 
-					case 0: // No event
-
-						sprite = NULL;
-
-						break;
-
-					case 1: // Extra time
-
-						sprite = spriteSet + 46;
-
-						break;
-
-					case 2: // Gem
-
-						sprite = spriteSet + 47;
-
-						break;
-
-					case 3: // Hand
-
-						sprite = spriteSet + 48;
-
-						break;
-
-					case 4: // Exit
-
-						sprite = spriteSet + 49;
-
-						break;
-
-					case 5: // Bounce
-
-						sprite = spriteSet + 50;
-
-						break;
-
-					default:
-
-						sprite = spriteSet + 14;
-
-						break;
-
-				}
-
-				if (sprite) {
-
+					anim->setFrame(ticks / 75, true);
 					fixed nX = DIV(MUL(sX, playerCos) + MUL(sY, playerSin), divisor);
-					dst.x = FTOI(nX * canvasW) + (canvasW >> 1);
-					dst.y = canvasH >> 1;
-					sprite->drawScaled(dst.x, dst.y, DIV(F64 * canvasW / SW, divisor));
-
+					anim->drawScaled(ITOF(FTOI(nX * canvasW) + (canvasW >> 1)),
+						ITOF(canvasH >> 1), DIV(F64 * canvasW / SW, divisor));
 				}
-
 			}
-
 		}
-
 	}
 
 
