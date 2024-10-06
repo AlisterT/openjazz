@@ -744,38 +744,32 @@ int JJ1Level::play () {
 		// Check if level has been won
 		if (game && returnTime && (ticks > returnTime)) {
 
-			// Play "Level cleared" cutscene when changing worlds
-
-			if (nextWorldNum != worldNum) {
-
+			// Play "Level end" cutscene
+			// if available and secret level 2 was not found (FIXME: check JJ1, if true)
+			if (strlen(sceneFile) && nextLevelNum != 2) {
 				if (playScene(sceneFile) == E_QUIT) return E_QUIT;
-
-				ret = game->setLevel(NULL);
-
-				if (ret < 0) return ret;
-
 			}
 
 			if (!multiplayer) {
-
 				// If the gem has been collected, play the bonus level
-
 				ret = playBonus();
 
 				if (ret < 0) return ret;
-
 			}
 
-			// Advance to next level
-
-			char *string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
-			ret = game->setLevel(string);
-			delete[] string;
+			// No next level, end game
+			if (nextLevelNum == 99) {
+				ret = game->setLevel(nullptr);
+			} else {
+				// Advance to next level
+				char *string = createFileName("LEVEL", nextLevelNum, nextWorldNum);
+				ret = game->setLevel(string);
+				delete[] string;
+			}
 
 			if (ret < 0) return ret;
 
 			return WON;
-
 		}
 
 
