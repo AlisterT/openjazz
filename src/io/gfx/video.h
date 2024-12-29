@@ -76,7 +76,7 @@
 	#define NO_RESIZE
 
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
-#elif defined(_3DS)
+#elif defined(__3DS__)
 	#define DEFAULT_SCREEN_WIDTH 400
 	#define DEFAULT_SCREEN_HEIGHT 240
 

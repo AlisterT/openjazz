@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <miniz.h>
 
-#if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
+#if !(defined(_WIN32) || defined(WII) || defined(PSP))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
 #endif

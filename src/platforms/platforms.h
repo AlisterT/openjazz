@@ -36,7 +36,7 @@ inline void PLATFORM_Init() {
 	WII_Init();
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 	N3DS_Init();
 #endif
 
@@ -46,7 +46,7 @@ inline void PLATFORM_Init() {
 }
 
 inline void PLATFORM_Exit() {
-#ifdef _3DS
+#ifdef __3DS__
 	N3DS_Exit();
 #endif
 }
@@ -60,7 +60,7 @@ inline void PLATFORM_AddGamePaths() {
 	SYMBIAN_AddGamePaths();
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 	N3DS_AddGamePaths();
 #endif
 
@@ -98,7 +98,7 @@ inline void PLATFORM_ErrorNoDatafiles() {
 	PSP_ErrorNoDatafiles();
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 	N3DS_ErrorNoDatafiles();
 #endif
 }

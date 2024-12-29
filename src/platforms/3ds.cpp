@@ -15,19 +15,65 @@
 
 #include "3ds.h"
 
-#ifdef _3DS
+#ifdef __3DS__
 
 #include <3ds.h>
+#include <malloc.h>
 #include "util.h"
 #include "io/file.h"
+#include "io/log.h"
+
+namespace {
+	constexpr int SOC_BUFFERSIZE = 0x100000;
+
+	u32 *socBuffer = nullptr;
+	int sock = -1;
+}
 
 void N3DS_Init() {
 	// file system
 	romfsInit();
+
+#ifndef NDEBUG
+	// network console
+	N3DS_NetInit();
+	sock = link3dsStdio();
+#endif
 }
 
 void N3DS_Exit() {
 	romfsExit();
+
+#ifndef NDEBUG
+	N3DS_NetExit();
+#endif
+}
+
+void N3DS_NetInit() {
+	socBuffer = static_cast<u32*>(memalign(0x1000, SOC_BUFFERSIZE));
+	if(!socBuffer) {
+		LOG_WARN("Failed to allocate soc:u buffer");
+		return;
+	}
+
+	int ret = socInit(socBuffer, SOC_BUFFERSIZE);
+	if (ret != 0) {
+		LOG_WARN("Failed to initialize soc:u: 0x%08X\n", (unsigned int)ret);
+	}
+}
+
+void N3DS_NetExit() {
+	if(sock > 0)
+		close(sock);
+
+	socExit();
+
+	if(socBuffer)
+		free(socBuffer);
+}
+
+bool N3DS_NetHasConsole() {
+	return sock > 0;
 }
 
 void N3DS_AddGamePaths() {

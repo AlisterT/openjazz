@@ -17,10 +17,14 @@
 #ifndef _3DS_H
 #define _3DS_H
 
-#ifdef _3DS
+#ifdef __3DS__
 
 void N3DS_Init();
 void N3DS_Exit();
+
+void N3DS_NetInit();
+void N3DS_NetExit();
+bool N3DS_NetHasConsole();
 
 void N3DS_AddGamePaths();
 

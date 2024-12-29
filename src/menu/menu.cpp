@@ -35,7 +35,7 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
-#ifdef _3DS
+#ifdef __3DS__
 	#include "platforms/3ds.h"
 #elif defined(__vita__)
 	#include "platforms/psvita.h"
@@ -176,7 +176,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	char *input;
 
-#ifdef _3DS
+#ifdef __3DS__
 
 	int res;
 
