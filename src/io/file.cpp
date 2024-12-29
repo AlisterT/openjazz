@@ -449,7 +449,7 @@ char * File::loadTerminatedString (int maxSize) {
  * @return The new string
  */
 char * File::loadFileName () {
-	int length;
+	int length = 0;
 	char *string = new char[13];
 
 	for (int i = 0; i < 9; i++) {

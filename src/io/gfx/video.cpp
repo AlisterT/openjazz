@@ -278,6 +278,8 @@ void Video::deinit () {
 bool Video::reset (int width, int height) {
 
 #ifdef NO_RESIZE
+	(void)width;
+	(void)height;
 	screenW = DEFAULT_SCREEN_WIDTH;
 	screenH = DEFAULT_SCREEN_HEIGHT;
 	fullscreen = true;
@@ -600,7 +602,6 @@ void Video::expose () {
  * @param event The system event. Events not affecting video will be ignored
  */
 void Video::update (SDL_Event *event) {
-
 #if !defined(FULLSCREEN_ONLY) || !defined(NO_RESIZE)
 	switch (event->type) {
 
@@ -643,8 +644,9 @@ void Video::update (SDL_Event *event) {
 	#endif
 
 	}
+#else
+	(void)event;
 #endif
-
 }
 
 
@@ -748,6 +750,8 @@ void Video::moviePlayback (bool status) {
 		canvasH = movieH;
 	}
 	SDL_RenderSetLogicalSize(renderer, canvasW, canvasH);
+#else
+	(void)status;
 #endif
 }
 
