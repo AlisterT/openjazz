@@ -26,6 +26,7 @@
 #include "riscos.h"
 #include "symbian.h"
 #include "xdg.h"
+#include "apple.h"
 
 inline void PLATFORM_Init() {
 #ifdef PSP
@@ -87,6 +88,10 @@ inline void PLATFORM_AddGamePaths() {
 	XDG_AddGamePaths();
 	#endif
 #endif
+
+#ifdef __APPLE__
+	APPLE_AddGamePaths();
+#endif
 }
 
 inline void PLATFORM_ErrorNoDatafiles() {
@@ -100,6 +105,10 @@ inline void PLATFORM_ErrorNoDatafiles() {
 
 #ifdef _3DS
 	N3DS_ErrorNoDatafiles();
+#endif
+
+#ifdef __APPLE__
+	APPLE_ErrorNoDatafiles();
 #endif
 }
 

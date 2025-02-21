@@ -327,6 +327,10 @@ elseif(HAIKU)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/haiku.cpp
 		src/platforms/haiku.h)
+elseif(APPLE)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/apple.cpp
+		src/platforms/apple.h)
 elseif(UNIX)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/xdg.cpp
