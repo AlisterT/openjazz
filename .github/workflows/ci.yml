@@ -105,14 +105,14 @@ jobs:
           ls -l OpenJazz
 
   linux-clang:
-    name: Build (Ubuntu 20.04 LTS x86_64, Clang, SDL2)
+    name: Build (Ubuntu 22.04 LTS x86_64, Clang-15, SDL2)
     needs: prepare
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get update -yqq
-          sudo apt-get install -yqq build-essential cmake ninja-build clang-10 \
+          sudo apt-get install -yqq build-essential cmake ninja-build clang-15 \
             libsdl2-dev asciidoctor w3m
 
       - name: Checkout
@@ -138,7 +138,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: openjazz-linux-glibc2.31-x86_64
+          name: openjazz-linux-glibc2.35-x86_64
           path: OJ-*/
 
   windows-mingw-gcc:
@@ -266,51 +266,6 @@ jobs:
           name: openjazz-${{ matrix.settings.shortname }}
           path: OJ-*/
 
-  riscos-gccsdk:
-    name: Build (RISC OS, GCCSDK 4.7)
-    needs: prepare
-    if: false # disabled, no c++14
-    runs-on: ubuntu-latest
-    container: riscosdotinfo/riscos-gccsdk-4.7:latest
-    steps:
-      - name: Install dependencies
-        run: |
-          apt-get update -qq
-          apt-get install -yqq cmake ninja-build
-
-      - name: Prepare GCCSDK autobuilder and build SDL
-        run: |
-          cp /usr/bin/false /usr/bin/automake-1.11 # autobuilder wants this, sdl does not need it
-          cp /usr/bin/false /usr/bin/meson         # autobuilder wants this, sdl does not need it
-          svn co svn://svn.riscos.info/gccsdk/trunk/autobuilder/ autobuilder # todo: maybe use snapshot
-          mkdir sdl-build
-          cd sdl-build
-          ../autobuilder/build -v libsdl1.2debian # todo: cache?
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build OpenJazz
-        run: |
-          cmake -G Ninja -B build . -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake -DRISCOS=ON
-          cmake --build build
-
-      - name: Prepare artifact
-        env:
-          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
-        run: |
-          cmake --install build --prefix $PWD
-          cp README.md COPYING licenses.txt !OpenJazz/
-          mkdir OJ-${OJ_VERSION}
-          mv !OpenJazz OJ-${OJ_VERSION}/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: openjazz-riscos
-          path: OJ-*/
-
   psp-pspdev:
     name: Build (PSP, pspdev)
     needs: prepare
@@ -353,7 +308,6 @@ jobs:
       - windows-mingw-gcc
       - web-emscripten
       - nintendo-devkitpro
-      - riscos-gccsdk
       - psp-pspdev
     # allow run when some platform jobs failed, but only on master branch in main repo
     if: ${{ !cancelled() && github.ref == 'refs/heads/master' && needs.prepare.outputs.tag == '' && github.repository_owner == 'AlisterT' }}
@@ -440,7 +394,6 @@ jobs:
       - windows-mingw-gcc
       - web-emscripten
       - nintendo-devkitpro
-      - riscos-gccsdk
       - psp-pspdev
     # allow run when some platform jobs failed, but only for tags in main repo
     if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'AlisterT' }}
