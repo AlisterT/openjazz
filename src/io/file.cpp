@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <miniz.h>
 
-#if !(defined(_WIN32) || defined(WII) || defined(PSP) || defined(_3DS))
+#if !(defined(_WIN32) || defined(WII) || defined(PSP))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
 #endif
@@ -449,7 +449,7 @@ char * File::loadTerminatedString (int maxSize) {
  * @return The new string
  */
 char * File::loadFileName () {
-	int length;
+	int length = 0;
 	char *string = new char[13];
 
 	for (int i = 0; i < 9; i++) {

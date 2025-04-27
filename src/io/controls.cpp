@@ -156,7 +156,7 @@
     #define DEFAULT_BUTTON_PAUSE        (5)
     #define DEFAULT_BUTTON_YES          (-1)
     #define DEFAULT_BUTTON_NO           (-1)
-#elif defined (_3DS)
+#elif defined (__3DS__)
     #define DEFAULT_BUTTON_UP           (-1)
     #define DEFAULT_BUTTON_DOWN         (-1)
     #define DEFAULT_BUTTON_LEFT         (-1)

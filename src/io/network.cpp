@@ -56,12 +56,8 @@
 	#ifndef MSG_NOSIGNAL
 		#define MSG_NOSIGNAL 0
 	#endif
-	#ifdef _3DS
-		#include <3ds.h>
-		#include <fcntl.h>
-		#include <malloc.h>
-		static u32* socBuffer = NULL;
-		#define SOC_BUFFERSIZE 0x100000 // maybe 0x80000 is enough
+	#ifdef __3DS__
+		#include "platforms/3ds.h"
 	#endif
 #elif defined(__wii__)
 	#include <network.h>
@@ -81,9 +77,9 @@ Network::Network () {
 
 	// Start Windows Sockets
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
-	#elif defined(_3DS)
-	socBuffer = static_cast<u32*>(memalign(0x1000, SOC_BUFFERSIZE));
-	socInit(socBuffer, SOC_BUFFERSIZE);
+	#elif defined(__3DS__)
+	if (!N3DS_NetHasConsole())
+		N3DS_NetInit();
 	#endif
 #elif defined USE_SDL_NET
 #  ifdef __wii__
@@ -107,9 +103,9 @@ Network::~Network () {
 	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
-	#elif defined(_3DS)
-	socExit();
-	free(socBuffer);
+	#elif defined(__3DS_)
+	if (!N3DS_NetHasConsole())
+		N3DS_NetExit();
 	#endif
 #elif defined USE_SDL_NET
 	SDLNet_Quit();
@@ -136,12 +132,8 @@ int Network::host () {
 
 
 	// Make the socket non-blocking
-#ifdef _3DS
-	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
-#else
 	int nonblock = 1;
 	ioctl(sock, FIONBIO, (u_long *)&nonblock);
-#endif
 
 	memset(&sockAddr, 0, sizeof(sockaddr_in));
 	sockAddr.sin_family = AF_INET;
@@ -198,21 +190,15 @@ int Network::join (char *address) {
 	int sock, con;
 
 	// Create socket
-
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (sock == -1) return E_N_SOCKET;
 
 	// Make socket non-blocking
-#ifdef _3DS
-	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
-#else
 	con = 1;
 	ioctl(sock, FIONBIO, (u_long *)&con);
-#endif
 
 	// Connect to server
-
 	memset(&sockAddr, 0, sizeof(sockaddr_in));
 	sockAddr.sin_family = AF_INET;
 	sockAddr.sin_port = htons(NET_PORT);
@@ -321,12 +307,8 @@ int Network::accept (int sock) {
 	if (clientSocket != -1) {
 
 		// Make the socket non-blocking
-#ifdef _3DS
-		fcntl(clientSocket, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
-#else
 		length = 1;
 		ioctl(clientSocket, FIONBIO, (u_long *)&length);
-#endif
 
 	}
 

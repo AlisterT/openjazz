@@ -58,6 +58,7 @@ MainMenu::MainMenu () {
 	if (res == TINFL_DECOMPRESS_MEM_TO_MEM_FAILED || res != oj_logo.size) {
 
 		LOG_WARN("Could not uncompress logo (expected: %d, actual: %zu).", oj_logo.size, res);
+		logo = nullptr;
 
 	} else {
 

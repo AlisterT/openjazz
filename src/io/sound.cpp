@@ -36,13 +36,13 @@
 	#define OJ_SDL2 0
 #endif
 
-#if defined(__SYMBIAN32__) || defined(_3DS) || defined(PSP) || defined(__vita__)
+#if defined(__SYMBIAN32__) || defined(__3DS__) || defined(PSP) || defined(__vita__)
 	#define SOUND_FREQ 22050
 #else
 	#define SOUND_FREQ 44100
 #endif
 
-#if defined(GP2X) || defined(PSP) || defined(_3DS) || defined(__vita__)
+#if defined(GP2X) || defined(PSP) || defined(__3DS__) || defined(__vita__)
 	#define SOUND_SAMPLES 512
 #else
 	#define SOUND_SAMPLES 2048
