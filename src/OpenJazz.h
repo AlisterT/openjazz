@@ -20,9 +20,10 @@
  * - 13th July 2009: Created graphics.h from parts of OpenJazz.h
  * - 30th April 2010: Created util.h from parts of OpenJazz.h
  * - 30th April 2010: Created loop.h from parts of OpenJazz.h
+ * - 1st November 2023: Created types.h from parts of OpenJazz.h
  *
  * @par Licence:
- * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2005-2017 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

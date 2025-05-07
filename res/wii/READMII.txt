@@ -2,7 +2,7 @@ OpenJazz for Wii
 
 Licensed under GPLv2. See included licenses.txt for details.
 
-OpenJazz written by Alister Thomson http://alister.eu/jazz/oj/
+OpenJazz written by AJ Thomson http://alister.eu/jazz/oj/
 Originally ported to the Wii by tehpola.
 Thanks to the developers of SDL-Wii for making this a breeze to port.
 

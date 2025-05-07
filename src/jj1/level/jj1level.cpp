@@ -5,8 +5,24 @@
  *
  * Part of the OpenJazz project
  *
+ * @par History:
+ * - 23rd August 2005: Created level.c
+ * - 1st January 2006: Created events.c from parts of level.c
+ * - 22nd July 2008: Created levelload.c from parts of level.c
+ * - 3rd February 2009: Renamed level.c to level.cpp
+ * - 5th February 2009: Added parts of events.cpp and level.cpp to player.cpp
+ * - 9th March 2009: Created game.cpp from parts of menu.cpp and level.cpp
+ * - 18th July 2009: Created demolevel.cpp from parts of level.cpp and
+ *                 levelload.cpp
+ * - 19th July 2009: Created levelframe.cpp from parts of level.cpp
+ * - 19th July 2009: Added parts of levelload.cpp to level.cpp
+ * - 30th March 2010: Created baselevel.cpp from parts of level.cpp and
+ *                  levelframe.cpp
+ * - 29th June 2010: Created jj2level.cpp from parts of level.cpp
+ * - 1st August 2012: Renamed level.cpp to jj1level.cpp
+ *
  * @par Licence:
- * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2005-2017 AJ Thomson
  * Copyright (c) 2015-2024 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of

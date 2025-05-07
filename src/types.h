@@ -5,8 +5,12 @@
  *
  * Part of the OpenJazz project
  *
+ * @par History:
+ * - 23rd August 2005: Created OpenJazz.h
+ * - 1st November 2023: Created types.h from parts of OpenJazz.h
+ *
  * @par Licence:
- * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2005-2017 AJ Thomson
  * Copyright (c) 2015-2023 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of

@@ -125,7 +125,7 @@ link:http://alister.eu/jazz/oj/[The OpenJazz Homepage]
 
 == Authors
 
-Alister Thomson (AlisterT):: Engine, project lead
+AJ Thomson (AlisterT):: Engine, project lead
 Alireza Nejati:: Menu plasma effect
 newspaz:: Bug fixes, enemy improvements
 Carsten Teibes (carstene1ns)::

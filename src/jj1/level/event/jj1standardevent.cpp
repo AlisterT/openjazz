@@ -17,7 +17,7 @@
  * - 1st August 2012: Renamed standardevent.cpp to jj1standardevent.cpp
  *
  * @par Licence:
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2013 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

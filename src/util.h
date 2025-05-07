@@ -10,7 +10,7 @@
  * - 30th April 2010: Created util.h from parts of OpenJazz.h
  *
  * @par Licence:
- * Copyright (c) 2005-2010 Alister Thomson
+ * Copyright (c) 2005-2010 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

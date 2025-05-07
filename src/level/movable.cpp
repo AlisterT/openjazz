@@ -9,7 +9,7 @@
  * - 15th January 2010: Created movable.cpp
  *
  * @par Licence:
- * Copyright (c) 2010-2012 Alister Thomson
+ * Copyright (c) 2010-2012 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

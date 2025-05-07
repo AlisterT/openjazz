@@ -13,7 +13,7 @@
  * - 1st August 2012: Renamed levelplayer.h to jj1levelplayer.h
  *
  * @par Licence:
- * Copyright (c) 2005-2017 Alister Thomson
+ * Copyright (c) 2005-2017 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

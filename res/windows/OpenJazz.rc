@@ -8,7 +8,7 @@ FILETYPE 0x00000001L {
       VALUE "ProductName", "OpenJazz"
       VALUE "ProductVersion", "2024.09.19.0"
       VALUE "FileDescription", "Jazz Jackrabbit™ engine reimplementation"
-      VALUE "LegalCopyright", "Alister Thomson et al."
+      VALUE "LegalCopyright", "AJ Thomson et al."
       VALUE "OriginalFilename", "OpenJazz.exe"
       VALUE "InternalName", "OpenJazz"
       VALUE "Comments", "http://www.alister.eu/jazz/oj/"

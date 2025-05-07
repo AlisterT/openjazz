@@ -11,7 +11,7 @@
  * - 21st July 2013: Created setup.h from parts of menu.h
  *
  * @par Licence:
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2013 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

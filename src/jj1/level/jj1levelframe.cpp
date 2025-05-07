@@ -15,7 +15,7 @@
  * - 1st August 2012: Renamed levelframe.cpp to jj1levelframe.cpp
  *
  * @par Licence:
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2013 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

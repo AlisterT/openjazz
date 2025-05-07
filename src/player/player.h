@@ -12,7 +12,7 @@
  * - 24th June 2010: Created bonusplayer.h from parts of player.h
  *
  * @par Licence:
- * Copyright (c) 2005-2013 Alister Thomson
+ * Copyright (c) 2005-2013 AJ Thomson
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0

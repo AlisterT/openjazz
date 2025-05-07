@@ -23,7 +23,7 @@ Many people still fondly recall the shareware versions.
 
 ## History
 
-OpenJazz was started on the 23rd of August, 2005, by Alister Thomson.
+OpenJazz was started on the 23rd of August, 2005, by AJ Thomson.
 Academic pressures put the project on hold until late December 2005.
 The source code was released on the 25th, and the first version with a degree
 of playability was released on the 15th of January, 2006.
@@ -62,7 +62,7 @@ command line argument.
 
 ## Authors
 
-Original author: Alister Thomson (alister_j_t at yahoo dot com)
+Original author: AJ Thomson (alister_j_t at yahoo dot com)
 
 [Additional Authors](res/unix/OpenJazz.6.adoc#authors) (See manual)
 
