@@ -319,7 +319,7 @@ jobs:
           path: repo
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
 
       - name: Zip artifacts and inspect directory
         run: |
@@ -405,7 +405,7 @@ jobs:
           path: repo
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
 
       - name: Zip artifacts and inspect directory
         run: |
