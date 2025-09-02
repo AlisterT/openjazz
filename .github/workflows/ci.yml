@@ -144,7 +144,7 @@ jobs:
   windows-mingw-gcc:
     name: Build (Windows x86_64, MinGW, GCC)
     needs: prepare
-    runs-on: windows-2019
+    runs-on: windows-2022
     defaults:
       run:
         shell: msys2 {0}
