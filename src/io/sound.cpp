@@ -178,7 +178,7 @@ void openAudio () {
 	// Set up SDL audio
 	SDL_AudioSpec asDesired = {};
 	asDesired.freq = SOUND_FREQ;
-	asDesired.format = AUDIO_S16;
+	asDesired.format = AUDIO_S16SYS;
 	asDesired.channels = 2;
 	asDesired.samples = SOUND_SAMPLES;
 	asDesired.callback = audioCallback;
