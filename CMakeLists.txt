@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.18...4.0)
 
 project(OpenJazz
 	VERSION 20240919
@@ -142,14 +142,10 @@ elseif(LEGACY_SDL)
 	set(SDL_STATUS "SDL1.2 (legacy)")
 else()
 	find_package(SDL2 REQUIRED)
-	# FIXME: use targets after moving from Ubuntu 20.04 LTS to 22.04 LTS
-	#if(WIN32)
-	#	target_link_libraries(OpenJazz SDL2::SDL2 SDL2::SDLmain)
-	#else()
-	#	target_link_libraries(OpenJazz SDL2::SDL2)
-	#endif()
-	target_include_directories(OpenJazz PRIVATE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(OpenJazz ${SDL2_LIBRARIES})
+	if(WIN32 OR WII) # TODO: figure out, which other platforms need this
+		target_link_libraries(OpenJazz SDL2::SDL2main)
+	endif()
+	target_link_libraries(OpenJazz SDL2::SDL2)
 	set(SDL_STATUS "SDL2")
 endif()
 
@@ -300,6 +296,18 @@ elseif(3DS)
 	ctr_create_3dsx(OpenJazz
 		SMDH OpenJazz.smdh
 		${ROMFS_ARG} ${ROMFS_PATH})
+elseif(SWITCH)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/switch.cpp
+		src/platforms/switch.h)
+	nx_generate_nacp(OpenJazz.nacp
+		NAME "OpenJazz"
+		AUTHOR "AlisterT & carstene1ns"
+		VERSION "${PROJECT_VERSION}")
+	nx_create_nro(OpenJazz
+		NACP OpenJazz.nacp
+		ICON ${CMAKE_CURRENT_SOURCE_DIR}/res/switch/OpenJazz.jpg
+		${ROMFS_ARG} ${ROMFS_PATH})
 elseif(WII)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/wii.cpp
@@ -369,6 +377,9 @@ if(WIN32)
 elseif(3DS)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenJazz.3dsx
 		DESTINATION OpenJazz COMPONENT 3ds)
+elseif(SWITCH)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenJazz.nro
+		DESTINATION OpenJazz COMPONENT switch)
 elseif(WII)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenJazz.dol
 		RENAME boot.dol
@@ -399,7 +410,7 @@ endif()
 
 # debug information
 
-if(3DS OR WII)
+if(3DS OR SWITCH OR WII)
 	install(TARGETS OpenJazz RUNTIME DESTINATION . COMPONENT debug)
 	dkp_target_generate_symbol_list(OpenJazz)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenJazz.map

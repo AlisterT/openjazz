@@ -171,6 +171,21 @@
     #define DEFAULT_BUTTON_PAUSE        (8)    /* Start */
     #define DEFAULT_BUTTON_YES          (-1)
     #define DEFAULT_BUTTON_NO           (-1)
+#elif defined (__SWITCH__)
+    #define DEFAULT_BUTTON_UP           (13)
+    #define DEFAULT_BUTTON_DOWN         (15)
+    #define DEFAULT_BUTTON_LEFT         (12)
+    #define DEFAULT_BUTTON_RIGHT        (14)
+    #define DEFAULT_BUTTON_JUMP         (1)    /* B */
+    #define DEFAULT_BUTTON_SWIM         (1)    /* B */
+    #define DEFAULT_BUTTON_FIRE         (3)    /* Y */
+    #define DEFAULT_BUTTON_CHANGE       (2)    /* X */
+    #define DEFAULT_BUTTON_ENTER        (0)    /* A */
+    #define DEFAULT_BUTTON_ESCAPE       (10)   /* + */
+    #define DEFAULT_BUTTON_STATS        (6)    /* L */
+    #define DEFAULT_BUTTON_PAUSE        (11)   /* - */
+    #define DEFAULT_BUTTON_YES          (-1)
+    #define DEFAULT_BUTTON_NO           (-1)
 #elif defined(__vita__)
     #define DEFAULT_BUTTON_UP           (8)
     #define DEFAULT_BUTTON_DOWN         (6)

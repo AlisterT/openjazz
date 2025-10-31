@@ -37,6 +37,8 @@
 #include "util.h"
 #ifdef __3DS__
 	#include "platforms/3ds.h"
+#elif defined(__SWITCH__)
+	#include "platforms/switch.h"
 #elif defined(__vita__)
 	#include "platforms/psvita.h"
 #endif
@@ -176,14 +178,23 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	char *input;
 
+#if (defined(__3DS__) || defined(__SWITCH__))
+
+	// macro concatenation magic
 #ifdef __3DS__
+	#define PLATFUNC(x) N3DS_##x
+#else
+	#define PLATFUNC(x) SWITCH_##x
+#endif
 
 	int res;
 
 	if (ip)
-		res = N3DS_InputIP(text, input);
+		res = PLATFUNC(InputIP(text, input));
 	else
-		res = N3DS_InputString(request, text, input);
+		res = PLATFUNC(InputString(request, text, input));
+
+#undef PLATFUNC
 
 	if (res) {
 

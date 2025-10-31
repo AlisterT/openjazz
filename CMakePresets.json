@@ -93,6 +93,30 @@
       ]
     },
     {
+      "name": "switch-parent",
+      "inherits": "base",
+      "displayName": "Comment: platform/special preset",
+      "description": "Homebrew build using Ninja generator",
+      "toolchainFile": "$env{DEVKITPRO}/cmake/Switch.cmake",
+      "hidden": true
+    },
+    {
+      "name": "switch-debug",
+      "displayName": "Nintendo Switch (Debug)",
+      "inherits": [
+        "switch-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "switch-release",
+      "displayName": "Nintendo Switch (Release)",
+      "inherits": [
+        "switch-parent",
+        "type-release"
+      ]
+    },
+    {
       "name": "wii-parent",
       "inherits": "base",
       "displayName": "Comment: platform/special preset",
@@ -163,6 +187,14 @@
       "configurePreset": "3ds-release"
     },
     {
+      "name": "switch-debug",
+      "configurePreset": "switch-debug"
+    },
+    {
+      "name": "switch-release",
+      "configurePreset": "switch-release"
+    },
+    {
       "name": "wii-debug",
       "configurePreset": "wii-debug"
     },
@@ -199,6 +231,14 @@
     {
       "name": "3ds-release",
       "configurePreset": "3ds-release"
+    },
+    {
+      "name": "switch-debug",
+      "configurePreset": "switch-debug"
+    },
+    {
+      "name": "switch-release",
+      "configurePreset": "switch-release"
     },
     {
       "name": "wii-debug",
@@ -288,6 +328,32 @@
         {
           "type": "package",
           "name": "3ds-release"
+        }
+      ]
+    },
+    {
+      "name": "switch-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "switch-debug"
+        },
+        {
+          "type": "build",
+          "name": "switch-debug"
+        }
+      ]
+    },
+    {
+      "name": "switch-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "switch-release"
+        },
+        {
+          "type": "build",
+          "name": "switch-release"
         }
       ]
     },

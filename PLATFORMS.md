@@ -30,7 +30,11 @@ Use the provided CMake Toolchain file or wrapper script:
 
 `cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake`
 
-#### Additional options:
+### Switch
+
+`cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/Switch.cmake`
+
+#### Additional options for 3DS and Switch:
 
   * Embed a directory in the executable: `-DROMFS=ON`
 

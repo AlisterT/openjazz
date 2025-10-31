@@ -22,7 +22,7 @@ if(WANT_CCACHE)
 
 		if(CCACHE_EXECUTABLE)
 			message(STATUS "Using ccache as CXX compiler launcher")
-			set(FOUND_CCACHE 1 CACHE INTERNAL "Ccache has been found")
+			set(FOUND_CCACHE 1 CACHE INTERNAL "ccache has been found")
 		endif()
 	endif()
 
@@ -96,10 +96,9 @@ if(CPPCHECK_EXECUTABLE)
 		--std=c++11
 		--language=c++
 		-I${CMAKE_CURRENT_SOURCE_DIR}/src
-		-U__SYMBIAN32__ -UUIQ3 -UENABLE_JJ2        # unmaintained
-		-UGP2X -UWIZ -UDINGOO -UCAANOO -UGAMESHELL # contributed
-		-UPSP -U__vita__ -U__3DS__ -U__wii__          # homebrew
-		-U__riscos__
+		-U__SYMBIAN32__ -UUIQ3 -UENABLE_JJ2                     # unmaintained
+		-UGP2X -UWIZ -UDINGOO -UCAANOO -UGAMESHELL -U__riscos__ # contributed
+		-UPSP -U__vita__ -U__3DS__ -U__wii__ -U__SWITCH__       # homebrew
 		#--enable=information
 	)
 

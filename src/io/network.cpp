@@ -59,6 +59,9 @@
 	#ifdef __3DS__
 		#include "platforms/3ds.h"
 	#endif
+	#ifdef __SWITCH__
+		#include "platforms/switch.h"
+	#endif
 #elif defined(__wii__)
 	#include <network.h>
 #elif defined(USE_SDL_NET)
@@ -80,6 +83,9 @@ Network::Network () {
 	#elif defined(__3DS__)
 	if (!N3DS_NetHasConsole())
 		N3DS_NetInit();
+	#elif defined(__SWITCH__)
+	if (!SWITCH_NetHasConsole())
+		SWITCH_NetInit();
 	#endif
 #elif defined USE_SDL_NET
 #  ifdef __wii__
@@ -103,9 +109,12 @@ Network::~Network () {
 	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
-	#elif defined(__3DS_)
+	#elif defined(__3DS__)
 	if (!N3DS_NetHasConsole())
 		N3DS_NetExit();
+	#elif defined(__SWITCH__)
+	if (!SWITCH_NetHasConsole())
+		SWITCH_NetExit();
 	#endif
 #elif defined USE_SDL_NET
 	SDLNet_Quit();

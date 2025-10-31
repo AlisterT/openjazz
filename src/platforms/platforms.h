@@ -19,6 +19,7 @@
 
 #include "psp.h"
 #include "3ds.h"
+#include "switch.h"
 #include "wii.h"
 #include "psvita.h"
 #include "haiku.h"
@@ -41,6 +42,10 @@ inline void PLATFORM_Init() {
 	N3DS_Init();
 #endif
 
+#ifdef __SWITCH__
+	SWITCH_Init();
+#endif
+
 #ifdef __vita__
 	PSVITA_Init();
 #endif
@@ -49,6 +54,10 @@ inline void PLATFORM_Init() {
 inline void PLATFORM_Exit() {
 #ifdef __3DS__
 	N3DS_Exit();
+#endif
+
+#ifdef __SWITCH__
+	SWITCH_Exit();
 #endif
 }
 
@@ -63,6 +72,10 @@ inline void PLATFORM_AddGamePaths() {
 
 #ifdef __3DS__
 	N3DS_AddGamePaths();
+#endif
+
+#ifdef __SWITCH__
+	SWITCH_AddGamePaths();
 #endif
 
 #ifdef __wii__
@@ -105,6 +118,10 @@ inline void PLATFORM_ErrorNoDatafiles() {
 
 #ifdef __3DS__
 	N3DS_ErrorNoDatafiles();
+#endif
+
+#ifdef __SWITCH__
+	SWITCH_ErrorNoDatafiles();
 #endif
 
 #ifdef __APPLE__
