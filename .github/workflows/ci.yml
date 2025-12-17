@@ -80,7 +80,7 @@ jobs:
           git archive -o openjazz-${OJ_VERSION}.zip --prefix=openjazz-${OJ_VERSION}/ ${GITHUB_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-dist
           path: openjazz-*.*
@@ -136,7 +136,7 @@ jobs:
           cp build-release/OpenJazz README.md COPYING licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-linux-glibc2.35-x86_64
           path: OJ-*/
@@ -174,7 +174,7 @@ jobs:
           mv dist OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
@@ -211,7 +211,7 @@ jobs:
           cp build-web/*.{wasm,js,html,data} README.md COPYING licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-web
           path: OJ-*/
@@ -261,7 +261,7 @@ jobs:
           mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-${{ matrix.settings.shortname }}
           path: OJ-*/
@@ -294,7 +294,7 @@ jobs:
           mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openjazz-psp
           path: OJ-*/
