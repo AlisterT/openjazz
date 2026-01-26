@@ -29,6 +29,7 @@
 #include <SDL_audio.h>
 #include <psmplug.h>
 #include <cassert>
+#include <cstring>
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	#define OJ_SDL2 1
