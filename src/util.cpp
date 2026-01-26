@@ -31,6 +31,7 @@
 
 #include <string.h>
 #include <cstdio>
+#include <cctype>
 
 /**
  * Check if a file exists.
