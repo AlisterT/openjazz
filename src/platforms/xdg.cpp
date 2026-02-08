@@ -17,6 +17,7 @@
 
 #if __unix__
 
+#include <cstring>
 #include <sys/stat.h>
 
 #include "util.h"
