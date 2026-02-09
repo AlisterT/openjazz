@@ -190,8 +190,8 @@ JJ1SceneText::~JJ1SceneText() {
  */
 JJ1ScenePage::JJ1ScenePage() :
 	backgrounds(0), animLoops(0), animSpeed(0), animIndex(-1), // no anim
-	nextPageAfterAnim(0), pageTime(0), musicFile(nullptr),
-	paletteIndex(0), askForYesNo(0), stopMusic(0), backgroundFade(255)
+	nextPageAfterAnim(0), pageTime(0), musicFile(nullptr), paletteIndex(0),
+	askForYesNo(false), stopMusic(false), backgroundFade(255), transitionType(0)
 	{
 
 }
@@ -361,8 +361,11 @@ int JJ1Scene::play () {
 
 		if (newpage) {
 
-			//if (paletteEffect) delete paletteEffect;
-			//paletteEffect = new FadeOutPaletteEffect(250, NULL);
+			// Always fade out to black
+			if(sceneIndex > 0 && pages[sceneIndex].backgroundFade > 0) {
+				if (paletteEffect) delete paletteEffect;
+				paletteEffect = new FadeOutPaletteEffect(pages[sceneIndex].backgroundFade, NULL);
+			}
 
 			textRect.x = 0;
 			textRect.y = 0;
@@ -375,17 +378,33 @@ int JJ1Scene::play () {
 
 				video.setPalette(scenePalette->palette);
 
-				// Fade in from black
-				if (paletteEffect) delete paletteEffect;
-				paletteEffect = new FadeInPaletteEffect(250, NULL);
+				// setup transition animation
+				switch(pages[sceneIndex].transitionType) {
+				case 0:
+					// Fade in from black
+					if(pages[sceneIndex].backgroundFade > 0) {
+						if (paletteEffect) delete paletteEffect;
+						paletteEffect = new FadeInPaletteEffect(pages[sceneIndex].backgroundFade, NULL);
+					}
+					break;
 
+				case 1:
+					// Speckle
+					LOG_TRACE("Scene: Speckle transition unimplemented.");
+					break;
+
+				case 2:
+					// Circle
+					LOG_TRACE("Scene: Circle transition unimplemented.");
+					break;
+				}
 			}
 
 			if(pages[sceneIndex].musicFile) {
 				playMusic(pages[sceneIndex].musicFile);
 			}
 
-			newpage = 0;
+			newpage = false;
 
 		}
 

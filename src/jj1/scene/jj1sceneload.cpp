@@ -303,7 +303,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 
 				unsigned short int value = f->loadShort();
 				LOG_ANIM("PL Read block start tag: 0x%x", value);
-			    int size = f->loadShort();
+				int size = f->loadShort();
 				LOG_ANIM("PL Anim block size: %d", size);
 				nextPos = f->tell();
 				// next pos is intial position + size and four bytes header
@@ -521,9 +521,9 @@ void JJ1Scene::loadScripts (File *f) {
 	int loop = 0;
 
 	for(auto &page : pages) {
-	    LOG_MAX("Parse Script: %d", loop);
+		LOG_MAX("Parse Script: %d", loop);
 
-	    SDL_Rect textRect = { 0,0,0,0 };
+		SDL_Rect textRect = { 0,0,0,0 };
 		f->seek(scriptStarts[loop], true); // Seek to data start
 
 		if (f->loadChar() == 0x50) { // Script tag
@@ -549,13 +549,13 @@ void JJ1Scene::loadScripts (File *f) {
 
 					case ESceneYesNo:
 						{
-							page.askForYesNo = 1;
+							page.askForYesNo = true;
 							LOG_SCRIPT("ESceneYesNo");
 						}
 						break;
 					case ESceneStopMusic:
 						{
-							page.stopMusic = 1;
+							page.stopMusic = true;
 							LOG_SCRIPT("ESceneStopMusic");
 						}
 						break;
@@ -577,9 +577,10 @@ void JJ1Scene::loadScripts (File *f) {
 						}
 						break;
 
-					case ESceneFadeType:
+					case ESceneTransitionType:
 						{
-							LOG_TRACE("Unimplemented ESceneFadeType: %x", f->loadChar());
+							page.transitionType = f->loadChar();
+							LOG_SCRIPT("ESceneTransitionType: %d", page.transitionType);
 						}
 						break;
 
@@ -603,9 +604,15 @@ void JJ1Scene::loadScripts (File *f) {
 
 						break;
 
-					case ESceneSomethingElse:
+					case ESceneMusicTransition:
 						{
-							LOG_TRACE("Unimplemented ESceneSomethingElse");
+							char musicTransition = f->loadChar();
+							// This value (-) is mentioned in the moddingwiki, though i encountered 0x45 (E) more often
+							if(musicTransition == 0x2D) {
+								page.stopMusic = true; // FIXME: maybe means actually fade?
+								LOG_SCRIPT("ESceneMusicTransition: off");
+							} else
+								LOG_TRACE("Unknown ESceneMusicTransition: 0x%x", musicTransition);
 						}
 						break;
 

@@ -58,7 +58,7 @@ enum {
 	ESceneYesNo = 0x23, // #
 	ESceneMusic = 0x2A, // *
 	ESceneStopMusic = 0x2D, // -
-	ESceneFadeType = 0x3F, // ?
+	ESceneTransitionType = 0x3F, // ?
 	ESceneTextBlock = 0x40, // @
 	ESceneTextColour = 0x41, // A
 	ESceneFontFun = 0x45, // E
@@ -68,7 +68,7 @@ enum {
 	ESceneTextAlign2 = 0x4B, // K
 	ESceneBackground = 0x4C, // L
 	ESceneBreaker = 0x50, // P
-	ESceneSomethingElse = 0x51, // Q
+	ESceneMusicTransition = 0x51, // Q
 	ESceneTextRect = 0x57, // W
 	ESceneFontDefine = 0x58, // X
 	ESceneTime = 0x5D, // ]
@@ -123,9 +123,11 @@ class JJ1ScenePage {
 		std::list<JJ1SceneText> texts;
 		char*                   musicFile;
 		int                     paletteIndex;
-		int                     askForYesNo;
-		int                     stopMusic;
+		bool                    askForYesNo;
+		bool                    stopMusic;
 		int                     backgroundFade;
+		int                     transitionType;
+
 		JJ1ScenePage ();
 		~JJ1ScenePage ();
 };
