@@ -73,11 +73,9 @@ inline LONG MulDiv (long a, long b, long c)
   return ((uint64_t) a * (uint64_t) b ) / c;
 }
 
-#define LPCTSTR LPCSTR
-#define lstrcpyn strncpy
-#define lstrcpy strcpy
-#define lstrcmp strcmp
-#define wsprintf sprintf
+#define lstrcpynA strncpy
+#define lstrcpyA strcpy
+#define wsprintfA sprintf
 
 #define WAVE_FORMAT_PCM 1
 
