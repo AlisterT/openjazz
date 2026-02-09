@@ -225,6 +225,7 @@ jobs:
             image: 'devkitppc:latest'
             text: '(Wii, devkitPPC)'
             wrapper: '$DEVKITPRO/portlibs/wii/bin/powerpc-eabi-cmake'
+            extraflags: '-DNETWORK=OFF'
           - shortname: '3ds'
             image: 'devkitarm:latest'
             text: '(3DS, devkitARM)'
@@ -248,7 +249,8 @@ jobs:
 
       - name: Build OpenJazz
         run: |
-          ${{ matrix.settings.wrapper }} -G Ninja -B build . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          ${{ matrix.settings.wrapper }} -G Ninja -B build . \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo ${{ matrix.settings.extraflags }}
           cmake --build build
 
       - name: Prepare artifact
