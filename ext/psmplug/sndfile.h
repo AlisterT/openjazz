@@ -756,9 +756,6 @@ public:
 };
 
 
-// inline DWORD BigEndian(DWORD x) { return ((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | ((x & 0xFF000000) >> 24); }
-// inline WORD BigEndianW(WORD x) { return (WORD)(((x >> 8) & 0xFF) | ((x << 8) & 0xFF00)); }
-
 
 //////////////////////////////////////////////////////////
 // WAVE format information
@@ -909,6 +906,24 @@ typedef struct WAVEEXTRAHEADER
 int _muldiv(long a, long b, long c);
 int _muldivr(long a, long b, long c);
 
+
+// Functions to read 16 and 32 bits endian-specific data and return in native format:
+
+inline WORD READ_LE16(LPCBYTE b) {
+	return (WORD)b[0] | ((WORD)b[1] << 8);
+}
+
+inline WORD READ_BE16(LPCBYTE b) {
+	return (WORD)b[1] | ((WORD)b[0] << 8);
+}
+
+inline DWORD READ_LE32(LPCBYTE b) {
+	return (DWORD)b[0] | ((DWORD)b[1] << 8) | ((DWORD)b[2] << 16) | ((DWORD)b[3] << 24);
+}
+
+inline DWORD READ_BE32(LPCBYTE b) {
+	return (DWORD)b[3] | ((DWORD)b[2] << 8) | ((DWORD)b[1] << 16) | ((DWORD)b[0] << 24);
+}
 
 // Byte swapping functions from the GNU C Library and libsdl
 
