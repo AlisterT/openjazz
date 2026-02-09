@@ -12,7 +12,8 @@
 int _strnicmp(const char *str1,const char *str2, int n);
 #endif
 
-#ifndef LPCBYTE
+#ifndef _LPCBYTE_DEFINED
+#define _LPCBYTE_DEFINED
 typedef const BYTE * LPCBYTE;
 #endif
 
@@ -606,7 +607,7 @@ public:
 	UINT GetMaxPosition() const;
 	void SetCurrentPos(UINT nPos);
 	void SetCurrentOrder(UINT nOrder);
-	void GetTitle(LPSTR s) const { lstrcpyn(s,m_szNames[0],32); }
+	void GetTitle(LPSTR s) const { lstrcpynA(s,m_szNames[0],32); }
 	LPCSTR GetTitle() const { return m_szNames[0]; }
 	UINT GetSampleName(UINT nSample,LPSTR s=NULL) const;
 	UINT GetInstrumentName(UINT nInstr,LPSTR s=NULL) const;
