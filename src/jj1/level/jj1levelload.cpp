@@ -475,7 +475,11 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	FilePtr file;
 	try {
 
-		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
+		if (!strcmp(fileName, LEVEL_FILE))
+			// use downloaded file
+			file = std::make_unique<File>(fileName, PATH_TYPE_TEMP);
+		else
+			file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 
 	} catch (int e) {
 
