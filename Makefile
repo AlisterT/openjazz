@@ -64,6 +64,7 @@ OJOBJS = \
 	src/menu/plasma.o \
 	src/menu/setupmenu.o \
 	src/player/player.o \
+	src/platforms/platform_interface.o \
 	src/setup.o \
 	src/util.o \
 	src/version.o

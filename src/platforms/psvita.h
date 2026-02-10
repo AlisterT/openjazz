@@ -17,21 +17,25 @@
 #ifndef _PSPVITA_H
 #define _PSPVITA_H
 
+#include "platform_interface.h"
+
 #ifdef __vita__
 
-void PSVITA_Init();
+/* Device uses SDL2 */
 
-void PSVITA_AddGamePaths();
+// Audio config
+#define SOUND_SAMPLES 512
 
-int PSVITA_InputString(const char* hint, char*& current_string, char*& new_string);
+// Keyboard config
+#define NO_KEYBOARD_CFG
 
-// Video config (SDL2)
+// Video config
 #define DEFAULT_SCREEN_WIDTH 960
 #define DEFAULT_SCREEN_HEIGHT 540
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 
-// Controller config (SDL2)
+// Controller config
 #define DEFAULT_BUTTON_UP     (8)
 #define DEFAULT_BUTTON_DOWN   (6)
 #define DEFAULT_BUTTON_LEFT   (7)
@@ -44,6 +48,15 @@ int PSVITA_InputString(const char* hint, char*& current_string, char*& new_strin
 #define DEFAULT_BUTTON_ESCAPE (4)
 #define DEFAULT_BUTTON_STATS  (10)
 #define DEFAULT_BUTTON_PAUSE  (11)
+
+class VitaPlatform final : public IPlatform {
+	public:
+		VitaPlatform();
+
+		void AddGamePaths() override;
+
+		bool InputString(const char* hint, char*& current_string, char*& new_string) override;
+};
 
 #endif
 

@@ -66,6 +66,8 @@ add_executable(OpenJazz
 	src/menu/setupmenu.cpp
 	src/OpenJazz.h
 	src/platforms/platforms.h
+	src/platforms/platform_interface.cpp
+	src/platforms/platform_interface.h
 	src/player/player.cpp
 	src/player/player.h
 	src/setup.cpp

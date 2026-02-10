@@ -19,14 +19,22 @@
 
 #ifdef DINGOO
 
-// Video config (SDL1.2)
+/* Device uses SDL1.2 */
+
+// Audio config
+#define MUSIC_SETTINGS 0 // Low
+
+// Video config
 #define DEFAULT_SCREEN_WIDTH 320
 #define DEFAULT_SCREEN_HEIGHT 240
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 #define FULLSCREEN_FLAGS 0
 
-// Keyboard config (SDL1.2)
+// Controller config
+#define NO_CONTROLLER_CFG
+
+// Keyboard config
 #define DEFAULT_KEY_JUMP   (SDLK_LCTRL)
 #define DEFAULT_KEY_SWIM   (SDLK_LCTRL)
 #define DEFAULT_KEY_FIRE   (SDLK_LALT)

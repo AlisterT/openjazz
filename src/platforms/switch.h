@@ -17,28 +17,18 @@
 #ifndef _SWITCH_H
 #define _SWITCH_H
 
+#include "platform_interface.h"
+
 #ifdef __SWITCH__
 
-void SWITCH_Init();
-void SWITCH_Exit();
+/* Device uses SDL2 */
 
-void SWITCH_NetInit();
-void SWITCH_NetExit();
-bool SWITCH_NetHasConsole();
-
-void SWITCH_AddGamePaths();
-
-void SWITCH_ErrorNoDatafiles();
-
-int SWITCH_InputIP(char*& current_ip, char*& new_ip);
-int SWITCH_InputString(const char* hint, char*& current_string, char*& new_string);
-
-// Video config (SDL2)
+// Video config
 #define DEFAULT_SCREEN_WIDTH 1280
 #define DEFAULT_SCREEN_HEIGHT 720
 #define FULLSCREEN_ONLY
 
-// Controller config (SDL2)
+// Controller config
 #define DEFAULT_BUTTON_UP     (13)
 #define DEFAULT_BUTTON_DOWN   (15)
 #define DEFAULT_BUTTON_LEFT   (12)
@@ -51,6 +41,22 @@ int SWITCH_InputString(const char* hint, char*& current_string, char*& new_strin
 #define DEFAULT_BUTTON_ESCAPE (10)   /* + */
 #define DEFAULT_BUTTON_STATS  (6)    /* L */
 #define DEFAULT_BUTTON_PAUSE  (11)   /* - */
+
+class SwitchPlatform final : public IPlatform {
+	public:
+		SwitchPlatform();
+		~SwitchPlatform();
+
+		void NetInit() override;
+		void NetExit() override;
+		bool NetHasConsole() override;
+
+		void AddGamePaths() override;
+		void ErrorNoDatafiles() override;
+
+		bool InputIP(char*& current_ip, char*& new_ip) override;
+		bool InputString(const char* hint, char*& current_string, char*& new_string) override;
+};
 
 #endif
 

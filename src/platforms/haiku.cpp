@@ -6,7 +6,7 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
- * Copyright (c) 2015-2023 Carsten Teibes
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -25,7 +25,7 @@
 #include "util.h"
 #include "io/file.h"
 
-void HAIKU_AddGamePaths() {
+void HaikuPlatform::AddGamePaths() {
 	char dir_buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
 	dev_t volume = dev_for_path("/boot");
 
@@ -40,7 +40,7 @@ void HAIKU_AddGamePaths() {
 	gamePaths.add(createString(dir_buffer), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 }
 
-void HAIKU_ErrorNoDatafiles() {
+void HaikuPlatform::ErrorNoDatafiles() {
 	char dir_buffer[10 + B_PATH_NAME_LENGTH + B_FILE_NAME_LENGTH];
 	find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY,
 		dev_for_path("/boot"), false, dir_buffer, sizeof(dir_buffer));

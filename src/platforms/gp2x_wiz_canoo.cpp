@@ -6,6 +6,8 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
+ * Copyright (c) 2015-2026 Carsten Teibes
+ *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
  *
@@ -21,9 +23,10 @@
 #include <sys/soundcard.h>
 #include <fcntl.h>
 #include <unistd.h>
+
 #include "io/sound.h"
 
-void WIZ_AdjustVolume(int direction) {
+void WizPlatform::AdjustVolume(int direction) {
 	if(direction != VOLUME_NOCHG) {
 		if(volume <= 10) {
 			if(direction == VOLUME_UP)   volume += VOLUME_CHANGE_RATE/2;

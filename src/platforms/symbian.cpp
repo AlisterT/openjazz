@@ -11,6 +11,8 @@
  *
  */
 
+#include "symbian.h"
+
 #ifdef __SYMBIAN32__
 
 #include <eikenv.h>
@@ -142,15 +144,13 @@ float sinf(float value)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void SYMBIAN_AddGamePaths() {
-
+void SymbianPlatform::AddGamePaths() {
 #ifdef UIQ3
 	gamePaths.add(createString("c:\\shared\\openjazz\\"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 #else
 	gamePaths.add(createString("c:\\data\\openjazz\\"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 #endif
 	gamePaths.add(createString(KOpenJazzPath), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
-
 }
 
 #endif

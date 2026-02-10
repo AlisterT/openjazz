@@ -17,21 +17,27 @@
 #ifndef _PSP_H
 #define _PSP_H
 
+#include "platform_interface.h"
+
 #ifdef PSP
 
-int PSP_WantsExit();
+/* Device uses SDL2 */
 
-void PSP_Init();
+// Audio config
+#define SOUND_FREQ 22050
+#define SOUND_SAMPLES 1024
+#define MUSIC_SETTINGS 0 // Low
 
-void PSP_ErrorNoDatafiles();
+// Keyboard config
+#define NO_KEYBOARD_CFG
 
-// Video config (SDL1.2)
+// Video config
 #define DEFAULT_SCREEN_WIDTH 480
 #define DEFAULT_SCREEN_HEIGHT 272
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 
-// Controller config (SDL1.2)
+// Controller config
 #define DEFAULT_BUTTON_UP     (8)
 #define DEFAULT_BUTTON_DOWN   (6)
 #define DEFAULT_BUTTON_LEFT   (7)
@@ -44,6 +50,16 @@ void PSP_ErrorNoDatafiles();
 #define DEFAULT_BUTTON_ESCAPE (4)
 #define DEFAULT_BUTTON_STATS  (10)
 #define DEFAULT_BUTTON_PAUSE  (11)
+
+class PspPlatform final : public IPlatform {
+	public:
+		PspPlatform();
+
+		bool WantsExit() override;
+
+		void ErrorNoDatafiles() override;
+};
+
 
 #endif
 

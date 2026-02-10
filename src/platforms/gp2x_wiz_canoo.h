@@ -17,10 +17,14 @@
 #ifndef GP2X_WIZ_CANOO_H
 #define GP2X_WIZ_CANOO_H
 
+/* All devices use SDL1.2 */
+
 #if defined(GP2X) || defined(WIZ)
 
-#define GP2X_BUTTON_VOLUP         (16)
-#define GP2X_BUTTON_VOLDOWN       (17)
+// TODO: move volume changing out of main loop
+
+#define GP2X_BUTTON_VOLUP   (16)
+#define GP2X_BUTTON_VOLDOWN (17)
 
 #define VOLUME_MIN 0
 #define VOLUME_MAX 100
@@ -29,11 +33,26 @@
 #define VOLUME_DOWN 1
 #define VOLUME_UP 2
 
-void WIZ_AdjustVolume(int direction);
+namespace WizPlatform {
+	void AdjustVolume(int direction);
+}
 
 #endif
 
-// Video
+// Audio config
+#ifdef GP2X
+	#define SOUND_SAMPLES 512
+#endif
+#if defined(GP2X) || defined(WIZ) || defined(CAANOO)
+	#define MUSIC_SETTINGS 0 // Low
+#endif
+
+// Keyboard config
+#if defined(GP2X) || defined(WIZ) || defined(CAANOO)
+	#define NO_KEYBOARD_CFG
+#endif
+
+// Video config
 #if defined(GP2X) || defined(WIZ) || defined(CAANOO)
 	#define DEFAULT_SCREEN_WIDTH 320
 	#define DEFAULT_SCREEN_HEIGHT 240
@@ -42,7 +61,7 @@ void WIZ_AdjustVolume(int direction);
 	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 #endif
 
-// Buttons
+// Controller config
 #if defined(GP2X) || defined(WIZ)
 	#define DEFAULT_BUTTON_UP     (0)
 	#define DEFAULT_BUTTON_DOWN   (4)

@@ -6,7 +6,7 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
- * Copyright (c) 2015-2023 Carsten Teibes
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -19,7 +19,9 @@
 
 #if __unix__
 
-void XDG_AddGamePaths();
+namespace XDGPlatform {
+	void AddGamePaths();
+};
 
 #endif
 

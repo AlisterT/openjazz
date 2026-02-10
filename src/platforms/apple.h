@@ -17,11 +17,15 @@
 #ifndef _APPLE_H
 #define _APPLE_H
 
+#include "platform_interface.h"
+
 #ifdef __APPLE__
 
-void APPLE_AddGamePaths();
-
-void APPLE_ErrorNoDatafiles();
+class ApplePlatform final : public IPlatform {
+	public:
+		void AddGamePaths() override;
+		void ErrorNoDatafiles() override;
+};
 
 #endif
 

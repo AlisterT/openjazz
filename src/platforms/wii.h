@@ -17,19 +17,19 @@
 #ifndef _WII_H
 #define _WII_H
 
+#include "platform_interface.h"
+
 #ifdef __wii__
 
-void WII_Init();
+/* Device uses SDL2 */
 
-void WII_AddGamePaths();
-
-// Video config (SDL2)
+// Video config
 #define DEFAULT_SCREEN_WIDTH 640
 #define DEFAULT_SCREEN_HEIGHT 480
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 
-// Controller config (SDL2)
+// Controller config
 #define DEFAULT_BUTTON_JUMP   (2) /* 1 */
 #define DEFAULT_BUTTON_SWIM   (2) /* 1 */
 #define DEFAULT_BUTTON_FIRE   (3) /* 2 */
@@ -38,6 +38,13 @@ void WII_AddGamePaths();
 #define DEFAULT_BUTTON_ESCAPE (6) /* Home */
 #define DEFAULT_BUTTON_STATS  (4) /* - */
 #define DEFAULT_BUTTON_PAUSE  (5) /* + */
+
+class WiiPlatform final : public IPlatform {
+	public:
+		WiiPlatform();
+
+		void AddGamePaths() override;
+};
 
 #endif
 

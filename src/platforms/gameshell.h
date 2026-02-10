@@ -19,14 +19,19 @@
 
 #ifdef GAMESHELL
 
-// Video config (SDL1.2)
+/* Device uses SDL1.2 */
+
+// Video config
 #define DEFAULT_SCREEN_WIDTH 320
 #define DEFAULT_SCREEN_HEIGHT 240
 #define FULLSCREEN_ONLY
 #define NO_RESIZE
 #define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
 
-// Keyboard config (SDL1.2)
+// Controller config
+#define NO_CONTROLLER_CFG
+
+// Keyboard config
 #define DEFAULT_KEY_JUMP   (SDLK_j)      /* A button */
 #define DEFAULT_KEY_SWIM   (SDLK_j)      /* A button */
 #define DEFAULT_KEY_FIRE   (SDLK_k)      /* B button */

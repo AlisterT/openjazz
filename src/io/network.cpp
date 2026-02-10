@@ -30,6 +30,7 @@
 #include "gfx/video.h"
 #include "network.h"
 
+#include "platforms/platforms.h"
 #include "loop.h"
 #include "util.h"
 #include "io/log.h"
@@ -56,12 +57,6 @@
 	#ifndef MSG_NOSIGNAL
 		#define MSG_NOSIGNAL 0
 	#endif
-	#ifdef __3DS__
-		#include "platforms/3ds.h"
-	#endif
-	#ifdef __SWITCH__
-		#include "platforms/switch.h"
-	#endif
 #elif defined(__wii__)
 	#include <network.h>
 #elif defined(USE_SDL_NET)
@@ -80,13 +75,9 @@ Network::Network () {
 
 	// Start Windows Sockets
 	WSAStartup(MAKEWORD(1, 0), &WSAData);
-	#elif defined(__3DS__)
-	if (!N3DS_NetHasConsole())
-		N3DS_NetInit();
-	#elif defined(__SWITCH__)
-	if (!SWITCH_NetHasConsole())
-		SWITCH_NetInit();
 	#endif
+	if (!platform->NetHasConsole())
+		platform->NetInit();
 #elif defined USE_SDL_NET
 #  ifdef __wii__
 	char ip[16];
@@ -109,13 +100,9 @@ Network::~Network () {
 	#ifdef _WIN32
 	// Shut down Windows Sockets
 	WSACleanup();
-	#elif defined(__3DS__)
-	if (!N3DS_NetHasConsole())
-		N3DS_NetExit();
-	#elif defined(__SWITCH__)
-	if (!SWITCH_NetHasConsole())
-		SWITCH_NetExit();
 	#endif
+	if (!platform->NetHasConsole())
+		platform->NetExit();
 #elif defined USE_SDL_NET
 	SDLNet_Quit();
 #  ifdef __wii__
