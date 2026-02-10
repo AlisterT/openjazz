@@ -24,8 +24,7 @@
 #include "io/file.h"
 
 void WII_Init() {
-	// enable file system
-	fatInitDefault();
+	// file system is enabled in SDL2Main
 
 	// USBGecko Debugging
 	constexpr int SLOT = CARD_SLOTB;

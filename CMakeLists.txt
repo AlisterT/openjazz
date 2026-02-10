@@ -145,6 +145,9 @@ else()
 	if(WIN32 OR WII) # TODO: figure out, which other platforms need this
 		target_link_libraries(OpenJazz SDL2::SDL2main)
 	endif()
+	if(PSP)
+		target_compile_definitions(OpenJazz PRIVATE SDL_MAIN_HANDLED)
+	endif()
 	target_link_libraries(OpenJazz SDL2::SDL2)
 	set(SDL_STATUS "SDL2")
 endif()
@@ -266,8 +269,12 @@ if(WIN32)
 	# open console for debug builds
 	set_target_properties(OpenJazz PROPERTIES WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>)
 	# add icon
-	target_sources(OpenJazz PRIVATE res/windows/OpenJazz.rc)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/windows.h
+		res/windows/OpenJazz.rc)
 elseif(EMSCRIPTEN)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/emscripten.h)
 	set_target_properties(OpenJazz PROPERTIES SUFFIX ".html")
 	set(JS_SHELL "${CMAKE_CURRENT_SOURCE_DIR}/res/emscripten/shell.html")
 
@@ -328,10 +335,16 @@ elseif(PSVITA) # unfinished
 	target_sources(OpenJazz PRIVATE
 		src/platforms/psvita.cpp
 		src/platforms/psvita.h)
-elseif(GP2X OR WIZ)
+elseif(GP2X OR WIZ OR CANOO)
 	target_sources(OpenJazz PRIVATE
-		src/platforms/wiz.cpp
-		src/platforms/wiz.h)
+		src/platforms/gp2x_wiz_canoo.cpp
+		src/platforms/gp2x_wiz_canoo.h)
+elseif(DINGOO)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/dingoo.h)
+elseif(GAMESHELL)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/gameshell.h)
 elseif(HAIKU)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/haiku.cpp

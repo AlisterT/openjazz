@@ -23,6 +23,7 @@
 
 #include "setup.h"
 #include "paletteeffects.h"
+#include "platforms/platforms.h"
 
 #include <SDL.h>
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -48,75 +49,22 @@
 #define MAX_SCREEN_WIDTH (32 * 256 * MAX_SCALE)
 #define MAX_SCREEN_HEIGHT (32 * 64 * MAX_SCALE)
 
-// Fullscreen and Window flags are only for SDL1.2 currently
-
-#define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
-
-#if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
-	#define DEFAULT_SCREEN_WIDTH 320
-	#define DEFAULT_SCREEN_HEIGHT 240
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
-#elif defined(DINGOO)
-	#define DEFAULT_SCREEN_WIDTH 320
-	#define DEFAULT_SCREEN_HEIGHT 240
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS 0
-#elif defined(PSP)
-	#define DEFAULT_SCREEN_WIDTH 480
-	#define DEFAULT_SCREEN_HEIGHT 272
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
-#elif defined(__3DS__)
-	#define DEFAULT_SCREEN_WIDTH 400
-	#define DEFAULT_SCREEN_HEIGHT 240
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS (SDL_SWSURFACE | SDL_TOPSCR | SDL_CONSOLEBOTTOM)
-#elif defined(__SWITCH__)
-	#define DEFAULT_SCREEN_WIDTH 1280
-	#define DEFAULT_SCREEN_HEIGHT 720
-
-	#define FULLSCREEN_ONLY
-
-	#define FULLSCREEN_FLAGS (SDL_SWSURFACE)
-#elif defined(__wii__)
-	#define DEFAULT_SCREEN_WIDTH 640
-	#define DEFAULT_SCREEN_HEIGHT 480
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_SWSURFACE | SDL_HWPALETTE)
-#elif defined(__vita__)
-	#define DEFAULT_SCREEN_WIDTH 960
-	#define DEFAULT_SCREEN_HEIGHT 540
-
-	#define FULLSCREEN_ONLY
-	#define NO_RESIZE
-
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_HWSURFACE)
-#elif defined(EMSCRIPTEN)
-	#define DEFAULT_SCREEN_WIDTH 640
-	#define DEFAULT_SCREEN_HEIGHT 480
-
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
-#else
+// Default configuration
+#ifndef DEFAULT_SCREEN_WIDTH
 	#define DEFAULT_SCREEN_WIDTH SW
+#endif
+#ifndef DEFAULT_SCREEN_HEIGHT
 	#define DEFAULT_SCREEN_HEIGHT SH
+#endif
 
-	#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
+// Fullscreen and Window flags are only for SDL1.2 currently
+#if !OJ_SDL2
+	#ifndef WINDOWED_FLAGS
+		#define WINDOWED_FLAGS (SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
+	#endif
+	#ifndef FULLSCREEN_FLAGS
+		#define FULLSCREEN_FLAGS (SDL_FULLSCREEN | SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWPALETTE)
+	#endif
 #endif
 
 // Time interval

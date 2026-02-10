@@ -1,7 +1,7 @@
 
 /**
  *
- * @file wiz.cpp
+ * @file gp2x_wiz_canoo.cpp
  *
  * Part of the OpenJazz project
  *
@@ -12,7 +12,7 @@
  */
 
 
-#include "wiz.h"
+#include "gp2x_wiz_canoo.h"
 
 #if defined(WIZ) || defined(GP2X)
 

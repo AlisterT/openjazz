@@ -26,6 +26,9 @@
 #include <pspdisplay.h>
 #include <stdlib.h>
 
+// TODO: maybe remove callback and module handling alltogether,
+// since SDL2main does it, if enabled
+
 PSP_MODULE_INFO("OpenJazz", PSP_MODULE_USER, 0, 1);
 //PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER|PSP_THREAD_ATTR_VFPU); // vfpu is used in SDL afaik
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
