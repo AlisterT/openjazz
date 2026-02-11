@@ -69,9 +69,9 @@ class GameMode {
 class SingleGameMode : public GameMode {
 
 	public:
-		GameModeType  getMode    ();
-		unsigned char chooseTeam ();
-		void          drawScore  (Font* font);
+		GameModeType  getMode    () override;
+		unsigned char chooseTeam () override;
+		void          drawScore  (Font* font) override;
 
 };
 
@@ -79,8 +79,8 @@ class SingleGameMode : public GameMode {
 class CooperativeGameMode : public GameMode {
 
 	public:
-		unsigned char chooseTeam ();
-		virtual void  drawScore  (Font* font);
+		unsigned char chooseTeam () override;
+		virtual void  drawScore  (Font* font) override;
 
 };
 
@@ -88,8 +88,8 @@ class CooperativeGameMode : public GameMode {
 class FreeForAllGameMode : public GameMode {
 
 	public:
-		unsigned char chooseTeam ();
-		virtual void  drawScore  (Font* font);
+		unsigned char chooseTeam () override;
+		virtual void  drawScore  (Font* font) override;
 
 };
 
@@ -97,8 +97,8 @@ class FreeForAllGameMode : public GameMode {
 class TeamGameMode : public GameMode {
 
 	public:
-		unsigned char chooseTeam ();
-		virtual void  drawScore  (Font* font);
+		unsigned char chooseTeam () override;
+		virtual void  drawScore  (Font* font) override;
 
 };
 
@@ -106,7 +106,7 @@ class TeamGameMode : public GameMode {
 class CoopGameMode : public CooperativeGameMode {
 
 	public:
-		GameModeType getMode ();
+		GameModeType getMode () override;
 
 };
 
@@ -117,7 +117,7 @@ class BattleGameMode : public FreeForAllGameMode {
 		//int targetKills; ///< Number of kills required for a player to win
 
 	public:
-		GameModeType getMode ();
+		GameModeType getMode () override;
 
 };
 
@@ -128,7 +128,7 @@ class TeamBattleGameMode : public TeamGameMode {
 		//int targetKills; ///< Number of kills required for a team to win
 
 	public:
-		GameModeType getMode ();
+		GameModeType getMode () override;
 
 };
 
@@ -139,9 +139,9 @@ class RaceGameMode : public FreeForAllGameMode {
 		//int targetLaps; ///< Number of laps required for a player to win
 
 	public:
-		GameModeType getMode    ();
-		bool         hit        (Player *source, Player *victim);
-		bool         endOfLevel (Game* game, Player *player, int gridX, int gridY);
+		GameModeType getMode    () override;
+		bool         hit        (Player *source, Player *victim) override;
+		bool         endOfLevel (Game* game, Player *player, int gridX, int gridY) override;
 
 };
 

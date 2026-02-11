@@ -83,7 +83,7 @@ class JJ1BonusLevelPlayer final : public LevelPlayer {
 
 	public:
 		JJ1BonusLevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
-		~JJ1BonusLevelPlayer ();
+		~JJ1BonusLevelPlayer () override;
 
 		void          reset        (int startX, int startY) override;
 

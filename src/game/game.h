@@ -135,13 +135,13 @@ class LocalGame : public Game {
 
 	public:
 		LocalGame  (const char *firstLevel, int gameDifficulty);
-		~LocalGame ();
+		~LocalGame () override;
 
-		int  setLevel      (char *fileName);
-		void send          (unsigned char *buffer);
-		int  step          (unsigned int ticks);
-		void score         (unsigned char team);
-		void setCheckpoint (int gridX, int gridY);
+		int  setLevel      (char *fileName) override;
+		void send          (unsigned char *buffer) override;
+		int  step          (unsigned int ticks) override;
+		void score         (unsigned char team) override;
+		void setCheckpoint (int gridX, int gridY) override;
 
 };
 
@@ -164,13 +164,13 @@ class ServerGame : public Game {
 
 	public:
 		ServerGame         (GameModeType mode, char *firstLevel, int gameDifficulty);
-		~ServerGame        ();
+		~ServerGame        () override;
 
-		int  setLevel      (char *fileName);
-		void send          (unsigned char *buffer);
-		int  step          (unsigned int ticks);
-		void score         (unsigned char team);
-		void setCheckpoint (int gridX, int gridY);
+		int  setLevel      (char *fileName) override;
+		void send          (unsigned char *buffer) override;
+		int  step          (unsigned int ticks) override;
+		void score         (unsigned char team) override;
+		void setCheckpoint (int gridX, int gridY) override;
 
 };
 
@@ -188,13 +188,13 @@ class ClientGame : public Game {
 
 	public:
 		explicit ClientGame(char *address);
-		~ClientGame();
+		~ClientGame() override;
 
-		int  setLevel      (char *fileName);
-		void send          (unsigned char *buffer);
-		int  step          (unsigned int ticks);
-		void score         (unsigned char team);
-		void setCheckpoint (int gridX, int gridY);
+		int  setLevel      (char *fileName) override;
+		void send          (unsigned char *buffer) override;
+		int  step          (unsigned int ticks) override;
+		void score         (unsigned char team) override;
+		void setCheckpoint (int gridX, int gridY) override;
 
 };
 

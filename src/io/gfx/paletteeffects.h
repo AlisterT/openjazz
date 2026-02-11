@@ -67,7 +67,7 @@ class WhiteInPaletteEffect : public PaletteEffect {
 	public:
 		WhiteInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -81,7 +81,7 @@ class FadeInPaletteEffect : public PaletteEffect {
 	public:
 		FadeInPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -95,7 +95,7 @@ class WhiteOutPaletteEffect : public PaletteEffect {
 	public:
 		WhiteOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -109,7 +109,7 @@ class FadeOutPaletteEffect : public PaletteEffect {
 	public:
 		FadeOutPaletteEffect (int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -124,7 +124,7 @@ class FlashPaletteEffect : public PaletteEffect {
 	public:
 		FlashPaletteEffect (unsigned char newRed, unsigned char newGreen, unsigned char newBlue, int newDuration, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -140,7 +140,7 @@ class RotatePaletteEffect : public PaletteEffect {
 	public:
 		RotatePaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -156,7 +156,7 @@ class SkyPaletteEffect : public PaletteEffect {
 	public:
 		SkyPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, SDL_Color* newSkyPalette, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -171,7 +171,7 @@ class P2DPaletteEffect : public PaletteEffect {
 	public:
 		P2DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -186,7 +186,7 @@ class P1DPaletteEffect : public PaletteEffect {
 	public:
 		P1DPaletteEffect (unsigned char newFirst, int newAmount, fixed newSpeed, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 
@@ -199,7 +199,7 @@ class WaterPaletteEffect : public PaletteEffect {
 	public:
 		WaterPaletteEffect (fixed newDepth, PaletteEffect* nextPE);
 
-		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic);
+		void apply (SDL_Color* shownPalette, bool direct, int mspf, bool isStatic) override;
 
 };
 

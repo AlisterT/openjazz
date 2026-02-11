@@ -114,8 +114,8 @@ class JJ1StandardEvent : public JJ1Event {
 	public:
 		JJ1StandardEvent (JJ1EventType* event, unsigned char gX, unsigned char gY, fixed startX, fixed startY);
 
-		JJ1Event* step (unsigned int ticks);
-		void   draw (unsigned int ticks, int change);
+		JJ1Event* step (unsigned int ticks) override;
+		void   draw (unsigned int ticks, int change) override;
 
 };
 
@@ -129,8 +129,8 @@ class JJ1Bridge : public JJ1Event {
 	public:
 		JJ1Bridge (unsigned char gX, unsigned char gY);
 
-		JJ1Event* step (unsigned int ticks);
-		void   draw (unsigned int ticks, int change);
+		JJ1Event* step (unsigned int ticks) override;
+		void   draw (unsigned int ticks, int change) override;
 
 };
 

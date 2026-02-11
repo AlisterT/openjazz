@@ -87,10 +87,10 @@ class JJ1BonusLevel : public Level {
 
 	public:
 		JJ1BonusLevel  (Game* owner, char* fileName, bool multi);
-		~JJ1BonusLevel ();
+		~JJ1BonusLevel () override;
 
 		bool checkMask (fixed x, fixed y);
-		void receive   (unsigned char* buffer);
+		void receive   (unsigned char* buffer) override;
 		int  play      ();
 
 };

@@ -48,8 +48,8 @@ class DeckGuardian : public Guardian {
 		DeckGuardian (unsigned char gX, unsigned char gY);
 
 		bool      overlap (fixed left, fixed top, fixed width, fixed height);
-		JJ1Event* step    (unsigned int ticks);
-		void      draw    (unsigned int ticks, int change);
+		JJ1Event* step    (unsigned int ticks) override;
+		void      draw    (unsigned int ticks, int change) override;
 
 };
 
@@ -64,8 +64,8 @@ class MedGuardian : public Guardian {
 		MedGuardian (unsigned char gX, unsigned char gY);
 
 		//bool   overlap (fixed left, fixed top, fixed width, fixed height);
-		JJ1Event* step    (unsigned int ticks);
-		void      draw    (unsigned int ticks, int change);
+		JJ1Event* step    (unsigned int ticks) override;
+		void      draw    (unsigned int ticks, int change) override;
 
 };
 

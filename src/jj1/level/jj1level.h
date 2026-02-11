@@ -254,7 +254,7 @@ class JJ1Level : public Level {
 		JJ1EventPath path[PATHS]; ///< Pre-defined event movement paths
 
 		JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi);
-		~JJ1Level ();
+		~JJ1Level () override;
 
 		bool          checkMaskUp   (fixed x, fixed y);
 		bool          checkMaskDown (fixed x, fixed y);
@@ -279,7 +279,7 @@ class JJ1Level : public Level {
 		void          setWaterLevel (unsigned char gridY);
 		fixed         getWaterLevel ();
 		void          flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
-		void          receive       (unsigned char* buffer);
+		void          receive       (unsigned char* buffer) override;
 		virtual int   play          ();
 
 };
@@ -292,9 +292,9 @@ class JJ1DemoLevel : public JJ1Level {
 
 	public:
 		JJ1DemoLevel  (Game* owner, const char* fileName);
-		~JJ1DemoLevel ();
+		~JJ1DemoLevel () override;
 
-		int play   ();
+		int play   () override;
 
 };
 

@@ -166,7 +166,7 @@ class JJ1LevelPlayer final : public LevelPlayer {
 
 	public:
 		JJ1LevelPlayer  (Player* parent, Anim** newAnims, unsigned char startX, unsigned char startY, int flockSize);
-		~JJ1LevelPlayer ();
+		~JJ1LevelPlayer () override;
 
 		void reset (int startX, int startY) override;
 
