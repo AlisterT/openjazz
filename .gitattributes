@@ -8,6 +8,13 @@ CMakeLists.txt text
 *.cmake text
 *.json text
 
+# android
+.java text
+.xml text
+.gradle text
+.properties text
+*.bat text eol=crlf
+
 # distribution archives
 /.github export-ignore
 /builds/ci export-ignore

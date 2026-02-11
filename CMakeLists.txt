@@ -19,7 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # OpenJazz
 
-add_executable(OpenJazz
+set(OJ_SOURCES
 	# main engine
 	src/game/clientgame.cpp
 	src/game/game.cpp
@@ -107,6 +107,13 @@ add_executable(OpenJazz
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
 	src/jj1/scene/jj1sceneload.cpp)
+if(ANDROID)
+	add_library(OpenJazz SHARED ${OJ_SOURCES})
+	enable_language(C)
+	set(BUILD_SHARED_LIBS ON)
+else()
+	add_executable(OpenJazz ${OJ_SOURCES})
+endif()
 target_include_directories(OpenJazz PUBLIC src)
 target_link_libraries(OpenJazz ${OJ_LIBS_HOST})
 
@@ -131,9 +138,16 @@ if(DATAPATH)
 	target_compile_definitions(OpenJazz PRIVATE DATAPATH="${DATAPATH}")
 endif()
 
-# libraries
+# bundled libraries
 
-if(EMSCRIPTEN)
+add_subdirectory(ext)
+
+# external libraries
+
+if(ANDROID)
+	set(OJ_LIBS_SDL SDL2)
+	set(SDL_STATUS "SDL2 (bundled)")
+elseif(EMSCRIPTEN)
 	# emscripten ships a "port" of SDL2, no linking necessary
 	target_compile_options(OpenJazz PRIVATE "--use-port=sdl2;-flto;-fexceptions")
 	set(SDL_STATUS "SDL2 (emscripten port)")
@@ -153,10 +167,6 @@ else()
 	target_link_libraries(OpenJazz SDL2::SDL2)
 	set(SDL_STATUS "SDL2")
 endif()
-
-# common bundled libraries
-
-add_subdirectory(ext)
 
 # network
 
@@ -286,6 +296,11 @@ elseif(EMSCRIPTEN)
 		 -sENVIRONMENT=web --closure 1 -sEXPORTED_RUNTIME_METHODS=['allocate']
 		 -sASSERTIONS -sNO_DISABLE_EXCEPTION_CATCHING")
 	set_source_files_properties("src/main.cpp" PROPERTIES OBJECT_DEPENDS "${JS_SHELL}")
+elseif(ANDROID)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/android.cpp
+		src/platforms/android.h)
+	target_link_libraries(OpenJazz -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid)
 elseif(RISCOS)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/riscos.cpp
@@ -411,6 +426,8 @@ elseif(RISCOS)
 		DESTINATION !OpenJazz COMPONENT riscos)
 elseif(PANDORA OR CANOO OR WIZ OR GP2X OR DINGOO OR GAMESHELL)
 	# left blank for the moment (TODO: opk?)
+elseif(ANDROID)
+	# intentionally disabled
 elseif(UNIX)
 	include(GNUInstallDirs)
 

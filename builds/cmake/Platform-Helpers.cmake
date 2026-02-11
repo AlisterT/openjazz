@@ -51,6 +51,15 @@ elseif(PSVITA)
 	set(OJ_HOST "PSVita")
 	set(OJ_ALLOW_NEW_SDL ON)
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
+elseif(ANDROID)
+	set(OJ_HOST "Android")
+	set(OJ_ALLOW_NEW_SDL TRUE)
+
+	# requires cpufeatures library
+	#if(ANDROID_ABI STREQUAL "armeabi-v7a")
+		#include(AndroidNdkModules)
+		#android_ndk_import_module_cpufeatures()
+	#endif()
 endif()
 
 if(NINTENDO_3DS OR NINTENDO_SWITCH)

@@ -28,6 +28,10 @@
 #include <psp2/kernel/clib.h>
 #endif
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
 static struct level_info {
 	const char *name;
 	const char *color;
@@ -128,7 +132,28 @@ void Log::setQuiet(bool enable) {
  */
 
 void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
+#ifdef __ANDROID__
+	// on android write only to journal, and do not spew for release builds
+	int maxlvl = LL_TRACE; //level;
+	#ifdef NDEBUG
+	maxlvl = LL_WARN;
+	#endif
 
+	// log up to set verbosity
+	if(lvl < maxlvl) return;
+
+	// use an immediate buffer for output
+	char outbuffer[1024];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(outbuffer, sizeof(outbuffer), fmt, args);
+	va_end(args);
+
+	__android_log_write((lvl == LL_ERROR) ? ANDROID_LOG_ERROR :
+		(lvl == LL_WARN) ? ANDROID_LOG_WARN :
+		(lvl == LL_INFO) ? ANDROID_LOG_INFO : ANDROID_LOG_DEBUG,
+		"OpenJazz", outbuffer);
+#else
 	// skip if nothing to write
 	if (!logfile && (lvl < level || quiet)) return;
 
@@ -206,5 +231,5 @@ void Log::log(int lvl, const char *file, int line, const char *fmt, ...) {
 
 		fflush(logfile);
 	}
-
+#endif
 }

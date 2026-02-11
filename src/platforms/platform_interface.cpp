@@ -37,6 +37,8 @@ IPlatform* IPlatform::make() {
 	return new SymbianPlatform();
 #elif defined(__APPLE__)
 	return new ApplePlatform();
+#elif defined(__ANDROID__)
+	return new AndroidPlatform();
 #else
 	// using the stuff below
 	return new DefaultPlatform();

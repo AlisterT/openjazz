@@ -20,6 +20,7 @@
 #include "OpenJazz.h"
 #include "3ds.h"
 #include "apple.h"
+#include "android.h"
 #include "dingoo.h"
 #include "emscripten.h"
 #include "gameshell.h"
