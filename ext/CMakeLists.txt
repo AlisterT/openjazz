@@ -37,3 +37,16 @@ target_link_libraries(OpenJazz psmplug)
 add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp)
 target_include_directories(stb INTERFACE stb)
 target_link_libraries(OpenJazz stb)
+
+if(ANDROID)
+	include(FetchContent)
+
+	# SDL2
+	set(SDL_TEST_ENABLED_BY_DEFAULT OFF)
+	FetchContent_Declare(SDL2
+		URL https://github.com/libsdl-org/SDL/archive/refs/tags/release-2.32.10.zip
+		#SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL2
+	)
+	FetchContent_MakeAvailable(SDL2)
+	target_link_libraries(OpenJazz SDL2::SDL2)
+endif()

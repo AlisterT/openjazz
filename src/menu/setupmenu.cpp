@@ -14,6 +14,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -34,6 +35,7 @@
 #include "loop.h"
 #include "setup.h"
 #include "util.h"
+#include "platforms/platforms.h"
 
 
 /**
@@ -695,41 +697,40 @@ int SetupMenu::setupMain () {
 
 			case 1:
 
-#if !(defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(PSP) \
-	|| defined(__3DS__) || defined(__SWITCH__) || defined(__vita__))
-				if (setupKeyboard() == E_QUIT) return E_QUIT;
-#else
+#ifdef NO_KEYBOARD_CFG
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
+#else
+				if (setupKeyboard() == E_QUIT) return E_QUIT;
 #endif
 
 				break;
 
 			case 2:
 
-#if !defined(DINGOO) && !defined(PSP)  && !defined(__vita__) // FIXME: psp, psvita
-				if (setupJoystick() == E_QUIT) return E_QUIT;
-#else
+#ifdef NO_CONTROLLER_CFG
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
+#else
+				if (setupJoystick() == E_QUIT) return E_QUIT;
 #endif
 
 				break;
 
 			case 3:
 
-#ifndef NO_RESIZE
-				if (setupResolution() == E_QUIT) return E_QUIT;
-#else
+#ifdef NO_RESIZE
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
+#else
+				if (setupResolution() == E_QUIT) return E_QUIT;
 #endif
 
 				break;
 
 			case 4:
 
-#ifdef SCALE
-				if (setupScaling() == E_QUIT) return E_QUIT;
-#else
+#ifndef SCALE
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
+#else
+				if (setupScaling() == E_QUIT) return E_QUIT;
 #endif
 
 				break;

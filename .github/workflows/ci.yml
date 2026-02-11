@@ -216,6 +216,42 @@ jobs:
           name: openjazz-web
           path: OJ-*/
 
+  android-gradle-debug: # todo: add signed release build
+    name: Build (Android, Gradle, Debug)
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28c
+          add-to-path: false
+          local-cache: false # broken: https://github.com/nttld/setup-ndk/issues/518
+          link-to-sdk: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build OpenJazz
+        working-directory: builds/android
+        env:
+          CMAKE_BUILD_PARALLEL_LEVEL: 2
+        run: |
+          ./gradlew assembleDebug -Pandroid.native.buildOutput=verbose
+      - name: Prepare artifact
+        env:
+          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+        run: |
+          mv build-android/OpenJazz/app/outputs/apk/debug/app-debug.apk OJ-${SHORT_SHA}-debug.apk
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: openjazz-android-debug
+          path: OJ-*
+
   nintendo-devkitpro:
     strategy:
       fail-fast: false
@@ -309,6 +345,7 @@ jobs:
       - linux-clang
       - windows-mingw-gcc
       - web-emscripten
+      - android-gradle-debug
       - nintendo-devkitpro
       - psp-pspdev
     # allow run when some platform jobs failed, but only on master branch in main repo
@@ -395,6 +432,7 @@ jobs:
       - linux-clang
       - windows-mingw-gcc
       - web-emscripten
+      - android-gradle-debug
       - nintendo-devkitpro
       - psp-pspdev
     # allow run when some platform jobs failed, but only for tags in main repo

@@ -19,7 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # OpenJazz
 
-add_executable(OpenJazz
+set(OJ_SOURCES
 	# main engine
 	src/game/clientgame.cpp
 	src/game/game.cpp
@@ -66,6 +66,8 @@ add_executable(OpenJazz
 	src/menu/setupmenu.cpp
 	src/OpenJazz.h
 	src/platforms/platforms.h
+	src/platforms/platform_interface.cpp
+	src/platforms/platform_interface.h
 	src/player/player.cpp
 	src/player/player.h
 	src/setup.cpp
@@ -105,6 +107,13 @@ add_executable(OpenJazz
 	src/jj1/scene/jj1scene.cpp
 	src/jj1/scene/jj1scene.h
 	src/jj1/scene/jj1sceneload.cpp)
+if(ANDROID)
+	add_library(OpenJazz SHARED ${OJ_SOURCES})
+	enable_language(C)
+	set(BUILD_SHARED_LIBS ON)
+else()
+	add_executable(OpenJazz ${OJ_SOURCES})
+endif()
 target_include_directories(OpenJazz PUBLIC src)
 target_link_libraries(OpenJazz ${OJ_LIBS_HOST})
 
@@ -129,9 +138,16 @@ if(DATAPATH)
 	target_compile_definitions(OpenJazz PRIVATE DATAPATH="${DATAPATH}")
 endif()
 
-# libraries
+# bundled libraries
 
-if(EMSCRIPTEN)
+add_subdirectory(ext)
+
+# external libraries
+
+if(ANDROID)
+	set(OJ_LIBS_SDL SDL2)
+	set(SDL_STATUS "SDL2 (bundled)")
+elseif(EMSCRIPTEN)
 	# emscripten ships a "port" of SDL2, no linking necessary
 	target_compile_options(OpenJazz PRIVATE "--use-port=sdl2;-flto;-fexceptions")
 	set(SDL_STATUS "SDL2 (emscripten port)")
@@ -145,13 +161,12 @@ else()
 	if(WIN32 OR WII) # TODO: figure out, which other platforms need this
 		target_link_libraries(OpenJazz SDL2::SDL2main)
 	endif()
+	if(PSP)
+		target_compile_definitions(OpenJazz PRIVATE SDL_MAIN_HANDLED)
+	endif()
 	target_link_libraries(OpenJazz SDL2::SDL2)
 	set(SDL_STATUS "SDL2")
 endif()
-
-# common bundled libraries
-
-add_subdirectory(ext)
 
 # network
 
@@ -266,8 +281,12 @@ if(WIN32)
 	# open console for debug builds
 	set_target_properties(OpenJazz PROPERTIES WIN32_EXECUTABLE $<$<NOT:$<CONFIG:Debug>>:TRUE>)
 	# add icon
-	target_sources(OpenJazz PRIVATE res/windows/OpenJazz.rc)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/windows.h
+		res/windows/OpenJazz.rc)
 elseif(EMSCRIPTEN)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/emscripten.h)
 	set_target_properties(OpenJazz PROPERTIES SUFFIX ".html")
 	set(JS_SHELL "${CMAKE_CURRENT_SOURCE_DIR}/res/emscripten/shell.html")
 
@@ -277,6 +296,11 @@ elseif(EMSCRIPTEN)
 		 -sENVIRONMENT=web --closure 1 -sEXPORTED_RUNTIME_METHODS=['allocate']
 		 -sASSERTIONS -sNO_DISABLE_EXCEPTION_CATCHING")
 	set_source_files_properties("src/main.cpp" PROPERTIES OBJECT_DEPENDS "${JS_SHELL}")
+elseif(ANDROID)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/android.cpp
+		src/platforms/android.h)
+	target_link_libraries(OpenJazz -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid)
 elseif(RISCOS)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/riscos.cpp
@@ -328,10 +352,16 @@ elseif(PSVITA) # unfinished
 	target_sources(OpenJazz PRIVATE
 		src/platforms/psvita.cpp
 		src/platforms/psvita.h)
-elseif(GP2X OR WIZ)
+elseif(GP2X OR WIZ OR CANOO)
 	target_sources(OpenJazz PRIVATE
-		src/platforms/wiz.cpp
-		src/platforms/wiz.h)
+		src/platforms/gp2x_wiz_canoo.cpp
+		src/platforms/gp2x_wiz_canoo.h)
+elseif(DINGOO)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/dingoo.h)
+elseif(GAMESHELL)
+	target_sources(OpenJazz PRIVATE
+		src/platforms/gameshell.h)
 elseif(HAIKU)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/haiku.cpp
@@ -396,6 +426,8 @@ elseif(RISCOS)
 		DESTINATION !OpenJazz COMPONENT riscos)
 elseif(PANDORA OR CANOO OR WIZ OR GP2X OR DINGOO OR GAMESHELL)
 	# left blank for the moment (TODO: opk?)
+elseif(ANDROID)
+	# intentionally disabled
 elseif(UNIX)
 	include(GNUInstallDirs)
 

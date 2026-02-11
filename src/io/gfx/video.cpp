@@ -111,6 +111,9 @@ void Video::findResolutions () {
 	minW = maxW = DEFAULT_SCREEN_WIDTH;
 	minH = maxH = DEFAULT_SCREEN_HEIGHT;
 
+	LOG_DEBUG("Using fixed resolution %dx%d.",
+		DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
+
 	// no need to sanitize
 	return;
 #elif OJ_SDL2

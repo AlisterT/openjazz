@@ -6,7 +6,7 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
- * Copyright (c) 2015-2023 Carsten Teibes
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -23,9 +23,8 @@
 #include "util.h"
 #include "io/file.h"
 
-void WII_Init() {
-	// enable file system
-	fatInitDefault();
+WiiPlatform::WiiPlatform() {
+	// file system is enabled in SDL2Main
 
 	// USBGecko Debugging
 	constexpr int SLOT = CARD_SLOTB;
@@ -41,7 +40,7 @@ void WII_Init() {
 #endif
 }
 
-void WII_AddGamePaths() {
+void WiiPlatform::AddGamePaths() {
 	gamePaths.add(createString("sd:/apps/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 }
 

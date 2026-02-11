@@ -6,7 +6,7 @@
  * Part of the OpenJazz project
  *
  * @par Licence:
- * Copyright (c) 2025 Carsten Teibes
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -26,35 +26,54 @@
 
 namespace {
 	int sock = -1;
+
+	SwkbdTextCheckResult InputString_Filter(char *text, size_t textlen) {
+		for (size_t i = 0; i < textlen; i++) {
+			// we do not care about the unused buffer end
+			if (text[i] == '\0' || i > STRING_LENGTH) {
+				return SwkbdTextCheckResult_OK;
+			}
+			if ((text[i] != ' ') && (text[i] != '.') &&
+				((text[i] < '0') || (text[i] > '9')) &&
+				((text[i] < 'a') || (text[i] > 'z'))) {
+
+				strncpy(text, "Invalid character(s) found.\nOnly a-z, 0-9, Dot and Space are allowed.", textlen - 1);
+				text[textlen] = '\0';
+				return SwkbdTextCheckResult_Bad;
+			}
+		}
+		return SwkbdTextCheckResult_OK;
+	}
+
 }
 
-void SWITCH_Init() {
+SwitchPlatform::SwitchPlatform() {
 	// file system
 	romfsInit();
 
 #ifndef NDEBUG
 	// network console
-	SWITCH_NetInit();
+	NetInit();
 	sock = nxlinkStdio();
 #endif
 }
 
-void SWITCH_Exit() {
+SwitchPlatform::~SwitchPlatform() {
 	romfsExit();
 
 #ifndef NDEBUG
-	SWITCH_NetExit();
+	NetExit();
 #endif
 }
 
-void SWITCH_NetInit() {
+void SwitchPlatform::NetInit() {
 	int ret = socketInitializeDefault();
 	if (ret != 0) {
 		LOG_WARN("Failed to initialize sockets 0x%08X\n", (unsigned int)ret);
 	}
 }
 
-void SWITCH_NetExit() {
+void SwitchPlatform::NetExit() {
 	if (sock >= 0) {
 		close(sock);
 		sock = -1;
@@ -63,16 +82,16 @@ void SWITCH_NetExit() {
 	socketExit();
 }
 
-bool SWITCH_NetHasConsole() {
+bool SwitchPlatform::NetHasConsole() {
 	return sock >= 0;
 }
 
-void SWITCH_AddGamePaths() {
+void SwitchPlatform::AddGamePaths() {
 	gamePaths.add(createString("sdmc:/switch/OpenJazz/"), PATH_TYPE_GAME|PATH_TYPE_CONFIG);
 	gamePaths.add(createString("romfs:/"), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 }
 
-void SWITCH_ErrorNoDatafiles() {
+void SwitchPlatform::ErrorNoDatafiles() {
 	// never generate an error report without CFW
 	if (!hosversionIsAtmosphere()) return;
 
@@ -93,7 +112,7 @@ void SWITCH_ErrorNoDatafiles() {
 	delete[] error;
 }
 
-int SWITCH_InputIP(char*& current_ip, char*& new_ip) {
+bool SwitchPlatform::InputIP(char*& current_ip, char*& new_ip) {
 	SwkbdConfig kbd;
 	Result rc = swkbdCreate(&kbd, 0);
 	if (R_SUCCEEDED(rc)) {
@@ -110,31 +129,13 @@ int SWITCH_InputIP(char*& current_ip, char*& new_ip) {
 		swkbdClose(&kbd);
 		if (R_SUCCEEDED(rc)) {
 			new_ip = createString(ip_buf);
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
-static SwkbdTextCheckResult StringFilter(char *text, size_t textlen) {
-	for (size_t i = 0; i < textlen; i++) {
-		// we do not care about the unused buffer end
-		if (text[i] == '\0' || i > STRING_LENGTH) {
-			return SwkbdTextCheckResult_OK;
-		}
-		if ((text[i] != ' ') && (text[i] != '.') &&
-			((text[i] < '0') || (text[i] > '9')) &&
-			((text[i] < 'a') || (text[i] > 'z'))) {
-
-			strncpy(text, "Invalid character(s) found.\nOnly a-z, 0-9, Dot and Space are allowed.", textlen - 1);
-			text[textlen] = '\0';
-			return SwkbdTextCheckResult_Bad;
-		}
-	}
-	return SwkbdTextCheckResult_OK;
-}
-
-int SWITCH_InputString(const char* hint, char*& current_string, char*& new_string) {
+bool SwitchPlatform::InputString(const char* hint, char*& current_string, char*& new_string) {
 	SwkbdConfig kbd;
 	Result rc = swkbdCreate(&kbd, 0);
 	if (R_SUCCEEDED(rc)) {
@@ -146,16 +147,16 @@ int SWITCH_InputString(const char* hint, char*& current_string, char*& new_strin
 		swkbdConfigSetInitialCursorPos(&kbd, 1); // at end
 		swkbdConfigSetStringLenMax(&kbd, STRING_LENGTH);
 		swkbdConfigSetStringLenMin(&kbd, 1);
-		swkbdConfigSetTextCheckCallback(&kbd, StringFilter);
+		swkbdConfigSetTextCheckCallback(&kbd, InputString_Filter);
 		swkbdConfigSetKeySetDisableBitmask(&kbd, SwkbdKeyDisableBitmask_UserName);
 		rc = swkbdShow(&kbd, string_buf, sizeof(string_buf));
 		swkbdClose(&kbd);
 		if (R_SUCCEEDED(rc)) {
 			new_string = createString(string_buf);
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 #endif

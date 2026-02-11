@@ -35,13 +35,7 @@
 #include "io/sound.h"
 #include "loop.h"
 #include "util.h"
-#ifdef __3DS__
-	#include "platforms/3ds.h"
-#elif defined(__SWITCH__)
-	#include "platforms/switch.h"
-#elif defined(__vita__)
-	#include "platforms/psvita.h"
-#endif
+#include "platforms/platforms.h"
 
 #include <string.h>
 
@@ -178,23 +172,16 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 	char *input;
 
+	// TODO: simplify
+
 #if (defined(__3DS__) || defined(__SWITCH__))
 
-	// macro concatenation magic
-#ifdef __3DS__
-	#define PLATFUNC(x) N3DS_##x
-#else
-	#define PLATFUNC(x) SWITCH_##x
-#endif
-
-	int res;
+	bool res;
 
 	if (ip)
-		res = PLATFUNC(InputIP(text, input));
+		res = platform->InputIP(text, input);
 	else
-		res = PLATFUNC(InputString(request, text, input));
-
-#undef PLATFUNC
+		res = platform->InputString(request, text, input);
 
 	if (res) {
 
@@ -209,7 +196,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 
 #elif defined(__vita__)
 
-	if (PSVITA_InputString(request, text, input)) {
+	if (platform->InputString(request, text, input)) {
 
 		playConfirmSound();
 
