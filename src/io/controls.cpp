@@ -13,6 +13,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -638,16 +639,15 @@ bool Controls::release (int control) {
  * @return True if the cursor was being used
  */
 bool Controls::getCursor (int& x, int& y) {
-
-#ifdef SCALE
 	int scaleFactor = video.getScaleFactor();
 
-	x = cursorX / scaleFactor;
-	y = cursorY / scaleFactor;
-#else
-	x = cursorX;
-	y = cursorY;
-#endif
+	if (scaleFactor > MIN_SCALE) {
+		x = cursorX / scaleFactor;
+		y = cursorY / scaleFactor;
+	} else {
+		x = cursorX;
+		y = cursorY;
+	}
 
 	return cursorPressed || cursorReleased;
 

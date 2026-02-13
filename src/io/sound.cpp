@@ -53,8 +53,6 @@
 	#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
 #endif
 
-#define clamp_vol(vol, min, max) (((vol) < (min)) ? (min) : (((vol) > (max)) ? (max) : (vol)))
-
 // Datatype
 
 /// Raw sound effect data
@@ -367,7 +365,7 @@ int getMusicVolume () {
  * @param volume new volume (0-100)
  */
 void setMusicVolume (int volume) {
-	musicVolume = clamp_vol(volume, 0, MAX_VOLUME);
+	musicVolume = CLAMP(volume, 0, MAX_VOLUME);
 
 	// do not access music player settings when not playing
 	if (!musicFile) return;
@@ -644,5 +642,5 @@ int getSoundVolume () {
  * @param volume new volume (0-100)
  */
 void setSoundVolume (int volume) {
-	soundVolume = clamp_vol(volume, 0, MAX_VOLUME);
+	soundVolume = CLAMP(volume, 0, MAX_VOLUME);
 }

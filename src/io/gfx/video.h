@@ -12,6 +12,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -77,8 +78,42 @@
 
 /// Video output
 class Video {
+	public:
+		Video ();
+
+		bool       init                  (SetupOptions cfg);
+		void       deinit                ();
+		bool       reset                 (int width, int height);
+
+		void       setPalette            (SDL_Color *palette);
+		SDL_Color* getPalette            () const;
+		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
+		void       restoreSurfacePalette (SDL_Surface *surface);
+
+		int        getMinWidth           () const;
+		int        getMaxWidth           () const;
+		int        getMinHeight          () const;
+		int        getMaxHeight          () const;
+		int        getWidth              () const;
+		int        getHeight             () const;
+		void       setTitle              (const char *title);
+		int        getScaleFactor        () const;
+		scalerType getScaleMethod        () const;
+		void       setScaling            (int newScaleFactor, scalerType newScaleMethod);
+		bool       isFullscreen          () const;
+
+		void       moviePlayback         (bool status);
+
+		void       update                (SDL_Event *event);
+		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
+
+		void       clearScreen           (int index);
 
 	private:
+		void       findResolutions ();
+		void       expose          ();
+		void       commonDeinit    ();
+
 #if OJ_SDL2
 		SDL_Window*   window; ///< Output window
 		SDL_Renderer* renderer; ///< Output renderer
@@ -97,52 +132,24 @@ class Video {
 		int           maxH; ///< Largest possible height
 		int           screenW; ///< Real width
 		int           screenH; ///< Real height
-#ifdef SCALE
 		int           scaleFactor; ///< Scaling factor
-#endif
+		scalerType    scaleMethod; ///< Filtering
 		bool          fullscreen; ///< Full-screen mode
 		bool          isPlayingMovie;
-
-		void findResolutions ();
-		void expose          ();
-
-	public:
-		Video ();
-
-		bool       init                  (SetupOptions cfg);
-		void       deinit                ();
-		bool       reset                 (int width, int height);
-		void       commonDeinit          ();
-
-		void       setPalette            (SDL_Color *palette);
-		SDL_Color* getPalette            ();
-		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
-		void       restoreSurfacePalette (SDL_Surface *surface);
-
-		int        getMinWidth           ();
-		int        getMaxWidth           ();
-		int        getMinHeight          ();
-		int        getMaxHeight          ();
-		int        getWidth              ();
-		int        getHeight             ();
-		void       setTitle              (const char *title);
-#ifdef SCALE
-		int        getScaleFactor        ();
-		int        setScaleFactor        (int newScaleFactor);
-#endif
-#ifndef FULLSCREEN_ONLY
-		bool       isFullscreen          ();
-#endif
-
-		void       moviePlayback         (bool status);
-
-		void       update                (SDL_Event *event);
-		void       flip                  (int mspf, PaletteEffect* paletteEffects = NULL, bool effectsStopped = false);
-
-		void       clearScreen           (int index);
-
 };
 
+// Inline functions
+
+inline SDL_Color* Video::getPalette () const { return currentPalette; } ///< Returns the current display palette.
+inline int Video::getMinWidth () const { return minW; } ///< Returns the minimum possible screen width.
+inline int Video::getMaxWidth () const { return maxW; } ///< Returns the maximum possible screen width.
+inline int Video::getMinHeight () const { return minH; } ///< Returns the minimum possible screen height.
+inline int Video::getMaxHeight () const { return maxH; } ///< Returns the maximum possible screen height.
+inline int Video::getWidth () const { return screenW; } ///< Returns the current width of the window or screen.
+inline int Video::getHeight () const { return screenH; } ///< Returns the current height of the window or screen.
+inline int Video::getScaleFactor () const { return scaleFactor;} ///< Returns the current scaling factor.
+inline scalerType Video::getScaleMethod () const { return scaleMethod; } ///< Returns the current scaling method.
+inline bool Video::isFullscreen () const { return fullscreen; } ///< Determines whether or not full-screen mode is being used.
 
 // Variables
 
@@ -152,8 +159,8 @@ EXTERN int          canvasH; ///< Drawing surface height
 
 EXTERN Video video; ///< Video output
 
-
-// Functions
+// Free functions
+// TODO: createSurface and drawRect should be part of the class, since using palette and canvas
 
 EXTERN SDL_Surface* createSurface     (unsigned char* pixels, int width, int height);
 EXTERN void         drawRect          (int x, int y, int width, int height, int index, bool fill = true);

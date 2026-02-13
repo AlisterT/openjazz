@@ -14,6 +14,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -51,7 +52,6 @@ Setup::Setup () {
 	characterCols[3] = CHAR_WBAND;
 
 	// defaults
-	scale2x = true;
 	manyBirds = false;
 	leaveUnneeded = true;
 	slowMotion = false;
@@ -75,7 +75,7 @@ Setup::~Setup () {
 SetupOptions Setup::load () {
 
 	File* file;
-	SetupOptions cfg = { false, 0, 0, false, 0 };
+	SetupOptions cfg = { false, 0, 0, false, 0, scalerType::None };
 #ifdef FULLSCREEN_ONLY
 	cfg.fullScreen = true;
 #endif
@@ -95,7 +95,7 @@ SetupOptions Setup::load () {
 	}
 
 	// Check that the config file has the correct version
-	if (file->loadChar() != 6) {
+	if (file->loadChar() != 7) {
 
 		LOG_WARN("Valid configuration file not found.");
 		delete file;
@@ -107,15 +107,19 @@ SetupOptions Setup::load () {
 	// Read video settings
 	cfg.videoWidth = file->loadShort(MAX_SCREEN_WIDTH);
 	cfg.videoHeight = file->loadShort(MAX_SCREEN_HEIGHT);
-	int vOpt = file->loadChar();
-#ifndef FULLSCREEN_ONLY
-	cfg.fullScreen = vOpt & 1;
+
+#ifdef FULLSCREEN_ONLY
+	file->loadChar(); // skip
+#else
+	cfg.fullScreen = file->loadChar();
 #endif
-#ifdef SCALE
-	if (vOpt >= 10) vOpt = 2;
-	cfg.videoScale = vOpt >> 1;
-#endif
-	(void)vOpt;
+
+	unsigned int scaleOpt = file->loadChar();
+	cfg.videoScale = CLAMP(scaleOpt, MIN_SCALE, MAX_SCALE);
+
+	scaleOpt = file->loadChar();
+	cfg.scaleMethod = static_cast<scalerType>(CLAMP(scaleOpt, +scalerType::None, +scalerType::hqx));
+
 	cfg.valid = true;
 
 	// Read controls
@@ -166,7 +170,6 @@ SetupOptions Setup::load () {
 	setup.manyBirds = ((opt & 1) != 0);
 	setup.leaveUnneeded = ((opt & 2) != 0);
 	setup.slowMotion = ((opt & 4) != 0);
-	setup.scale2x = ((opt & 8) == 0);
 
 	delete file;
 
@@ -182,7 +185,6 @@ void Setup::save () {
 
 	File *file;
 	int count;
-	int videoScale;
 
 	// Open config file
 	try {
@@ -206,22 +208,20 @@ void Setup::save () {
 
 
 	// Write the version number
-	file->storeChar(6);
+	file->storeChar(7);
 
 	// Write video settings
 	file->storeShort(video.getWidth());
 	file->storeShort(video.getHeight());
-#ifdef SCALE
-	videoScale = video.getScaleFactor();
-#else
-	videoScale = 1;
-#endif
-	videoScale <<= 1;
-#ifndef FULLSCREEN_ONLY
-	videoScale |= video.isFullscreen()? 1: 0;
-#endif
-	file->storeChar(videoScale);
 
+#ifdef FULLSCREEN_ONLY
+	file->storeChar(1);
+#else
+	file->storeChar(video.isFullscreen()? 1: 0);
+#endif
+
+	file->storeChar(video.getScaleFactor());
+	file->storeChar(+video.getScaleMethod());
 
 	// Write controls
 	for (count = 0; count < CONTROLS - 4; count++)
@@ -265,7 +265,6 @@ void Setup::save () {
 	if (setup.manyBirds) count |= 1;
 	if (setup.leaveUnneeded) count |= 2;
 	if (setup.slowMotion) count |= 4;
-	if (!setup.scale2x) count |= 8;
 
 	file->storeChar(count);
 

@@ -85,13 +85,14 @@ int Menu::message (const char* text) {
 /**
  * Let the user select from a menu of the given options.
  *
+ * @param title Optional title, can be nullptr
  * @param optionNames Array of option names
  * @param options The number of options (and size of the names array)
  * @param chosen Which option is selected
  *
  * @return Error code
  */
-int Menu::generic (const char** optionNames, int options, int& chosen) {
+int Menu::generic (const char *title, const char** optionNames, int options, int& chosen) {
 
 	int x, y, count;
 
@@ -139,6 +140,9 @@ int Menu::generic (const char** optionNames, int options, int& chosen) {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
+
+		if(title)
+			fontmn2->showString(title, (canvasW >> 2), (canvasH >> 1) - 80);
 
 		for (count = 0; count < options; count++) {
 

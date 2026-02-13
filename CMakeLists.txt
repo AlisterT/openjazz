@@ -200,15 +200,11 @@ endif()
 # scaling
 
 set(SCALE_STATUS "Disabled")
-cmake_dependent_option(SCALE "Allow scaling" ON "OJ_ALLOW_SCALE;LEGACY_SDL" OFF)
+cmake_dependent_option(SCALE "Allow scaling" ON "OJ_ALLOW_SCALE" OFF)
 if(SCALE)
-	set(SCALE_STATUS "Enabled, scale2x")
+	set(SCALE_STATUS "Enabled")
 	target_compile_definitions(OpenJazz PRIVATE SCALE)
-	target_link_libraries(OpenJazz scale2x)
 	add_subdirectory(ext/scale2x)
-elseif(NOT LEGACY_SDL)
-	# FIXME: add codepath for gpu scaling
-	set(SCALE_STATUS "Disabled (currently broken in SDL2 port)")
 endif()
 
 option(ENABLE_JJ2 "Enable experimental Episode 2 support (not recommended)" OFF)

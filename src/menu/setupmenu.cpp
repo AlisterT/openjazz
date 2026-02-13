@@ -37,7 +37,7 @@
 #include "util.h"
 #include "platforms/platforms.h"
 
-
+#ifndef NO_KEYBOARD_CFG
 /**
  * Run the keyboard setup menu.
  *
@@ -95,6 +95,8 @@ int SetupMenu::setupKeyboard () {
 
 		video.clearScreen(0);
 
+		fontmn2->showString("KEYBOARD CONFIGURATION", (canvasW >> 2), (canvasH >> 1) - 80);
+
 		for (count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
@@ -124,8 +126,9 @@ int SetupMenu::setupKeyboard () {
 	return E_NONE;
 
 }
+#endif
 
-
+#ifndef NO_CONTROLLER_CFG
 /**
  * Run the joystick setup menu.
  *
@@ -282,6 +285,8 @@ int SetupMenu::setupJoystick () {
 
 		video.clearScreen(0);
 
+		fontmn2->showString("JOYSTICK CONFIGURATION", (canvasW >> 2), (canvasH >> 1) - 80);
+
 		for (int count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
@@ -308,26 +313,89 @@ int SetupMenu::setupJoystick () {
 	return E_NONE;
 
 }
+#endif
 
-
+#if !defined(NO_RESIZE) || defined(SCALE)
 /**
- * Run the resolution setup menu.
+ * Run the resolution/scaling setup menu.
  *
  * @return Error code
  */
-int SetupMenu::setupResolution () {
-
-    int widthOptions[] = {SW, 352, 384, 400, 480, 512, 640, 720, 768, 800, 960,
-        1024, 1152, 1280, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3200,
-        3440, 3840, 4096, MAX_SCREEN_WIDTH};
-    int heightOptions[] = {SH, 240, 288, 300, 320, 384, 400, 480, 576, 600, 720,
-        768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
-        2048, 2160, MAX_SCREEN_HEIGHT};
+int SetupMenu::setupVideo () {
+	int widthOptions[] = {SW, 352, 384, 400, 480, 512, 640, 720, 768, 800, 960,
+	    1024, 1152, 1280, 1366, 1400, 1440, 1600, 1680, 1920, 2048, 2560, 3200,
+	    3440, 3840, 4096, MAX_SCREEN_WIDTH};
+	int heightOptions[] = {SH, 240, 288, 300, 320, 384, 400, 480, 576, 600, 720,
+	    768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
+	    2048, 2160, MAX_SCREEN_HEIGHT};
+	const char *methodString[4] = { "nearest", "bilinear", "scalex", "hqx"};
+	int scaleFactor = video.getScaleFactor();
+	scalerType scaleMethod = video.getScaleMethod();
 	int screenW, screenH, oldscreenW, oldscreenH, x, y;
 	screenW = oldscreenW = video.getWidth();
 	screenH = oldscreenH = video.getHeight();
-	bool dimension = false;
+	int selection = 0;
 	bool resOK = true;
+
+	char scaleString[3] = "Yx";
+	bool fillScaleString = true;
+	char resString[12] = "XXXX x YYYY";
+	bool fillResString = true;
+
+	// helpers
+	auto changeWidth = [&] (bool isPositive) {
+		int count = 0;
+		if(isPositive && (screenW < video.getMaxWidth())) {
+			while (screenW >= widthOptions[count])
+				count++;
+
+			screenW = widthOptions[count];
+		} else if (!isPositive && (screenW > video.getMinWidth())) {
+			count = sizeof(widthOptions)/sizeof(widthOptions[0]) - 1;
+			while (screenW <= widthOptions[count])
+				count--;
+
+			screenW = widthOptions[count];
+		}
+	};
+	auto changeHeight = [&] (bool isPositive) {
+		int count = 0;
+		if(isPositive && (screenH < video.getMaxHeight())) {
+			while (screenH >= heightOptions[count])
+				count++;
+
+			screenH = heightOptions[count];
+		} else if (!isPositive && (screenH > video.getMinHeight())) {
+			count = sizeof(heightOptions)/sizeof(heightOptions[0]) - 1;
+			while (screenH <= heightOptions[count])
+				count--;
+
+			screenH = heightOptions[count];
+		}
+	};
+	auto changeScaleFactor = [&] (bool isPositive) {
+		if(isPositive && scaleFactor < MAX_SCALE)
+			scaleFactor++;
+		else if (!isPositive && scaleFactor > MIN_SCALE)
+			scaleFactor--;
+	};
+	auto changeScaleMethod = [&] (bool isPositive) {
+		//if (isPositive && scaleMethod != scalerType::hqx) // TODO
+		if (isPositive && scaleMethod != scalerType::Bilinear)
+			scaleMethod = static_cast<scalerType>(+scaleMethod + 1);
+		else if(!isPositive && scaleMethod != scalerType::None)
+			scaleMethod = static_cast<scalerType>(+scaleMethod - 1);
+	};
+
+	auto switchPalette = [] (bool activate) {
+		if(activate)
+			fontmn2->mapPalette(240, 8, 114, 16);
+		else
+			fontmn2->restorePalette();
+	};
+
+	// sanitize
+	scaleFactor = CLAMP(scaleFactor, MIN_SCALE, MAX_SCALE);
 
 	while (true) {
 
@@ -341,8 +409,7 @@ int SetupMenu::setupResolution () {
 				&& controls.wasCursorReleased())
 				return E_NONE;
 
-			dimension = (x >= (canvasW >> 2) + 44);
-
+			// TODO: selection
 		}
 
 		SDL_Delay(T_MENU_FRAME);
@@ -356,186 +423,116 @@ int SetupMenu::setupResolution () {
 		drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
 		drawRect(0, canvasH - 32, 32, 32, 79);
 
+		fontmn2->showString("VIDEO OPTIONS", (canvasW >> 2), (canvasH >> 1) - 80);
 
-		// X
-		fontmn2->showString("x", (canvasW >> 2) + 40, canvasH >> 1);
+		// Game Resolution
+		if(fillResString) {
+			snprintf(resString, sizeof(resString), "%d x %d", canvasW, canvasH);
+			fillResString = false;
+		}
+		drawRect((canvasW >> 2) - 3, (canvasH >> 1) - 50, 216, 14, 46);
+		fontmn2->showString("game res:", (canvasW >> 2), (canvasH >> 1) - 48);
+		fontmn2->showString(resString, (canvasW >> 2) + 88, (canvasH >> 1) - 48);
 
-		if (!dimension) fontmn2->mapPalette(240, 8, 114, 16);
+
+		switchPalette(selection == 0);
 
 		// Width
-		fontmn2->showNumber(screenW, (canvasW >> 2) + 32, canvasH >> 1);
+		fontmn2->showString("width:", (canvasW >> 2), (canvasH >> 1) - 16);
+		fontmn2->showNumber(screenW, (canvasW >> 2) + 128, (canvasH >> 1) - 16);
 
-		if (!dimension) fontmn2->restorePalette();
-		else fontmn2->mapPalette(240, 8, 114, 16);
+		switchPalette(selection == 1);
 
 		// Height
-		fontmn2->showNumber(screenH, (canvasW >> 2) + 104, canvasH >> 1);
+		fontmn2->showString("height:", (canvasW >> 2), canvasH >> 1);
+		fontmn2->showNumber(screenH, (canvasW >> 2) + 128, canvasH >> 1);
 
-		if (dimension) fontmn2->restorePalette();
+		switchPalette(selection == 2);
 
+		// Factor
+		if(fillScaleString) {
+			snprintf(scaleString, sizeof(scaleString), "%dx", scaleFactor);
+			fillScaleString = false;
+		}
+		fontmn2->showString("scale:", (canvasW >> 2), (canvasH >> 1) + 16);
+		fontmn2->showString(scaleString, (canvasW >> 2) + 88, (canvasH >> 1) + 16);
 
-		int count = 0;
+		switchPalette(selection == 3);
 
-		if (controls.release(C_LEFT)) dimension = !dimension;
+		// Method
+		fontmn2->showString("method:", (canvasW >> 2), (canvasH >> 1) + 32);
+		fontmn2->showString(methodString[+scaleMethod], (canvasW >> 2) + 88, (canvasH >> 1) + 32);
 
-		if (controls.release(C_RIGHT)) dimension = !dimension;
+		switchPalette(false);
 
 		if (controls.release(C_UP)) {
-
-			if ((!dimension) && (screenW < video.getMaxWidth())) {
-
-				while (screenW >= widthOptions[count]) count++;
-
-				screenW = widthOptions[count];
-
-			}
-
-			if (dimension && (screenH < video.getMaxHeight())) {
-
-				while (screenH >= heightOptions[count]) count++;
-
-				screenH = heightOptions[count];
-
-			}
-
-			resOK = true;
-
+			if(selection > 0)
+				selection--;
+			else
+				selection = 3;
 		}
 
 		if (controls.release(C_DOWN)) {
-
-			if ((!dimension) && (screenW > video.getMinWidth())) {
-
-				count = sizeof(widthOptions)/sizeof(widthOptions[0]) - 1;
-
-				while (screenW <= widthOptions[count]) count--;
-
-				screenW = widthOptions[count];
-
-			}
-
-			if (dimension && (screenH > video.getMinHeight())) {
-
-				count = sizeof(heightOptions)/sizeof(heightOptions[0]) - 1;
-
-				while (screenH <= heightOptions[count]) count--;
-
-				screenH = heightOptions[count];
-
-			}
-
-			resOK = true;
-
+			if(selection < 3)
+				selection++;
+			else
+				selection = 0;
 		}
 
-		// Check for a resolution change
-		if (screenH != oldscreenH || screenW != oldscreenW) {
+		bool hasPressedRight = controls.release(C_RIGHT);
+		if (controls.release(C_LEFT) || hasPressedRight) {
+			switch(selection) {
+			case 0:
+				changeWidth(hasPressedRight);
+				break;
+			case 1:
+				changeHeight(hasPressedRight);
+				break;
+			case 2:
+				changeScaleFactor(hasPressedRight);
+				fillScaleString = true;
+				break;
+			case 3:
+				changeScaleMethod(hasPressedRight);
+				break;
+			}
+			resOK = true;
+		}
+
+		// Check for a resolution or scaling change
+		if (screenH != oldscreenH || screenW != oldscreenW ||
+			scaleFactor != video.getScaleFactor() || scaleMethod != video.getScaleMethod()) {
 
 			fontmn2->showString(resOK ? "press enter to apply" : "invalid resolution!",
-				(canvasW >> 2) - 32, (canvasH >> 1) + 16);
+				(canvasW >> 2), (canvasH >> 1) + 56);
 
-		}
+			// Apply resolution change
+			if (controls.release(C_ENTER)) {
+				playConfirmSound();
 
-		// Apply resolution change
-		if (controls.release(C_ENTER)) {
+				if (video.reset(screenW, screenH)) {
+					// New resolution is ok
+					oldscreenW = screenW;
+					oldscreenH = screenH;
 
-			playConfirmSound();
+					video.setScaling(scaleFactor, scaleMethod);
+					scaleFactor = video.getScaleFactor();
+					scaleMethod = video.getScaleMethod();
 
-			if (video.reset(screenW, screenH)) {
-
-				// New resolution is ok
-				oldscreenW = screenW;
-				oldscreenH = screenH;
-
-			} else {
-
-				// It failed, reset to sanity
-				video.reset(oldscreenW, oldscreenH);
-				resOK = false;
-
+					fillResString = true;
+					fillScaleString = true;
+				} else {
+					// It failed, reset to sanity
+					video.reset(oldscreenW, oldscreenH);
+					resOK = false;
+				}
 			}
-
-		}
-
-
-		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
-
-	}
-
-	return E_NONE;
-
-}
-
-
-#ifdef SCALE
-/**
- * Run the scaling setup menu.
- *
- * @return Error code
- */
-int SetupMenu::setupScaling () {
-
-	int scaleFactor, x, y;
-
-	scaleFactor = video.getScaleFactor();
-
-	if ( scaleFactor < MIN_SCALE || scaleFactor > MAX_SCALE )
-		scaleFactor = 1;
-
-	while (true) {
-
-		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
-
-		if (controls.release(C_ESCAPE)) return E_NONE;
-
-		if (controls.release(C_ENTER)) return E_NONE;
-
-		if (controls.getCursor(x, y) &&
-			(x >= 32) && (x < 132) && (y >= canvasH - 12) &&
-			controls.wasCursorReleased()) return E_NONE;
-
-		SDL_Delay(T_MENU_FRAME);
-
-		video.clearScreen(0);
-
-
-		// Show screen corners
-		drawRect(0, 0, 32, 32, 79);
-		drawRect(canvasW - 32, 0, 32, 32, 79);
-		drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
-		drawRect(0, canvasH - 32, 32, 32, 79);
-
-
-
-		fontmn2->mapPalette(240, 8, 114, 16);
-
-		// Scale
-		fontmn2->showNumber(video.getScaleFactor(), (canvasW >> 2) + 32, canvasH >> 1);
-
-		// X
-		fontmn2->showString("x", (canvasW >> 2) + 40, canvasH >> 1);
-
-		fontmn2->restorePalette();
-
-
-		if ((controls.release(C_DOWN) || controls.release(C_LEFT)) && (scaleFactor > MIN_SCALE)) scaleFactor--;
-
-		if ((controls.release(C_UP) || controls.release(C_RIGHT)) && (scaleFactor < MAX_SCALE)) scaleFactor++;
-
-		// Check for a scaling change
-		if (scaleFactor != video.getScaleFactor()) {
-
-			playConfirmSound();
-			scaleFactor = video.setScaleFactor(scaleFactor);
-
 		}
 
 		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
-
 	}
 
 	return E_NONE;
-
 }
 #endif
 
@@ -545,7 +542,7 @@ int SetupMenu::setupScaling () {
  *
  * @return Error code
  */
-int SetupMenu::setupSound () {
+int SetupMenu::setupAudio () {
 
 	int x, y;
 	bool soundActive;
@@ -577,6 +574,8 @@ int SetupMenu::setupSound () {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
+
+		fontmn2->showString("AUDIO OPTIONS", (canvasW >> 2), (canvasH >> 1) - 80);
 
 		// Music Volume
 		if (!soundActive) fontmn2->mapPalette(240, 8, 114, 16);
@@ -630,13 +629,13 @@ int SetupMenu::setupSound () {
  */
 int SetupMenu::setupMain () {
 
-	const char* setupOptions[7] = {"character", "keyboard", "joystick", "resolution", "scaling", "sound", "gameplay"};
+	const char* setupOptions[6] = {"character", "keyboard", "joystick", "video", "audio", "gameplay"};
 	const char* setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
 	const char* setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_GREY, PC_RED, PC_ORANGE, PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
-	const char* setupModsOff[4] = {"slow motion: off", "extra items: take", "bird limit: one", "scaling: nearest"};
-	const char* setupModsOn[4] = {"slow motion: on", "extra items: leave", "bird limit: no", "scaling: filtered" };
-	const char* setupMods[4];
+	const char* setupModsOff[3] = {"slow motion: off", "extra items: take", "bird limit: one" };
+	const char* setupModsOn[3] = {"slow motion: on", "extra items: leave", "bird limit: no" };
+	const char* setupMods[3];
 	int ret;
 	int option, suboption, subsuboption;
 
@@ -645,13 +644,12 @@ int SetupMenu::setupMain () {
 	setupMods[0] = (setup.slowMotion? setupModsOn[0]: setupModsOff[0]);
 	setupMods[1] = (setup.leaveUnneeded? setupModsOn[1]: setupModsOff[1]);
 	setupMods[2] = (setup.manyBirds? setupModsOn[2]: setupModsOff[2]);
-	setupMods[3] = (setup.scale2x? setupModsOn[3]: setupModsOff[3]);
 
 	video.setPalette(menuPalette);
 
 	while (true) {
 
-		ret = generic(setupOptions, 7, option);
+		ret = generic("SETUP OPTIONS", setupOptions, 6, option);
 
 		if (ret == E_RETURN) return E_NONE;
 		if (ret < 0) return ret;
@@ -664,7 +662,7 @@ int SetupMenu::setupMain () {
 
 				while (true) {
 
-					ret = generic(setupCharacterOptions, 5, suboption);
+					ret = generic("CHARACTER OPTIONS", setupCharacterOptions, 5, suboption);
 
 					if (ret == E_QUIT) return E_QUIT;
 					if (ret < 0) break;
@@ -680,7 +678,7 @@ int SetupMenu::setupMain () {
 						default: // Character colour
 
 							subsuboption = 0;
-							ret = generic(setupCharacterColOptions, 8, subsuboption);
+							ret = generic(nullptr, setupCharacterColOptions, 8, subsuboption);
 
 							if (ret == E_QUIT) return E_QUIT;
 
@@ -717,37 +715,27 @@ int SetupMenu::setupMain () {
 
 			case 3:
 
-#ifdef NO_RESIZE
+#if defined(NO_RESIZE) && !defined(SCALE)
 				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
 #else
-				if (setupResolution() == E_QUIT) return E_QUIT;
+				if (setupVideo() == E_QUIT) return E_QUIT;
 #endif
 
 				break;
 
 			case 4:
 
-#ifndef SCALE
-				if (message("FEATURE NOT AVAILABLE") == E_QUIT) return E_QUIT;
-#else
-				if (setupScaling() == E_QUIT) return E_QUIT;
-#endif
+				if (setupAudio() == E_QUIT) return E_QUIT;
 
 				break;
 
 			case 5:
 
-				if (setupSound() == E_QUIT) return E_QUIT;
-
-				break;
-
-			case 6:
-
 				suboption = 0;
 
 				while (true) {
 
-					ret = generic(setupMods, 4, suboption);
+					ret = generic("GAME OPTIONS", setupMods, 3, suboption);
 
 					if (ret == E_QUIT) return E_QUIT;
 					if (ret < 0) break;
@@ -760,7 +748,6 @@ int SetupMenu::setupMain () {
 					setup.slowMotion = (setupMods[0] == setupModsOn[0]);
 					setup.leaveUnneeded = (setupMods[1] == setupModsOn[1]);
 					setup.manyBirds = (setupMods[2] == setupModsOn[2]);
-					setup.scale2x = (setupMods[3] == setupModsOn[3]);
 
 				}
 

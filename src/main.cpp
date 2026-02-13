@@ -15,6 +15,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -222,7 +223,8 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 		// Invalid config - apply defaults
 		config.videoWidth = DEFAULT_SCREEN_WIDTH;
 		config.videoHeight = DEFAULT_SCREEN_HEIGHT;
-		config.videoScale = 1;
+		config.videoScale = MIN_SCALE;
+		config.scaleMethod = scalerType::None;
 
 	}
 

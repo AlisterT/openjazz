@@ -782,7 +782,7 @@ int GameMenu::newGame () {
 
 		video.setPalette(menuPalette);
 
-		int ret = generic(newGameOptions, 6, option);
+		int ret = generic(nullptr, newGameOptions, 6, option);
 
 		if (ret == E_QUIT) return E_QUIT;
 		if (ret < 0) return E_NONE;

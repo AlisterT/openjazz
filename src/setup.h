@@ -12,6 +12,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2013 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -34,6 +35,7 @@ struct SetupOptions {
 	int videoHeight;
 	bool fullScreen;
 	int videoScale;
+	scalerType scaleMethod;
 };
 
 
@@ -48,7 +50,6 @@ class Setup {
 		bool          manyBirds;
 		bool          leaveUnneeded;
 		bool          slowMotion;
-		bool          scale2x;
 
 		Setup  ();
 		~Setup ();

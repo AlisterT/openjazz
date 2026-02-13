@@ -12,6 +12,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -47,7 +48,7 @@ class Menu {
 	protected:
 		void showEscString ();
 		int  message       (const char* text);
-		int  generic       (const char** optionNames, int options, int& chosen);
+		int  generic       (const char* title, const char** optionNames, int options, int& chosen);
 		int  textInput     (const char* request, char*& text, bool ip = false);
 
 };
@@ -95,16 +96,19 @@ class GameMenu : public Menu {
 class SetupMenu : public Menu {
 
 	private:
-		int setupKeyboard   ();
-		int setupJoystick   ();
-		int setupResolution ();
-#ifdef SCALE
-		int setupScaling    ();
+#ifndef NO_KEYBOARD_CFG
+		int setupKeyboard ();
 #endif
-		int setupSound      ();
+#ifndef NO_CONTROLLER_CFG
+		int setupJoystick ();
+#endif
+#if !defined(NO_RESIZE) || defined(SCALE)
+		int setupVideo    ();
+#endif
+		int setupAudio    ();
 
 	public:
-		int setupMain ();
+		int setupMain     ();
 
 };
 

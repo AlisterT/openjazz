@@ -11,7 +11,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
- * Copyright (c) 2015-2023 Carsten Teibes
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -54,6 +54,16 @@
 #define MUL(x, y) (((x) * (y)) >> 10) ///< multiplication
 #define DIV(x, y) (((x) << 10) / (y)) ///< division
 
+// For boundary checking, TODO: use std::clamp with c++17
+#define CLAMP(v, l, h) (((v) < (l)) ? (l) : (((v) > (h)) ? (h) : (v)))
+
+// For easier conversion of strongly typed enums
+#define MAKE_ENUM_CLASS(name, ...) \
+	enum class name : unsigned { __VA_ARGS__ }; \
+	inline constexpr unsigned operator+ (name const val) noexcept { \
+		return static_cast<unsigned>(val); \
+	}
+
 // Datatypes
 
 typedef int fixed; ///< Custom fixed-point data type
@@ -61,5 +71,12 @@ typedef int fixed; ///< Custom fixed-point data type
 namespace SE {
 	enum Type : int; ///< Sound Index type
 }
+
+MAKE_ENUM_CLASS(scalerType,
+	None,
+	Bilinear,
+	Scale2x,
+	hqx
+);
 
 #endif

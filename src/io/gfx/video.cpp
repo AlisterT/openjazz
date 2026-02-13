@@ -14,6 +14,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -41,7 +42,7 @@
 /**
  * Creates a surface.
  *
- * @param pixels Pixel data to copy into the surface. Can be NULL.
+ * @param pixels Pixel data to copy into the surface. Can be nullptr.
  * @param width Width of the pixel data and of the surface to be created
  * @param height Height of the pixel data and of the surface to be created
  *
@@ -49,14 +50,18 @@
  */
 SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 
+	// Create the surface
+	SDL_Surface *ret = nullptr;
 #if OJ_SDL2
-	int surfaceFlag = 0; // flags are unused
+	ret = SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, SDL_PIXELFORMAT_INDEX8);
 #else
-	int surfaceFlag = SDL_HWSURFACE;
+	ret = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 #endif
 
-	// Create the surface
-	SDL_Surface *ret = SDL_CreateRGBSurface(surfaceFlag, width, height, 8, 0, 0, 0, 0);
+	if(!ret) {
+		LOG_FATAL("Could not create surface: %s", SDL_GetError());
+		return nullptr;
+	}
 
 	// Set the surface's palette
 	video.restoreSurfacePalette(ret);
@@ -82,16 +87,15 @@ SDL_Surface* createSurface (unsigned char * pixels, int width, int height) {
 /**
  * Create the video output object.
  */
-Video::Video () {
+Video::Video () :
+#if OJ_SDL2
+	window(nullptr), renderer(nullptr), texture(nullptr), textureSurface(nullptr),
+#endif
+	screen(nullptr), scaleFactor(MIN_SCALE), scaleMethod(scalerType::None),
+	fullscreen(false), isPlayingMovie(false) {
 
-	screen = NULL;
 	minW = maxW = screenW = DEFAULT_SCREEN_WIDTH;
 	minH = maxH = screenH = DEFAULT_SCREEN_HEIGHT;
-#ifdef SCALE
-	scaleFactor = 1;
-#endif
-	fullscreen = false;
-	isPlayingMovie = false;
 
 	// Generate the logical palette
 	for (int i = 0; i < MAX_PALETTE_COLORS; i++)
@@ -117,11 +121,10 @@ void Video::findResolutions () {
 	// no need to sanitize
 	return;
 #elif OJ_SDL2
-	SDL_DisplayMode mode;
-
 	minW = SW;
 	minH = SH;
 
+	SDL_DisplayMode mode;
 	if (SDL_GetDesktopDisplayMode(SDL_GetWindowDisplayIndex(window), &mode) >= 0) {
 		maxW = mode.w;
 		maxH = mode.h;
@@ -132,7 +135,7 @@ void Video::findResolutions () {
 		maxH = DEFAULT_SCREEN_HEIGHT;
 	}
 #else
-	SDL_Rect **resolutions = SDL_ListModes(NULL, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
+	SDL_Rect **resolutions = SDL_ListModes(nullptr, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
 
 	// All resolutions available, set to arbitrary limit
 	if (resolutions == reinterpret_cast<SDL_Rect**>(-1)) {
@@ -143,7 +146,7 @@ void Video::findResolutions () {
 		maxH = MAX_SCREEN_HEIGHT;
 	} else {
 
-		for (int i = 0; resolutions[i] != NULL; i++) {
+		for (int i = 0; resolutions[i] != nullptr; i++) {
 
 			// Save largest resolution
 			if (i == 0) {
@@ -152,7 +155,7 @@ void Video::findResolutions () {
 			}
 
 			// Save smallest resolution
-			if (resolutions[i + 1] == NULL) {
+			if (resolutions[i + 1] == nullptr) {
 				minW = resolutions[i]->w;
 				minH = resolutions[i]->h;
 			}
@@ -185,15 +188,13 @@ bool Video::init (SetupOptions cfg) {
 	fullscreen = cfg.fullScreen;
 
 #if OJ_SDL2
-	window = SDL_CreateWindow("OpenJazz", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SW, SH, fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP: SDL_WINDOW_RESIZABLE);
+	// The window stays for whole runtime, as it is needed for
+	// e.g. determining desktop resolution
+	window = SDL_CreateWindow("OpenJazz", SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, SW, SH,
+		fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP: SDL_WINDOW_RESIZABLE);
 	if (!window) {
 		LOG_FATAL("Could not create window: %s", SDL_GetError());
-		return false;
-	}
-
-	renderer = SDL_CreateRenderer(window, -1, 0);
-	if (!renderer) {
-		LOG_FATAL("Could not create renderer: %s", SDL_GetError());
 		return false;
 	}
 #endif
@@ -206,6 +207,8 @@ bool Video::init (SetupOptions cfg) {
 	if ((SW * cfg.videoScale <= cfg.videoWidth) &&
 		(SH * cfg.videoScale <= cfg.videoHeight))
 		scaleFactor = cfg.videoScale;
+
+	scaleMethod = cfg.scaleMethod;
 #endif
 
 	if (!reset(cfg.videoWidth, cfg.videoHeight)) {
@@ -213,11 +216,12 @@ bool Video::init (SetupOptions cfg) {
 		return false;
 	}
 
-	setTitle(NULL);
+	setTitle(nullptr);
 
 	return true;
 
 }
+
 
 /**
  * Shared Deinitialisation code for reset() and deinit()
@@ -227,23 +231,28 @@ void Video::commonDeinit () {
 	// canvas is used when scaling or built with SDL2
 	if (canvas != screen && canvas) {
 		SDL_FreeSurface(canvas);
-		canvas = NULL;
+		canvas = nullptr;
 	}
 
 #if OJ_SDL2
 	if(screen) {
 		SDL_FreeSurface(screen);
-		screen = NULL;
+		screen = nullptr;
 	}
 
 	if(textureSurface) {
 		SDL_FreeSurface(textureSurface);
-		textureSurface = NULL;
+		textureSurface = nullptr;
 	}
 
 	if(texture) {
 		SDL_DestroyTexture(texture);
-		texture = NULL;
+		texture = nullptr;
+	}
+
+	if(renderer) {
+		SDL_DestroyRenderer(renderer);
+		renderer = nullptr;
 	}
 #endif
 }
@@ -257,17 +266,11 @@ void Video::deinit () {
 	commonDeinit();
 
 #if OJ_SDL2
-	if(renderer) {
-		SDL_DestroyRenderer(renderer);
-		renderer = NULL;
-	}
-
 	if(window) {
 		SDL_DestroyWindow(window);
-		window = NULL;
+		window = nullptr;
 	}
 #endif
-
 }
 
 /**
@@ -294,15 +297,30 @@ bool Video::reset (int width, int height) {
 	commonDeinit();
 
 	// If video mode is not valid reset to low default
-	if (screenW < minW || screenW > maxW || screenH< minH || screenH > maxH) {
+	if (screenW < minW || screenW > maxW || screenH < minH || screenH > maxH) {
 		LOG_WARN("Video mode invalid, resetting.");
 		screenW = minW;
 		screenH = minH;
 	}
 
 #if OJ_SDL2
+	// Let the renderer scale the texture
+	switch(scaleMethod) {
+		case scalerType::Bilinear:
+			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+			break;
+		default:
+			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+			break;
+	}
+
+	renderer = SDL_CreateRenderer(window, -1, 0);
+	if (!renderer) {
+		LOG_FATAL("Could not create renderer: %s", SDL_GetError());
+		return false;
+	}
+
 	SDL_SetWindowSize(window, screenW, screenH);
-	SDL_RenderSetLogicalSize(renderer, screenW, screenH);
 	SDL_SetWindowFullscreen(window, fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP: 0);
 #else
 	screen = SDL_SetVideoMode(screenW, screenH, 8, fullscreen? FULLSCREEN_FLAGS: WINDOWED_FLAGS);
@@ -311,31 +329,29 @@ bool Video::reset (int width, int height) {
 
 #ifdef SCALE
 	// sanitize
-	if (scaleFactor < 1) scaleFactor = 1;
-	if (scaleFactor > 4) scaleFactor = 4;
+	scaleFactor = CLAMP(scaleFactor, MIN_SCALE, MAX_SCALE);
 
 	// Check that the scale will fit in the current resolution
-	while ( ((screenW/SW < scaleFactor) || (screenH/SH < scaleFactor)) && (scaleFactor > 1) ) {
-
+	while ( ((screenW/SW < scaleFactor) || (screenH/SH < scaleFactor))
+		&& (scaleFactor > MIN_SCALE) ) {
 		scaleFactor--;
-
 	}
 
-	if (scaleFactor > 1) {
-
+	if (scaleFactor > MIN_SCALE) {
+		// Do scaling
 		canvasW = screenW / scaleFactor;
 		canvasH = screenH / scaleFactor;
-		canvas = createSurface(NULL, canvasW, canvasH);
+		canvas = createSurface(nullptr, canvasW, canvasH);
 
 	} else
 #endif
 	{
-
+		// No scaling
 		canvasW = screenW;
 		canvasH = screenH;
 
 #if OJ_SDL2
-		canvas = createSurface(NULL, canvasW, canvasH);
+		canvas = createSurface(nullptr, canvasW, canvasH);
 #else
 		canvas = screen;
 #endif
@@ -343,10 +359,26 @@ bool Video::reset (int width, int height) {
 	}
 
 #if OJ_SDL2
-	screen = SDL_CreateRGBSurfaceFrom(canvas->pixels, canvasW, canvasH, canvas->format->BitsPerPixel, canvas->pitch,
-		                              canvas->format->Rmask, canvas->format->Gmask, canvas->format->Bmask, canvas->format->Amask);
+	int renderW = canvasW;
+	int renderH = canvasH;
 
-	Uint32 format = SDL_PIXELFORMAT_RGB888;
+#if SCALE
+	// Do prescaling (scaleX, hqx)
+	if(scaleMethod != scalerType::None && scaleMethod != scalerType::Bilinear) {
+		renderW = screenW;
+		renderH = screenH;
+	}
+#endif
+	SDL_RenderSetLogicalSize(renderer, renderW, renderH);
+
+	Uint32 format = SDL_MasksToPixelFormatEnum(canvas->format->BitsPerPixel,
+		canvas->format->Rmask, canvas->format->Gmask, canvas->format->Bmask, canvas->format->Amask);
+	LOG_TRACE("Screen surface is using '%s' pixel format", SDL_GetPixelFormatName(format));
+	screen = SDL_CreateRGBSurfaceWithFormatFrom(canvas->pixels, canvasW, canvasH,
+		canvas->format->BitsPerPixel, canvas->pitch, format);
+
+	// Find a suitable renderer/texture format
+	format = SDL_PIXELFORMAT_RGB888;
 	SDL_RendererInfo info;
 	if (SDL_GetRendererInfo(renderer, &info) >= 0) {
 		for (Uint32 i = 0; i < info.num_texture_formats; i++) {
@@ -356,14 +388,16 @@ bool Video::reset (int width, int height) {
 			}
 		}
 	}
+	LOG_TRACE("Renderer is using '%s' pixel format", SDL_GetPixelFormatName(format));
 
-	texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, canvasW, canvasH);
+	// Create texture with compatible surface for pixel data upload (likely 32 bit)
+	texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, renderW, renderH);
 	if (!texture) {
 		LOG_ERROR("Could not create texture: %s", SDL_GetError());
 		return false;
 	}
 
-	textureSurface = SDL_CreateRGBSurfaceWithFormat(SDL_SWSURFACE, canvasW, canvasH, SDL_BITSPERPIXEL(format), format);
+	textureSurface = SDL_CreateRGBSurfaceWithFormat(0, renderW, renderH, SDL_BITSPERPIXEL(format), format);
 	if (!textureSurface) {
 		LOG_ERROR("Could not create surface: %s", SDL_GetError());
 		return false;
@@ -394,19 +428,6 @@ void Video::setPalette (SDL_Color *palette) {
 	currentPalette = palette;
 
 }
-
-
-/**
- * Returns the current display palette.
- *
- * @return The current display palette
- */
-SDL_Color* Video::getPalette () {
-
-	return currentPalette;
-
-}
-
 
 /**
  * Sets some colours of the display palette.
@@ -439,93 +460,23 @@ void Video::restoreSurfacePalette (SDL_Surface* surface) {
 
 
 /**
- * Returns the minimum possible screen width.
- *
- * @return The minimum width
- */
-int Video::getMinWidth () {
-
-	return minW;
-
-}
-
-/**
- * Returns the maximum possible screen width.
- *
- * @return The maximum width
- */
-int Video::getMaxWidth () {
-
-	return maxW;
-
-}
-
-/**
- * Returns the minimum possible screen height.
- *
- * @return The minimum height
- */
-int Video::getMinHeight () {
-
-	return minH;
-
-}
-
-
-/**
- * Returns the maximum possible screen height.
- *
- * @return The maximum height
- */
-int Video::getMaxHeight () {
-
-	return maxH;
-
-}
-
-
-/**
- * Returns the current width of the window or screen.
- *
- * @return The width
- */
-int Video::getWidth () {
-
-	return screenW;
-
-}
-
-
-/**
- * Returns the current height of the window or screen.
- *
- * @return The height
- */
-int Video::getHeight () {
-
-	return screenH;
-
-}
-
-
-/**
  * Sets the window title.
  *
- * @param the title or NULL, to use default
+ * @param the title or nullptr, to use default
  */
 void Video::setTitle (const char *title) {
 
 	const char titleBase[] = "OpenJazz";
 	int titleLen = strlen(titleBase) + 1;
 
-	if (title != NULL) {
+	if (title != nullptr) {
 		titleLen = strlen(titleBase) + 3 + strlen(title) + 1;
 	}
 
 	char *windowTitle = new char[titleLen];
 	strcpy(windowTitle, titleBase);
 
-	if (title != NULL) {
+	if (title != nullptr) {
 		strcat(windowTitle, " - ");
 		strcat(windowTitle, title);
 	}
@@ -533,7 +484,7 @@ void Video::setTitle (const char *title) {
 #if OJ_SDL2
 	SDL_SetWindowTitle(window, windowTitle);
 #else
-	SDL_WM_SetCaption(windowTitle, NULL);
+	SDL_WM_SetCaption(windowTitle, nullptr);
 #endif
 
 	delete[] windowTitle;
@@ -541,51 +492,30 @@ void Video::setTitle (const char *title) {
 }
 
 
-#ifdef SCALE
 /**
- * Returns the current scaling factor.
- *
- * @return The scaling factor
- */
-int Video::getScaleFactor () {
-
-	return scaleFactor;
-
-}
-
-
-/**
- * Sets the scaling factor.
+ * Sets the scaling factor and method.
  *
  * @param newScaleFactor The new scaling factor
+ * @param newScaleMethod The new scaling method
  */
-int Video::setScaleFactor (int newScaleFactor) {
+void Video::setScaling (int newScaleFactor, scalerType newScaleMethod) {
+	bool reset_needed = false;
 
 	if ((SW * newScaleFactor <= screenW) && (SH * newScaleFactor <= screenH)) {
-
+		reset_needed = (scaleFactor != newScaleFactor);
 		scaleFactor = newScaleFactor;
-
-		if (screen) reset(screenW, screenH);
-
 	}
 
-	return scaleFactor;
+	if(scaleMethod != newScaleMethod) {
+		scaleMethod = newScaleMethod;
+		reset_needed = true;
+	}
 
+	if(reset_needed) {
+		if (screen)
+			reset(screenW, screenH);
+	}
 }
-#endif
-
-#ifndef FULLSCREEN_ONLY
-/**
- * Determines whether or not full-screen mode is being used.
- *
- * @return Whether or not full-screen mode is being used
- */
-bool Video::isFullscreen () {
-
-	return fullscreen;
-
-}
-#endif
 
 
 /**
@@ -664,11 +594,12 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 
 	SDL_Color shownPalette[MAX_PALETTE_COLORS];
 
-#ifdef SCALE
+#if defined(SCALE) && !OJ_SDL2
+	// for SDL1.2 scale 8 bit canvas surface
 	if (canvas != nullptr && canvas != screen) {
 
 		// Copy everything that has been drawn so far
-		if (setup.scale2x)
+		if (scaleMethod == scalerType::Scale2x)
 			scale(scaleFactor,
 				screen->pixels, screen->pitch,
 				canvas->pixels, canvas->pitch,
@@ -687,9 +618,26 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 		changePalette(shownPalette, 0, MAX_PALETTE_COLORS);
 	}
 
-	// Show what has been drawn
+
 #if OJ_SDL2
-	SDL_BlitSurface(screen, nullptr, textureSurface, nullptr);
+#ifdef SCALE
+	if(scaleFactor > MIN_SCALE && scaleMethod == scalerType::Scale2x) {
+		// scale 32 bit screen surface
+		scale(scaleFactor,
+			textureSurface->pixels, textureSurface->pitch,
+			screen->pixels, screen->pitch,
+			screen->format->BytesPerPixel, screen->w, screen->h);
+	} else if (scaleFactor > MIN_SCALE && scaleMethod == scalerType::hqx) {
+			// TODO
+	} else {
+#endif
+		// copy unscaled
+		SDL_BlitSurface(screen, nullptr, textureSurface, nullptr);
+#ifdef SCALE
+	}
+#endif
+
+	// Show what has been drawn
 	SDL_UpdateTexture(texture, nullptr, textureSurface->pixels, textureSurface->pitch);
 	SDL_RenderClear(renderer);
 	if (isPlayingMovie) {
@@ -715,11 +663,11 @@ void Video::clearScreen (int index) {
 
 #if defined(CAANOO) || defined(WIZ) || defined(GP2X) || defined(GAMESHELL)
 	// always 240 lines cleared to black
-	memset(video.screen->pixels, index, 320*240);
+	memset(screen->pixels, index, 320*240);
 #elif defined (__3DS__)
-	memset(video.screen->pixels, index, 400*240);
+	memset(screen->pixels, index, 400*240);
 #else
-	SDL_FillRect(canvas, NULL, index);
+	SDL_FillRect(canvas, nullptr, index);
 #endif
 
 }

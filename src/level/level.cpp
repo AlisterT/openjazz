@@ -16,6 +16,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -216,12 +217,9 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 	// Draw graphics statistics
 
 	if (stats & S_SCREEN) {
-
-#ifdef SCALE
-		if (video.getScaleFactor() > 1)
+		if (video.getScaleFactor() > MIN_SCALE)
 			drawRect(canvasW - 84, 11, 80, 37, bg);
 		else
-#endif
 			drawRect(canvasW - 84, 11, 80, 25, bg);
 
 		panelBigFont->showNumber(video.getWidth(), canvasW - 52, 14);
@@ -230,16 +228,11 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 		panelBigFont->showString("fps", canvasW - 76, 26);
 		panelBigFont->showNumber((int)smoothfps, canvasW - 12, 26);
 
-#ifdef SCALE
-		if (video.getScaleFactor() > 1) {
-
+		if (video.getScaleFactor() > MIN_SCALE) {
 			panelBigFont->showNumber(canvasW, canvasW - 52, 38);
 			panelBigFont->showString("x", canvasW - 48, 39);
 			panelBigFont->showNumber(canvasH, canvasW - 12, 38);
-
 		}
-#endif
-
 	}
 
 	// Draw player list
