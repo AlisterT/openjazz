@@ -380,11 +380,25 @@ int SetupMenu::setupVideo () {
 			scaleFactor--;
 	};
 	auto changeScaleMethod = [&] (bool isPositive) {
-		//if (isPositive && scaleMethod != scalerType::hqx) // TODO
-		if (isPositive && scaleMethod != scalerType::Bilinear)
+		// TODO
+#if 0
+		if (isPositive && scaleMethod != scalerType::hqx)
 			scaleMethod = static_cast<scalerType>(+scaleMethod + 1);
 		else if(!isPositive && scaleMethod != scalerType::None)
 			scaleMethod = static_cast<scalerType>(+scaleMethod - 1);
+#else
+	#if OJ_SDL3 || OJ_SDL2
+	if(scaleMethod != scalerType::None)
+		scaleMethod = scalerType::None;
+	else
+		scaleMethod = scalerType::Bilinear;
+	#else
+	if(scaleMethod != scalerType::None)
+		scaleMethod = scalerType::None;
+	else
+		scaleMethod = scalerType::Scale2x;
+	#endif
+#endif
 	};
 
 	auto switchPalette = [] (bool activate) {
