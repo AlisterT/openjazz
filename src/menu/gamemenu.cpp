@@ -68,7 +68,7 @@ GameMenu::GameMenu (File *file) {
 	// Load the difficulty graphics
 	file->loadPalette(menuPalette);
 	difficultyScreen = file->loadSurface(SW, SH);
-	enableColorKey(difficultyScreen, 0);
+	video.enableColorKey(difficultyScreen, 0);
 
 	// Load the episode pictures (max. 10 episodes + bonus level)
 
@@ -99,7 +99,7 @@ GameMenu::GameMenu (File *file) {
 			for (; i < MAX_EPISODES; i++) {
 
 				unsigned char pixel = 0;
-				episodeScreens[i] = createSurface(&pixel, 1, 1);
+				episodeScreens[i] = video.createSurface(&pixel, 1, 1);
 
 			}
 
@@ -117,9 +117,10 @@ GameMenu::GameMenu (File *file) {
  */
 GameMenu::~GameMenu () {
 
-	for (int i = 0; i < MAX_EPISODES; i++) SDL_FreeSurface(episodeScreens[i]);
+	for (int i = 0; i < MAX_EPISODES; i++)
+		video.destroySurface(episodeScreens[i]);
 
-	SDL_FreeSurface(difficultyScreen);
+	video.destroySurface(difficultyScreen);
 
 	delete fileMenu;
 
@@ -552,7 +553,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		delete[] check;
 
 		if (exists[count]) video.restoreSurfacePalette(episodeScreens[count]);
-		else setLogicalPalette(episodeScreens[count], greyPalette, 0, MAX_PALETTE_COLORS);
+		else video.setSurfacePalette(episodeScreens[count], greyPalette, 0, MAX_PALETTE_COLORS);
 
 	}
 
@@ -635,7 +636,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 				// black on white
 				fontmn2->mapPalette(240, 8, 79, -80);
-				drawRect(episodeX - 2, (canvasH >> 1) + (count << 4) - 94,
+				video.drawRect(episodeX - 2, (canvasH >> 1) + (count << 4) - 94,
 					160, 15, 79);
 
 			} else if (!exists[count])

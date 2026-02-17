@@ -63,6 +63,7 @@ command line argument.
 ## Authors
 
 Original author: AJ Thomson (alister_j_t at yahoo dot com)
+Current Maintainer: Carsten Teibes (dev f4ke de)
 
 [Additional Authors](res/unix/OpenJazz.6.adoc#authors) (See manual)
 

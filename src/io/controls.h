@@ -17,15 +17,11 @@
  *
  */
 
-#ifndef _INPUT_H
-#define _INPUT_H
-
+#ifndef OJ_CONTROLS_H
+#define OJ_CONTROLS_H
 
 #include "loop.h"
 #include "OpenJazz.h"
-
-#include <SDL.h>
-
 
 // Constants
 
@@ -57,6 +53,8 @@
 
 
 // Class
+
+union SDL_Event;
 
 /// Keeps track of all control input
 class Controls {
@@ -116,6 +114,9 @@ class Controls {
 
 	public:
 		Controls ();
+
+		void init();
+		void deinit();
 
 		void setKey           (int control, int key);
 		void setButton        (int control, int button);

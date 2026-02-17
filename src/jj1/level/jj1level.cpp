@@ -101,9 +101,9 @@ JJ1Level::JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi) :
  */
 void JJ1Level::deletePanel () {
 
-	SDL_FreeSurface(panel);
+	video.destroySurface(panel);
 	for (int i = 0; i < 6; i++)
-		SDL_FreeSurface(panelAmmo[i]);
+		video.destroySurface(panelAmmo[i]);
 
 }
 
@@ -131,7 +131,7 @@ JJ1Level::~JJ1Level () {
 
 	delete[] spriteSet;
 
-	SDL_FreeSurface(tileSet);
+	video.destroySurface(tileSet);
 
 	deletePanel();
 

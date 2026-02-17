@@ -23,11 +23,34 @@
  *
  */
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
 
 #include "controls.h"
 #include "gfx/video.h"
 #include "platforms/platforms.h"
 #include "loop.h"
+
+#if !OJ_SDL3
+	// Define some stuff to be SDL3 compatible
+
+	#define SDLK_P SDLK_p
+	#define SDLK_Y SDLK_y
+	#define SDLK_N SDLK_n
+
+	#define SDL_EVENT_JOYSTICK_BUTTON_DOWN SDL_JOYBUTTONDOWN
+	#define SDL_EVENT_JOYSTICK_BUTTON_UP SDL_JOYBUTTONUP
+	#define SDL_EVENT_JOYSTICK_BUTTON_UP SDL_JOYBUTTONUP
+	#define SDL_EVENT_JOYSTICK_AXIS_MOTION SDL_JOYAXISMOTION
+	#define SDL_EVENT_JOYSTICK_HAT_MOTION SDL_JOYHATMOTION
+	#define SDL_EVENT_MOUSE_BUTTON_DOWN SDL_MOUSEBUTTONDOWN
+	#define SDL_EVENT_MOUSE_BUTTON_UP SDL_MOUSEBUTTONUP
+	#define SDL_EVENT_MOUSE_MOTION SDL_MOUSEMOTION
+	#define SDL_BUTTON_MASK SDL_BUTTON
+#endif
 
 /* Default Keyboard config */
 #ifndef DEFAULT_KEY_UP
@@ -64,13 +87,13 @@
 	#define DEFAULT_KEY_STATS   (SDLK_F9)
 #endif
 #ifndef DEFAULT_KEY_PAUSE
-	#define DEFAULT_KEY_PAUSE   (SDLK_p)
+	#define DEFAULT_KEY_PAUSE   (SDLK_P)
 #endif
 #ifndef DEFAULT_KEY_YES
-	#define DEFAULT_KEY_YES     (SDLK_y)
+	#define DEFAULT_KEY_YES     (SDLK_Y)
 #endif
 #ifndef DEFAULT_KEY_NO
-	#define DEFAULT_KEY_NO      (SDLK_n)
+	#define DEFAULT_KEY_NO      (SDLK_N)
 #endif
 
 /* These are optional */
@@ -251,6 +274,21 @@ Controls::Controls () {
 
 }
 
+void Controls::init() {
+#if OJ_SDL3
+	if(SDL_HasJoystick()) SDL_OpenJoystick(0);
+#else
+	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
+#endif
+}
+
+void Controls::deinit() {
+#if OJ_SDL3
+	if(SDL_HasJoystick()) SDL_CloseJoystick(0);
+#else
+	if (SDL_NumJoysticks() > 0) SDL_JoystickClose(0);
+#endif
+}
 
 /**
  * Set the key to use for the specified control.
@@ -428,9 +466,17 @@ int Controls::update (SDL_Event *event, LoopType type) {
 	count = CONTROLS;
 
 	switch (event->type) {
+#if OJ_SDL3
+		case SDL_EVENT_KEY_DOWN:
+			if (type == SET_KEY_LOOP) return event->key.key;
 
+			for (count = 0; count < CONTROLS; count++)
+				if (event->key.key == (unsigned int)keys[count].key)
+					keys[count].pressed = true;
+
+			if (type == TYPING_LOOP) return event->key.key;
+#else
 		case SDL_KEYDOWN:
-
 			if (type == SET_KEY_LOOP) return event->key.keysym.sym;
 
 			for (count = 0; count < CONTROLS; count++)
@@ -438,19 +484,25 @@ int Controls::update (SDL_Event *event, LoopType type) {
 					keys[count].pressed = true;
 
 			if (type == TYPING_LOOP) return event->key.keysym.sym;
+#endif
 
 			break;
 
+#if OJ_SDL3
+		case SDL_EVENT_KEY_UP:
+			for (count = 0; count < CONTROLS; count++)
+				if (event->key.key == (unsigned int)keys[count].key)
+					keys[count].pressed = false;
+#else
 		case SDL_KEYUP:
-
 			for (count = 0; count < CONTROLS; count++)
 				if (event->key.keysym.sym == keys[count].key)
 					keys[count].pressed = false;
+#endif
 
 			break;
 
-		case SDL_JOYBUTTONDOWN:
-
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 			if (type == SET_JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
 
 			for (count = 0; count < CONTROLS; count++)
@@ -459,16 +511,14 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 			break;
 
-		case SDL_JOYBUTTONUP:
-
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
 			for (count = 0; count < CONTROLS; count++)
 				if (event->jbutton.button == buttons[count].button)
 					buttons[count].pressed = false;
 
 			break;
 
-		case SDL_JOYAXISMOTION:
-
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
 			if (type == SET_JOYSTICK_LOOP) {
 
 				if (event->jaxis.value < -16384)
@@ -492,8 +542,7 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 			break;
 
-		case SDL_JOYHATMOTION:
-
+		case SDL_EVENT_JOYSTICK_HAT_MOTION:
 			if (type == SET_JOYSTICK_LOOP) {
 
 				switch(event->jhat.value) {
@@ -520,18 +569,13 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 			break;
 
-		case SDL_MOUSEMOTION:
-
-			if (event->motion.state & SDL_BUTTON(1)) {
-
+		case SDL_EVENT_MOUSE_MOTION:
+			if(event->motion.state & SDL_BUTTON_MASK(1))
 				setCursor(event->motion.x, event->motion.y, true);
-
-			}
 
 			break;
 
-		case SDL_MOUSEBUTTONDOWN:
-
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			if (event->button.button == SDL_BUTTON_LEFT) {
 
 				setCursor(event->button.x, event->button.y, true);
@@ -548,8 +592,7 @@ int Controls::update (SDL_Event *event, LoopType type) {
 
 			break;
 
-		case SDL_MOUSEBUTTONUP:
-
+		case SDL_EVENT_MOUSE_BUTTON_UP:
 			if (event->button.button == SDL_BUTTON_LEFT) {
 
 				setCursor(event->button.x, event->button.y, false);

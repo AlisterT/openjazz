@@ -97,7 +97,7 @@ JJ1SceneAnimation::JJ1SceneAnimation (int id) :
 	sceneFrames(nullptr), lastFrame(nullptr), background(nullptr),
 	id(id), frames(0), reverseAnimation(0) {
 
-	scratch = createSurface(nullptr, SW, SH);
+	scratch = video.createSurface(nullptr, SW, SH);
 }
 
 
@@ -116,14 +116,8 @@ JJ1SceneAnimation::~JJ1SceneAnimation () {
 		}
 	}
 
-	if (background) {
-		SDL_FreeSurface(background);
-		background = nullptr;
-	}
-	if (scratch) {
-		SDL_FreeSurface(scratch);
-		scratch = nullptr;
-	}
+	video.destroySurface(background);
+	video.destroySurface(scratch);
 }
 
 
@@ -140,10 +134,7 @@ JJ1SceneImage::JJ1SceneImage (int id) :
  * Delete the JJ1 cutscene image.
  */
 JJ1SceneImage::~JJ1SceneImage () {
-	if (image) {
-		SDL_FreeSurface(image);
-		image = nullptr;
-	}
+	video.destroySurface(image);
 }
 
 

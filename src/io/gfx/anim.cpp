@@ -28,6 +28,11 @@
 
 #include "jj1/level/jj1level.h"
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
 
 /**
  * Create empty animation.

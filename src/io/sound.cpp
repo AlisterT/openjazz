@@ -27,7 +27,11 @@
 #include "util.h"
 #include "io/log.h"
 #include "platforms/platforms.h"
-#include <SDL_audio.h>
+#if OJ_SDL3
+	#include <SDL3/SDL_audio.h>
+#else
+	#include <SDL_audio.h>
+#endif
 #include <psmplug.h>
 #include <cassert>
 
@@ -84,27 +88,35 @@ namespace {
 	char *currentMusic = nullptr;
 	MusicTempo musicTempo = MusicTempo::NORMAL;
 
-	#if OJ_SDL2
+	#if OJ_SDL3
+	SDL_AudioStream *audioStream = nullptr;
+	#elif OJ_SDL2
 	SDL_AudioDeviceID audioDevice = 0;
 	#endif
 
 	// Helpers
 
 	void LockAudio() {
-	#if OJ_SDL2
+	#if OJ_SDL3
+		// not needed
+		//SDL_LockAudioStream();
+	#elif OJ_SDL2
 		SDL_LockAudioDevice(audioDevice);
 	#else
 		SDL_LockAudio();
 	#endif
 	}
 	void UnlockAudio() {
-	#if OJ_SDL2
+	#if OJ_SDL3
+		// not needed
+		//SDL_UnlockAudioStream();
+	#elif OJ_SDL2
 		SDL_UnlockAudioDevice(audioDevice);
 	#else
 		SDL_UnlockAudio();
 	#endif
 	}
-	#if !OJ_SDL2
+	#if !OJ_SDL3 && !OJ_SDL2
 	int SDL_AUDIO_BITSIZE(int format) {
 		if (format == AUDIO_U8 || audioSpec.format == AUDIO_S8)
 			return 8;
@@ -153,7 +165,10 @@ namespace {
 			}
 
 			// Add the next portion of the sound clip to the audio stream
-	#if OJ_SDL2
+	#if OJ_SDL3
+			SDL_MixAudio(stream, sounds[i].data + position, audioSpec.format, length,
+				soundVolume / (float)MAX_VOLUME);
+	#elif OJ_SDL2
 			SDL_MixAudioFormat(stream, sounds[i].data + position, audioSpec.format,
 				length, soundVolume * SDL_MIX_MAXVOLUME / MAX_VOLUME);
 	#else
@@ -162,13 +177,35 @@ namespace {
 	#endif
 		}
 	}
+
+	#if OJ_SDL3
+	void wrapperAudioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int /* total_amount */) {
+		if (additional_amount > 0) {
+			Uint8 *data = SDL_stack_alloc(Uint8, additional_amount);
+			if (data) {
+				// call old function
+				audioCallback(userdata, data, additional_amount);
+				SDL_PutAudioStreamData(stream, data, additional_amount);
+				SDL_stack_free(data);
+			}
+		}
+	}
+	#endif
 }
 
 /**
  * Initialise audio.
  */
 void openAudio () {
+	bool audioOk = false;
+
 	// Set up SDL audio
+#if OJ_SDL3
+	audioSpec = { SDL_AUDIO_S16, 2, SOUND_FREQ };
+	audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+		&audioSpec, wrapperAudioCallback, nullptr);
+	audioOk = (audioStream != nullptr);
+#else
 	SDL_AudioSpec asDesired = {};
 	asDesired.freq = SOUND_FREQ;
 	asDesired.format = AUDIO_S16SYS;
@@ -177,9 +214,7 @@ void openAudio () {
 	asDesired.callback = audioCallback;
 	asDesired.userdata = nullptr;
 
-	bool audioOk = false;
-
-#if OJ_SDL2
+	#if OJ_SDL2
 	audioDevice = SDL_OpenAudioDevice(nullptr, 0, &asDesired, &audioSpec,
 		SDL_AUDIO_ALLOW_ANY_CHANGE);
 
@@ -192,8 +227,9 @@ void openAudio () {
 		audioDevice = SDL_OpenAudioDevice(nullptr, 0, &asDesired, &audioSpec, 0);
 	}
 	audioOk = (audioDevice != 0);
-#else
+	#else
 	audioOk = (SDL_OpenAudio(&asDesired, &audioSpec) == 0);
+	#endif
 #endif
 
 	if(!audioOk) {
@@ -201,14 +237,21 @@ void openAudio () {
 		return;
 	}
 
+#if OJ_SDL3
+	LOG_DEBUG("Opened %dHz Audio at %d bit, %d channels",
+		audioSpec.freq, SDL_AUDIO_BITSIZE(audioSpec.format), audioSpec.channels);
+#else
 	LOG_DEBUG("Opened %dHz Audio at %d bit, %d channels with %d samples",
 		audioSpec.freq, SDL_AUDIO_BITSIZE(audioSpec.format), audioSpec.channels, audioSpec.samples);
+#endif
 
 	// Load sounds
 	soundsLoaded = loadSounds("SOUNDS.000");
 
 	// Start audio for sfx to work
-#if OJ_SDL2
+#if OJ_SDL3
+	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audioStream));
+#elif OJ_SDL2
 	SDL_PauseAudioDevice(audioDevice, 0);
 #else
 	SDL_PauseAudio(0);
@@ -222,7 +265,10 @@ void openAudio () {
 void closeAudio () {
 	stopMusic();
 
-#if OJ_SDL2
+#if OJ_SDL3
+	SDL_CloseAudioDevice(SDL_GetAudioStreamDevice(audioStream));
+	SDL_DestroyAudioStream(audioStream);
+#elif OJ_SDL2
 	SDL_CloseAudioDevice(audioDevice);
 	audioDevice = 0;
 #else

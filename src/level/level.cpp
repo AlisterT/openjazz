@@ -218,9 +218,9 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 	if (stats & S_SCREEN) {
 		if (video.getScaleFactor() > MIN_SCALE)
-			drawRect(canvasW - 84, 11, 80, 37, bg);
+			video.drawRect(canvasW - 84, 11, 80, 37, bg);
 		else
-			drawRect(canvasW - 84, 11, 80, 25, bg);
+			video.drawRect(canvasW - 84, 11, 80, 25, bg);
 
 		panelBigFont->showNumber(video.getWidth(), canvasW - 52, 14);
 		panelBigFont->showString("x", canvasW - 48, 14);
@@ -245,7 +245,7 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 			if (panelBigFont->getStringWidth(players[count].getName()) > width)
 				width = panelBigFont->getStringWidth(players[count].getName());
 
-		drawRect((canvasW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, bg);
+		video.drawRect((canvasW >> 1) - 48, 11, width + 57, (nPlayers * 12) + 1, bg);
 
 		for (count = 0; count < nPlayers; count++) {
 
@@ -265,7 +265,7 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		// Draw the menu
 
-		drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 54, 144, 108, bg);
+		video.drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 54, 144, 108, bg);
 
 		menuOptions[1] = difficultyOptions[game->getDifficulty()];
 
@@ -275,7 +275,7 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 			if ((multiplayer && count >= 2 && count <= 4) || count == 2) {
 
-				drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
+				video.drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
 
 			}
 

@@ -24,9 +24,6 @@
 
 #include "OpenJazz.h"
 
-#include <SDL.h>
-
-
 // Constants
 
 // Types of palette effect
@@ -42,6 +39,8 @@
 
 
 // Class
+
+struct SDL_Color;
 
 /// Palette effect base class
 class PaletteEffect {

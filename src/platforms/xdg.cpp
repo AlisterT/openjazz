@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include <sys/stat.h>
+#include <cstdlib>
 
 #include "util.h"
 #include "io/file.h"

@@ -33,6 +33,12 @@
 #include <unistd.h>
 #include <miniz.h>
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
+
 #if !(defined(_WIN32) || defined(WII) || defined(PSP))
     #define UPPERCASE_FILENAMES
     #define LOWERCASE_FILENAMES
@@ -508,7 +514,7 @@ SDL_Surface* File::loadSurface (int width, int height, bool checkSize) {
 
 	pixels = loadRLE(width * height, checkSize);
 
-	surface = createSurface(pixels, width, height);
+	surface = video.createSurface(pixels, width, height);
 
 	delete[] pixels;
 

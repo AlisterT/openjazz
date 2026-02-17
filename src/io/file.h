@@ -23,12 +23,15 @@
 
 
 #include "OpenJazz.h"
+#include "io/gfx/video.h"
 
-#include <SDL.h>
 #include <stdio.h>
 #include <memory>
 
 // Classes
+
+struct SDL_Surface;
+struct SDL_Color;
 
 /// File i/o
 class File {

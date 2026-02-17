@@ -239,7 +239,7 @@ void JJ1Level::draw () {
 	vY = FTOI(viewY);
 	dst.w = canvasW;
 	dst.h = viewH;
-	SDL_SetClipRect(canvas, &dst);
+	video.setClipRect(canvas, &dst);
 
 
 	// Set tile drawing dimensions
@@ -257,7 +257,7 @@ void JJ1Level::draw () {
 		else bgScale = ((canvasH - 34) / 100) + 1;
 
 		for (y = 0; y < viewH; y += bgScale)
-			drawRect(0, y, canvasW, bgScale, 156 + (y / bgScale));
+			video.drawRect(0, y, canvasW, bgScale, 156 + (y / bgScale));
 
 
 		// Show sun / moon / etc.
@@ -288,7 +288,7 @@ void JJ1Level::draw () {
 
 			if ((x + ITOT(vX) >= 256) || (y + ITOT(vY) >= 64)) {
 
-				drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
+				video.drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
 
 				continue;
 
@@ -299,7 +299,7 @@ void JJ1Level::draw () {
 
 			// If this tile uses a black background, draw it
 			if (ge->bg)
-				drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
+				video.drawRect(TTOI(x) - (vX & 31), TTOI(y) - (vY & 31), 32, 32, LEVEL_BLACK);
 
 
 			// If this is not a foreground tile, draw it
@@ -375,10 +375,10 @@ void JJ1Level::draw () {
 	}
 
 	// FIXME: Temporary lines showing the water level
-	drawRect(0, FTOI(waterLevel - viewY), canvasW, 2, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 3, canvasW, 1, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 24);
-	drawRect(0, FTOI(waterLevel - viewY) + 10, canvasW, 1, 24);
+	video.drawRect(0, FTOI(waterLevel - viewY), canvasW, 2, 24);
+	video.drawRect(0, FTOI(waterLevel - viewY) + 3, canvasW, 1, 24);
+	video.drawRect(0, FTOI(waterLevel - viewY) + 6, canvasW, 1, 24);
+	video.drawRect(0, FTOI(waterLevel - viewY) + 10, canvasW, 1, 24);
 
 	// Show active guardian's energy bar
 	if (events) events->drawEnergy(ticks);
@@ -390,7 +390,7 @@ void JJ1Level::draw () {
 
 	// Show panel
 
-	SDL_SetClipRect(canvas, NULL);
+	video.setClipRect(canvas, NULL);
 
 	if (ammoOffset != 0) {
 
@@ -414,7 +414,7 @@ void JJ1Level::draw () {
 	dst.x = 0;
 	dst.y = canvasH - 33;
 	SDL_BlitSurface(panel, NULL, canvas, &dst);
-	drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
+	video.drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
 
 
 	// Show panel data
@@ -501,7 +501,7 @@ void JJ1Level::draw () {
 		else if (x <= 1) x = 32 + (((ticks / 75) * 4) & 15);
 
 		// Draw energy bar
-		drawRect(dst.x, canvasH - 13, dst.w, 7, x);
+		video.drawRect(dst.x, canvasH - 13, dst.w, 7, x);
 
 		dst.x += dst.w;
 		dst.w = 64 - dst.w;
@@ -510,6 +510,6 @@ void JJ1Level::draw () {
 
 
 	// Fill in remaining energy bar space with black
-	drawRect(dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
+	video.drawRect(dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
 
 }

@@ -23,12 +23,12 @@ if(NINTENDO_3DS)
 elseif(NINTENDO_SWITCH)
 	set(SWITCH ON)
 	set(OJ_HOST "Switch")
-	set(OJ_ALLOW_NEW_SDL ON)
+	set(OJ_ALLOW_SDL2 ON)
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
 elseif(NINTENDO_WII)
 	set(WII ON)
 	set(OJ_HOST "Wii")
-	set(OJ_ALLOW_NEW_SDL ON)
+	set(OJ_ALLOW_SDL2 ON)
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
 elseif(HAIKU)
 	add_compile_definitions(_BSD_SOURCE)
@@ -45,15 +45,16 @@ elseif(EMSCRIPTEN)
 elseif(PSP)
 	set(OJ_HOST "PSP")
 	set(OJ_ALLOW_SCALE OFF)
-	set(OJ_ALLOW_NEW_SDL ON)
+	set(OJ_ALLOW_SDL2 ON)
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
 elseif(PSVITA)
 	set(OJ_HOST "PSVita")
-	set(OJ_ALLOW_NEW_SDL ON)
+	set(OJ_ALLOW_SDL2 ON)
 	list(APPEND PLATFORM_LIST ${OJ_HOST})
 elseif(ANDROID)
 	set(OJ_HOST "Android")
-	set(OJ_ALLOW_NEW_SDL TRUE)
+	set(OJ_ALLOW_SDL2 TRUE)
+	#set(OJ_ALLOW_SDL3 TRUE) # TODO
 
 	# requires cpufeatures library
 	#if(ANDROID_ABI STREQUAL "armeabi-v7a")
@@ -137,7 +138,8 @@ endif()
 
 if(${OJ_HOST} STREQUAL "Unknown")
 	set(OJ_HOST ${CMAKE_SYSTEM_NAME})
-	set(OJ_ALLOW_NEW_SDL ON)
+	set(OJ_ALLOW_SDL2 ON)
+	set(OJ_ALLOW_SDL3 ON)
 
 	if(UNIX)
 		# usually we do a system-wide installation
@@ -146,7 +148,8 @@ if(${OJ_HOST} STREQUAL "Unknown")
 endif()
 
 # choose SDL library for Linux/Windows/Mac/etc., but not homebrew platforms
-cmake_dependent_option(LEGACY_SDL "Build for SDL 1.2" OFF "OJ_ALLOW_NEW_SDL" ON)
+cmake_dependent_option(LEGACY_SDL "Build for SDL 1.2" OFF
+	"OJ_ALLOW_SDL2 OR OJ_ALLOW_SDL3" ON)
 
 # Endianess check
 include(TestBigEndian)

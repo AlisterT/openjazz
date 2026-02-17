@@ -62,7 +62,7 @@ MainMenu::MainMenu () {
 
 	} else {
 
-		logo = createSurface(pixels, oj_logo.width, oj_logo.height);
+		logo = video.createSurface(pixels, oj_logo.width, oj_logo.height);
 
 	}
 	delete[] pixels;
@@ -75,7 +75,7 @@ MainMenu::MainMenu () {
 
 	} catch (int e) {
 
-		if (logo) SDL_FreeSurface(logo);
+		video.destroySurface(logo);
 
 		throw;
 
@@ -119,9 +119,9 @@ MainMenu::MainMenu () {
 
 	}
 
-	enableColorKey(background, 0);
-	enableColorKey(highlight, 0);
-	if (logo) enableColorKey(logo, 28);
+	video.enableColorKey(background, 0);
+	video.enableColorKey(highlight, 0);
+	if (logo) video.enableColorKey(logo, 28);
 
 	gameMenu = new GameMenu(file);
 
@@ -135,9 +135,9 @@ MainMenu::MainMenu () {
  */
 MainMenu::~MainMenu () {
 
-	SDL_FreeSurface(background);
-	SDL_FreeSurface(highlight);
-	if (logo) SDL_FreeSurface(logo);
+	video.destroySurface(background);
+	video.destroySurface(highlight);
+	video.destroySurface(logo);
 
 	delete gameMenu;
 

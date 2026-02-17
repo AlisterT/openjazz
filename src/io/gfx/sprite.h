@@ -23,13 +23,12 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
-
 #include "OpenJazz.h"
 
-#include <SDL.h>
-
-
 // Class
+
+struct SDL_Surface;
+struct SDL_Color;
 
 /// Sprite
 class Sprite {

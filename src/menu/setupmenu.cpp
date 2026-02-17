@@ -418,10 +418,10 @@ int SetupMenu::setupVideo () {
 
 
 		// Show screen corners
-		drawRect(0, 0, 32, 32, 79);
-		drawRect(canvasW - 32, 0, 32, 32, 79);
-		drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
-		drawRect(0, canvasH - 32, 32, 32, 79);
+		video.drawRect(0, 0, 32, 32, 79);
+		video.drawRect(canvasW - 32, 0, 32, 32, 79);
+		video.drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
+		video.drawRect(0, canvasH - 32, 32, 32, 79);
 
 		fontmn2->showString("VIDEO OPTIONS", (canvasW >> 2), (canvasH >> 1) - 80);
 
@@ -430,7 +430,7 @@ int SetupMenu::setupVideo () {
 			snprintf(resString, sizeof(resString), "%d x %d", canvasW, canvasH);
 			fillResString = false;
 		}
-		drawRect((canvasW >> 2) - 3, (canvasH >> 1) - 50, 216, 14, 46);
+		video.drawRect((canvasW >> 2) - 3, (canvasH >> 1) - 50, 216, 14, 46);
 		fontmn2->showString("game res:", (canvasW >> 2), (canvasH >> 1) - 48);
 		fontmn2->showString(resString, (canvasW >> 2) + 88, (canvasH >> 1) - 48);
 
@@ -582,14 +582,14 @@ int SetupMenu::setupAudio () {
 		fontmn2->showString("music volume", canvasW >> 2, canvasH >> 1);
 		fontmn2->restorePalette();
 
-		drawRect((canvasW >> 2) + 128, canvasH >> 1, getMusicVolume() >> 1, 11, 175);
+		video.drawRect((canvasW >> 2) + 128, canvasH >> 1, getMusicVolume() >> 1, 11, 175);
 
 		// Sound Volume
 		if (soundActive) fontmn2->mapPalette(240, 8, 114, 16);
 		fontmn2->showString("effect volume", canvasW >> 2, (canvasH >> 1) + 16);
 		fontmn2->restorePalette();
 
-		drawRect((canvasW >> 2) + 128, (canvasH >> 1) + 16, getSoundVolume() >> 1, 11, 175);
+		video.drawRect((canvasW >> 2) + 128, (canvasH >> 1) + 16, getSoundVolume() >> 1, 11, 175);
 
 		if (controls.release(C_UP)) soundActive = !soundActive;
 

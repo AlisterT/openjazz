@@ -25,10 +25,14 @@
 
 
 #include "game/gamemode.h"
-#include "io/file.h"
 
 #include "OpenJazz.h"
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
 
 // Constants
 
@@ -41,6 +45,8 @@
 
 
 // Classes
+
+class File;
 
 /// Menu base class, providing generic menu screens
 class Menu {

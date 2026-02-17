@@ -26,7 +26,11 @@
 #include "paletteeffects.h"
 #include "platforms/platforms.h"
 
-#include <SDL.h>
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
 
 // Constants
 
@@ -54,12 +58,12 @@
 #endif
 
 // Fullscreen and Window flags are only for SDL1.2
-#if OJ_SDL2
+#if OJ_SDL2 || OJ_SDL3
 	#ifdef WINDOWED_FLAGS
-		#pragma message "Ignoring WINDOWED_FLAGS when building with SDL2"
+		#pragma message "Ignoring WINDOWED_FLAGS when not building with SDL 1.2"
 	#endif
 	#ifdef FULLSCREEN_FLAGS
-		#pragma message "Ignoring FULLSCREEN_FLAGS when building with SDL2"
+		#pragma message "Ignoring FULLSCREEN_FLAGS when not building with SDL 1.2"
 	#endif
 #else
 	#ifndef WINDOWED_FLAGS
@@ -72,7 +76,6 @@
 
 // Time interval
 #define T_MENU_FRAME 20
-
 
 // Class
 
@@ -88,7 +91,17 @@ class Video {
 		void       setPalette            (SDL_Color *palette);
 		SDL_Color* getPalette            () const;
 		void       changePalette         (SDL_Color *palette, unsigned char first, unsigned int amount);
-		void       restoreSurfacePalette (SDL_Surface *surface);
+
+		// Surface
+		SDL_Surface* createSurface       (const unsigned char* pixels, int width, int height);
+		void         destroySurface      (SDL_Surface *surface);
+		void         setSurfacePalette   (SDL_Surface *surface, SDL_Color *palette, int start, int length);
+		void         restoreSurfacePalette (SDL_Surface *surface);
+		void         enableColorKey      (SDL_Surface *surface, unsigned int index);
+		unsigned int getColorKey         (SDL_Surface *surface);
+		void         setClipRect         (SDL_Surface *surface, const SDL_Rect *rect);
+
+		void       drawRect              (int x, int y, int width, int height, int index, bool fill = true);
 
 		int        getMinWidth           () const;
 		int        getMaxWidth           () const;
@@ -114,17 +127,24 @@ class Video {
 		void       expose          ();
 		void       commonDeinit    ();
 
-#if OJ_SDL2
+#if OJ_SDL3 || OJ_SDL2
 		SDL_Window*   window; ///< Output window
 		SDL_Renderer* renderer; ///< Output renderer
 		SDL_Texture*  texture; ///< Output texture
+#endif
+#if OJ_SDL2
 		SDL_Surface*  textureSurface;
 #endif
 		SDL_Surface*  screen; ///< Output surface
 
 		// Palettes
 		SDL_Color*    currentPalette; ///< Current palette
+#if OJ_SDL3
+		SDL_Palette*  texturePalette; ///< Screen palette
+		SDL_Palette*  logicalPalette; ///< Logical palette (greyscale)
+#else
 		SDL_Color     logicalPalette[MAX_PALETTE_COLORS]; ///< Logical palette (greyscale)
+#endif
 
 		int           minW; ///< Smallest possible width
 		int           maxW; ///< Largest possible width
@@ -158,14 +178,5 @@ EXTERN int          canvasW; ///< Drawing surface width
 EXTERN int          canvasH; ///< Drawing surface height
 
 EXTERN Video video; ///< Video output
-
-// Free functions
-// TODO: createSurface and drawRect should be part of the class, since using palette and canvas
-
-EXTERN SDL_Surface* createSurface     (unsigned char* pixels, int width, int height);
-EXTERN void         drawRect          (int x, int y, int width, int height, int index, bool fill = true);
-EXTERN void         enableColorKey    (SDL_Surface* surface, unsigned int index);
-EXTERN unsigned int getColorKey       (SDL_Surface* surface);
-EXTERN void         setLogicalPalette (SDL_Surface* surface, SDL_Color *palette, int start, int length);
 
 #endif

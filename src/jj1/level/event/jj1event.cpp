@@ -341,7 +341,7 @@ void JJ1Event::drawEnergy (unsigned int ticks) {
 
 
 		// Bar
-		drawRect(canvasW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
+		video.drawRect(canvasW - 40, hits + 40, 12, 100 - hits, (ticks < flashTime)? 0: 32);
 
 	}
 

@@ -16,6 +16,12 @@
 #include "platform_interface.h"
 #include "platforms.h"
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
+
 IPlatform::~IPlatform() {}
 
 IPlatform* IPlatform::make() {
@@ -55,7 +61,7 @@ void IPlatform::AddGamePaths() {
 #endif
 }
 void IPlatform::ErrorNoDatafiles() {
-#if OJ_SDL2
+#if OJ_SDL3 || OJ_SDL2
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
 		"OpenJazz",
 		"Unable to find game data files. When launching OpenJazz, \n"

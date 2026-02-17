@@ -53,6 +53,12 @@
 #include <cstring>
 #include <argparse.h>
 
+#if !OJ_SDL3
+	// Define some stuff to be SDL3 compatible
+
+	#define SDL_EVENT_QUIT SDL_QUIT
+#endif
+
 #ifndef __SYMBIAN32__
 	#include <math.h>
 #endif
@@ -248,7 +254,7 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	}
 
 
-	if (SDL_NumJoysticks() > 0) SDL_JoystickOpen(0);
+	controls.init();
 
 
 	// Set up audio
@@ -366,7 +372,7 @@ void shutDown () {
 
 	closeAudio();
 
-	if (SDL_NumJoysticks() > 0) SDL_JoystickClose(0);
+	controls.deinit();
 
 	video.deinit();
 
@@ -519,7 +525,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 	// Process system events
 	while (SDL_PollEvent(&event)) {
 
-		if (event.type == SDL_QUIT) return E_QUIT;
+		if (event.type == SDL_EVENT_QUIT) return E_QUIT;
 
 		ret = controls.update(&event, type);
 
@@ -562,6 +568,44 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 }
 
 /**
+ * Shows version information of used SDL library.
+ *
+ */
+void logSDLVersion() {
+#if OJ_SDL3
+	// define a compatible struct
+	struct SDL_version { Uint8 major; Uint8 minor; Uint8 patch; };
+
+	const int compiledVer = SDL_VERSION;
+	const int linkedVer = SDL_GetVersion();
+
+	struct SDL_version compiled = { SDL_VERSIONNUM_MAJOR(compiledVer),
+		SDL_VERSIONNUM_MINOR(compiledVer), SDL_VERSIONNUM_MICRO(compiledVer) };
+	struct SDL_version linked = { SDL_VERSIONNUM_MAJOR(linkedVer),
+		SDL_VERSIONNUM_MINOR(linkedVer), SDL_VERSIONNUM_MICRO(linkedVer) };
+#elif OJ_SDL2
+	SDL_version compiled, linked;
+
+	SDL_VERSION(&compiled);
+	SDL_GetVersion(&linked);
+#else
+	SDL_version compiled, linked;
+
+	SDL_VERSION(&compiled);
+
+	const SDL_version* linkedVer = SDL_Linked_Version();
+	linked.major = linkedVer->major;
+	linked.minor = linkedVer->minor;
+	linked.patch = linkedVer->patch;
+#endif
+
+	LOG_DEBUG("built with SDL %d.%d.%d (running with SDL %d.%d.%d)",
+		compiled.major, compiled.minor, compiled.patch,
+		linked.major, linked.minor, linked.patch);
+}
+
+
+/**
  * Main.
  *
  * Initialises SDL and launches game.
@@ -591,14 +635,18 @@ int main(int argc, char *argv[]) {
 
 	// Initialise SDL
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
-
+	bool sdlOk = false;
+#if OJ_SDL3
+	sdlOk = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+#else
+	sdlOk = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) == 0;
+#endif
+	if (!sdlOk) {
 		LOG_FATAL("Could not start SDL: %s\n", SDL_GetError());
 
 		return -1;
-
 	}
-
+	logSDLVersion();
 
 	// Load configuration and establish a window
 

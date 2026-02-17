@@ -331,7 +331,7 @@ void JJ1Scene::loadAni (JJ1SceneAnimation &scene, File *f, int dataIndex) {
 							unsigned char* frameData = f->loadBlock(size);
 							loadCompactedMem(size, frameData, pixels);
 							delete[] frameData;
-							scene.background = createSurface(pixels, SW, SH);
+							scene.background = video.createSurface(pixels, SW, SH);
 							delete[] pixels;
 
 							// Use the most recently loaded palette
@@ -479,7 +479,7 @@ void JJ1Scene::loadData (File *f) {
 						if (type >= 5 && type <= 7) {
 							f->seek(-5, false); // account for metadata 2 + 2
 							unsigned char* pixels = unpackRLE(f->loadBlock(dataLen), dataLen, width * height + 4);
-							sceneImage.image = createSurface(pixels + 4, width, height);
+							sceneImage.image = video.createSurface(pixels + 4, width, height);
 							delete[] pixels;
 						} else {
 							sceneImage.image = f->loadSurface(width, height, false);

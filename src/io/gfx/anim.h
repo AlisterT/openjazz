@@ -26,12 +26,10 @@
 
 #include "OpenJazz.h"
 
-#include <SDL.h>
-
-
 // Classes
 
 class Sprite;
+struct SDL_Color;
 
 /// Animation
 class Anim {

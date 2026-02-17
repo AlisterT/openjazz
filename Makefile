@@ -13,10 +13,9 @@ ifeq ($(OS),Windows_NT)
 	LIBS += -lws2_32
 endif
 
-# SDL1.2 or SDL2
-SDLCONFIG ?= sdl-config
-CXXFLAGS += $(shell $(SDLCONFIG) --cflags)
-LIBS += $(shell $(SDLCONFIG) --libs)
+# SDL1.2 only
+CXXFLAGS += $(shell sdl-config --cflags) -DOJ_SDL1
+LIBS += $(shell sdl-config --libs)
 
 LIBS += -lm
 
@@ -103,8 +102,9 @@ OpenJazz: $(DEPR) $(OBJS)
 	@$(CXX) -o OpenJazz $(LDFLAGS) $(OBJS) $(LIBS)
 
 $(DEPR):
-	@-echo [WARNING] This Makefile is deprecated! Please use CMake, if possible.
-	@-echo           Report problems at https://github.com/AlisterT/openjazz/issues
+	@-echo "[WARNING] This Makefile is deprecated! Please use CMake, if possible."
+	@-echo "          The old, unmaintained SDL1.2 library is used."
+	@-echo "          Report problems at https://github.com/AlisterT/openjazz/issues"
 	@touch $(DEPR)
 
 %.o: %.cpp

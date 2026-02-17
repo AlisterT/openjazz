@@ -70,7 +70,7 @@ int JJ1Level::loadPanel () {
 
 
 	// Create the panel background
-	panel = createSurface(pixels, SW, 32);
+	panel = video.createSurface(pixels, SW, 32);
 
 
 	// De-scramble the panel's ammo graphics
@@ -81,7 +81,7 @@ int JJ1Level::loadPanel () {
 			for (int x = 0; x < 64; x++)
 				sorted[(y * 64) + x] = pixels[(type * 64 * 32) + (y * 64) + (x >> 2) + ((x & 3) << 4) + (55 * 320)];
 		}
-		panelAmmo[type] = createSurface(sorted, 64, 26);
+		panelAmmo[type] = video.createSurface(sorted, 64, 26);
 	}
 
 	delete[] sorted;
@@ -339,8 +339,8 @@ int JJ1Level::loadTiles (char* fileName) {
 		delete[] pixels[i];
 	}
 
-	tileSet = createSurface(buffer, TTOI(1), TTOI(tiles));
-	enableColorKey(tileSet, TKEY);
+	tileSet = video.createSurface(buffer, TTOI(1), TTOI(tiles));
+	video.enableColorKey(tileSet, TKEY);
 	delete[] buffer;
 
 	return tiles;
@@ -567,7 +567,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	delete[] string;
 
 	if (res < 0) {
-		SDL_FreeSurface(tileSet);
+		video.destroySurface(tileSet);
 		deletePanel();
 		delete font;
 

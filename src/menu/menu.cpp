@@ -318,7 +318,7 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 		x = fontmn2->showString(input, (canvasW >> 2) + 8, canvasH >> 1);
 
 		// Draw the cursor
-		drawRect(x, (canvasH >> 1) + 10, 8, 2, 79);
+		video.drawRect(x, (canvasH >> 1) + 10, 8, 2, 79);
 
 		// Draw the section of text after the cursor
 		input[cursor] = terminate;

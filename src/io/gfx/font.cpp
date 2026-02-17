@@ -102,7 +102,7 @@ Font::Font (const char* fileName) {
 			int height = pixels[2]|pixels[3] << 8;
 
 			if (size - 4 >= width * height) {
-				chars[i] = createSurface(pixels + 4, width, height);
+				chars[i] = video.createSurface(pixels + 4, width, height);
 
 				w = width;
 				h = height;
@@ -123,8 +123,8 @@ Font::Font (const char* fileName) {
 	// Pack all characters in a 128x128 pixels surface
 	int aW = 128;
 	int aH = 128;
-	characterAtlas = createSurface(nullptr, aW, aH);
-	enableColorKey(characterAtlas, 0);
+	characterAtlas = video.createSurface(nullptr, aW, aH);
+	video.enableColorKey(characterAtlas, 0);
 
 	stbrp_context ctx;
 	stbrp_node nodes[aW];
@@ -147,7 +147,7 @@ Font::Font (const char* fileName) {
 	// Delete single char surfaces
 	for (int i = 0; i < nCharacters; i++) {
 		if(rects[i].w > 0 && rects[i].h > 0)
-			SDL_FreeSurface(chars[i]);
+			video.destroySurface(chars[i]);
 	}
 
 	// Create ASCII->font map
@@ -210,7 +210,7 @@ Font::Font (unsigned char* pixels, bool big) {
 			memcpy(chrPixels + (y * charWidth),
 				pixels + (i * charWidth) + (y * SW), charWidth);
 		}
-		chars[i] = createSurface(chrPixels, charWidth, lineHeight);
+		chars[i] = video.createSurface(chrPixels, charWidth, lineHeight);
 
 		// setup sizes for packing
 		rects[i] = { i, charWidth, lineHeight, 0, 0, 0 };
@@ -233,7 +233,7 @@ Font::Font (unsigned char* pixels, bool big) {
 		aH = 4 * lineHeight;
 	}
 
-	characterAtlas = createSurface(nullptr, aW, aH);
+	characterAtlas = video.createSurface(nullptr, aW, aH);
 
 	stbrp_context ctx;
 	stbrp_node nodes[aW];
@@ -254,9 +254,9 @@ Font::Font (unsigned char* pixels, bool big) {
 
 	// Delete single char surfaces
 	for (int i = 0; i < nCharacters; i++)
-		SDL_FreeSurface(chars[i]);
+		video.destroySurface(chars[i]);
 
-	if (big) enableColorKey(characterAtlas, 31);
+	if (big) video.enableColorKey(characterAtlas, 31);
 
 	// Create ASCII->font map
 	if (big) {
@@ -334,7 +334,7 @@ Font::Font (bool bonus) {
 
 		unsigned char *pixels = file->loadPixels(width * height);
 
-		chars[i] = createSurface(pixels, width, height);
+		chars[i] = video.createSurface(pixels, width, height);
 
 		delete[] pixels;
 
@@ -355,8 +355,8 @@ Font::Font (bool bonus) {
 	// Pack all characters in a 160x160 pixels surface
 	int aW = 160;
 	int aH = 160;
-	characterAtlas = createSurface(nullptr, aW, aH);
-	enableColorKey(characterAtlas, 254);
+	characterAtlas = video.createSurface(nullptr, aW, aH);
+	video.enableColorKey(characterAtlas, 254);
 
 	stbrp_context ctx;
 	stbrp_node nodes[aW];
@@ -377,7 +377,7 @@ Font::Font (bool bonus) {
 
 	// Delete single char surfaces
 	for (int i = 0; i < nCharacters; i++)
-		SDL_FreeSurface(chars[i]);
+		video.destroySurface(chars[i]);
 
 	// Create ASCII->font map
 	if (bonus) {
@@ -405,7 +405,7 @@ Font::Font (bool bonus) {
  * Delete the font.
  */
 Font::~Font () {
-	SDL_FreeSurface(characterAtlas);
+	video.destroySurface(characterAtlas);
 }
 
 
@@ -578,9 +578,12 @@ void Font::mapPalette (int start, int length, int newStart, int newLength) {
 
 	for (int i = 0; i < length; i++) {
 		palette[i].r = palette[i].g = palette[i].b = (i * newLength / length) + newStart;
+#if OJ_SDL3 || OJ_SDL3
+		palette[i].a = 0xFF;
+#endif
 	}
 
-	setLogicalPalette(characterAtlas, palette, start, length);
+	video.setSurfacePalette(characterAtlas, palette, start, length);
 }
 
 

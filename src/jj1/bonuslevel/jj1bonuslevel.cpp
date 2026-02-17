@@ -148,7 +148,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	for (count = 0; count < 20; count++) memcpy(sorted + (count * 512), pixels + (count * 832), 512);
 
-	background = createSurface(sorted, 512, 20);
+	background = video.createSurface(sorted, 512, 20);
 
 	delete[] sorted;
 	delete[] pixels;
@@ -158,7 +158,7 @@ int JJ1BonusLevel::loadTiles (char *fileName) {
 
 	// Load tile graphics
 	pixels = file->loadRLE(1024 * 60);
-	tileSet = createSurface(pixels, 32, 32 * 60);
+	tileSet = video.createSurface(pixels, 32, 32 * 60);
 
 	// Create mask
 	for (count = 0; count < 60; count++) {
@@ -435,8 +435,8 @@ JJ1BonusLevel::~JJ1BonusLevel () {
 	// Restore panelBigFont palette
 	panelBigFont->restorePalette();
 
-	SDL_FreeSurface(tileSet);
-	SDL_FreeSurface(background);
+	video.destroySurface(tileSet);
+	video.destroySurface(background);
 
 	delete[] spriteSet;
 
@@ -635,9 +635,11 @@ void JJ1BonusLevel::draw () {
 
 	x = 171;
 
-	for (y = (canvasH >> 1) - 5; (y >= 0) && (x > 128); y--) drawRect(0, y, canvasW, 1, x--);
+	for (y = (canvasH >> 1) - 5; (y >= 0) && (x > 128); y--)
+		video.drawRect(0, y, canvasW, 1, x--);
 
-	if (y > 0) drawRect(0, 0, canvasW, y + 1, 128);
+	if (y > 0)
+		video.drawRect(0, 0, canvasW, y + 1, 128);
 
 
 	bonusPlayer = localPlayer->getJJ1BonusLevelPlayer();

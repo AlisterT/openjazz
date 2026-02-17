@@ -26,6 +26,12 @@
 #include "video.h"
 #include "sprite.h"
 
+#ifdef OJ_SDL3
+	#include <SDL3/SDL.h>
+#else
+	#include <SDL.h>
+#endif
+
 
 /**
  * Create a sprite.
@@ -44,7 +50,7 @@ Sprite::Sprite () {
  */
 Sprite::~Sprite () {
 
-	if (pixels) SDL_FreeSurface(pixels);
+	video.destroySurface(pixels);
 
 }
 
@@ -56,11 +62,11 @@ void Sprite::clearPixels () {
 
 	unsigned char data;
 
-	if (pixels) SDL_FreeSurface(pixels);
+	video.destroySurface(pixels);
 
 	data = 0;
-	pixels = createSurface(&data, 1, 1);
-	enableColorKey(pixels, 0);
+	pixels = video.createSurface(&data, 1, 1);
+	video.enableColorKey(pixels, 0);
 
 }
 
@@ -83,10 +89,10 @@ void Sprite::setOffset (short int x, short int y) {
  */
 void Sprite::setPixels (unsigned char *data, int width, int height, unsigned char key) {
 
-	if (pixels) SDL_FreeSurface(pixels);
+	video.destroySurface(pixels);
 
-	pixels = createSurface(data, width, height);
-	enableColorKey(pixels, key);
+	pixels = video.createSurface(data, width, height);
+	video.enableColorKey(pixels, key);
 
 }
 
@@ -148,7 +154,7 @@ int Sprite::getYOffset () {
  */
 void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 
-	setLogicalPalette(pixels, palette + start, start, amount);
+	video.setSurfacePalette(pixels, palette + start, start, amount);
 
 }
 
@@ -161,10 +167,14 @@ void Sprite::setPalette (SDL_Color *palette, int start, int amount) {
 void Sprite::flashPalette (int index) {
 
 	SDL_Color palette[MAX_PALETTE_COLORS];
-	for (int i = 0; i < MAX_PALETTE_COLORS; i++)
+	for (int i = 0; i < MAX_PALETTE_COLORS; i++) {
 		palette[i].r = palette[i].g = palette[i].b = index;
+#if OJ_SDL3 || OJ_SDL2
+		palette[i].a = 0xFF;
+#endif
+	}
 
-	setLogicalPalette(pixels, palette, 0, MAX_PALETTE_COLORS);
+	video.setSurfacePalette(pixels, palette, 0, MAX_PALETTE_COLORS);
 
 }
 
@@ -218,7 +228,7 @@ void Sprite::drawScaled (int x, int y, fixed scale) {
 	int dstX, dstY;
 	int srcX, srcY;
 
-	unsigned char key = getColorKey(pixels);
+	unsigned char key = video.getColorKey(pixels);
 
 	fullWidth = FTOI(pixels->w * scale);
 	if (x < -(fullWidth >> 1)) return; // Off-screen
