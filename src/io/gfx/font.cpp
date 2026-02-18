@@ -234,6 +234,7 @@ Font::Font (unsigned char* pixels, bool big) {
 	}
 
 	characterAtlas = video.createSurface(nullptr, aW, aH);
+	if (big) video.enableColorKey(characterAtlas, 31);
 
 	stbrp_context ctx;
 	stbrp_node nodes[aW];
@@ -255,8 +256,6 @@ Font::Font (unsigned char* pixels, bool big) {
 	// Delete single char surfaces
 	for (int i = 0; i < nCharacters; i++)
 		video.destroySurface(chars[i]);
-
-	if (big) video.enableColorKey(characterAtlas, 31);
 
 	// Create ASCII->font map
 	if (big) {

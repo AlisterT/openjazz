@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
 	<name>OpenJazz</name>
-	<version>20240919000000</version>
+	<version>20260218000000</version>
 	<coder>AlisterT, tehpola, carstene1ns</coder>
 	<short_description>Open source Jazz Jackrabbit engine</short_description>
 	<long_description>
@@ -14,8 +14,6 @@
 		A: switch weapons
 		Home: Esc
 		+: Pause
-
-	Special thanks to the developers of SDL-Wii for making this a breeze to port.
 
 	TODO:
 	* Network games don't work yet.

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef _VIDEO_H
-#define _VIDEO_H
+#ifndef OJ_VIDEO_H
+#define OJ_VIDEO_H
 
 #include "setup.h"
 #include "paletteeffects.h"

@@ -243,9 +243,9 @@ jobs:
           ./gradlew assembleDebug -Pandroid.native.buildOutput=verbose
       - name: Prepare artifact
         env:
-          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
         run: |
-          mv build-android/OpenJazz/app/outputs/apk/debug/app-debug.apk OJ-${SHORT_SHA}-debug.apk
+          mv build-android/OpenJazz/app/outputs/apk/debug/app-debug.apk OJ-${OJ_VERSION}-debug.apk
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:

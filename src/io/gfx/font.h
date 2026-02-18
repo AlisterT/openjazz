@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef _FONT_H
-#define _FONT_H
+#ifndef OJ_FONT_H
+#define OJ_FONT_H
 
 #include "OpenJazz.h"
 

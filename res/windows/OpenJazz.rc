@@ -6,7 +6,7 @@ FILETYPE 0x00000001L {
     BLOCK "040904b0" {
       VALUE "CompanyName", ""
       VALUE "ProductName", "OpenJazz"
-      VALUE "ProductVersion", "2024.09.19.0"
+      VALUE "ProductVersion", "2026.02.18.0"
       VALUE "FileDescription", "Jazz Jackrabbit™ engine reimplementation"
       VALUE "LegalCopyright", "AJ Thomson et al."
       VALUE "OriginalFilename", "OpenJazz.exe"

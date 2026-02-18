@@ -76,8 +76,8 @@ typedef struct {
 namespace {
 
 	// Variables
-	RawSound *rawSounds;
-	int nRawSounds;
+	RawSound *rawSounds = nullptr;
+	int nRawSounds = 0;
 	Sound sounds[SE::MAX] = {};
 	bool soundsLoaded = false;
 	ModPlugFile *musicFile = nullptr;

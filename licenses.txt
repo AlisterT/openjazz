@@ -5,7 +5,7 @@
 The OpenJazz source code is available from http://alister.eu/jazz/oj/
 and the code repository lives at https://github.com/AlisterT/openjazz
 
-Copyright (c) 2005-2019 AJ Thomson
+Copyright (c) 2005-2025 AJ Thomson
 Copyright (c) 2015-2026 Carsten Teibes
 Menu plasma effect Copyright (c) 2010 Alireza Nejati
 
@@ -36,7 +36,7 @@ https://www.libsdl.org/
 Version 1.2 of this library is distributed under the terms of the GNU LGPL
 license: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html
 
-Version 2 uses the zlib license: https://www.libsdl.org/license.php
+Version 2 and 3 use the zlib license: https://www.libsdl.org/license.php
 
 
 ================================================================================
