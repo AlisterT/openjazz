@@ -33,6 +33,8 @@
 #include "gfx/video.h"
 #include "platforms/platforms.h"
 #include "loop.h"
+#include "util.h"
+#include "log.h"
 
 #if !OJ_SDL3
 	// Define some stuff to be SDL3 compatible
@@ -714,4 +716,52 @@ bool Controls::wasCursorReleased () {
 
 	return false;
 
+}
+
+const char *Controls::getKeyName (int control) {
+	static char keyName[32];
+#if OJ_SDL3 || OJ_SDL2
+	const char *sdlName = SDL_GetKeyName(keys[control].key);
+#else
+	char *sdlName = SDL_GetKeyName(static_cast<SDLKey>(keys[control].key));
+#endif
+
+	strncpy(keyName, sdlName, sizeof(keyName));
+	keyName[sizeof(keyName) - 1] = '\0';
+	lowercaseString(keyName);
+
+	if(strlen(keyName) == 0)
+		strcpy(keyName, "key unknown");
+
+	return keyName;
+}
+
+const char *Controls::getButtonName (int control) {
+	static char buttonName[] = "button x";
+	buttonName[7] = buttons[control].button;
+
+	return buttonName;
+}
+
+const char *Controls::getAxisName (int control) {
+	static char axisName[] = "axis x";
+	axisName[5] = axes[control].axis;
+
+	return axisName;
+}
+
+const char *Controls::getHatName (int control) {
+	switch(hats[control].hat) {
+	case SDL_HAT_UP:
+		return "hat up";
+	case SDL_HAT_LEFT:
+		return "hat left";
+	case SDL_HAT_RIGHT:
+		return "hat right";
+	case SDL_HAT_DOWN:
+		return "hat down";
+	// TODO: what about diagonal hat movement?
+	default:
+		return "hat unknown";
+	}
 }

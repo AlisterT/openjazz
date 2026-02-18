@@ -137,6 +137,11 @@ class Controls {
 		bool getCursor         (int& x, int& y);
 		bool wasCursorReleased ();
 
+		const char *getKeyName    (int control);
+		const char *getButtonName (int control);
+		const char *getAxisName   (int control);
+		const char *getHatName    (int control);
+
 };
 
 
