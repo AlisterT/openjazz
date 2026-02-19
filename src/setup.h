@@ -50,6 +50,7 @@ class Setup {
 		bool          manyBirds;
 		bool          leaveUnneeded;
 		bool          slowMotion;
+		hudType       hudStyle;
 
 		Setup  ();
 		~Setup ();

@@ -60,19 +60,23 @@
  * @param owner The current game
  */
 JJ1Level::JJ1Level (Game* owner) : Level(owner) {
-	tileSet = panel = NULL;
-	events = NULL;
-	bullets = NULL;
-	sceneFile = NULL;
-	spriteSet = NULL;
+	tileSet = panel = nullptr;
+	for (int i = 0; i < 6; i++)
+		panelAmmo[i] = nullptr;
+	for (int i = 0; i < 2; i++)
+		panelBG[i] = nullptr;
+	events = nullptr;
+	bullets = nullptr;
+	sceneFile = nullptr;
+	spriteSet = nullptr;
 	sky = false;
 	skyOrb = 0;
 	levelNum = worldNum = nextLevelNum = nextWorldNum = 0;
 	enemies = 0;
 	waterLevel = waterLevelTarget = waterLevelSpeed = 0;
 	energyBar = ammoType = ammoOffset = 0;
-	font = NULL;
-	musicFile = NULL;
+	font = nullptr;
+	musicFile = nullptr;
 }
 
 
@@ -104,6 +108,8 @@ void JJ1Level::deletePanel () {
 	video.destroySurface(panel);
 	for (int i = 0; i < 6; i++)
 		video.destroySurface(panelAmmo[i]);
+	for (int i = 0; i < 2; i++)
+		video.destroySurface(panelBG[i]);
 
 }
 
@@ -139,7 +145,7 @@ JJ1Level::~JJ1Level () {
 
 	resampleSounds();
 
-	video.setTitle(NULL);
+	video.setTitle(nullptr);
 
 }
 
@@ -317,7 +323,7 @@ JJ1EventType* JJ1Level::getEvent (unsigned char gridX, unsigned char gridY) {
 
 	if (event) return eventSet + event;
 
-	return NULL;
+	return nullptr;
 
 }
 
@@ -667,7 +673,7 @@ int JJ1Level::playBonus () {
 	if (!localPlayer->getJJ1LevelPlayer()->hasGem()) return E_NONE;
 
 	delete paletteEffects;
-	paletteEffects = NULL;
+	paletteEffects = nullptr;
 
 	bonusFile = createFileName("BONUSMAP", worldToEpisode(worldNum));
 

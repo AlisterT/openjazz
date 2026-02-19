@@ -647,9 +647,9 @@ int SetupMenu::setupMain () {
 	const char* setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
 	const char* setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_GREY, PC_RED, PC_ORANGE, PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
-	const char* setupModsOff[3] = {"slow motion: off", "extra items: take", "bird limit: one" };
-	const char* setupModsOn[3] = {"slow motion: on", "extra items: leave", "bird limit: no" };
-	const char* setupMods[3];
+	const char* setupModsOff[4] = {"slow motion: off", "extra items: take", "bird limit: one", "hud style: classic"};
+	const char* setupModsOn[4] = {"slow motion: on", "extra items: leave", "bird limit: no", "hud style: old fps" };
+	const char* setupMods[4];
 	int ret;
 	int option, suboption, subsuboption;
 
@@ -658,6 +658,7 @@ int SetupMenu::setupMain () {
 	setupMods[0] = (setup.slowMotion? setupModsOn[0]: setupModsOff[0]);
 	setupMods[1] = (setup.leaveUnneeded? setupModsOn[1]: setupModsOff[1]);
 	setupMods[2] = (setup.manyBirds? setupModsOn[2]: setupModsOff[2]);
+	setupMods[3] = (setup.hudStyle == hudType::FPS? setupModsOn[3]: setupModsOff[3]);
 
 	video.setPalette(menuPalette);
 
@@ -749,7 +750,7 @@ int SetupMenu::setupMain () {
 
 				while (true) {
 
-					ret = generic("GAME OPTIONS", setupMods, 3, suboption);
+					ret = generic("GAME OPTIONS", setupMods, 4, suboption);
 
 					if (ret == E_QUIT) return E_QUIT;
 					if (ret < 0) break;
@@ -762,6 +763,11 @@ int SetupMenu::setupMain () {
 					setup.slowMotion = (setupMods[0] == setupModsOn[0]);
 					setup.leaveUnneeded = (setupMods[1] == setupModsOn[1]);
 					setup.manyBirds = (setupMods[2] == setupModsOn[2]);
+					if(setupMods[3] == setupModsOn[3]) {
+						setup.hudStyle = hudType::FPS;
+					} else {
+						setup.hudStyle = hudType::Classic;
+					}
 
 				}
 

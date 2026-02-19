@@ -79,4 +79,10 @@ MAKE_ENUM_CLASS(scalerType,
 	hqx
 );
 
+MAKE_ENUM_CLASS(hudType,
+	Classic,
+	FPS,
+	Modern
+);
+
 #endif

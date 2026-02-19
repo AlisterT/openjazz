@@ -200,6 +200,7 @@ class JJ1Level : public Level {
 	private:
 		SDL_Surface*  tileSet; ///< Tile images
 		SDL_Surface*  panel; ///< HUD background image
+		SDL_Surface*  panelBG[2]; ///< HUD background image borders
 		SDL_Surface*  panelAmmo[6]; ///< HUD ammo type images
 		JJ1Event*     events; ///< Active events
 		JJ1Bullet*    bullets; ///< Active bullets
