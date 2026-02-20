@@ -436,7 +436,7 @@ bool Video::reset (int width, int height) {
 		canvasW = screenW;
 		canvasH = screenH;
 
-#if OJ_SDL2
+#if OJ_SDL3 || OJ_SDL2
 		canvas = createSurface(nullptr, canvasW, canvasH);
 #else
 		canvas = screen;
