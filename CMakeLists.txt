@@ -78,6 +78,8 @@ set(OJ_SOURCES
 	src/version.cpp
 	src/version.h
 	# episode 1
+	src/jj1/jj1episodeutils.cpp
+	src/jj1/jj1episodeutils.h
 	src/jj1/bonuslevel/jj1bonuslevel.cpp
 	src/jj1/bonuslevel/jj1bonuslevel.h
 	src/jj1/bonuslevel/jj1bonuslevelplayer.cpp

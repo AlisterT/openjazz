@@ -13,6 +13,7 @@
  *
  * @par Licence:
  * Copyright (c) 2005-2017 AJ Thomson
+ * Copyright (c) 2015-2026 Carsten Teibes
  *
  * OpenJazz is distributed under the terms of
  * the GNU General Public License, version 2.0
@@ -32,6 +33,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "jj1/save/jj1save.h"
+#include "jj1/jj1episodeutils.h"
 #include "loop.h"
 #include "util.h"
 #include "io/log.h"
@@ -532,13 +534,6 @@ int GameMenu::selectEpisode (GameModeType mode, int episode) {
  * @return Error code
  */
 int GameMenu::newGameEpisode (GameModeType mode) {
-	const char *episodeTag[12] = { "1", "2", "3", "4", "5", "6",
-		"a", "b", "c", "x", "z", " " };
-	const char *episodeTitle[12] = { "turtle terror", "ballistic bunny",
-		"rabbits revenge", "gene machine", "the chase is on",
-		"the final clash", "outta dis world", "turtle soup",
-		"wild wabbit", "holiday hare", "bonus levels", "specific level" };
-
 	bool exists[12];
 	char *check;
 	SDL_Rect dst;
@@ -615,7 +610,8 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		video.clearScreen(0);
 
-		dst.x = canvasW - 144;
+		// center on right side
+		dst.x = (canvasW >> 1) + 16; // image is 144 pixels wide
 		dst.y = (canvasH - 110) >> 1;
 
 		if ((episode < episodes - 1) || (episode < 6)) {
@@ -628,7 +624,8 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		}
 
-		int episodeX = canvasW >> 3;
+		// center on left side
+		int episodeX = (canvasW >> 1) - 152; // 8 pixels left
 
 		for (count = 0; count < 12; count++) {
 
@@ -642,10 +639,29 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 			} else if (!exists[count])
 				fontmn2->mapPalette(240, 8, 94, -16);
 
+			const char *tag;
+			const char *title;
+			switch(count) {
+			case 10:
+				tag = "z";
+				title = "bonus levels";
+				break;
+
+			case 11:
+				tag = " ";
+				title = "specific level";
+				break;
+
+			default:
+				tag = episodeTag(count);
+				title = episodeTitle(count);
+				break;
+			}
+
 			// align both separately
-			fontmn2->showString(episodeTag[count], episodeX - (count < 6 ? 2 : 0),
+			fontmn2->showString(tag, episodeX - (count < 6 ? 2 : 0),
 				(canvasH >> 1) + (count << 4) - 92);
-			fontmn2->showString(episodeTitle[count], episodeX + 16,
+			fontmn2->showString(title, episodeX + 16,
 				(canvasH >> 1) + (count << 4) - 92);
 
 			if ((count == episode) || (!exists[count]))
