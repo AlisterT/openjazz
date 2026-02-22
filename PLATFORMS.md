@@ -49,3 +49,9 @@ Works natively.
 ## Windows
 
 Works natively.
+
+## Web
+
+Works with emscripten.
+
+`emcmake cmake`

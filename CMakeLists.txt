@@ -301,8 +301,7 @@ elseif(EMSCRIPTEN)
 	set_property(TARGET OpenJazz PROPERTY LINK_FLAGS
 		"--shell-file ${JS_SHELL} -sMINIFY_HTML=0 -flto --use-port=sdl2
 		 -sFORCE_FILESYSTEM -sEXIT_RUNTIME=1 -sASYNCIFY
-		 -sENVIRONMENT=web --closure 1 -sEXPORTED_RUNTIME_METHODS=['allocate']
-		 -sASSERTIONS -sNO_DISABLE_EXCEPTION_CATCHING")
+		 -sENVIRONMENT=web --closure 1 -sASSERTIONS -sNO_DISABLE_EXCEPTION_CATCHING")
 	set_source_files_properties("src/main.cpp" PROPERTIES OBJECT_DEPENDS "${JS_SHELL}")
 elseif(ANDROID)
 	target_sources(OpenJazz PRIVATE
