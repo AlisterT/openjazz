@@ -265,7 +265,8 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		// Draw the menu
 
-		video.drawRect((canvasW >> 2) - 8, (canvasH >> 1) - 54, 144, 108, bg);
+		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 144, 108, bg);
+		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 144, 108, textPalIndex, false);
 
 		menuOptions[1] = difficultyOptions[game->getDifficulty()];
 
@@ -275,14 +276,14 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 			if ((multiplayer && count >= 2 && count <= 4) || count == 2) {
 
-				video.drawRect((canvasW >> 2) - 4, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
+				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
 
 			}
 
 			if (count == option) fontmn2->mapPalette(240, 8, selectedTextPalIndex, textPalSpan);
 			else fontmn2->mapPalette(240, 8, textPalIndex, textPalSpan);
 
-			fontmn2->showString(menuOptions[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 46);
+			fontmn2->showString(menuOptions[count], (canvasW >> 1) - 64, (canvasH >> 1) + (count << 4) - 46);
 
 		}
 

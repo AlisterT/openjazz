@@ -70,6 +70,7 @@ OJOBJS = \
 
 # Episode 1
 OJ1OBJS = \
+	src/jj1/jj1episodeutils.o \
 	src/jj1/bonuslevel/jj1bonuslevel.o \
 	src/jj1/bonuslevel/jj1bonuslevelplayer.o \
 	src/jj1/level/event/jj1bridge.o \

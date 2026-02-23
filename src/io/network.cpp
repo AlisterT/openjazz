@@ -237,7 +237,7 @@ int Network::join (char *address) {
 		}
 
 		video.clearScreen(0);
-		fontmn2->showString("CONNECTING TO SERVER", canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered("CONNECTING TO SERVER");
 
 		FD_ZERO(&writefds);
 		FD_SET(sock, &writefds);
@@ -268,7 +268,7 @@ int Network::join (char *address) {
 	return sock;
 #elif defined USE_SDL_NET
 	video.clearScreen(0);
-	fontmn2->showString("CONNECTING TO SERVER", canvasW >> 2, (canvasH >> 1) - 16);
+	fontmn2->showStringCentered("CONNECTING TO SERVER");
 	loop(NORMAL_LOOP);
 	ipAddress.port = NET_PORT;
 	ipAddress.host = inet_addr(address);

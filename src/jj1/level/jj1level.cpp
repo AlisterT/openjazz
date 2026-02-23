@@ -38,6 +38,7 @@
 #include "event/jj1event.h"
 #include "jj1level.h"
 #include "jj1levelplayer.h"
+#include "jj1/jj1episodeutils.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"

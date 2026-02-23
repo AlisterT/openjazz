@@ -46,7 +46,7 @@
 int SetupMenu::setupKeyboard () {
 
 	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int progress, x, y, count;
+	int progress, x, y;
 
 	progress = 0;
 
@@ -95,22 +95,23 @@ int SetupMenu::setupKeyboard () {
 
 		video.clearScreen(0);
 
-		fontmn2->showString("KEYBOARD CONFIGURATION", (canvasW >> 2), (canvasH >> 1) - 80);
+		fontmn2->showString("KEYBOARD CONFIGURATION", canvasW >> 1,
+			(canvasH >> 1) - 80, alignX::Center);
 
-		for (count = 0; count < PCONTROLS; count++) {
+		for (int count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
-				fontmn2->showString("okay", (canvasW >> 2) + 176,
+				fontmn2->showString("okay", (canvasW >> 1) + 16,
 					(canvasH >> 1) + (count << 4) - 56);
 
 			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], canvasW >> 2,
+			fontmn2->showString(options[count], (canvasW >> 1) - 96,
 				(canvasH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("press key", (canvasW >> 2) + 112,
+				fontmn2->showString("press key", canvasW >> 1,
 					(canvasH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
@@ -285,20 +286,24 @@ int SetupMenu::setupJoystick () {
 
 		video.clearScreen(0);
 
-		fontmn2->showString("JOYSTICK CONFIGURATION", (canvasW >> 2), (canvasH >> 1) - 80);
+		fontmn2->showString("JOYSTICK CONFIGURATION", canvasW >> 1,
+			(canvasH >> 1) - 80, alignX::Center);
 
 		for (int count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
-				fontmn2->showString("okay", (canvasW >> 2) + 176, (canvasH >> 1) + (count << 4) - 56);
+				fontmn2->showString("okay", (canvasW >> 1) + 16,
+					(canvasH >> 1) + (count << 4) - 56);
 
 			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], canvasW >> 2, (canvasH >> 1) + (count << 4) - 56);
+			fontmn2->showString(options[count], (canvasW >> 1) - 96,
+				(canvasH >> 1) + (count << 4) - 56);
 
 			if (count == progress) {
 
-				fontmn2->showString("press control", (canvasW >> 2) + 112, (canvasH >> 1) + (count << 4) - 56);
+				fontmn2->showString("press control", canvasW >> 1,
+					(canvasH >> 1) + (count << 4) - 56);
 
 				fontmn2->restorePalette();
 
@@ -339,8 +344,9 @@ int SetupMenu::setupVideo () {
 
 	char scaleString[3] = "Yx";
 	bool fillScaleString = true;
-	char resString[12] = "XXXX x YYYY";
+	char resString[22] = "game res: XXXX x YYYY";
 	bool fillResString = true;
+	int resStringWidth = 0;
 
 	// helpers
 	auto changeWidth = [&] (bool isPositive) {
@@ -387,6 +393,8 @@ int SetupMenu::setupVideo () {
 		else if(!isPositive && scaleMethod != scalerType::None)
 			scaleMethod = static_cast<scalerType>(+scaleMethod - 1);
 #else
+	OJ_UNUSED(isPositive);
+
 	#if OJ_SDL3 || OJ_SDL2
 	if(scaleMethod != scalerType::None)
 		scaleMethod = scalerType::None;
@@ -419,11 +427,12 @@ int SetupMenu::setupVideo () {
 
 		if (controls.getCursor(x, y)) {
 
+			// ESC
 			if ((x >= 32) && (x < 132) && (y >= canvasH - 12)
 				&& controls.wasCursorReleased())
 				return E_NONE;
 
-			// TODO: selection
+			// TODO: selection? not feasible with one button
 		}
 
 		SDL_Delay(T_MENU_FRAME);
@@ -437,29 +446,28 @@ int SetupMenu::setupVideo () {
 		video.drawRect(canvasW - 32, canvasH - 32, 32, 32, 79);
 		video.drawRect(0, canvasH - 32, 32, 32, 79);
 
-		fontmn2->showString("VIDEO OPTIONS", (canvasW >> 2), (canvasH >> 1) - 80);
+		fontmn2->showString("VIDEO OPTIONS", canvasW >> 1, (canvasH >> 1) - 80, alignX::Center);
 
 		// Game Resolution
 		if(fillResString) {
-			snprintf(resString, sizeof(resString), "%d x %d", canvasW, canvasH);
+			snprintf(resString, sizeof(resString), "game res: %d x %d", canvasW, canvasH);
+			resStringWidth = fontmn2->getStringWidth(resString);
 			fillResString = false;
 		}
-		video.drawRect((canvasW >> 2) - 3, (canvasH >> 1) - 50, 216, 14, 46);
-		fontmn2->showString("game res:", (canvasW >> 2), (canvasH >> 1) - 48);
-		fontmn2->showString(resString, (canvasW >> 2) + 88, (canvasH >> 1) - 48);
-
+		video.drawRect(((canvasW - resStringWidth) >> 1) - 4, (canvasH >> 1) - 50, resStringWidth + 4, 14, 46);
+		fontmn2->showString(resString, (canvasW - resStringWidth) >> 1, (canvasH >> 1) - 48);
 
 		switchPalette(selection == 0);
 
 		// Width
-		fontmn2->showString("width:", (canvasW >> 2), (canvasH >> 1) - 16);
-		fontmn2->showNumber(screenW, (canvasW >> 2) + 128, (canvasH >> 1) - 16);
+		fontmn2->showString("width:", (canvasW >> 1) - 80, (canvasH >> 1) - 16);
+		fontmn2->showNumber(screenW, (canvasW >> 1) + 48, (canvasH >> 1) - 16);
 
 		switchPalette(selection == 1);
 
 		// Height
-		fontmn2->showString("height:", (canvasW >> 2), canvasH >> 1);
-		fontmn2->showNumber(screenH, (canvasW >> 2) + 128, canvasH >> 1);
+		fontmn2->showString("height:", (canvasW >> 1) - 80, canvasH >> 1);
+		fontmn2->showNumber(screenH, (canvasW >> 1) + 48, canvasH >> 1);
 
 		switchPalette(selection == 2);
 
@@ -468,14 +476,14 @@ int SetupMenu::setupVideo () {
 			snprintf(scaleString, sizeof(scaleString), "%dx", scaleFactor);
 			fillScaleString = false;
 		}
-		fontmn2->showString("scale:", (canvasW >> 2), (canvasH >> 1) + 16);
-		fontmn2->showString(scaleString, (canvasW >> 2) + 88, (canvasH >> 1) + 16);
+		fontmn2->showString("scale:", (canvasW >> 1) - 80, (canvasH >> 1) + 16);
+		fontmn2->showString(scaleString, (canvasW >> 1) + 8, (canvasH >> 1) + 16);
 
 		switchPalette(selection == 3);
 
 		// Method
-		fontmn2->showString("method:", (canvasW >> 2), (canvasH >> 1) + 32);
-		fontmn2->showString(methodString[+scaleMethod], (canvasW >> 2) + 88, (canvasH >> 1) + 32);
+		fontmn2->showString("method:", (canvasW >> 1) - 80, (canvasH >> 1) + 32);
+		fontmn2->showString(methodString[+scaleMethod], (canvasW >> 1) + 8, (canvasH >> 1) + 32);
 
 		switchPalette(false);
 
@@ -518,7 +526,7 @@ int SetupMenu::setupVideo () {
 			scaleFactor != video.getScaleFactor() || scaleMethod != video.getScaleMethod()) {
 
 			fontmn2->showString(resOK ? "press enter to apply" : "invalid resolution!",
-				(canvasW >> 2), (canvasH >> 1) + 56);
+				(canvasW >> 1), (canvasH >> 1) + 56, alignX::Center);
 
 			// Apply resolution change
 			if (controls.release(C_ENTER)) {
@@ -543,7 +551,8 @@ int SetupMenu::setupVideo () {
 			}
 		}
 
-		fontbig->showString(ESCAPE_STRING, 35, canvasH - 12);
+		// cannot use showEscString() here, needs shifting to the right
+		fontbig->showString(ESCAPE_STRING, 35, canvasH, alignX::Left, alignY::Bottom);
 	}
 
 	return E_NONE;
@@ -573,9 +582,11 @@ int SetupMenu::setupAudio () {
 
 		if (controls.getCursor(x, y)) {
 
+			// ESC
 			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
-			x -= (canvasW >> 2) + 128;
+			// start from drawing position
+			x -= (canvasW >> 1) + 48;
 			y -= canvasH >> 1;
 
 			if ((x >= 0) && (x < (MAX_VOLUME >> 1)) && (y >= 0) && (y < 11)) setMusicVolume(x << 1);
@@ -589,21 +600,21 @@ int SetupMenu::setupAudio () {
 
 		video.clearScreen(0);
 
-		fontmn2->showString("AUDIO OPTIONS", (canvasW >> 2), (canvasH >> 1) - 80);
+		fontmn2->showString("AUDIO OPTIONS", canvasW >> 1, (canvasH >> 1) - 80, alignX::Center);
 
 		// Music Volume
 		if (!soundActive) fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("music volume", canvasW >> 2, canvasH >> 1);
+		fontmn2->showString("music volume", (canvasW >> 1) - 88, canvasH >> 1);
 		fontmn2->restorePalette();
 
-		video.drawRect((canvasW >> 2) + 128, canvasH >> 1, getMusicVolume() >> 1, 11, 175);
+		video.drawRect((canvasW >> 1) + 48, canvasH >> 1, getMusicVolume() >> 1, 11, 175);
 
 		// Sound Volume
 		if (soundActive) fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("effect volume", canvasW >> 2, (canvasH >> 1) + 16);
+		fontmn2->showString("effect volume", (canvasW >> 1) - 88, (canvasH >> 1) + 16);
 		fontmn2->restorePalette();
 
-		video.drawRect((canvasW >> 2) + 128, (canvasH >> 1) + 16, getSoundVolume() >> 1, 11, 175);
+		video.drawRect((canvasW >> 1) + 48, (canvasH >> 1) + 16, getSoundVolume() >> 1, 11, 175);
 
 		if (controls.release(C_UP)) soundActive = !soundActive;
 

@@ -52,21 +52,27 @@ class Font {
 		explicit Font(bool bonus);
 		~Font();
 
-		int  showString          (const char *s, int x, int y);
-		int  showSceneString     (const unsigned char *s, int x, int y);
-		void showNumber          (int n, int x, int y);
-		void mapPalette          (int start, int length, int newStart, int newLength);
-		void restorePalette      ();
-		int  getHeight           ();
-		int  getSpaceWidth       ();
-		int  getStringWidth      (const char *string);
-		int  getSceneStringWidth (const unsigned char *string);
+		Point showString          (const char *s, int x, int y, alignX xAlign = alignX::Left, alignY yAlign = alignY::Top);
+		Point showStringCentered  (const char *s);
+		int   showSceneString     (const unsigned char *s, int x, int y);
+		void  showNumber          (int n, int x, int y);
+		void  mapPalette          (int start, int length, int newStart, int newLength);
+		void  restorePalette      ();
+		int   getHeight           () const;
+		int   getSpaceWidth       () const;
+		int   getStringWidth      (const char *string);
+		int   getStringHeight     (const char *string);
+		int   getSceneStringWidth (const unsigned char *string);
 #ifdef DEBUG_FONTS
-		void saveAtlasAsBMP      (const char *fileName);
+		void  saveAtlasAsBMP      (const char *fileName);
 #endif
 
 };
 
+// Inline functions
+
+inline int Font::getHeight() const { return lineHeight; } ///< Get the height of a single line of any text.
+inline int Font::getSpaceWidth() const { return spaceWidth; } ///< Get the width of a space.
 
 // Variables
 

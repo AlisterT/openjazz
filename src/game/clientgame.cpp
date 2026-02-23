@@ -80,7 +80,7 @@ ClientGame::ClientGame (char* address) {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
-		fontmn2->showString("WAITING FOR REPLY", canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered("WAITING FOR REPLY");
 
 		ret = net->recv(sock, buffer + count, MTL_G_PROPS - count);
 
@@ -209,7 +209,7 @@ ClientGame::ClientGame (char* address) {
 		}
 
 		video.clearScreen(0);
-		fontmn2->showString("JOINING GAME", canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered("JOINING GAME");
 
 		ret = step(0);
 
@@ -269,7 +269,7 @@ int ClientGame::setLevel (char* fileName) {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
-		fontmn2->showString("WAITING FOR SERVER", canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered("WAITING FOR SERVER");
 
 		ret = step(0);
 
@@ -287,6 +287,8 @@ int ClientGame::setLevel (char* fileName) {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
+
+		// TODO: center / align stuff better
 		fontmn2->showString("downloaded", canvasW >> 2, (canvasH >> 1) - 16);
 		fontmn2->showNumber(file->tell(), (canvasW >> 2) + 56, canvasH >> 1);
 		fontmn2->showString("bytes", (canvasW >> 2) + 64, canvasH >> 1);
