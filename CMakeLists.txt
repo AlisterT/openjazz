@@ -503,7 +503,25 @@ else()
 endif()
 unset(MAN_PATH)
 
+# doxygen source documentation
+
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+	set(OJ_VERSION_DOX ${PROJECT_VERSION})
+	if(OJ_VERSION_GIT)
+		string(APPEND OJ_VERSION_DOX " (${OJ_VERSION_GIT})")
+	endif()
+	configure_file(res/doxygen/Doxyfile.in doc/Doxyfile @ONLY)
+	add_custom_target(doc
+		${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+		DEPENDS ${PROJECT_NAME}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+		COMMENT "Generating source documentation with Doxygen"
+		VERBATIM)
+endif()
+
 # Print short summary
+
 message(STATUS "")
 message(STATUS "OpenJazz")
 message(STATUS "========")
@@ -523,6 +541,9 @@ if(DATAPATH)
 endif()
 message(STATUS "Manual page: ${MANUAL_STATUS}")
 message(STATUS "Portable Engine: ${PORTABLE_STATUS}")
+if(DOXYGEN_FOUND)
+	message(STATUS "Source Documentation: doxygen")
+endif()
 message(STATUS "")
 message(STATUS "In case something goes wrong, report bugs to ${OJ_BUGREPORT}")
 message(STATUS "")
