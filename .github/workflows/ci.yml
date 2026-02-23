@@ -133,7 +133,7 @@ jobs:
         run: |
           mkdir OJ-${OJ_VERSION}
           builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OJ-${OJ_VERSION}/Manual.txt
-          cp build-release/OpenJazz README.md COPYING licenses.txt OJ-${OJ_VERSION}/
+          cp build-release/OpenJazz README.md COPYING doc/licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
@@ -208,7 +208,7 @@ jobs:
         run: |
           mkdir OJ-${OJ_VERSION}
           builds/ci/adoc2txt ${OJ_VERSION} < res/unix/OpenJazz.6.adoc > OJ-${OJ_VERSION}/Manual.txt
-          cp build-web/*.{wasm,js,html,data} README.md COPYING licenses.txt OJ-${OJ_VERSION}/
+          cp build-web/*.{wasm,js,html,data} README.md COPYING doc/licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6

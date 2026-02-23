@@ -4,5 +4,5 @@ test -z $1 && exit 1
 
 cp README.md $1/README.txt
 cp COPYING $1/COPYING.txt
-cp licenses.txt $1/
+cp doc/licenses.txt $1/
 unix2dos $1/*.txt

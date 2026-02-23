@@ -39,7 +39,7 @@ or opening an issue (see README.md for details).
 - `PORTABLE` - Do not use external directories for configuration saving, etc.
   (This only affects Unix platforms, Windows version is always portable)
 
-Some ports have their own options, see (Platforms)[PLATFORMS.md] for details.
+Some ports have their own options, see [Platforms](PLATFORMS.md) for details.
 
 ### advanced options
 
