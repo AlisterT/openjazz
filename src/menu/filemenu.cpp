@@ -97,13 +97,13 @@ int FileMenu::main (bool forSaving, bool showCustom) {
 
 		video.clearScreen(0);
 
-		fontmn2->showString(forSaving ? "SAVE GAME" : "LOAD GAME", canvasW >> 2, (canvasH >> 1) - (options << 3) - 32);
+		fontmn2->showString(forSaving ? "SAVE GAME" : "LOAD GAME", canvasW >> 1, (canvasH >> 1) - (options << 3) - 32, alignX::Center);
 
 		for (int i = 0; i < options; i++) {
 
 			if (i == chosen) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(loadGameOptions[i], canvasW >> 2,
+			fontmn2->showString(loadGameOptions[i], (canvasW >> 1) - 80,
 				(canvasH >> 1) + (i << 4) - (options << 3));
 
 			if (i == chosen) fontmn2->restorePalette();

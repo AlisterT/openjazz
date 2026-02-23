@@ -425,50 +425,39 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	char* levelname = new char[strlen(string) + 14];
 	strcpy(levelname, string);
+	delete[] string;
 
-	const char* ext;
 	switch (fileName[5]) {
 		case '0':
-			ext = " LEVEL ONE";
-
+			strcat(levelname, " LEVEL ONE");
 			break;
 
 		case '1':
-			ext = " LEVEL TWO";
-
+			strcat(levelname, " LEVEL TWO");
 			break;
 
 		case '2':
-			string[0] = 0;
-			ext = "SECRET LEVEL";
-			strcat(levelname, " ");
-
+			strcat(levelname, " SECRET LEVEL");
 			break;
 
 		default:
-			ext = " LEVEL";
-
+			strcat(levelname, " LEVEL");
 			break;
 	}
 
-	strcat(levelname, ext);
-	camelcaseString(levelname);
-
 	video.setPalette(menuPalette);
 	video.clearScreen(0);
-	video.setTitle(levelname);
 
+	const char *loadingString = "LOADING ";
+	int stringWidth = fontmn2->getStringWidth(loadingString) + fontmn2->getStringWidth(levelname);
+	Point pos = fontmn2->showString(loadingString, (canvasW - stringWidth) >> 1, canvasH >> 1);
+	fontmn2->showString(levelname, pos.x, canvasH >> 1);
+
+	camelcaseString(levelname);
+	video.setTitle(levelname);
 	delete[] levelname;
 
-	int xPos = (canvasW >> 1) - ((strlen(string) + strlen(ext)) << 2);
-	xPos = fontmn2->showString("LOADING ", xPos - 60, (canvasH >> 1) - 16);
-	xPos = fontmn2->showString(string, xPos, (canvasH >> 1) - 16);
-	fontmn2->showString(ext, xPos, (canvasH >> 1) - 16);
-
-	delete[] string;
-
 	if (::loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
-
 
 
 	// Open level file
@@ -537,7 +526,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Load tile set from appropriate blocks.###
 
 	// Load tile set extension
-	ext = file->loadTerminatedString(3);
+	char *ext = file->loadTerminatedString(3);
 
 	// Create tile set file name
 	if (!strcmp(ext, "999")) string = createFileName("BLOCKS", worldNum);

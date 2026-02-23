@@ -64,6 +64,8 @@
 		return static_cast<unsigned>(val); \
 	}
 
+#define OJ_UNUSED(v) (void)(v)
+
 // Datatypes
 
 typedef int fixed; ///< Custom fixed-point data type
@@ -78,5 +80,28 @@ MAKE_ENUM_CLASS(scalerType,
 	Scale2x,
 	hqx
 );
+
+MAKE_ENUM_CLASS(alignX,
+	Left,
+	Center,
+	Right
+);
+
+MAKE_ENUM_CLASS(alignY,
+	Top,
+	Center,
+	Bottom
+);
+
+struct Point {
+	Point() : x(0), y(0) {}
+	Point(int x, int y) : x(x), y(y) {}
+
+	bool operator==(const Point& other) const {
+		return (x == other.x) && (y == other.y);
+	}
+
+	int x, y;
+};
 
 #endif

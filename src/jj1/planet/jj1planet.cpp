@@ -149,8 +149,8 @@ int JJ1Planet::play () {
 			sprite.drawScaled(canvasW >> 1, canvasH >> 1, (globalTicks - tickOffset - F4) * 32 + F2);
 		else return E_NONE;
 
-		fontmn1->showString("now approaching", (canvasW - 288) >> 1, 0);
-		fontmn1->showString(name, (canvasW - fontmn1->getStringWidth(name)) >> 1, canvasH - 24);
+		fontmn1->showString("now approaching", (canvasW >> 1), 2, alignX::Center);
+		fontmn1->showString(name, (canvasW >> 1), canvasH - 2, alignX::Center, alignY::Bottom);
 
 	}
 

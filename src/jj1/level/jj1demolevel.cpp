@@ -188,7 +188,7 @@ int JJ1DemoLevel::play () {
 		drawOverlay(LEVEL_BLACK, false, 0, 0, 0, 0);
 
 
-		font->showString("demo", (canvasW >> 1) - 36, 32);
+		font->showString("demo", canvasW >> 1, 32, alignX::Center);
 
 
 	}

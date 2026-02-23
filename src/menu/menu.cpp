@@ -43,9 +43,12 @@
 /**
  * Show the "(esc) quits" string.
  */
-void Menu::showEscString () {
+void Menu::showEscString (bool alignLeft) {
 
-	fontbig->showString(ESCAPE_STRING, 3, canvasH - 12);
+	if(alignLeft)
+		fontbig->showString(ESCAPE_STRING, 3, canvasH, alignX::Left, alignY::Bottom);
+	else
+		fontbig->showString(ESCAPE_STRING, canvasW - 3, canvasH, alignX::Right, alignY::Bottom);
 
 }
 
@@ -73,7 +76,7 @@ int Menu::message (const char* text) {
 		video.clearScreen(15);
 
 		// Draw the message
-		fontmn2->showString(text, canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered(text);
 
 	}
 
@@ -94,9 +97,18 @@ int Menu::message (const char* text) {
  */
 int Menu::generic (const char *title, const char** optionNames, int options, int& chosen) {
 
-	int x, y, count;
+	int x, y;
 
 	if (chosen >= options) chosen = 0;
+
+	// calculate the longest string length for centering
+	int xOffset = (canvasW >> 1);
+	int maxWidth = 0;
+	for (int i = 0; i < options; i++) {
+		int w = fontmn2->getStringWidth(optionNames[i]);
+		if(w > maxWidth) maxWidth = w;
+	}
+	xOffset -= maxWidth >> 1;
 
 	while (true) {
 
@@ -142,16 +154,16 @@ int Menu::generic (const char *title, const char** optionNames, int options, int
 		video.clearScreen(0);
 
 		if(title)
-			fontmn2->showString(title, (canvasW >> 2), (canvasH >> 1) - 80);
+			fontmn2->showString(title, canvasW >> 1, (canvasH >> 1) - 80, alignX::Center);
 
-		for (count = 0; count < options; count++) {
+		for (int i = 0; i < options; i++) {
 
-			if (count == chosen) fontmn2->mapPalette(240, 8, 114, 16);
+			if (i == chosen) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(optionNames[count], canvasW >> 2,
-				(canvasH >> 1) + (count << 4) - (options << 3));
+			fontmn2->showString(optionNames[i], xOffset,
+				(canvasH >> 1) + (i << 4) - (options << 3));
 
-			if (count == chosen) fontmn2->restorePalette();
+			if (i == chosen) fontmn2->restorePalette();
 
 		}
 
@@ -309,20 +321,20 @@ int Menu::textInput (const char* request, char*& text, bool ip) {
 		video.clearScreen(15);
 
 		// Draw the prompt
-		fontmn2->showString(request, canvasW >> 2, (canvasH >> 1) - 16);
+		fontmn2->showStringCentered(request);
 
 		// Draw the section of the text before the cursor
 		fontmn2->mapPalette(240, 8, 114, 16);
 		terminate = input[cursor];
 		input[cursor] = 0;
-		x = fontmn2->showString(input, (canvasW >> 2) + 8, canvasH >> 1);
+		Point pos = fontmn2->showString(input, (canvasW >> 1) - 152, (canvasH >> 1) + 16);
 
 		// Draw the cursor
-		video.drawRect(x, (canvasH >> 1) + 10, 8, 2, 79);
+		video.drawRect(pos.x, (canvasH >> 1) + 26, 8, 2, 79);
 
 		// Draw the section of text after the cursor
 		input[cursor] = terminate;
-		fontmn2->showString(input + cursor, x, canvasH >> 1);
+		fontmn2->showString(input + cursor, pos.x, (canvasH >> 1) + 16);
 		fontmn2->restorePalette();
 
 		showEscString();

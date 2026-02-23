@@ -231,7 +231,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 	const char *options[4] = {"easy", "medium", "hard", "turbo"};
 	SDL_Rect src, dst;
-	int x, y, count;
+	int x, y;
 
 	video.setPalette(menuPalette);
 
@@ -249,12 +249,14 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		if (controls.getCursor(x, y)) {
 
+			// ESC
 			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
-			x -= canvasW >> 2;
+			// start from drawing position
+			x -= (canvasW >> 1) - 60;
 			y -= (canvasH >> 1) - 32;
 
-			if ((x >= 0) && (x < 256) && (y >= 0) && (y < 64)) {
+			if ((x >= 0) && (x < 60) && (y >= 0) && (y < 64)) {
 
 				difficulty = y >> 4;
 
@@ -268,14 +270,16 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		video.clearScreen(0);
 
-		for (count = 0; count < 4; count++) {
+		fontmn2->showString("SELECT DIFFICULTY", (canvasW >> 1), (canvasH >> 1) - 92, alignX::Center);
 
-			if (count == difficulty) fontmn2->mapPalette(240, 8, 114, 16);
+		for (int i = 0; i < 4; i++) {
 
-			fontmn2->showString(options[count], canvasW >> 2,
-				(canvasH >> 1) + (count << 4) - 32);
+			if (i == difficulty) fontmn2->mapPalette(240, 8, 114, 16);
 
-			if (count == difficulty) fontmn2->restorePalette();
+			fontmn2->showString(options[i], (canvasW >> 1) - 60,
+				(canvasH >> 1) + (i << 4) - 32);
+
+			if (i == difficulty) fontmn2->restorePalette();
 
 		}
 
@@ -283,7 +287,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 		src.y = (difficulty & 2) * 50;
 		src.w = 160;
 		src.h = 100;
-		dst.x = (canvasW >> 1) - 40;
+		dst.x = canvasW >> 1;
 		dst.y = (canvasH >> 1) - 50;
 		SDL_BlitSurface(difficultyScreen, &src, canvas, &dst);
 
@@ -408,6 +412,7 @@ int GameMenu::loadGameCustom () {
 
 		if (controls.getCursor(x, y)) {
 
+			// ESC
 			if ((x < 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
 			if (y < (canvasH >> 1)) option = 0;
@@ -421,15 +426,15 @@ int GameMenu::loadGameCustom () {
 		video.clearScreen(15);
 
 		if (option == 0) fontmn2->mapPalette(240, 8, 114, 16);
-		fontmn2->showString("choose world:", 32, canvasH / 3);
-		fontmn2->showNumber(worldNum, 208, canvasH / 3);
+		Point pos = fontmn2->showString("choose world:", canvasW >> 1, canvasH / 3, alignX::Right);
+		fontmn2->showNumber(worldNum, pos.x + 36, canvasH / 3);
 
 		if (option == 0) fontmn2->restorePalette();
 		else fontmn2->mapPalette(240, 8, 114, 16);
 
-		fontmn2->showString("choose level:", 32, (canvasH << 1) / 3);
-		if (levelNum >= 0) fontmn2->showNumber(levelNum, 208, (canvasH << 1) / 3);
-		else fontmn2->showString("bonus", 172, (canvasH << 1) / 3);
+		pos = fontmn2->showString("choose level:", canvasW >> 1, (canvasH << 1) / 3, alignX::Right);
+		if (levelNum >= 0) fontmn2->showNumber(levelNum, pos.x + 36, (canvasH << 1) / 3);
+		else fontmn2->showString("bonus", pos.x + 8, (canvasH << 1) / 3);
 
 		if (option != 0) fontmn2->restorePalette();
 
@@ -586,6 +591,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 			if ((x >= canvasW - 100) && (y >= canvasH - 12) && controls.wasCursorReleased()) return E_NONE;
 
+			// start from drawing position
 			x -= canvasW >> 3;
 			y -= (canvasH >> 1) - 92;
 
@@ -609,6 +615,12 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 		SDL_Delay(T_MENU_FRAME);
 
 		video.clearScreen(0);
+
+		const char *title = "EPISODES";
+		if(canvasW == SW)
+			fontmn2->showString(title, (canvasW >> 1) + 48, 8);
+		else
+			fontmn2->showString(title, (canvasW >> 1), (canvasH >> 1) - 124, alignX::Center);
 
 		// center on right side
 		dst.x = (canvasW >> 1) + 16; // image is 144 pixels wide
@@ -669,7 +681,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 
 		}
 
-		fontbig->showString(ESCAPE_STRING, canvasW - 100, canvasH - 12);
+		showEscString(false);
 
 	}
 
@@ -799,7 +811,7 @@ int GameMenu::newGame () {
 
 		video.setPalette(menuPalette);
 
-		int ret = generic(nullptr, newGameOptions, 6, option);
+		int ret = generic("NEW GAME", newGameOptions, 6, option);
 
 		if (ret == E_QUIT) return E_QUIT;
 		if (ret < 0) return E_NONE;

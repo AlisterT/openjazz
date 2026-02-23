@@ -414,21 +414,54 @@ Font::~Font () {
  * @param string The string to draw
  * @param x The x-coordinate at which to draw the string
  * @param y The y-coordinate at which to draw the string
+ * @param xAlign The horizontal alignment
+ * @param yAlign The vertical alignment
  *
- * @return The x-coordinate of the end of the string
+ * @return The x and y coordinates of the end of the string
  */
-int Font::showString (const char* string, int x, int y) {
-	if (!isOk) return x;
+Point Font::showString (const char* string, int x, int y,
+	alignX xAlign, alignY yAlign) {
+
+	if (!isOk) return Point(x, y);
 
 	// Determine the position at which to draw the first character
-	int xOffset = x;
-	int yOffset = y;
+	int xOffsetBase, xOffset, yOffset;
+	switch(xAlign) {
+	default:
+	case alignX::Left:
+		xOffset = x;
+		break;
+
+	case alignX::Center:
+		xOffset = x - (getStringWidth(string) >> 1);
+		break;
+
+	case alignX::Right:
+		xOffset = x - getStringWidth(string);
+		break;
+	}
+	xOffsetBase = xOffset;
+
+	switch(yAlign) {
+	default:
+	case alignY::Top:
+		yOffset = y;
+		break;
+
+	case alignY::Center:
+		yOffset = y - (getStringHeight(string) >> 1);
+		break;
+
+	case alignY::Bottom:
+		yOffset = y - getStringHeight(string);
+		break;
+	}
 
 	// Go through each character of the string
 	for (int i = 0; string[i]; i++) {
 		if (string[i] == '\n') {
 			// reset after line break
-			xOffset = x;
+			xOffset = xOffsetBase;
 			yOffset += lineHeight;
 		} else {
 			unsigned int c = map[int(string[i])];
@@ -453,7 +486,12 @@ int Font::showString (const char* string, int x, int y) {
 		}
 	}
 
-	return xOffset;
+	return Point(xOffset, yOffset);
+}
+
+Point Font::showStringCentered (const char *s) {
+	return showString(s, (canvasW >> 1), (canvasH >> 1),
+		alignX::Center, alignY::Center);
 }
 
 
@@ -597,31 +635,7 @@ void Font::restorePalette () {
 
 
 /**
- * Get the height of a single line of any text.
- *
- * @return The height
- */
-int Font::getHeight () {
-
-	return lineHeight;
-
-}
-
-
-/**
- * Get the width of a space.
- *
- * @return The width
- */
-int Font::getSpaceWidth () {
-
-	return spaceWidth;
-
-}
-
-
-/**
- * Get the width of a single line of a given string.
+ * Get the width of a given string.
  *
  * @param string The string to measure
  *
@@ -630,25 +644,54 @@ int Font::getSpaceWidth () {
 int Font::getStringWidth (const char *string) {
 	if (!isOk) return 0;
 
-	int stringWidth = 0;
+	int stringWidth = 0, tmpWidth = 0;
 
 	// Go through each character of the string
 	for (int i = 0; string[i]; i++) {
-		// Only get the width of the first line
-		if (string[i] == '\n') return stringWidth;
+		// check each line individually for maximum width
+		if (string[i] == '\n') {
+			if(tmpWidth > stringWidth) stringWidth = tmpWidth;
+			tmpWidth = 0;
+		}
 
 		unsigned int c = map[int(string[i])];
 
 		// skip spaces
 		if(c == INVALID_FONT_CHAR) {
-			stringWidth += spaceWidth;
+			tmpWidth += spaceWidth;
 			continue;
 		}
 
-		stringWidth += atlasRects[c].w + normalPadding;
+		tmpWidth += atlasRects[c].w + normalPadding;
 	}
 
+	// check last or single line
+	if(tmpWidth > stringWidth)
+		return tmpWidth;
+
 	return stringWidth;
+}
+
+
+/**
+ * Get the height of a given string.
+ *
+ * @param string The string to measure
+ *
+ * @return The height
+ */
+int Font::getStringHeight (const char *string) {
+	if (!isOk) return 0;
+
+	int stringHeight = lineHeight; // start with one
+
+	// Go through each character of the string
+	for (int i = 0; string[i]; i++) {
+		// each line break adds to it
+		if (string[i] == '\n') stringHeight += lineHeight;
+	}
+
+	return stringHeight;
 }
 
 

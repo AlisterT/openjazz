@@ -433,8 +433,9 @@ int MainMenu::main () {
 		}
 
 		panelBigFont->mapPalette(0, MAX_PALETTE_COLORS, 8, 8);
-		panelBigFont->showString("OpenJazz", 1, canvasH - 9);
-		panelBigFont->showString(oj_version, 90, canvasH - 9);
+		if(canvasW > SW)
+			panelBigFont->showString("OpenJazz", 16, canvasH, alignX::Left, alignY::Bottom);
+		panelBigFont->showString(oj_version, canvasW - 16, canvasH, alignX::Right, alignY::Bottom);
 		panelBigFont->restorePalette();
 
 		dst.x = (canvasW - SW) >> 1;

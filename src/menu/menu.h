@@ -52,7 +52,7 @@ class File;
 class Menu {
 
 	protected:
-		void showEscString ();
+		void showEscString (bool alignLeft = true);
 		int  message       (const char* text);
 		int  generic       (const char* title, const char** optionNames, int options, int& chosen);
 		int  textInput     (const char* request, char*& text, bool ip = false);
