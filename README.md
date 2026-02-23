@@ -7,7 +7,7 @@
 
 OpenJazz can be compiled on a wide range of operating systems, including
 Windows, macOS, GNU/Linux and BSD flavors. Also ports are available for some
-homebrew platforms, consoles and handhelds. See [Platforms](PLATFORMS.md) for
+homebrew platforms, consoles and handhelds. See [Platforms][platforms] for
 details. You can even play it [inside your web browser][web port].
 
 To play, you will need the files from one of the original games.
@@ -39,19 +39,18 @@ changes, report bugs and also fix them. This also lead to more ports being made.
 Nowadays, development has slowed down. The original author is involved with
 other projects and there is no clear roadmap for new features, besides striving
 for a "true" and faithful Jazz Jackrabbit™ adaption on all possible platforms.
-GitHub user [carstene1ns](https://github.com/carstene1ns) has cleaned and
-restructured parts of the code base, integrated some ports and tries to resolve
-bug reports.
+GitHub user [carstene1ns][carstene1ns] has cleaned and restructured parts of
+the code base, integrated some ports and tries to resolve bug reports.
 
 ## License
 
 OpenJazz is available under the GNU General Public License version 2 or later,
-see [licenses.txt](licenses.txt) for additional information and other included
+see [licenses.txt][licenses] for additional information and other included
 software.
 
 ## [Controls](res/unix/OpenJazz.6.adoc#ingame-controls) (See manual)
 
-## [Building](BUILDING.md)
+## [Building][building]
 
 ## Running [![Play in Browser][web badge]][web port]
 
@@ -72,5 +71,9 @@ Current Maintainer: Carsten Teibes (dev f4ke de)
 http://alister.eu/jazz/oj/
 
 [logo]: res/unix/OpenJazz.png
+[carstene1ns]: https://github.com/carstene1ns
+[platforms]: doc/PLATFORMS.md
+[licenses]: doc/licenses.txt
+[building]: doc/BUILDING.md
 [web badge]: https://img.shields.io/badge/Play_in-Browser-blue?style=plastic
 [web port]: https://openjazz.github.io
