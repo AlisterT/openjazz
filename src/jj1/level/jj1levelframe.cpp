@@ -48,13 +48,17 @@
 int JJ1Level::step () {
 
 	JJ1Event *event;
-	int viewH;
+	int viewH = canvasH;
 	int x, y;
 
-
-	// Can we see below the panel?
-	if (canvasW > SW) viewH = canvasH;
-	else viewH = canvasH - 33;
+	if(setup.hudStyle == hudType::Classic) {
+		// Can we see below the panel?
+		if (canvasW > SW) viewH = canvasH;
+		else viewH = canvasH - 33;
+	} else if(setup.hudStyle == hudType::FPS) {
+		// Leave space for panel in view height
+		viewH = canvasH - 33;
+	}
 
 	// Search for active events
 	for (y = FTOT(viewY) - 5; y < ITOT(FTOI(viewY) + viewH) + 5; y++) {
@@ -140,7 +144,7 @@ int JJ1Level::step () {
 		} else {
 
 			if ((game->getDifficulty() >= 2) && (stage == LS_NORMAL))
-				localPlayer->getJJ1LevelPlayer()->kill(NULL, endTime);
+				localPlayer->getJJ1LevelPlayer()->kill(nullptr, endTime);
 
 		}
 
@@ -208,7 +212,7 @@ void JJ1Level::draw () {
 
 	GridElement *ge;
 	SDL_Rect src, dst;
-	int viewH;
+	int viewH = canvasH;
 	int vX, vY;
 	int x, y;
 	unsigned int change;
@@ -222,9 +226,14 @@ void JJ1Level::draw () {
 	if (game && (stage == LS_END)) game->view(paused? 0: ((ticks - prevTicks) * 160));
 	else localPlayer->getJJ1LevelPlayer()->view(ticks, paused? 0: (ticks - prevTicks), change);
 
-	// Can we see below the panel?
-	if (canvasW > SW) viewH = canvasH;
-	else viewH = canvasH - 33;
+	if(setup.hudStyle == hudType::Classic) {
+		// Can we see below the panel?
+		if (canvasW > SW) viewH = canvasH;
+		else viewH = canvasH - 33;
+	} else if(setup.hudStyle == hudType::FPS) {
+		// Leave space for panel in view height
+		viewH = canvasH - 33;
+	}
 
 	// Ensure the new viewport is within the level
 	if (FTOI(viewX) + canvasW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - canvasW);
@@ -253,7 +262,7 @@ void JJ1Level::draw () {
 
 		// Background scale
 		int bgScale;
-		if (canvasW > 320) bgScale = ((canvasH - 1) / 100) + 1;
+		if (canvasW > SW) bgScale = ((canvasH - 1) / 100) + 1;
 		else bgScale = ((canvasH - 34) / 100) + 1;
 
 		for (y = 0; y < viewH; y += bgScale)
@@ -353,7 +362,7 @@ void JJ1Level::draw () {
 				else src.y = TTOI(eventSet[ge->event].multiA);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
-				//drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
+				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
 			}
 
 			// If this is a foreground tile, draw it
@@ -367,7 +376,7 @@ void JJ1Level::draw () {
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
-				//drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
+				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
 			}
 
 		}
@@ -390,7 +399,15 @@ void JJ1Level::draw () {
 
 	// Show panel
 
-	video.setClipRect(canvas, NULL);
+	int offsetX = 0;
+	bool isWide = (canvasW != SW);
+
+	if(setup.hudStyle == hudType::FPS && isWide) {
+		// center panel
+		offsetX = (canvasW >> 1) - (SW >> 1);
+	}
+
+	video.setClipRect(canvas, nullptr);
 
 	if (ammoOffset != 0) {
 
@@ -411,49 +428,83 @@ void JJ1Level::draw () {
 
 	}
 
-	dst.x = 0;
-	dst.y = canvasH - 33;
-	SDL_BlitSurface(panel, NULL, canvas, &dst);
-	video.drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
+	// always classic HUD if there is not enough space
+	if(setup.hudStyle == hudType::Classic ||
+		(setup.hudStyle == hudType::FPS && !isWide)) {
+
+		dst.x = 0;
+		dst.y = canvasH - 33;
+		SDL_BlitSurface(panel, nullptr, canvas, &dst);
+
+		// Fill the one missing pixel row at the bottom black
+		video.drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
+	} else if (setup.hudStyle == hudType::FPS) {
+		// quake-style HUD
+
+		dst.y = canvasH - 33;
+
+		for (x = 0; x <= ITOT(offsetX); x++) {
+			// draw left border
+			dst.x = TTOI(x);
+			SDL_BlitSurface(panelBG[0], nullptr, canvas, &dst);
+
+			// draw right border
+			dst.x = canvasW - TTOI(x + 1);
+			SDL_BlitSurface(panelBG[1], nullptr, canvas, &dst);
+		}
+
+		// cut the panel borders and re-center
+		src.x = 1; // left: 1 white pixel
+		src.y = 0;
+		src.w = SW - 8; // right: 3 black pixels + 5 pixels around screws
+		src.h = TTOI(1);
+		dst.x = offsetX + 5;
+		SDL_BlitSurface(panel, &src, canvas, &dst);
+
+		// Fill the one missing pixel row at the bottom black
+		video.drawRect(0, canvasH - 1, canvasW, 1, LEVEL_BLACK);
+
+		offsetX += 4; // move everything inside right
+	}
 
 
 	// Show panel data
 
 	// Show score
-	panelSmallFont->showNumber(localPlayer->getScore(), 84, canvasH - 27);
+	panelSmallFont->showNumber(localPlayer->getScore(), offsetX + 84, canvasH - 27);
 
 	// Show time remaining
 	if (endTime > ticks) x = endTime - ticks;
 	else x = 0;
 	y = x / (60 * 1000);
-	panelSmallFont->showNumber(y, 116, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + 116, canvasH - 27);
 	x -= (y * 60 * 1000);
 	y = x / 1000;
-	panelSmallFont->showNumber(y, 136, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + 136, canvasH - 27);
 	x -= (y * 1000);
 	y = x / 100;
-	panelSmallFont->showNumber(y, 148, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + 148, canvasH - 27);
 
 	// Show lives
-	panelSmallFont->showNumber(localPlayer->getLives(), 124, canvasH - 13);
+	panelSmallFont->showNumber(localPlayer->getLives(), offsetX + 124, canvasH - 13);
 
 	// Show planet number
 
-
 	if (worldNum <= 41) // Main game levels
-		panelSmallFont->showNumber((worldNum % 3) + 1, 184, canvasH - 13);
+		panelSmallFont->showNumber((worldNum % 3) + 1, offsetX + 184, canvasH - 13);
 	else if ((worldNum >= 50) && (worldNum <= 52)) // Christmas levels
-		panelSmallFont->showNumber(worldNum - 49, 184, canvasH - 13);
-	else panelSmallFont->showNumber(worldNum, 184, canvasH - 13);
+		panelSmallFont->showNumber(worldNum - 49, offsetX + 184, canvasH - 13);
+	else panelSmallFont->showNumber(worldNum, offsetX + 184, canvasH - 13);
 
 	// Show level number
-	panelSmallFont->showNumber(levelNum + 1, 196, canvasH - 13);
+	panelSmallFont->showNumber(levelNum + 1, offsetX + 196, canvasH - 13);
 
 	// Show ammo
 	if (localPlayer->getAmmoType() == -1) {
 
-		panelSmallFont->showString(":", 225, canvasH - 13);
-		panelSmallFont->showString(";", 233, canvasH - 13);
+		// Draw "infinity" symbol
+		panelSmallFont->showString(":", offsetX + 225, canvasH - 13);
+		panelSmallFont->showString(";", offsetX + 233, canvasH - 13);
 
 	} else {
 
@@ -462,12 +513,12 @@ void JJ1Level::draw () {
 		// Trailing 0s
 		if (x < 100) {
 
-			panelSmallFont->showNumber(0, 229, canvasH - 13);
-			if (x < 10) panelSmallFont->showNumber(0, 237, canvasH - 13);
+			panelSmallFont->showNumber(0, offsetX + 229, canvasH - 13);
+			if (x < 10) panelSmallFont->showNumber(0, offsetX + 237, canvasH - 13);
 
 		}
 
-		panelSmallFont->showNumber(x > 999? 999: x, 245, canvasH - 13);
+		panelSmallFont->showNumber(x > 999? 999: x, offsetX + 245, canvasH - 13);
 
 	}
 
@@ -501,7 +552,7 @@ void JJ1Level::draw () {
 		else if (x <= 1) x = 32 + (((ticks / 75) * 4) & 15);
 
 		// Draw energy bar
-		video.drawRect(dst.x, canvasH - 13, dst.w, 7, x);
+		video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, x);
 
 		dst.x += dst.w;
 		dst.w = 64 - dst.w;
@@ -510,6 +561,5 @@ void JJ1Level::draw () {
 
 
 	// Fill in remaining energy bar space with black
-	video.drawRect(dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
-
+	video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
 }

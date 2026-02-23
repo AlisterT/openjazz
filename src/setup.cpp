@@ -55,6 +55,7 @@ Setup::Setup () {
 	manyBirds = false;
 	leaveUnneeded = true;
 	slowMotion = false;
+	hudStyle = hudType::Classic;
 
 }
 
@@ -170,6 +171,11 @@ SetupOptions Setup::load () {
 	setup.manyBirds = ((opt & 1) != 0);
 	setup.leaveUnneeded = ((opt & 2) != 0);
 	setup.slowMotion = ((opt & 4) != 0);
+	if((opt & 8) != 0) {
+		setup.hudStyle = hudType::FPS;
+	} else {
+		setup.hudStyle = hudType::Classic;
+	}
 
 	delete file;
 
@@ -265,6 +271,7 @@ void Setup::save () {
 	if (setup.manyBirds) count |= 1;
 	if (setup.leaveUnneeded) count |= 2;
 	if (setup.slowMotion) count |= 4;
+	if (setup.hudStyle == hudType::FPS) count |= 8;
 
 	file->storeChar(count);
 

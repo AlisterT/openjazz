@@ -70,7 +70,7 @@ int JJ1Level::loadPanel () {
 
 
 	// Create the panel background
-	panel = video.createSurface(pixels, SW, 32);
+	panel = video.createSurface(pixels, SW, TTOI(1));
 
 
 	// De-scramble the panel's ammo graphics
@@ -86,6 +86,51 @@ int JJ1Level::loadPanel () {
 
 	delete[] sorted;
 	delete[] pixels;
+
+	// Create the panel borders in FPS HUD mode
+	panelBG[0] = video.createSurface(nullptr, TTOI(1), TTOI(1));
+	panelBG[1] = video.createSurface(nullptr, TTOI(1), TTOI(1));
+
+	constexpr int halfTile = (TTOI(1) >> 1);
+
+	// Copy parts of the panel
+	SDL_Rect src = { 176, 0, halfTile, halfTile };
+	SDL_Rect dst;
+
+	// left side gets shiny part
+	dst.x = dst.y = 0; // first row
+	SDL_BlitSurface(panel, &src, panelBG[0], &dst);
+	dst.y = halfTile; // second row
+	SDL_BlitSurface(panel, &src, panelBG[0], &dst);
+
+	// add mirrored copy
+	src.y = 0;
+	src.w = 1;
+	src.h = TTOI(1);
+	dst.y = 0;
+	for (int x = 0; x < halfTile; x++) {
+		src.x = x;
+		dst.x = TTOI(1) - x - 1;
+		SDL_BlitSurface(panelBG[0], &src, panelBG[0], &dst);
+	}
+
+	// right side is only metal
+	src.x = 199;
+	src.w = 9;
+	src.h = 12;
+	for (int x = 0; x < TTOI(1); x += 9) {
+		src.y = 0;
+		dst.x = x;
+
+		dst.y = 0; // first row
+		SDL_BlitSurface(panel, &src, panelBG[1], &dst);
+		src.y = 2; // second row
+		dst.y = 12;
+		SDL_BlitSurface(panel, &src, panelBG[1], &dst);
+		src.y = 8; // third row
+		dst.y = 24;
+		SDL_BlitSurface(panel, &src, panelBG[1], &dst);
+	}
 
 	return E_NONE;
 }
