@@ -144,12 +144,10 @@ void JJ1Event::destroy (unsigned int ticks) {
  */
 bool JJ1Event::hit (JJ1LevelPlayer *source, int hits, unsigned int ticks) {
 
-	int hitsRemaining;
-
 	// Check if event has already been destroyed
 	if (((animType & ~1) == E_LFINISHANIM) || (ticks < flashTime)) return false;
 
-	hitsRemaining = level->hitEvent(gridX, gridY, hits, source, ticks);
+	int hitsRemaining = level->hitEvent(gridX, gridY, hits, source, ticks);
 
 	// If the event cannot be hit, do not register hit
 	if (hitsRemaining < 0) return false;

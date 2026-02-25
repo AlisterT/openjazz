@@ -140,7 +140,7 @@ void JJ1LevelPlayer::reset (int startX, int startY) {
 	dy = 0;
 
 	eventType = JJ1PE_NONE;
-	energy = 4;
+	energy = 64;
 	flying = false;
 	facing = true;
 	udx = 0;
@@ -318,8 +318,9 @@ bool JJ1LevelPlayer::hit (Player *source, unsigned int ticks) {
 			birds->hit();
 
 			playSound(level->getLevelSound(LSND_LOOSEBIRD));
+		} else {
+			energy = CLAMP(energy - getHitPoints(), 0, 64);
 		}
-		else energy--;
 
 	}
 
@@ -479,12 +480,19 @@ bool JJ1LevelPlayer::takeEvent (JJ1EventType* event, unsigned char gridX, unsign
 
 			break;
 
-		case 2:
-		case 3: // Health
+		case 2: // Health
 
-			if ((energy == 4) && setup.leaveUnneeded) return false;
+			if ((energy == 64) && setup.leaveUnneeded) return false;
 
-			if (energy < 4) energy++;
+			energy = CLAMP(energy + getHitPoints(), 0, 64);
+
+			break;
+
+		case 3: // Full Health
+
+			if ((energy == 64) && setup.leaveUnneeded) return false;
+
+			energy = 64;
 
 			break;
 
@@ -815,6 +823,28 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* event, unsigned char gridX, unsig
 
 	return false;
 
+}
+
+
+/**
+ * Returns the number of hitpoints at current difficulty.
+ *
+ * @return The hitpoints.
+ */
+int JJ1LevelPlayer::getHitPoints () {
+	switch(level->getDifficulty()) {
+	case difficultyType::Easy:
+		return 13; // 5 hits to kill
+		break;
+	case difficultyType::Normal:
+		return 16; // 4 hits to kill
+		break;
+	default: // Hard/Turbo
+		return 22; // 3 hits to kill
+		break;
+	}
+
+	return 0; // keep compiler happy
 }
 
 

@@ -71,13 +71,13 @@ class FileMenu : public Menu {
 class GameMenu : public Menu {
 
 	private:
-		SDL_Surface*  episodeScreens[MAX_EPISODES]; ///< Episode images
-		SDL_Surface*  difficultyScreen; ///< 4 difficulty images
-		SDL_Color     palette[MAX_PALETTE_COLORS]; ///< Episode selection palette
-		SDL_Color     greyPalette[MAX_PALETTE_COLORS]; ///< Greyed-out episode selection palette
-		int           episodes; ///< Number of episodes
-		unsigned char difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
-		FileMenu*     fileMenu; ///< Load menu
+		SDL_Surface*   episodeScreens[MAX_EPISODES]; ///< Episode images
+		SDL_Surface*   difficultyScreen; ///< 4 difficulty images
+		SDL_Color      palette[MAX_PALETTE_COLORS]; ///< Episode selection palette
+		SDL_Color      greyPalette[MAX_PALETTE_COLORS]; ///< Greyed-out episode selection palette
+		int            episodes; ///< Number of episodes
+		difficultyType difficulty; ///< Difficulty setting (easy, medium, hard, turbo (hard in JJ2 levels))
+		FileMenu*      fileMenu; ///< Load menu
 
 		int playNewGame       (GameModeType mode, char* firstLevel);
 		int newGameDifficulty (GameModeType mode, char* firstLevel);

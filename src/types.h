@@ -87,6 +87,13 @@ MAKE_ENUM_CLASS(hudType,
 	Modern
 );
 
+MAKE_ENUM_CLASS(difficultyType,
+	Easy,
+	Normal,
+	Hard,
+	Turbo
+);
+
 MAKE_ENUM_CLASS(alignX,
 	Left,
 	Center,

@@ -137,9 +137,9 @@ JJ1Save::JJ1Save (const char* fileName) :
 
 	level = readValue();
 	planet = readValue();
-	difficulty = readValue();
+	difficulty = static_cast<difficultyType>(readValue());
 
-	LOG_TRACE("Saved planet = %d, level = %d, difficulty = %d", planet, level, difficulty);
+	LOG_TRACE("Saved planet = %d, level = %d, difficulty = %d", planet, level, +difficulty);
 
 	// TODO: Find out about the next 6 unknown fields
 	for(int i = 0; i < 6; i++)

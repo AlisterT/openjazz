@@ -38,8 +38,8 @@
  */
 bool GameMode::hit (Player *source, Player *victim) {
 
-	(void)source;
-	(void)victim;
+	OJ_UNUSED(source);
+	OJ_UNUSED(victim);
 
 	return true;
 
@@ -297,8 +297,8 @@ GameModeType RaceGameMode::getMode () {
  */
 bool RaceGameMode::hit (Player *source, Player *victim) {
 
-	(void)source;
-	(void)victim;
+	OJ_UNUSED(source);
+	OJ_UNUSED(victim);
 
 	return false;
 

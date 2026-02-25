@@ -37,6 +37,7 @@
 #include "io/gfx/video.h"
 #include "io/sound.h"
 #include "util.h"
+#include "io/log.h"
 
 #include <stdlib.h>
 
@@ -322,12 +323,6 @@ void JJ1StandardEvent::move (unsigned int ticks) {
 
 			break;
 
-		case 26:
-
-			/// @todo Find out what behaviour 26 is
-
-			break;
-
 		case 27:
 
 			/// @todo Face jazz
@@ -369,13 +364,6 @@ void JJ1StandardEvent::move (unsigned int ticks) {
 			return;
 
 		case 31:
-
-			// Move horizontally
-			if (animType == E_LEFTANIM) dx = -ES_FAST;
-			else dx = ES_FAST;
-
-			break;
-
 		case 32:
 
 			// Move horizontally
@@ -551,6 +539,7 @@ void JJ1StandardEvent::move (unsigned int ticks) {
 			// Do nothing for the following:
 			// 0: Static
 			// 25: Float up / Belt
+			// 26: Flip Animation
 			// 37/38: Repel
 
 			/// @todo Remaining event behaviours
@@ -890,12 +879,17 @@ JJ1Event* JJ1StandardEvent::step (unsigned int ticks) {
 	if ((animType & ~1) == E_LFINISHANIM) return this;
 
 
-	// If the event has been destroyed, play its finishing animation and set its
-	// reaction time
-	if (set->strength && (hits >= set->strength)) {
+	// Check for kill
+	int strength = set->strength;
+	if (strength) {
+		// In turbo difficulty, enemy events generally take one more hit
+		if (level->getDifficulty() == difficultyType::Turbo && set->modifier == 0)
+			strength++;
 
-		destroy(ticks);
-
+		// If the event has been destroyed, play its finishing animation and
+		// set its reaction time
+		if(hits >= strength)
+			destroy(ticks);
 	}
 
 

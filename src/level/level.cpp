@@ -49,10 +49,10 @@ Level::Level (Game* owner) {
 	game = owner;
 
 	menuOptions[0] = "continue game";
-	menuOptions[2] = "save game";
-	menuOptions[3] = "load game";
-	menuOptions[4] = "setup options";
-	menuOptions[5] = "quit game";
+	menuOptions[1] = "save game";
+	menuOptions[2] = "load game";
+	menuOptions[3] = "setup options";
+	menuOptions[4] = "quit game";
 
 	// Arbitrary initial value
 	smoothfps = 50.0f;
@@ -211,7 +211,6 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 	unsigned char textPalIndex, unsigned char selectedTextPalIndex,
 	int textPalSpan) {
 
-	const char* difficultyOptions[4] = {"easy", "medium", "hard", "turbo"};
 	int count, width;
 
 	// Draw graphics statistics
@@ -265,18 +264,17 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		// Draw the menu
 
-		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 144, 108, bg);
-		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 144, 108, textPalIndex, false);
+		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 140, 92, bg);
+		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 140, 92, textPalIndex, false);
 
-		menuOptions[1] = difficultyOptions[game->getDifficulty()];
 
-		for (count = 0; count < 6; count++) {
+		for (count = 0; count < 5; count++) {
 
-			// Gray out options in multiplayer and Save (unimplemented)
+			// Gray out Save (unimplemented) FIXME: needs to be disabled generally in multiplayer
 
-			if ((multiplayer && count >= 2 && count <= 4) || count == 2) {
+			if (count == 1) {
 
-				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - 48, 136, 15, textPalIndex);
+				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - 48, 132, 15, textPalIndex);
 
 			}
 
@@ -312,13 +310,7 @@ int Level::select (bool& menu, int option) {
 
 			break;
 
-		case 1: // Change difficulty
-
-			if (!multiplayer) game->setDifficulty((game->getDifficulty() + 1) & 3);
-
-			break;
-
-		case 2: // Save
+		case 1: // Save
 
 			if (!multiplayer) {
 
@@ -335,7 +327,7 @@ int Level::select (bool& menu, int option) {
 
 			break;
 
-		case 3: // Load
+		case 2: // Load
 
 			if (!multiplayer) {
 
@@ -352,7 +344,7 @@ int Level::select (bool& menu, int option) {
 
 			break;
 
-		case 4: // Setup
+		case 3: // Setup
 
 			if (!multiplayer) {
 
@@ -370,7 +362,7 @@ int Level::select (bool& menu, int option) {
 
 			break;
 
-		case 5: // Quit game
+		case 4: // Quit game
 
 			return E_RETURN;
 
@@ -427,9 +419,9 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		// Deal with menu controls
 
-		if (controls.release(C_UP)) option = (option + 5) % 6;
+		if (controls.release(C_UP)) option = (option + 4) % 5;
 
-		if (controls.release(C_DOWN)) option = (option + 1) % 6;
+		if (controls.release(C_DOWN)) option = (option + 1) % 5;
 
 		if (controls.release(C_ENTER)) {
 
@@ -441,10 +433,10 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		if (controls.getCursor(x, y)) {
 
-			x -= canvasW >> 2;
+			x -= (canvasW >> 1) - 64;
 			y -= (canvasH >> 1) - 46;
 
-			if ((x >= 0) && (x < 128) && (y >= 0) && (y < 96)) {
+			if ((x >= 0) && (x < 120) && (y >= 0) && (y < 96)) {
 
 				option = y >> 4;
 

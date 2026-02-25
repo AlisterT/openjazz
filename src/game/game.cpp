@@ -56,7 +56,7 @@ Game::Game () {
 	planetId = -1;
 	mode = NULL;
 	// Default difficulty setting
-	difficulty = 1;
+	difficulty = difficultyType::Normal;
 	sendTime = checkTime = 0;
 	checkX = checkY = 0;
 
@@ -154,7 +154,7 @@ GameMode* Game::getMode () {
  *
  * @return The game's difficulty
  */
-int Game::getDifficulty () {
+difficultyType Game::getDifficulty () {
 
 	return difficulty;
 
@@ -164,7 +164,7 @@ int Game::getDifficulty () {
 /**
  * Set the game's difficulty
  */
-void Game::setDifficulty (int diff) {
+void Game::setDifficulty (difficultyType diff) {
 
 	difficulty = diff;
 
