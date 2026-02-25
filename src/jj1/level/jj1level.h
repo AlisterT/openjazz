@@ -54,6 +54,7 @@
 #define TNUM       60 /* Number of tiles in tileset */
 #define TSETS       4 /* Maximum number of tilesets (each 60 entries) */
 #define TKEY      127 /* Tileset colour key */
+#define MASKS     (TNUM * TSETS + 16) << 3
 
 // Player animations
 #define PA_LWALK    0

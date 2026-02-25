@@ -640,7 +640,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	// Load mask data
 
-	buffer = file->loadRLE(tiles * 8);
+	buffer = file->loadRLE(MASKS); // TODO: find out how the 16 extra masks are used
 
 	// Unpack bits
 	for (int i = 0; i < tiles; i++) {
