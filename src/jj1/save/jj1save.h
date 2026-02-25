@@ -34,7 +34,7 @@ class JJ1Save {
 		char* name;
 		int planet;
 		int level;
-		int difficulty;
+		difficultyType difficulty;
 		int unknown[6];
 
 };

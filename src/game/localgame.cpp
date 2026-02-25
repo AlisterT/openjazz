@@ -37,7 +37,7 @@
  * @param firstLevel File name of the first level to play
  * @param gameDifficulty Difficulty setting
  */
-LocalGame::LocalGame (const char *firstLevel, int gameDifficulty) {
+LocalGame::LocalGame (const char *firstLevel, difficultyType gameDifficulty) {
 
 	levelFile = createString(firstLevel);
 	levelType = getLevelType(firstLevel);

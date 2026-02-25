@@ -67,7 +67,7 @@ int JJ1Level::step () {
 
 			if ((x >= 0) && (y >= 0) && (x < LW) && (y < LH) &&
 				grid[y][x].event && (grid[y][x].event < 121) &&
-				(eventSet[grid[y][x].event].difficulty <= game->getDifficulty())) {
+				(+eventSet[grid[y][x].event].difficulty <= +getDifficulty())) {
 
 				event = events;
 
@@ -143,7 +143,9 @@ int JJ1Level::step () {
 
 		} else {
 
-			if ((game->getDifficulty() >= 2) && (stage == LS_NORMAL))
+			if ((getDifficulty() == difficultyType::Hard ||
+				getDifficulty() == difficultyType::Turbo)
+				&& (stage == LS_NORMAL))
 				localPlayer->getJJ1LevelPlayer()->kill(nullptr, endTime);
 
 		}
@@ -529,14 +531,16 @@ void JJ1Level::draw () {
 	x = localPlayer->getJJ1LevelPlayer()->getEnergy();
 	y = (ticks - prevTicks) * 40;
 
-	if (FTOI(energyBar) < (x << 4)) {
+	if (FTOI(energyBar) < x) {
+		// increase
 
-		if ((x << 14) - energyBar < y) energyBar = x << 14;
+		if (ITOF(x) - energyBar < y) energyBar = ITOF(x);
 		else energyBar += y;
 
-	} else if (FTOI(energyBar) > (x << 4)) {
+	} else if (FTOI(energyBar) > x) {
+		// decrease
 
-		if (energyBar - (x << 14) < y) energyBar = x << 14;
+		if (energyBar - ITOF(x) < y) energyBar = ITOF(x);
 		else energyBar -= y;
 
 	}
@@ -546,13 +550,15 @@ void JJ1Level::draw () {
 		dst.w = FTOI(energyBar) - 1;
 
 		// Choose energy bar colour
-		if (x == 4) x = 24;
-		else if (x == 3) x = 17;
-		else if (x == 2) x = 80;
-		else if (x <= 1) x = 32 + (((ticks / 75) * 4) & 15);
+		int color;
+		if (x <= 20) color = 32 + (((ticks / 75) * 4) & 15); // flash
+		else if (x > 51) color = 24; // blue only before first hit
+		else if (x > 38) color = 17; // green
+		else if (x > 25) color = 80; // pink
+		else if (x > 20) color = 32; // orange is only seen in easy
 
 		// Draw energy bar
-		video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, x);
+		video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, color);
 
 		dst.x += dst.w;
 		dst.w = 64 - dst.w;

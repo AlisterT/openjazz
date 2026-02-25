@@ -41,7 +41,7 @@
  * @param firstLevel File name of the first level to play
  * @param gameDifficulty Difficulty setting
  */
-ServerGame::ServerGame (GameModeType modeType, char* firstLevel, int gameDifficulty) {
+ServerGame::ServerGame (GameModeType modeType, char* firstLevel, difficultyType gameDifficulty) {
 
 	int count;
 
@@ -383,7 +383,7 @@ int ServerGame::step (unsigned int ticks) {
 					sendBuffer[1] = MT_G_PROPS;
 					sendBuffer[2] = 1; // Server version
 					sendBuffer[3] = mode->getMode();
-					sendBuffer[4] = difficulty;
+					sendBuffer[4] = +difficulty;
 					sendBuffer[5] = MAX_PLAYERS;
 					sendBuffer[6] = nPlayers; // Number of players
 					sendBuffer[7] = count; // Client's clientID

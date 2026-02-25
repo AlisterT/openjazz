@@ -115,12 +115,12 @@ ClientGame::ClientGame (char* address) {
 
 	// Copy game parameters
 	modeType = GameModeType(buffer[3]);
-	difficulty = buffer[4];
+	difficulty = static_cast<difficultyType>(buffer[4]);
 	maxPlayers = buffer[5];
 	nPlayers = buffer[6];
 	clientID = buffer[7];
 
-	printf("Game mode %d, difficulty %d, %d of %d players.\n", modeType, difficulty, nPlayers, maxPlayers);
+	printf("Game mode %d, difficulty %d, %d of %d players.\n", modeType, +difficulty, nPlayers, maxPlayers);
 
 	if (nPlayers > maxPlayers) {
 

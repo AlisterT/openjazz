@@ -96,7 +96,7 @@ class Game {
 		Level*         baseLevel; ///< Current level
 		char*          levelFile; ///< Current level's file name
 		LevelType      levelType; ///< Current level's type
-		int            difficulty; ///< Difficulty setting (0 = easy, 1 = medium, 2 = hard, 3 = turbo (hard in JJ2 levels))
+		difficultyType difficulty; ///< Difficulty setting (easy, medium, hard, turbo (hard in JJ2 levels))
 		unsigned int   sendTime; ///< The next time data will be sent
 		unsigned int   checkTime; ///< The next time a connection/disconnection will be dealt with
 		short int      checkX; ///< X-coordinate of the level checkpoint
@@ -114,18 +114,18 @@ class Game {
 	public:
 		virtual ~Game ();
 
-		GameMode*    getMode       ();
-		int          getDifficulty ();
-		void         setDifficulty (int diff);
-		int          playLevel     (char *fileName);
-		virtual int  setLevel      (char *fileName) = 0;
-		int          play          ();
-		void         view          (int change);
-		virtual void send          (unsigned char *buffer) = 0;
-		virtual int  step          (unsigned int ticks) = 0;
-		virtual void score         (unsigned char team) = 0;
-		virtual void setCheckpoint (int gridX, int gridY) = 0;
-		void         resetPlayer   (Player *player);
+		GameMode*      getMode       ();
+		difficultyType getDifficulty ();
+		void           setDifficulty (difficultyType diff);
+		int            playLevel     (char *fileName);
+		virtual int    setLevel      (char *fileName) = 0;
+		int            play          ();
+		void           view          (int change);
+		virtual void   send          (unsigned char *buffer) = 0;
+		virtual int    step          (unsigned int ticks) = 0;
+		virtual void   score         (unsigned char team) = 0;
+		virtual void   setCheckpoint (int gridX, int gridY) = 0;
+		void           resetPlayer   (Player *player);
 
 };
 
@@ -134,7 +134,7 @@ class Game {
 class LocalGame : public Game {
 
 	public:
-		LocalGame  (const char *firstLevel, int gameDifficulty);
+		LocalGame  (const char *firstLevel, difficultyType gameDifficulty);
 		~LocalGame () override;
 
 		int  setLevel      (char *fileName) override;
@@ -163,7 +163,7 @@ class ServerGame : public Game {
 		int            sock; ///< Server socket
 
 	public:
-		ServerGame         (GameModeType mode, char *firstLevel, int gameDifficulty);
+		ServerGame         (GameModeType mode, char *firstLevel, difficultyType gameDifficulty);
 		~ServerGame        () override;
 
 		int  setLevel      (char *fileName) override;

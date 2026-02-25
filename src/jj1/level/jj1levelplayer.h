@@ -132,7 +132,7 @@ class JJ1LevelPlayer final : public LevelPlayer {
 	private:
 		JJ1Bird*          birds; ///< Bird companion(s)
 		Anim*             anims[JJ1PANIMS]; ///< Animations
-		int               energy; ///< 0 = dead, 4 = maximum
+		int               energy; ///< 0 = dead, 64 = maximum
 		int               shield; ///< 0 = none, 1 = yellow, 2 = 1 orange, 3 = 2 orange, 4 = 3 orange, 5 = 4 orange
 		bool              flying; ///< false = normal, true = boarding/bird/etc.
 		bool              facing; ///< false = left, true = right
@@ -187,6 +187,7 @@ class JJ1LevelPlayer final : public LevelPlayer {
 		void              setPlatform (unsigned char gridX, unsigned char gridY, fixed shiftX, fixed newY);
 		bool              takeEvent   (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
 		bool              touchEvent  (JJ1EventType* set, unsigned char gridX, unsigned char gridY, unsigned int ticks);
+		int               getHitPoints();
 
 		void           send        (unsigned char* buffer) override;
 		void           receive     (unsigned char* buffer) override;

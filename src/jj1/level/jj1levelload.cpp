@@ -704,7 +704,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	// Fill event set with data
 	for (int i = 0; i < EVENTS; i++) {
 
-		eventSet[i].difficulty           = buffer[i* ELENGTH];
+		eventSet[i].difficulty           = static_cast<difficultyType>(buffer[i* ELENGTH]);
 		eventSet[i].reflection           = buffer[(i* ELENGTH) + 2];
 		eventSet[i].movement             = buffer[(i* ELENGTH) + 4];
 		eventSet[i].anims[E_LEFTANIM]    = buffer[(i* ELENGTH) + 5];
@@ -1076,7 +1076,7 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 
 	// Set the tick at which the level will end
-	endTime = (5 - game->getDifficulty()) * 2 * 60 * 1000;
+	endTime = (5 - +getDifficulty()) * 2 * 60 * 1000;
 
 
 	events = nullptr;

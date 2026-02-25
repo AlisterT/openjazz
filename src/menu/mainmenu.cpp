@@ -366,7 +366,7 @@ int MainMenu::main () {
 
 			try {
 
-				game = new LocalGame("", 0);
+				game = new LocalGame("", difficultyType::Easy);
 
 			} catch (int e) {
 

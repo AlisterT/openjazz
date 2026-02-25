@@ -157,24 +157,24 @@ typedef struct {
 /// JJ1 level event type
 typedef struct {
 
-	unsigned char anims[6]; ///< Indices of animations
-	signed char   difficulty; ///< The minimum difficulty level at which the event is used
-	signed char   reflection; ///< Whether or not to show a reflection
-	signed char   movement; ///< Movement type
-	signed char   magnitude; ///< Usage depends on event type
-	signed char   strength; ///< Number of hits required to destroy the event
-	signed char   modifier; ///< Modifier
-	unsigned char points; ///< Points obtained by getting/destroying the event
-	unsigned char bullet; ///< Type of bullet the event fires
-	unsigned char bulletPeriod; ///< The time between successive bullet shots
-	unsigned char speed; ///< The speed at which the event moves
-	unsigned char animSpeed; ///< The speed of the event's animation
-	SE::Type      sound; ///< The sound played on the appropriate trigger
-	signed char   multiA; ///< Usage depends on event type
-	signed char   multiB; ///< Usage depends on event type
-	signed char   pieceSize; ///< Size of pieces in bridges, swinging balls chains, etc.
-	signed char   pieces; ///< Number of pieces in bridges, swinging ball chains, etc.
-	signed char   angle; ///< Initial angle of swinging balls, etc.
+	unsigned char  anims[6]; ///< Indices of animations
+	difficultyType difficulty; ///< The minimum difficulty level at which the event is used
+	signed char    reflection; ///< Whether or not to show a reflection
+	signed char    movement; ///< Movement type
+	signed char    magnitude; ///< Usage depends on event type
+	signed char    strength; ///< Number of hits required to destroy the event
+	signed char    modifier; ///< Modifier
+	unsigned char  points; ///< Points obtained by getting/destroying the event
+	unsigned char  bullet; ///< Type of bullet the event fires
+	unsigned char  bulletPeriod; ///< The time between successive bullet shots
+	unsigned char  speed; ///< The speed at which the event moves
+	unsigned char  animSpeed; ///< The speed of the event's animation
+	SE::Type       sound; ///< The sound played on the appropriate trigger
+	signed char    multiA; ///< Usage depends on event type
+	signed char    multiB; ///< Usage depends on event type
+	signed char    pieceSize; ///< Size of pieces in bridges, swinging balls chains, etc.
+	signed char    pieces; ///< Number of pieces in bridges, swinging ball chains, etc.
+	signed char    angle; ///< Initial angle of swinging balls, etc.
 
 } JJ1EventType;
 
@@ -258,31 +258,32 @@ class JJ1Level : public Level {
 		JJ1Level (Game* owner, char* fileName, bool checkpoint, bool multi);
 		~JJ1Level () override;
 
-		bool          checkMaskUp   (fixed x, fixed y);
-		bool          checkMaskDown (fixed x, fixed y);
-		bool          checkSpikes   (fixed x, fixed y);
-		int           getWorld      ();
-		void          setNext       (int nextLevel, int nextWorld);
-		void          setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
-		JJ1Event*     getEvents     ();
-		JJ1EventType* getEvent      (unsigned char gridX, unsigned char gridY);
-		unsigned char getEventHits  (unsigned char gridX, unsigned char gridY);
-		unsigned int  getEventTime  (unsigned char gridX, unsigned char gridY);
-		void          clearEvent    (unsigned char gridX, unsigned char gridY);
-		int           hitEvent      (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time);
-		void          setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
-		Sprite*       getSprite     (unsigned char sprite);
-		Anim*         getAnim       (unsigned char anim);
-		Anim*         getMiscAnim   (unsigned char anim);
-		Anim*         getPlayerAnim (unsigned char anim);
-		Anim*         getLevelAnim  (unsigned char anim);
-		SE::Type      getLevelSound (unsigned char sound);
-		void          createBullet  (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time);
-		void          setWaterLevel (unsigned char gridY);
-		fixed         getWaterLevel ();
-		void          flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
-		void          receive       (unsigned char* buffer) override;
-		virtual int   play          ();
+		bool           checkMaskUp   (fixed x, fixed y);
+		bool           checkMaskDown (fixed x, fixed y);
+		bool           checkSpikes   (fixed x, fixed y);
+		int            getWorld      ();
+		void           setNext       (int nextLevel, int nextWorld);
+		void           setTile       (unsigned char gridX, unsigned char gridY, unsigned char tile);
+		difficultyType getDifficulty ();
+		JJ1Event*      getEvents     ();
+		JJ1EventType*  getEvent      (unsigned char gridX, unsigned char gridY);
+		unsigned char  getEventHits  (unsigned char gridX, unsigned char gridY);
+		unsigned int   getEventTime  (unsigned char gridX, unsigned char gridY);
+		void           clearEvent    (unsigned char gridX, unsigned char gridY);
+		int            hitEvent      (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time);
+		void           setEventTime  (unsigned char gridX, unsigned char gridY, unsigned int time);
+		Sprite*        getSprite     (unsigned char sprite);
+		Anim*          getAnim       (unsigned char anim);
+		Anim*          getMiscAnim   (unsigned char anim);
+		Anim*          getPlayerAnim (unsigned char anim);
+		Anim*          getLevelAnim  (unsigned char anim);
+		SE::Type       getLevelSound (unsigned char sound);
+		void           createBullet  (JJ1LevelPlayer* sourcePlayer, unsigned char gridX, unsigned char gridY, fixed startX, fixed startY, unsigned char bullet, bool facing, unsigned int time);
+		void           setWaterLevel (unsigned char gridY);
+		fixed          getWaterLevel ();
+		void           flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
+		void           receive       (unsigned char* buffer) override;
+		virtual int    play          ();
 
 };
 

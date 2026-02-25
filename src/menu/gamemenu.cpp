@@ -39,7 +39,7 @@
 #include "io/log.h"
 #include <memory>
 
-static bool getSaveData(int slot, int &lvl, int &plnt, int &dffclty) {
+static bool getSaveData(int slot, int &lvl, int &plnt, difficultyType &dffclty) {
 	// load save game
 	char* fileName = createString("SAVE.0");
 	fileName[5] += slot;
@@ -65,7 +65,7 @@ static bool getSaveData(int slot, int &lvl, int &plnt, int &dffclty) {
  */
 GameMenu::GameMenu (File *file) {
 
-	difficulty = 0;
+	difficulty = difficultyType::Normal;
 
 	// Load the difficulty graphics
 	file->loadPalette(menuPalette);
@@ -192,7 +192,8 @@ int GameMenu::playNewGame (GameModeType mode, char* firstLevel) {
 			{
 				// FIXME: Rewrite load logic, save state in memory
 
-				int lvl, plnt, dffclty;
+				int lvl, plnt;
+				difficultyType dffclty;
 				if (getSaveData(ret - E_LOAD0, lvl, plnt, dffclty)) {
 					char* firstLevel = createFileName("LEVEL", lvl, plnt);
 					difficulty = dffclty;
@@ -241,9 +242,19 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		if (controls.release(C_ESCAPE)) return E_NONE;
 
-		if (controls.release(C_UP)) difficulty = (difficulty + 3) % 4;
+		if (controls.release(C_UP)) {
+			if(difficulty == difficultyType::Easy)
+				difficulty = difficultyType::Turbo;
+			else
+				difficulty = static_cast<difficultyType>(+difficulty - 1);
+		}
 
-		if (controls.release(C_DOWN)) difficulty = (difficulty + 1) % 4;
+		if (controls.release(C_DOWN)) {
+			if(difficulty == difficultyType::Turbo)
+				difficulty = difficultyType::Easy;
+			else
+				difficulty = static_cast<difficultyType>(+difficulty + 1);
+		}
 
 		if (controls.release(C_ENTER)) return playNewGame(mode, firstLevel);
 
@@ -258,7 +269,7 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 			if ((x >= 0) && (x < 60) && (y >= 0) && (y < 64)) {
 
-				difficulty = y >> 4;
+				difficulty = static_cast<difficultyType>(y >> 4);
 
 				if (controls.wasCursorReleased()) return playNewGame(mode, firstLevel);
 
@@ -272,19 +283,19 @@ int GameMenu::newGameDifficulty (GameModeType mode, char* firstLevel) {
 
 		fontmn2->showString("SELECT DIFFICULTY", (canvasW >> 1), (canvasH >> 1) - 92, alignX::Center);
 
-		for (int i = 0; i < 4; i++) {
+		for (unsigned int i = 0; i < 4; i++) {
 
-			if (i == difficulty) fontmn2->mapPalette(240, 8, 114, 16);
+			if (i == +difficulty) fontmn2->mapPalette(240, 8, 114, 16);
 
 			fontmn2->showString(options[i], (canvasW >> 1) - 60,
 				(canvasH >> 1) + (i << 4) - 32);
 
-			if (i == difficulty) fontmn2->restorePalette();
+			if (i == +difficulty) fontmn2->restorePalette();
 
 		}
 
-		src.x = (difficulty & 1) * 160;
-		src.y = (difficulty & 2) * 50;
+		src.x = (+difficulty & 1) * 160;
+		src.y = (+difficulty & 2) * 50;
 		src.w = 160;
 		src.h = 100;
 		dst.x = canvasW >> 1;
@@ -346,7 +357,8 @@ int GameMenu::loadGame () {
 			}
 		} else {
 			// load save game
-			int lvl, plnt, dffclty;
+			int lvl, plnt;
+			difficultyType dffclty;
 			if (getSaveData(ret, lvl, plnt, dffclty)) {
 				char* firstLevel = createFileName("LEVEL", lvl, plnt);
 				difficulty = dffclty;

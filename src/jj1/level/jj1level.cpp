@@ -298,6 +298,11 @@ void JJ1Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char 
 }
 
 
+difficultyType JJ1Level::getDifficulty () {
+	return game->getDifficulty();
+}
+
+
 /**
  * Get the active events.
  *
@@ -403,15 +408,15 @@ void JJ1Level::clearEvent (unsigned char gridX, unsigned char gridY) {
  */
 int JJ1Level::hitEvent (unsigned char gridX, unsigned char gridY, int hits, JJ1LevelPlayer* source, unsigned int time) {
 
-	GridElement* ge;
-	int hitsToKill;
-
-	ge = grid[gridY] + gridX;
-
-	hitsToKill = eventSet[ge->event].strength;
+	GridElement *ge = grid[gridY] + gridX;
+	int hitsToKill = eventSet[ge->event].strength;
 
 	// If the event cannot be hit, return negative
 	if (!hitsToKill || (ge->hits == 255)) return -1;
+
+	// In turbo difficulty, enemy events generally take one more hit
+	if (getDifficulty() == difficultyType::Turbo && eventSet[ge->event].modifier == 0)
+		hitsToKill++;
 
 	// If the event has already been destroyed, do nothing
 	if (ge->hits >= hitsToKill) return 0;
@@ -846,12 +851,12 @@ int JJ1Level::play () {
 					else timeBonus = 0;
 
 					LOG_DEBUG("Killed %d of %d enemies, needed %d",
-						levelPlayer->getEnemies(), enemies, nEnemies[game->getDifficulty()]);
+						levelPlayer->getEnemies(), enemies, nEnemies[+getDifficulty()]);
 					LOG_DEBUG("Collected %d of %d items, needed %d",
 						levelPlayer->getItems(), items, nItems);
 
-					if (nEnemies[game->getDifficulty()]) {
-						enemyPercent = (levelPlayer->getEnemies() * 100) / (float) nEnemies[game->getDifficulty()];
+					if (nEnemies[+getDifficulty()]) {
+						enemyPercent = (levelPlayer->getEnemies() * 100) / (float) nEnemies[+getDifficulty()];
 						if (enemyPercent > 100) enemyPercent = 100;
 					}
 					if (nItems) {
