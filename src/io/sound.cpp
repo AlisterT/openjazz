@@ -32,7 +32,7 @@
 #else
 	#include <SDL_audio.h>
 #endif
-#include <psmplug.h>
+#include <xmp.h>
 #include <cassert>
 
 // default configuration
@@ -45,16 +45,16 @@
 #endif
 #if MUSIC_SETTINGS == 0
 	// low
-	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-	#define MUSIC_FLAGS 0
+	#define MUSIC_INTERPOLATION XMP_INTERP_NEAREST
+	#define MUSIC_EFFECTS 0
 #elif MUSIC_SETTINGS == 1
 	// mid
-	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_LINEAR
-	#define MUSIC_FLAGS MODPLUG_ENABLE_MEGABASS
+	#define MUSIC_INTERPOLATION XMP_INTERP_LINEAR
+	#define MUSIC_EFFECTS 0
 #else
 	// high
-	#define MUSIC_RESAMPLEMODE MODPLUG_RESAMPLE_FIR
-	#define MUSIC_FLAGS MODPLUG_ENABLE_NOISE_REDUCTION | MODPLUG_ENABLE_REVERB | MODPLUG_ENABLE_MEGABASS | MODPLUG_ENABLE_SURROUND
+	#define MUSIC_INTERPOLATION XMP_INTERP_SPLINE
+	#define MUSIC_EFFECTS XMP_DSP_ALL
 #endif
 
 // Datatype
@@ -80,7 +80,7 @@ namespace {
 	int nRawSounds = 0;
 	Sound sounds[SE::MAX] = {};
 	bool soundsLoaded = false;
-	ModPlugFile *musicFile = nullptr;
+	xmp_context xmpC = nullptr;
 	SDL_AudioSpec audioSpec = {};
 	bool musicPaused = false;
 	int musicVolume = MAX_VOLUME >> 1; // 50%
@@ -93,6 +93,27 @@ namespace {
 	#elif OJ_SDL2
 	SDL_AudioDeviceID audioDevice = 0;
 	#endif
+
+	// xmp callbacks for our file class
+
+	unsigned long xmp_read_func(void *dest, unsigned long len, unsigned long nmemb, void *priv){
+		auto* f = reinterpret_cast<File*>(priv);
+		return f->read(dest, len, nmemb);
+	}
+
+	int xmp_seek_func(void *priv, long offset, int whence) {
+		auto* f = reinterpret_cast<File*>(priv);
+		return f->seek(offset, whence);
+	}
+
+	long xmp_tell_func(void *priv) {
+		auto* f = reinterpret_cast<File*>(priv);
+		return f->tell();
+	}
+
+	struct xmp_callbacks xmpCallbacks = {
+		xmp_read_func, xmp_seek_func, xmp_tell_func, nullptr
+	};
 
 	// Helpers
 
@@ -116,7 +137,7 @@ namespace {
 		SDL_UnlockAudio();
 	#endif
 	}
-	#if !OJ_SDL3 && !OJ_SDL2
+	#if OJ_SDL1
 	int SDL_AUDIO_BITSIZE(int format) {
 		if (format == AUDIO_U8 || audioSpec.format == AUDIO_S8)
 			return 8;
@@ -126,6 +147,11 @@ namespace {
 
 		LOG_ERROR("Unsupported Audio format.");
 		return 0;
+	}
+	bool SDL_AUDIO_ISUNSIGNED(int format) {
+		if (format == AUDIO_U8 || format == AUDIO_U16MSB || format == AUDIO_U16LSB)
+			return true;
+		return false;
 	}
 	#endif
 
@@ -140,10 +166,9 @@ namespace {
 		// Clear audio buffer
 		memset(stream, '\0', len * sizeof(unsigned char));
 
-		if (musicFile && !musicPaused) {
-			// Read the next portion of music into the stream
-			ModPlug_Read(musicFile, stream, len);
-		}
+		// Read the next portion of music into the stream
+		if (xmpC && !musicPaused)
+			xmp_play_buffer(xmpC, stream, len, 0);
 
 		if (!soundsLoaded) return;
 
@@ -245,6 +270,10 @@ void openAudio () {
 		audioSpec.freq, SDL_AUDIO_BITSIZE(audioSpec.format), audioSpec.channels, audioSpec.samples);
 #endif
 
+	if((xmpC = xmp_create_context()) == nullptr) {
+		LOG_ERROR("Unable to load xmp!");
+	}
+
 	// Load sounds
 	soundsLoaded = loadSounds("SOUNDS.000");
 
@@ -264,6 +293,7 @@ void openAudio () {
  */
 void closeAudio () {
 	stopMusic();
+	xmp_free_context(xmpC);
 
 #if OJ_SDL3
 	SDL_CloseAudioDevice(SDL_GetAudioStreamDevice(audioStream));
@@ -317,37 +347,26 @@ void playMusic (const char * fileName, bool restart) {
 	if (currentMusic) delete[] currentMusic;
 	currentMusic = createString(fileName);
 
-	// Find the size of the file
-	int size = file->getSize();
+	// Load the file into libxmp
+	bool loadOk = false;
+	if(xmpC)
+		loadOk = (xmp_load_module_from_callbacks(xmpC, file.get(), xmpCallbacks) == 0);
 
-	// Read the entire file into memory
-	file->seek(0, true);
-	unsigned char *psmData = file->loadBlock(size);
+	if(loadOk) {
+		int playerFlags = 0;
+		if (SDL_AUDIO_BITSIZE(audioSpec.format) == 8)
+			playerFlags &= XMP_FORMAT_8BIT;
 
-	// Set up libpsmplug
-	ModPlug_Settings settings = {};
-	settings.mFlags = MUSIC_FLAGS;
-	settings.mChannels = audioSpec.channels;
-	settings.mBits = SDL_AUDIO_BITSIZE(audioSpec.format);
-	settings.mFrequency = audioSpec.freq;
-	settings.mResamplingMode = MUSIC_RESAMPLEMODE;
-	settings.mReverbDepth = 25;
-	settings.mReverbDelay = 40;
-	settings.mBassAmount = 50;
-	settings.mBassRange = 10;
-	settings.mSurroundDepth = 50;
-	settings.mSurroundDelay = 40;
+		if (SDL_AUDIO_ISUNSIGNED(audioSpec.format))
+			playerFlags &= XMP_FORMAT_UNSIGNED;
 
-	// unlimited looping
-	settings.mLoopCount = -1;
+		if (audioSpec.channels == 1)
+			playerFlags &= XMP_FORMAT_MONO;
 
-	ModPlug_SetSettings(&settings);
-
-	// Load the file into libmodplug
-	musicFile = ModPlug_Load(psmData, size);
-	delete[] psmData;
-
-	if (!musicFile) {
+		xmp_start_player(xmpC, audioSpec.freq, playerFlags);
+		xmp_set_player(xmpC, XMP_PLAYER_INTERP, MUSIC_INTERPOLATION);
+		xmp_set_player(xmpC, XMP_PLAYER_DSP, MUSIC_EFFECTS);
+	} else {
 		LOG_ERROR("Could not play music file: %s", fileName);
 		delete[] currentMusic;
 		currentMusic = nullptr;
@@ -380,9 +399,12 @@ void stopMusic () {
 	// Stop the music playing
 	LockAudio();
 
-	if (musicFile) {
-		ModPlug_Unload(musicFile);
-		musicFile = nullptr;
+	if(xmpC) {
+		int state = xmp_get_player(xmpC, XMP_PLAYER_STATE);
+		if (state == XMP_STATE_LOADED || state == XMP_STATE_PLAYING) {
+			xmp_end_player(xmpC);
+			xmp_release_module(xmpC);
+		}
 	}
 
 	// Cleanup
@@ -413,17 +435,16 @@ int getMusicVolume () {
 void setMusicVolume (int volume) {
 	musicVolume = CLAMP(volume, 0, MAX_VOLUME);
 
-	// do not access music player settings when not playing
-	if (!musicFile) return;
-
-	ModPlug_SetMasterVolume(musicFile, musicVolume * 2.56);
+	// only access music player settings when playing
+	if (xmpC && xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING)
+		xmp_set_player(xmpC, XMP_PLAYER_VOLUME, musicVolume);
 }
 
 
 /**
  * Gets the current music tempo
  *
- * @return music tempo (MUSIC_NORMAL, MUSIC_FAST)
+ * @return music tempo (NORMAL, FAST)
  */
 MusicTempo getMusicTempo () {
 	return musicTempo;
@@ -433,15 +454,18 @@ MusicTempo getMusicTempo () {
 /**
  * Sets the music tempo
  *
- * @param tempo new tempo (MUSIC_NORMAL, MUSIC_FAST)
+ * @param tempo new tempo (NORMAL, FAST)
  */
 void setMusicTempo (MusicTempo tempo) {
 	musicTempo = tempo;
 
-	// do not access music player settings when not playing
-	if (!musicFile) return;
-
-	ModPlug_SetMusicTempoFactor(musicFile, static_cast<unsigned int>(tempo));
+	// only access music player settings when playing
+	if (xmpC && xmp_get_player(xmpC, XMP_PLAYER_STATE) == XMP_STATE_PLAYING) {
+		if (tempo == MusicTempo::FAST)
+			xmp_set_tempo_factor_relative(xmpC, 0.66);
+		else
+			xmp_set_tempo_factor_relative(xmpC, 1.0);
+	}
 }
 
 

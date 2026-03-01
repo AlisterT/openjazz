@@ -62,8 +62,10 @@ class File {
 		static bool        exists      (const char *fileName, int pathType = PATH_TYPE_ANY);
 
 		int                getSize     ();
-		void               seek        (int offset, bool reset = false);
+		void               seek        (int offset, bool reset);
+		int                seek        (int offset, int origin = SEEK_CUR);
 		int                tell        ();
+		int                read        (void *buffer, int size, int count);
 		unsigned char      loadChar    ();
 		void               storeChar   (const unsigned char val);
 		unsigned short int loadShort   ();

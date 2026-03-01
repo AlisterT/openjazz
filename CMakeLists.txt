@@ -119,6 +119,13 @@ endif()
 target_include_directories(OpenJazz PUBLIC src)
 target_link_libraries(OpenJazz ${OJ_LIBS_HOST})
 
+# warnings
+if(MSVC)
+	target_compile_options(OpenJazz PRIVATE /W4)
+else()
+	target_compile_options(OpenJazz PRIVATE -Wall -Wextra)
+endif()
+
 # portable mode
 
 cmake_dependent_option(PORTABLE "Do not write to external directories, etc." OFF
