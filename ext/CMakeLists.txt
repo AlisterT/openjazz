@@ -1,13 +1,16 @@
 
+enable_language(C)
+set(CMAKE_C_STANDARD 99)
+
 # argparse
 
-add_library(argparse STATIC argparse/argparse.h argparse/argparse.cpp)
+add_library(argparse STATIC argparse/argparse.h argparse/argparse.c)
 target_include_directories(argparse INTERFACE argparse)
 target_link_libraries(OpenJazz argparse)
 
 # miniz
 
-add_library(miniz STATIC miniz/miniz.h miniz/miniz.cpp)
+add_library(miniz STATIC miniz/miniz.h miniz/miniz.c)
 target_compile_definitions(miniz INTERFACE MINIZ_NO_ARCHIVE_APIS)
 #target_compile_definitions(miniz PRIVATE _LARGEFILE64_SOURCE)
 target_include_directories(miniz INTERFACE miniz)
@@ -19,7 +22,7 @@ add_subdirectory(xmp)
 
 # stb
 
-add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp)
+add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.c)
 target_include_directories(stb INTERFACE stb)
 target_link_libraries(OpenJazz stb)
 
