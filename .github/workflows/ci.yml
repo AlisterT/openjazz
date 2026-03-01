@@ -93,16 +93,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -yqq
-          sudo apt-get install -yqq build-essential libsdl1.2-dev
+          sudo apt-get install -yqq build-essential cmake libsdl1.2-dev
 
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Build OpenJazz (normal)
         run: |
-          export MAKEFLAGS=-j$(nproc)
-          make
-          ls -l OpenJazz
+          export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+          cmake -B builddir -DCMAKE_BUILD_TYPE=Release \
+            -DLEGACY_SDL=ON -DSDL_VERSION=1 .
+          cmake --build builddir
+          ls -l builddir/OpenJazz
+          builddir/OpenJazz --version
 
   linux-clang:
     name: Build (Ubuntu 22.04 LTS x86_64, Clang-15, SDL2)
