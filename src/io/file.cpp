@@ -139,6 +139,65 @@ bool File::open (const char* path, const char* name, bool write) {
 
 
 /**
+ * Check if a file exists.
+ *
+ * @param fileName The file to check
+ * @param pathType Kind of directory
+ *
+ * @return Whether or not the file exists
+ */
+bool File::exists (const char * fileName, int pathType) {
+	/* FIXME: This currently duplicates code from Constructor/Destructor
+	 * and open() method. Maybe merge this into a common function.
+	 */
+
+	bool exists = false;
+
+	Path* path = gamePaths.paths;
+	while (path) {
+		// skip other paths
+		if (pathType != PATH_TYPE_ANY && (path->pathType & pathType) != pathType) {
+			path = path->next;
+			continue;
+		}
+
+		// Create the file path for the given directory
+		char *fullPath = createString(path->path, fileName);
+
+		// Open the file from the path
+		int res = access(fullPath, F_OK);
+
+#ifdef UPPERCASE_FILENAMES
+		if (res != 0) {
+			uppercaseString(fullPath + strlen(path->path));
+			res = access(fullPath, F_OK);
+		}
+#endif
+
+#ifdef LOWERCASE_FILENAMES
+		if (res != 0) {
+			lowercaseString(fullPath + strlen(path->path));
+			res = access(fullPath, F_OK);
+		}
+#endif
+
+		delete[] fullPath;
+
+		if(res == 0) {
+			exists = true;
+
+			break;
+		}
+
+		path = path->next;
+	}
+
+	return exists;
+}
+
+
+
+/**
  * Get the size of the file.
  *
  * @return The size of the file

@@ -561,7 +561,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 	for (count = 0; count < 10; count++) {
 
 		check = createFileName("LEVEL", 0, episodeToWorld(count));
-		exists[count] = fileExists(check, PATH_TYPE_GAME);
+		exists[count] = File::exists(check, PATH_TYPE_GAME);
 		delete[] check;
 
 		if (exists[count]) video.restoreSurfacePalette(episodeScreens[count]);
@@ -572,7 +572,7 @@ int GameMenu::newGameEpisode (GameModeType mode) {
 	if (mode == M_SINGLE) {
 
 		check = createFileName("BONUSMAP", 0);
-		exists[10] = fileExists(check, PATH_TYPE_GAME);
+		exists[10] = File::exists(check, PATH_TYPE_GAME);
 		delete[] check;
 
 	} else exists[10] = false;

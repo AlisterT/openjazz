@@ -33,38 +33,6 @@
 #include <cstdio>
 #include <cctype>
 
-/**
- * Check if a file exists.
- *
- * @param fileName The file to check
- * @param pathType Kind of directory
- *
- * @return Whether or not the file exists
- */
-bool fileExists (const char * fileName, int pathType) {
-
-	File *file;
-
-#ifdef VERBOSE
-	printf("Check: ");
-#endif
-
-	try {
-
-		file = new File(fileName, pathType);
-
-	} catch (int e) {
-
-		return false;
-
-	}
-
-	delete file;
-
-	return true;
-
-}
-
 
 /**
  * Create a short based on the little-endian contents of the first two bytes in

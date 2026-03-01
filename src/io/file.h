@@ -29,6 +29,17 @@
 #include <stdio.h>
 #include <memory>
 
+// Types
+
+enum pathType {
+	PATH_TYPE_INVALID = 0,     ///< Invalid directory, do not use
+	PATH_TYPE_SYSTEM = 1 << 0, ///< Read-only system directory
+	PATH_TYPE_CONFIG = 1 << 1, ///< User writable configuration directory
+	PATH_TYPE_GAME = 1 << 2,   ///< Directory containing game data
+	PATH_TYPE_TEMP = 1 << 3,   ///< User writable temporary directory
+	PATH_TYPE_ANY =  1 << 4    ///< Special case: any type
+};
+
 // Classes
 
 struct SDL_Surface;
@@ -47,6 +58,8 @@ class File {
 	public:
 		File                           (const char* name, int pathType, bool write = false);
 		~File                          ();
+
+		static bool        exists      (const char *fileName, int pathType = PATH_TYPE_ANY);
 
 		int                getSize     ();
 		void               seek        (int offset, bool reset = false);
@@ -77,15 +90,6 @@ using FilePtr = std::unique_ptr<File>;
 
 
 /// Directory path
-
-enum path_type {
-	PATH_TYPE_INVALID = 0,     ///< Invalid directory, do not use
-	PATH_TYPE_SYSTEM = 1 << 0, ///< Read-only system directory
-	PATH_TYPE_CONFIG = 1 << 1, ///< User writable configuration directory
-	PATH_TYPE_GAME = 1 << 2,   ///< Directory containing game data
-	PATH_TYPE_TEMP = 1 << 3,   ///< User writable temporary directory
-	PATH_TYPE_ANY =  1 << 4    ///< Special case: any type
-};
 
 class Path {
 
