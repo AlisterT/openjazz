@@ -1,7 +1,7 @@
 
 # ninja/parallel builds disable output colors, forcing them here.
 # Needs to be at global scope to catch all targets.
-# cmake will have this build into 3.24
+# cmake has this build-in since 3.24
 if(CMAKE_VERSION VERSION_LESS "3.24")
 	option(CMAKE_COLOR_DIAGNOSTICS "Always produce ANSI-colored output" OFF)
 	if(CMAKE_COLOR_DIAGNOSTICS)
@@ -93,7 +93,7 @@ endif()
 if(CPPCHECK_EXECUTABLE)
 	list(APPEND CPPCHECK_ARGS
 		--enable=warning,style,performance,portability,unusedFunction
-		--std=c++11
+		--std=c++14
 		--language=c++
 		-I${CMAKE_CURRENT_SOURCE_DIR}/src
 		-U__SYMBIAN32__ -UUIQ3 -UENABLE_JJ2                     # unmaintained
