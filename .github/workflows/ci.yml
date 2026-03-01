@@ -358,7 +358,7 @@ jobs:
           path: repo
 
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
 
       - name: Zip artifacts and inspect directory
         run: |
@@ -445,7 +445,7 @@ jobs:
           path: repo
 
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
 
       - name: Zip artifacts and inspect directory
         run: |
