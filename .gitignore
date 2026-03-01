@@ -5,15 +5,12 @@ openjazz.log
 *.a
 *.o
 
-# Makefile stamp
-.mk-stamp-depr
-
 # CMake
 CMakeCache.txt
 CMakeFiles/
 *.cmake
 !/builds/cmake/*.cmake
-ext/Makefile
+Makefile
 build.ninja
 CMakeUserPresets.json
 # CMake builds

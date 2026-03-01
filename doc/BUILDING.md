@@ -3,24 +3,22 @@
 
 Needed:
 - SDL 3.4, 2 or SDL 1.2 (deprecated) library (https://libsdl.org/)
+- CMake (https://cmake.org/)
 
 Optional:
 - SDL_net library (https://www.libsdl.org/projects/SDL_net/)
-- CMake (https://cmake.org/)
 
-OpenJazz traditionally ships a basic Makefile that may be used. It is usually
-enough to simply run `make` on UNIX-like platforms.
-However, the old SDL 1.2 library will be used then.
+OpenJazz traditionally shipped a basic Makefile, but nowadays building is
+more sophisticated, so a CMake script is provided:
 
-For more sophisticated building, a CMake script is provided:
+    cmake -B builddir -S .
+    cmake --build builddir
 
-    cmake -B OJ -S .
-    cmake --build OJ
-
-The optional installation step (`cmake --install OJ`) is not needed for all
-platforms, but usually for UNIX-like. For Homebrew targets a packaging step is
-also provided (`cmake --build OJ --target package`), which automatically creates
-ZIP archives. CMake will use the SDL library version 2 by default, but can also
+The optional installation step (`cmake --install builddir`) is not needed for
+all platforms, but usually for UNIX-like. For Homebrew targets a packaging step
+is also provided (`cmake --build builddir --target package`), which
+automatically creates ZIP archives.
+CMake will use the SDL library version 2 by default, but can also
 build against version 3.
 
 For network play, you need a platform which natively provides sockets or use

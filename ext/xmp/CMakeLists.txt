@@ -52,6 +52,7 @@ add_library(xmp STATIC
 	src/loaders/sample.c)
 target_include_directories(xmp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(xmp PRIVATE LIBXMP_CORE_PLAYER LIBXMP_CORE_DISABLE_IT)
+target_compile_definitions(xmp PUBLIC LIBXMP_STATIC)
 
 if(UNIX)
 	set(CMAKE_REQUIRED_LIBRARIES "m")
