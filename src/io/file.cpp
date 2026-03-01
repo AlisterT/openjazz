@@ -184,6 +184,14 @@ void File::seek (int offset, bool reset) {
 
 }
 
+int File::seek (int offset, int origin) {
+	return fseek(file, offset, origin);
+}
+
+int File::read (void *buffer, int size, int count) {
+	return fread(buffer, size, count, file);
+}
+
 
 /**
  * Load an unsigned char from the file.

@@ -66,7 +66,7 @@ namespace SE {
 };
 
 #define MAX_VOLUME   100
-enum class MusicTempo { NORMAL = 128, FAST = 80 };
+enum class MusicTempo { NORMAL, FAST };
 
 
 // Variables

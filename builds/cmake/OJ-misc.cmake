@@ -31,13 +31,6 @@ if(WANT_CCACHE)
 	endif()
 endif()
 
-# warnings
-if(MSVC)
-	add_compile_options(/W4)
-else()
-	add_compile_options(-Wall -Wextra)
-endif()
-
 # global scope, since ASAN needs to catch all targets
 option(WANT_ASAN "build with address sanitizer" OFF)
 if(WANT_ASAN)

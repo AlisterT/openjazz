@@ -49,8 +49,10 @@ class File {
 		~File                          ();
 
 		int                getSize     ();
-		void               seek        (int offset, bool reset = false);
+		void               seek        (int offset, bool reset);
+		int                seek        (int offset, int origin = SEEK_CUR);
 		int                tell        ();
+		int                read        (void *buffer, int size, int count);
 		unsigned char      loadChar    ();
 		void               storeChar   (unsigned char val);
 		unsigned short int loadShort   ();
