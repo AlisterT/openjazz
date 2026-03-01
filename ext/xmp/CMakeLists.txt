@@ -1,7 +1,4 @@
 
-enable_language(C)
-set(CMAKE_C_STANDARD 99)
-
 include(CheckSymbolExists)
 include(CheckFunctionExists)
 
