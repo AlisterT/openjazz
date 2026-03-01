@@ -410,11 +410,9 @@ int play () {
 
 		}
 
-		if (mainMenu->skip(cli.level, cli.world) == E_QUIT) {
+		mainMenu->skip(cli.level, cli.world);
 
-			delete mainMenu;
-
-		}
+		delete mainMenu;
 
 		return E_NONE;
 
