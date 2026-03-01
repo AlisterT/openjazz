@@ -80,7 +80,7 @@ jobs:
           git archive -o openjazz-${OJ_VERSION}.zip --prefix=openjazz-${OJ_VERSION}/ ${GITHUB_SHA}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-dist
           path: openjazz-*.*
@@ -136,7 +136,7 @@ jobs:
           cp build-release/OpenJazz README.md COPYING doc/licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-linux-glibc2.35-x86_64
           path: OJ-*/
@@ -174,7 +174,7 @@ jobs:
           mv dist OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-windows-mingw-x86_64
           path: OJ-*/
@@ -211,7 +211,7 @@ jobs:
           cp build-web/*.{wasm,js,html,data} README.md COPYING doc/licenses.txt OJ-${OJ_VERSION}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-web
           path: OJ-*/
@@ -247,7 +247,7 @@ jobs:
         run: |
           mv build-android/OpenJazz/app/outputs/apk/debug/app-debug.apk OJ-${OJ_VERSION}-debug.apk
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-android-debug
           path: OJ-*
@@ -299,7 +299,7 @@ jobs:
           mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-${{ matrix.settings.shortname }}
           path: OJ-*/
@@ -332,7 +332,7 @@ jobs:
           mv OpenJazz OJ-${OJ_VERSION}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openjazz-psp
           path: OJ-*/
