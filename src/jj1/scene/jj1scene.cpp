@@ -38,6 +38,10 @@
 
 #include <string.h>
 #include <algorithm> // std::find_if
+#ifdef HIRES
+	#include <stb_image.h>
+	#include <stdio.h>
+#endif
 
 
 /**
@@ -105,6 +109,9 @@ JJ1SceneAnimation::JJ1SceneAnimation (int id) :
  * Delete the JJ1 cutscene animation.
  */
 JJ1SceneAnimation::~JJ1SceneAnimation () {
+#ifdef HIRES
+	freeHiresFrames();
+#endif
 	if(sceneFrames) {
 		JJ1SceneFrame* frame = sceneFrames;
 		JJ1SceneFrame* nextFrame = NULL;
@@ -119,6 +126,72 @@ JJ1SceneAnimation::~JJ1SceneAnimation () {
 	video.destroySurface(background);
 	video.destroySurface(scratch);
 }
+
+
+#ifdef HIRES
+/**
+ * Load pre-rendered hi-res frame textures for this animation.
+ *
+ * Looks for files of the form:
+ *   <gamePath>/hires/scenes/<sceneName>/anim_<id>/frame_<NNNN>.png
+ *
+ * Each PNG is loaded with stb_image as RGBA and uploaded as a SDL_Texture.
+ * Missing files are stored as nullptr so frame indices stay aligned.
+ *
+ * @param sceneName  Basename of the .0SC file (e.g. "STARTUP.0SC")
+ */
+void JJ1SceneAnimation::loadHiresFrames (const char* sceneName) {
+
+	if (!hiresFrames.empty()) return; // already loaded
+
+	char probe[512];
+
+	for (Path* p = gamePaths.paths; p; p = p->next) {
+
+		if (!(p->pathType & PATH_TYPE_GAME)) continue;
+
+		// Check whether the first frame exists to confirm the directory
+		snprintf(probe, sizeof(probe),
+			"%shires/scenes/%s/anim_%03d/frame_0000.png",
+			p->path, sceneName, id);
+		FILE* f = fopen(probe, "rb");
+		if (!f) continue;
+		fclose(f);
+
+		// Load all frames
+		for (int i = 0; i < frames; i++) {
+
+			char fname[512];
+			snprintf(fname, sizeof(fname),
+				"%shires/scenes/%s/anim_%03d/frame_%04d.png",
+				p->path, sceneName, id, i);
+
+			int w, h, ch;
+			unsigned char* data = stbi_load(fname, &w, &h, &ch, STBI_rgb_alpha);
+			if (data) {
+				hiresFrames.push_back(video.createHiresTexture(data, w, h));
+				stbi_image_free(data);
+			} else {
+				hiresFrames.push_back(nullptr);
+			}
+		}
+
+		return;
+	}
+}
+
+
+/**
+ * Free all loaded hi-res frame textures.
+ */
+void JJ1SceneAnimation::freeHiresFrames () {
+
+	for (SDL_Texture* tex : hiresFrames)
+		video.freeHiresTexture(tex);
+	hiresFrames.clear();
+
+}
+#endif
 
 
 /**
@@ -209,6 +282,16 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	FilePtr file;
 	LOG_TRACE("Scene: %s", fileName);
 
+#ifdef HIRES
+	// Store the basename (e.g. "STARTUP.0SC") for hi-res frame lookup
+	const char* slash = strrchr(fileName, '/');
+	const char* base  = slash ? slash + 1 : fileName;
+	snprintf(sceneName, sizeof(sceneName), "%s", base);
+	// Normalise to upper-case so the directory name matches extract_scenes.py output
+	for (char* p = sceneName; *p; ++p)
+		if (*p >= 'a' && *p <= 'z') *p -= 32;
+#endif
+
 	try {
 
 		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
@@ -270,6 +353,9 @@ int JJ1Scene::play () {
 	int	frameDelay = 0;
 	int prevFrame = 0;
 	int continueToNextPage = 0;
+#ifdef HIRES
+	int hiresFrameIdx = 0;
+#endif
 
 	unsigned int pageTime = pages[sceneIndex].pageTime;
 	unsigned int lastTicks = globalTicks;
@@ -430,6 +516,10 @@ int JJ1Scene::play () {
 					SDL_BlitSurface(sceneAnimation->background, NULL, canvas, &dst);
 					SDL_BlitSurface(sceneAnimation->background, NULL, sceneAnimation->scratch, NULL);
 					currentFrame = sceneAnimation->sceneFrames;
+#ifdef HIRES
+					sceneAnimation->loadHiresFrames(sceneName);
+					hiresFrameIdx = 0;
+#endif
 					SDL_Delay(frameDelay);
 
 				}
@@ -466,6 +556,14 @@ int JJ1Scene::play () {
 				dst.x = (canvasW - SW) >> 1;
 				dst.y = (canvasH - SH) >> 1;
 				SDL_BlitSurface(sceneAnimation->scratch, NULL, canvas, &dst);
+
+#ifdef HIRES
+				if (hiresFrameIdx < static_cast<int>(sceneAnimation->hiresFrames.size())) {
+					SDL_Texture* htex = sceneAnimation->hiresFrames[hiresFrameIdx];
+					if (htex) video.queueHiresDraw(htex, dst.x, dst.y, SW, SH);
+				}
+				hiresFrameIdx++;
+#endif
 
 				playSound(currentFrame->soundId);
 

@@ -242,6 +242,12 @@ class JJ1Level : public Level {
 		int  loadTiles    (char* fileName);
 		int  playBonus    ();
 
+#ifdef HIRES
+		SDL_Texture* hiresTileSet[TNUM * TSETS]; ///< Hi-res tile textures (null if not available)
+		void loadHiresTiles(const char* ext);
+		void freeHiresTiles();
+#endif
+
 	protected:
 		Font* font; ///< On-screen message font
 		char* musicFile; ///< Music file name

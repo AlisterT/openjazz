@@ -32,6 +32,10 @@
 	#include <SDL.h>
 #endif
 
+#ifdef HIRES
+	#include <vector>
+#endif
+
 // Constants
 
 // Original screen dimensions
@@ -122,6 +126,14 @@ class Video {
 
 		void       clearScreen           (int index);
 
+#ifdef HIRES
+		void         queueHiresDraw      (SDL_Texture* texture, int x, int y, int w, int h);
+		void         setHiresScissor     (int x, int y, int w, int h);
+		void         setPanelOverlay     (int x, int y, int w, int h);
+		SDL_Texture* createHiresTexture  (const unsigned char* rgba, int w, int h);
+		void         freeHiresTexture    (SDL_Texture* texture);
+#endif
+
 	private:
 		void       findResolutions ();
 		void       expose          ();
@@ -144,6 +156,15 @@ class Video {
 		SDL_Palette*  logicalPalette; ///< Logical palette (greyscale)
 #else
 		SDL_Color     logicalPalette[MAX_PALETTE_COLORS]; ///< Logical palette (greyscale)
+#endif
+
+#ifdef HIRES
+		struct HiresCmd { SDL_Texture* tex; int x; int y; int w; int h; };
+		std::vector<HiresCmd> hiresQueue; ///< Queued hi-res tile draws
+		SDL_Rect              hiresScissor;    ///< Scissor rect for hi-res queue drain
+		bool                  hiresScissorSet; ///< Whether scissor rect is active
+		SDL_Rect              panelOverlay;    ///< Canvas strip re-rendered after hi-res (keeps panel on top)
+		bool                  panelOverlaySet; ///< Whether panel overlay is active
 #endif
 
 		int           minW; ///< Smallest possible width

@@ -348,6 +348,12 @@ void JJ1Level::draw () {
 
 
 	// Show foreground tiles
+#ifdef HIRES
+	// Register the full-width panel strip to be re-composited AFTER hi-res tiles
+	// in flip(), keeping the HUD always on top without any scissor seam.
+	video.setPanelOverlay(0, canvasH - 33, canvasW, 33);
+#endif
+
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
 		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
@@ -366,6 +372,11 @@ void JJ1Level::draw () {
 				if (ticks & 64) { src.y = TTOI(eventSet[ge->event].multiB); animTile = static_cast<unsigned char>(eventSet[ge->event].multiB); }
 				else { src.y = TTOI(eventSet[ge->event].multiA); animTile = static_cast<unsigned char>(eventSet[ge->event].multiA); }
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
+#ifdef HIRES
+				if (animTile < TNUM * TSETS && hiresTileSet[animTile])
+					video.queueHiresDraw(hiresTileSet[animTile], dst.x, dst.y, src.w, src.h);
+#endif
+
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
 			}
 
@@ -379,6 +390,11 @@ void JJ1Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
+#ifdef HIRES
+				if (ge->tile < TNUM * TSETS && hiresTileSet[ge->tile])
+					video.queueHiresDraw(hiresTileSet[ge->tile], dst.x, dst.y, src.w, src.h);
+#endif
+
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
 			}
 
@@ -411,6 +427,17 @@ void JJ1Level::draw () {
 	}
 
 	video.setClipRect(canvas, nullptr);
+
+#ifdef HIRES
+	// In Classic wide mode the panel only covers the centre SW pixels; the side
+	// margins are exposed game-world canvas.  The hi-res scissor stops at
+	// canvasH-33, so those exposed margins would show a quality seam where
+	// hi-res ends and 8-bit base begins.  Fill them with black to hide it.
+	if (setup.hudStyle == hudType::Classic && isWide) {
+		video.drawRect(0,           canvasH - 33, offsetX,                 33, LEVEL_BLACK);
+		video.drawRect(offsetX + SW, canvasH - 33, canvasW - (offsetX + SW), 33, LEVEL_BLACK);
+	}
+#endif
 
 	if (ammoOffset != 0) {
 

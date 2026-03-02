@@ -44,6 +44,11 @@
 
 #include <string.h>
 
+#ifdef HIRES
+	#include <stb_image.h>
+	#include <stdio.h>
+#endif
+
 
 #define SKEY 254 /* Sprite colour key */
 
@@ -314,6 +319,59 @@ int JJ1Level::loadSprites (char * fileName) {
 }
 
 
+#ifdef HIRES
+/**
+ * Search game paths for hi-res tiles and load them into hiresTileSet[].
+ * Tiles are expected at: <gamePath>/hires/tiles/BLOCKS_<ext>/tile_NNNN.png
+ *
+ * @param ext Tileset file extension, e.g. "000"
+ */
+void JJ1Level::loadHiresTiles(const char* ext) {
+	char fname[512];
+
+	// Search each game path for the hi-res tiles directory
+	for (Path* p = gamePaths.paths; p; p = p->next) {
+		if (!(p->pathType & PATH_TYPE_GAME)) continue;
+
+		// Probe for the first tile to confirm the directory exists
+		snprintf(fname, sizeof(fname), "%shires/tiles/BLOCKS_%s/tile_0000.png",
+			p->path, ext);
+		FILE* probe = fopen(fname, "rb");
+		if (!probe) continue;
+		fclose(probe);
+
+		// Load tiles sequentially until one is missing
+		int count = 0;
+		for (int i = 0; i < TNUM * TSETS; i++) {
+			snprintf(fname, sizeof(fname), "%shires/tiles/BLOCKS_%s/tile_%04d.png",
+				p->path, ext, i);
+			int w, h, channels;
+			unsigned char* data = stbi_load(fname, &w, &h, &channels, STBI_rgb_alpha);
+			if (!data) break;
+			hiresTileSet[i] = video.createHiresTexture(data, w, h);
+			stbi_image_free(data);
+			count++;
+		}
+
+		LOG_DEBUG("Hi-res tiles: loaded %d tiles for BLOCKS_%s", count, ext);
+		return;
+	}
+
+	LOG_DEBUG("Hi-res tiles: no tiles found for BLOCKS_%s", ext);
+}
+
+/**
+ * Free all hi-res tile textures.
+ */
+void JJ1Level::freeHiresTiles() {
+	for (int i = 0; i < TNUM * TSETS; i++) {
+		video.freeHiresTexture(hiresTileSet[i]);
+		hiresTileSet[i] = nullptr;
+	}
+}
+#endif
+
+
 /**
  * Load the tileset.
  *
@@ -580,6 +638,11 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 	delete[] ext;
 
 	int tiles = loadTiles(string);
+
+#ifdef HIRES
+	if (tiles > 0)
+		loadHiresTiles(string + strlen(string) - 3);
+#endif
 
 	delete[] string;
 

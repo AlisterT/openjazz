@@ -34,7 +34,7 @@ target_link_libraries(OpenJazz psmplug)
 
 # stb
 
-add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp)
+add_library(stb STATIC stb/stb_rect_pack.h stb/stb_rect_pack.cpp stb/stb_image.h stb/stb_image.cpp)
 target_include_directories(stb INTERFACE stb)
 target_link_libraries(OpenJazz stb)
 

@@ -138,6 +138,10 @@ Video::Video () :
 #endif
 	screen(nullptr), scaleFactor(MIN_SCALE), scaleMethod(scalerType::None),
 	fullscreen(false), isPlayingMovie(false)
+#ifdef HIRES
+	, hiresScissor{0,0,0,0}, hiresScissorSet(false)
+	, panelOverlay{0,0,0,0}, panelOverlaySet(false)
+#endif
 	{
 
 	minW = maxW = screenW = DEFAULT_SCREEN_WIDTH;
@@ -771,6 +775,27 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	} else {
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 	}
+#ifdef HIRES
+	if (hiresScissorSet) SDL_RenderSetClipRect(renderer, &hiresScissor);
+	for (auto& cmd : hiresQueue) {
+		SDL_FRect dstR = {static_cast<float>(cmd.x), static_cast<float>(cmd.y),
+			static_cast<float>(cmd.w), static_cast<float>(cmd.h)};
+		SDL_RenderTexture(renderer, cmd.tex, nullptr, &dstR);
+	}
+	if (hiresScissorSet) {
+		SDL_RenderSetClipRect(renderer, nullptr);
+		hiresScissorSet = false;
+	}
+	hiresQueue.clear();
+	// Re-render the panel strip from the base canvas texture so it always sits
+	// on top of hi-res tiles, eliminating any quality seam at the HUD boundary.
+	if (panelOverlaySet) {
+		SDL_FRect srcR = {static_cast<float>(panelOverlay.x), static_cast<float>(panelOverlay.y),
+			static_cast<float>(panelOverlay.w), static_cast<float>(panelOverlay.h)};
+		SDL_RenderTexture(renderer, texture, &srcR, &srcR);
+		panelOverlaySet = false;
+	}
+#endif
 	SDL_RenderPresent(renderer);
 #elif OJ_SDL2
 #if defined(SCALE)
@@ -800,6 +825,24 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 	} else {
 		SDL_RenderCopy(renderer, texture, nullptr, nullptr);
 	}
+#ifdef HIRES
+	if (hiresScissorSet) SDL_RenderSetClipRect(renderer, &hiresScissor);
+	for (auto& cmd : hiresQueue) {
+		SDL_Rect dstR = {cmd.x, cmd.y, cmd.w, cmd.h};
+		SDL_RenderCopy(renderer, cmd.tex, nullptr, &dstR);
+	}
+	if (hiresScissorSet) {
+		SDL_RenderSetClipRect(renderer, nullptr);
+		hiresScissorSet = false;
+	}
+	hiresQueue.clear();
+	// Re-render the panel strip from the base canvas texture so it always sits
+	// on top of hi-res tiles, eliminating any quality seam at the HUD boundary.
+	if (panelOverlaySet) {
+		SDL_RenderCopy(renderer, texture, &panelOverlay, &panelOverlay);
+		panelOverlaySet = false;
+	}
+#endif
 	SDL_RenderPresent(renderer);
 #else
 	SDL_Flip(screen);
@@ -807,6 +850,72 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 
 }
 
+
+#ifdef HIRES
+/**
+ * Queue a hi-res tile draw to be composited over the base canvas in flip().
+ *
+ * @param texture Hi-res SDL texture
+ * @param x       Destination x in logical canvas coordinates
+ * @param y       Destination y in logical canvas coordinates
+ */
+void Video::queueHiresDraw(SDL_Texture* texture, int x, int y, int w, int h) {
+	hiresQueue.push_back({texture, x, y, w, h});
+}
+
+void Video::setHiresScissor(int x, int y, int w, int h) {
+	hiresScissor = {x, y, w, h};
+	hiresScissorSet = true;
+}
+
+void Video::setPanelOverlay(int x, int y, int w, int h) {
+	panelOverlay = {x, y, w, h};
+	panelOverlaySet = true;
+}
+
+/**
+ * Create an SDL_Texture from raw RGBA pixel data.
+ *
+ * @param rgba    RGBA pixel data (4 bytes per pixel, in R,G,B,A order)
+ * @param w       Image width
+ * @param h       Image height
+ * @return New texture, or nullptr on error
+ */
+SDL_Texture* Video::createHiresTexture(const unsigned char* rgba, int w, int h) {
+#if OJ_SDL3 || OJ_SDL2
+	if (!renderer) return nullptr;
+	SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
+		SDL_TEXTUREACCESS_STATIC, w, h);
+	if (!tex) return nullptr;
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+	// Force nearest-neighbor for hi-res tiles: prevents bilinear edge-bleeding
+	// when SDL's global scale-quality hint is set to "linear".
+#if OJ_SDL3
+	SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
+#else
+	SDL_SetTextureScaleMode(tex, SDL_ScaleModeNearest);
+#endif
+	SDL_UpdateTexture(tex, nullptr, rgba, w * 4);
+	return tex;
+#else
+	(void)rgba; (void)w; (void)h;
+	return nullptr;
+#endif
+}
+
+/**
+ * Destroy a hi-res texture created by createHiresTexture().
+ *
+ * @param texture Texture to destroy (may be nullptr)
+ */
+void Video::freeHiresTexture(SDL_Texture* texture) {
+#if OJ_SDL3 || OJ_SDL2
+	if (texture) SDL_DestroyTexture(texture);
+#else
+	(void)texture;
+#endif
+}
+#endif
 
 
 /**

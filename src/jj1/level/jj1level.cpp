@@ -78,6 +78,9 @@ JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 	energyBar = ammoType = ammoOffset = 0;
 	font = nullptr;
 	musicFile = nullptr;
+#ifdef HIRES
+	for (int i = 0; i < TNUM * TSETS; i++) hiresTileSet[i] = nullptr;
+#endif
 }
 
 
@@ -137,6 +140,10 @@ JJ1Level::~JJ1Level () {
 	delete[] musicFile;
 
 	delete[] spriteSet;
+
+#ifdef HIRES
+	freeHiresTiles();
+#endif
 
 	video.destroySurface(tileSet);
 

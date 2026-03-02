@@ -27,6 +27,9 @@
 #include "types.h"
 #include <list>
 #include <vector>
+#ifdef HIRES
+	#include "io/gfx/video.h"
+#endif
 
 // Enums
 
@@ -199,6 +202,12 @@ class JJ1SceneAnimation {
 		int frames;
 		int reverseAnimation;
 
+#ifdef HIRES
+		std::vector<SDL_Texture*> hiresFrames; ///< Pre-loaded hi-res frame textures
+		void loadHiresFrames (const char* sceneName);
+		void freeHiresFrames ();
+#endif
+
 		explicit JJ1SceneAnimation (int id);
 		~JJ1SceneAnimation ();
 		JJ1SceneAnimation (const JJ1SceneAnimation&) = delete; // non construction-copyable
@@ -221,6 +230,10 @@ class JJ1Scene {
 
 		unsigned short int scriptItems, dataItems;
 		std::vector<signed long int> scriptStarts, dataOffsets;
+
+#ifdef HIRES
+		char sceneName[64]; ///< Basename of the .0SC file, used for hi-res lookup
+#endif
 
 		void               loadScripts      (File* f);
 		void               loadData         (File* f);
