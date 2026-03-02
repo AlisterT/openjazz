@@ -79,6 +79,14 @@ SetupOptions Setup::load () {
 	SetupOptions cfg = { false, 0, 0, false, 0, scalerType::None };
 #ifdef FULLSCREEN_ONLY
 	cfg.fullScreen = true;
+#elif defined(DEFAULT_FULLSCREEN)
+	cfg.fullScreen = true;
+#endif
+#ifdef DEFAULT_SCALE
+	cfg.videoScale = DEFAULT_SCALE;
+#endif
+#ifdef DEFAULT_SCALE_METHOD
+	cfg.scaleMethod = static_cast<scalerType>(CLAMP(DEFAULT_SCALE_METHOD, +scalerType::None, +scalerType::hqx));
 #endif
 
 	// Open config file

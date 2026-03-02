@@ -226,11 +226,19 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 	config = setup.load();
 	if (!config.valid) {
 
-		// Invalid config - apply defaults
-		config.videoWidth = DEFAULT_SCREEN_WIDTH;
+		// Invalid config - apply compile-time defaults
+		config.videoWidth  = DEFAULT_SCREEN_WIDTH;
 		config.videoHeight = DEFAULT_SCREEN_HEIGHT;
+#ifdef DEFAULT_SCALE
+		config.videoScale = DEFAULT_SCALE;
+#else
 		config.videoScale = MIN_SCALE;
+#endif
+#ifdef DEFAULT_SCALE_METHOD
+		config.scaleMethod = static_cast<scalerType>(CLAMP(DEFAULT_SCALE_METHOD, +scalerType::None, +scalerType::hqx));
+#else
 		config.scaleMethod = scalerType::None;
+#endif
 
 	}
 

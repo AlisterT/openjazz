@@ -137,7 +137,8 @@ Video::Video () :
 	textureSurface(nullptr),
 #endif
 	screen(nullptr), scaleFactor(MIN_SCALE), scaleMethod(scalerType::None),
-	fullscreen(false), isPlayingMovie(false) {
+	fullscreen(false), isPlayingMovie(false)
+	{
 
 	minW = maxW = screenW = DEFAULT_SCREEN_WIDTH;
 	minH = maxH = screenH = DEFAULT_SCREEN_HEIGHT;
@@ -279,15 +280,26 @@ bool Video::init (SetupOptions cfg) {
 
 	findResolutions();
 
+	// Use compile-time defaults when no saved config exists (videoWidth/Height == 0).
+	// In fullscreen mode also enforce the defaults as a minimum: this prevents a
+	// stale config (e.g. 640×480 saved from a windowed session) from shrinking the
+	// canvas, while still respecting a larger value the user explicitly chose.
+	int savedW = (cfg.videoWidth  > 0) ? cfg.videoWidth  : 0;
+	int savedH = (cfg.videoHeight > 0) ? cfg.videoHeight : 0;
+	int initW = (savedW > DEFAULT_SCREEN_WIDTH  || !fullscreen) ? savedW : DEFAULT_SCREEN_WIDTH;
+	int initH = (savedH > DEFAULT_SCREEN_HEIGHT || !fullscreen) ? savedH : DEFAULT_SCREEN_HEIGHT;
+	if (initW == 0) initW = DEFAULT_SCREEN_WIDTH;
+	if (initH == 0) initH = DEFAULT_SCREEN_HEIGHT;
+
 #ifdef SCALE
-	if ((SW * cfg.videoScale <= cfg.videoWidth) &&
-		(SH * cfg.videoScale <= cfg.videoHeight))
+	if ((SW * cfg.videoScale <= initW) &&
+		(SH * cfg.videoScale <= initH))
 		scaleFactor = cfg.videoScale;
 
 	scaleMethod = cfg.scaleMethod;
 #endif
 
-	if (!reset(cfg.videoWidth, cfg.videoHeight)) {
+	if (!reset(initW, initH)) {
 		LOG_FATAL("Could not set video mode: %s", SDL_GetError());
 		return false;
 	}
@@ -794,6 +806,7 @@ void Video::flip (int mspf, PaletteEffect* paletteEffects, bool effectsStopped) 
 #endif
 
 }
+
 
 
 /**

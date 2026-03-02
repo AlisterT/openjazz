@@ -323,6 +323,9 @@ void JJ1Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
+				// NOTE: hi-res is NOT applied to background tiles here.
+				// Background tiles are drawn BEFORE entities on the canvas; queuing hi-res
+				// after the canvas would cause them to overdraw player sprites (Z-order bug).
 
 			}
 
@@ -345,7 +348,6 @@ void JJ1Level::draw () {
 
 
 	// Show foreground tiles
-
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
 		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
@@ -360,10 +362,10 @@ void JJ1Level::draw () {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
-				if (ticks & 64) src.y = TTOI(eventSet[ge->event].multiB);
-				else src.y = TTOI(eventSet[ge->event].multiA);
+				unsigned char animTile;
+				if (ticks & 64) { src.y = TTOI(eventSet[ge->event].multiB); animTile = static_cast<unsigned char>(eventSet[ge->event].multiB); }
+				else { src.y = TTOI(eventSet[ge->event].multiA); animTile = static_cast<unsigned char>(eventSet[ge->event].multiA); }
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
 			}
 
@@ -377,7 +379,6 @@ void JJ1Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
 			}
 
@@ -404,8 +405,8 @@ void JJ1Level::draw () {
 	int offsetX = 0;
 	bool isWide = (canvasW != SW);
 
-	if(setup.hudStyle == hudType::FPS && isWide) {
-		// center panel
+	if(isWide && (setup.hudStyle == hudType::FPS || setup.hudStyle == hudType::Classic)) {
+		// center panel in widescreen
 		offsetX = (canvasW >> 1) - (SW >> 1);
 	}
 
@@ -434,12 +435,12 @@ void JJ1Level::draw () {
 	if(setup.hudStyle == hudType::Classic ||
 		(setup.hudStyle == hudType::FPS && !isWide)) {
 
-		dst.x = 0;
+		dst.x = offsetX;
 		dst.y = canvasH - 33;
 		SDL_BlitSurface(panel, nullptr, canvas, &dst);
 
 		// Fill the one missing pixel row at the bottom black
-		video.drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
+		video.drawRect(offsetX, canvasH - 1, SW, 1, LEVEL_BLACK);
 	} else if (setup.hudStyle == hudType::FPS) {
 		// quake-style HUD
 

@@ -334,12 +334,15 @@ int SetupMenu::setupVideo () {
 	    768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
 	    2048, 2160, MAX_SCREEN_HEIGHT};
 	const char *methodString[4] = { "nearest", "bilinear", "scalex", "hqx"};
+	// Aspect ratio presets: 0=free, 1=16:9, 2=16:10 (Steam Deck), 3=4:3
+	const char *aspectString[4] = { "free", "16:9", "16:10", "4:3" };
 	int scaleFactor = video.getScaleFactor();
 	scalerType scaleMethod = video.getScaleMethod();
 	int screenW, screenH, oldscreenW, oldscreenH, x, y;
 	screenW = oldscreenW = video.getWidth();
 	screenH = oldscreenH = video.getHeight();
 	int selection = 0;
+	int aspectIndex = 0;
 	bool resOK = true;
 
 	char scaleString[3] = "Yx";
@@ -349,6 +352,15 @@ int SetupMenu::setupVideo () {
 	int resStringWidth = 0;
 
 	// helpers
+	auto calcAspectHeight = [&] (int w) -> int {
+		switch (aspectIndex) {
+			case 1: return (w * 9)  / 16;  // 16:9
+			case 2: return (w * 10) / 16;  // 16:10
+			case 3: return (w * 3)  / 4;   // 4:3
+			default: return 0;
+		}
+	};
+
 	auto changeWidth = [&] (bool isPositive) {
 		int count = 0;
 		if(isPositive && (screenW < video.getMaxWidth())) {
@@ -362,6 +374,11 @@ int SetupMenu::setupVideo () {
 				count--;
 
 			screenW = widthOptions[count];
+		}
+		// Apply aspect ratio constraint when locked
+		if (aspectIndex > 0) {
+			int newH = calcAspectHeight(screenW);
+			screenH = CLAMP(newH, video.getMinHeight(), video.getMaxHeight());
 		}
 	};
 	auto changeHeight = [&] (bool isPositive) {
@@ -385,6 +402,18 @@ int SetupMenu::setupVideo () {
 		else if (!isPositive && scaleFactor > MIN_SCALE)
 			scaleFactor--;
 	};
+	auto changeAspect = [&] (bool isPositive) {
+		if (isPositive && aspectIndex < 3)
+			aspectIndex++;
+		else if (!isPositive && aspectIndex > 0)
+			aspectIndex--;
+		// Apply newly selected aspect ratio to current width
+		if (aspectIndex > 0) {
+			int newH = calcAspectHeight(screenW);
+			screenH = CLAMP(newH, video.getMinHeight(), video.getMaxHeight());
+		}
+	};
+
 	auto changeScaleMethod = [&] (bool isPositive) {
 		// TODO
 #if 0
@@ -485,17 +514,23 @@ int SetupMenu::setupVideo () {
 		fontmn2->showString("method:", (canvasW >> 1) - 80, (canvasH >> 1) + 32);
 		fontmn2->showString(methodString[+scaleMethod], (canvasW >> 1) + 8, (canvasH >> 1) + 32);
 
+		switchPalette(selection == 4);
+
+		// Aspect ratio
+		fontmn2->showString("aspect:", (canvasW >> 1) - 80, (canvasH >> 1) + 48);
+		fontmn2->showString(aspectString[aspectIndex], (canvasW >> 1) + 8, (canvasH >> 1) + 48);
+
 		switchPalette(false);
 
 		if (controls.release(C_UP)) {
 			if(selection > 0)
 				selection--;
 			else
-				selection = 3;
+				selection = 4;
 		}
 
 		if (controls.release(C_DOWN)) {
-			if(selection < 3)
+			if(selection < 4)
 				selection++;
 			else
 				selection = 0;
@@ -517,6 +552,9 @@ int SetupMenu::setupVideo () {
 			case 3:
 				changeScaleMethod(hasPressedRight);
 				break;
+			case 4:
+				changeAspect(hasPressedRight);
+				break;
 			}
 			resOK = true;
 		}
@@ -526,7 +564,7 @@ int SetupMenu::setupVideo () {
 			scaleFactor != video.getScaleFactor() || scaleMethod != video.getScaleMethod()) {
 
 			fontmn2->showString(resOK ? "press enter to apply" : "invalid resolution!",
-				(canvasW >> 1), (canvasH >> 1) + 56, alignX::Center);
+				(canvasW >> 1), (canvasH >> 1) + 64, alignX::Center);
 
 			// Apply resolution change
 			if (controls.release(C_ENTER)) {
