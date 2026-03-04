@@ -17,8 +17,10 @@
  */
 
 #include "jj1save.h"
+#include "setup.h"
 #include "util.h"
 #include "io/log.h"
+#include <ctime>
 
 /* This algorithm has been found out by CYBERDEViL by analysing the Assembly in
  * DoxBox-X. For more information see: https://codeberg.org/CYBERDEV/JJSave/
@@ -80,7 +82,7 @@ JJ1Save::JJ1Save (const char* fileName) :
 	LOG_TRACE("Save: %s", fileName);
 
 	try {
-		file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
+		file = std::make_unique<File>(fileName, PATH_TYPE_ANY);
 	} catch (int e) {
 		name = createString("empty");
 		return;
@@ -153,4 +155,82 @@ JJ1Save::JJ1Save (const char* fileName) :
 
 JJ1Save::~JJ1Save () {
 	delete[] name;
+}
+
+
+void JJ1Save::write (int slot, const char* playerName, int planet, int level, difficultyType difficulty) {
+
+	char* fileName = createString("SAVE.0");
+	fileName[5] += slot;
+
+	FilePtr file;
+
+	try {
+		file = std::make_unique<File>(fileName, PATH_TYPE_CONFIG, true);
+	} catch (int e) {
+		LOG_ERROR("Could not open save file '%s' for writing", fileName);
+		delete[] fileName;
+		return;
+	}
+
+	delete[] fileName;
+
+	// Write player name: 16 bytes, space-padded
+	for (int i = 0; i < 16; i++) {
+		char c = (playerName && playerName[i]) ? playerName[i] : ' ';
+		file->storeChar((unsigned char)c);
+	}
+
+	// Magic terminator
+	file->storeChar(0x1A);
+
+	// Timestamp from current time
+	time_t now = time(nullptr);
+	struct tm* tm_info = localtime(&now);
+	unsigned char ts_m = (unsigned char)tm_info->tm_min;
+	unsigned char ts_h = (unsigned char)tm_info->tm_hour;
+	unsigned char ts_t = (unsigned char)(tm_info->tm_sec % 32);
+	unsigned char ts_s = (unsigned char)tm_info->tm_sec;
+
+	file->storeChar(ts_m);
+	file->storeChar(ts_h);
+	file->storeChar(ts_t);
+	file->storeChar(ts_s);
+
+	// Derive initial keys from timestamp
+	unsigned short key1 = ts_m | (ts_h << 8);
+	unsigned short key2 = ts_t | (ts_s << 8);
+
+	keyIterate(key1, key2);
+
+	// Write garbage bytes up to data offset
+	int garbageCount = dataOffset(key1, true);
+	for (int i = 0; i < garbageCount; i++)
+		file->storeChar(0);
+
+	// Write data section keys
+	keyIterate(key1, key2);
+	unsigned short dk1 = key1, dk2 = key2;
+	file->storeShort(dk1);
+	file->storeShort(dk2);
+
+	// Write XOR-encrypted values
+	key1 = dk1;
+	key2 = dk2;
+	auto writeValue = [&](unsigned short value) {
+		keyIterate(key1, key2);
+		unsigned short bit = dataOffset(key1);
+		file->storeShort(value ^ bit);
+		unsigned short tmp = key2;
+		key2 = key1;
+		key1 = tmp;
+	};
+
+	writeValue((unsigned short)level);
+	writeValue((unsigned short)planet);
+	writeValue((unsigned short)+difficulty);
+	for (int i = 0; i < 6; i++)
+		writeValue(0);
+
+	LOG_TRACE("Saved planet = %d, level = %d, difficulty = %d", planet, level, +difficulty);
 }

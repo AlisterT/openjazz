@@ -114,6 +114,17 @@
 #endif
 
 /* Arbitrary default button config */
+#ifndef DEFAULT_BUTTON_ESCAPE_ALT
+	#define DEFAULT_BUTTON_ESCAPE_ALT (-1)
+#endif
+
+#ifndef DEFAULT_AXIS_FIRE
+	#define DEFAULT_AXIS_FIRE  (-1)
+#endif
+#ifndef DEFAULT_AXIS_FIRE_DIR
+	#define DEFAULT_AXIS_FIRE_DIR (1)
+#endif
+
 #ifndef DEFAULT_BUTTON_UP
 	#define DEFAULT_BUTTON_UP     (-1)
 #endif
@@ -156,6 +167,9 @@
 #ifndef DEFAULT_BUTTON_NO
 	#define DEFAULT_BUTTON_NO     (-1)
 #endif
+#ifndef DEFAULT_BUTTON_MENU
+	#define DEFAULT_BUTTON_MENU   (7)
+#endif
 
 /**
  * Set up the default controls.
@@ -183,6 +197,7 @@ Controls::Controls () {
 	keys[C_PAUSE].key = DEFAULT_KEY_PAUSE;
 	keys[C_YES].key = DEFAULT_KEY_YES;
 	keys[C_NO].key = DEFAULT_KEY_NO;
+	keys[C_MENU].key = DEFAULT_KEY_ESCAPE; // keyboard: Escape also opens in-game menu
 
 
 	buttons[C_UP].button = DEFAULT_BUTTON_UP;
@@ -204,6 +219,11 @@ Controls::Controls () {
 	buttons[C_PAUSE].button = DEFAULT_BUTTON_PAUSE;
 	buttons[C_YES].button = DEFAULT_BUTTON_YES;
 	buttons[C_NO].button = DEFAULT_BUTTON_NO;
+	buttons[C_MENU].button = DEFAULT_BUTTON_MENU;
+
+	for (count = 0; count < CONTROLS; count++)
+		buttons[count].altButton = -1;
+	buttons[C_ESCAPE].altButton = DEFAULT_BUTTON_ESCAPE_ALT;
 
 
 	axes[C_UP].axis = 1;
@@ -216,7 +236,8 @@ Controls::Controls () {
 	axes[C_RIGHT].direction = true;
 	axes[C_JUMP].axis = -1;
 	axes[C_SWIM].axis = -1;
-	axes[C_FIRE].axis = -1;
+	axes[C_FIRE].axis = DEFAULT_AXIS_FIRE;
+	axes[C_FIRE].direction = (DEFAULT_AXIS_FIRE_DIR != 0);
 	axes[C_CHANGE].axis = -1;
 	axes[C_ENTER].axis = -1;
 	axes[C_ESCAPE].axis = -1;
@@ -229,6 +250,7 @@ Controls::Controls () {
 	axes[C_PAUSE].axis = -1;
 	axes[C_YES].axis = -1;
 	axes[C_NO].axis = -1;
+	axes[C_MENU].axis = -1;
 
 
 	hats[C_UP].hat = 0;
@@ -254,12 +276,14 @@ Controls::Controls () {
 	hats[C_PAUSE].hat = -1;
 	hats[C_YES].hat = -1;
 	hats[C_NO].hat = -1;
+	hats[C_MENU].hat = -1;
 
 
 	for (count = 0; count < CONTROLS; count++) {
 
 		keys[count].pressed = false;
 		buttons[count].pressed = false;
+		buttons[count].altPressed = false;
 		axes[count].pressed = false;
 		hats[count].pressed = false;
 
@@ -314,6 +338,34 @@ void Controls::setButton (int control, int button) {
 
 	buttons[control].button = button;
 	buttons[control].pressed = false;
+
+}
+
+
+/**
+ * Set the secondary button to use for the specified control.
+ *
+ * @param control The control
+ * @param button The secondary button to use (-1 to disable)
+ */
+void Controls::setAltButton (int control, int button) {
+
+	buttons[control].altButton = button;
+	buttons[control].altPressed = false;
+
+}
+
+
+/**
+ * Get the secondary button being used for the specified control.
+ *
+ * @param control The control
+ *
+ * @return The secondary button being used (-1 if none)
+ */
+int Controls::getAltButton (int control) {
+
+	return buttons[control].altButton;
 
 }
 
@@ -505,16 +557,22 @@ int Controls::update (SDL_Event *event, LoopType type) {
 		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 			if (type == SET_JOYSTICK_LOOP) return JOYSTICKB | event->jbutton.button;
 
-			for (count = 0; count < CONTROLS; count++)
+			for (count = 0; count < CONTROLS; count++) {
 				if (event->jbutton.button == buttons[count].button)
 					buttons[count].pressed = true;
+				if (buttons[count].altButton >= 0 && event->jbutton.button == buttons[count].altButton)
+					buttons[count].altPressed = true;
+			}
 
 			break;
 
 		case SDL_EVENT_JOYSTICK_BUTTON_UP:
-			for (count = 0; count < CONTROLS; count++)
+			for (count = 0; count < CONTROLS; count++) {
 				if (event->jbutton.button == buttons[count].button)
 					buttons[count].pressed = false;
+				if (buttons[count].altButton >= 0 && event->jbutton.button == buttons[count].altButton)
+					buttons[count].altPressed = false;
+			}
 
 			break;
 
@@ -620,7 +678,7 @@ void Controls::loop () {
 	// Apply controls to universal control tracking
 	for (count = 0; count < CONTROLS; count++)
 		controlstates[count].state = (controlstates[count].time < globalTicks) &&
-			(keys[count].pressed || buttons[count].pressed ||
+			(keys[count].pressed || buttons[count].pressed || buttons[count].altPressed ||
 			axes[count].pressed || hats[count].pressed);
 
 	if (wheelUp) {

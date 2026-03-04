@@ -39,11 +39,13 @@
 #include "jj1level.h"
 #include "jj1levelplayer.h"
 #include "jj1/jj1episodeutils.h"
+#include "jj1/save/jj1save.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
 #include "io/controls.h"
 #include "io/file.h"
+#include "setup.h"
 #include "io/gfx/font.h"
 #include "io/gfx/paletteeffects.h"
 #include "io/gfx/sprite.h"
@@ -300,6 +302,11 @@ void JJ1Level::setTile (unsigned char gridX, unsigned char gridY, unsigned char 
 
 difficultyType JJ1Level::getDifficulty () {
 	return game->getDifficulty();
+}
+
+
+void JJ1Level::doSave (int slot) {
+	JJ1Save::write(slot, setup.characterName, worldNum, levelNum, getDifficulty());
 }
 
 

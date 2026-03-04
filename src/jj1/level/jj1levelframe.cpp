@@ -37,7 +37,43 @@
 #include "io/controls.h"
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
+#include "setup.h"
 #include "util.h"
+
+namespace {
+	// Nearest-neighbor scaled blit for 8-bit indexed surfaces (no color key).
+	// Scales src to an explicit dstW×dstH rectangle using fixed-point math,
+	// supporting non-integer scale ratios (e.g. 320→426 at 3× SDL scale).
+	static void blitSurfaceScaled (SDL_Surface *src, SDL_Surface *dst, int dx, int dy, int dstW, int dstH) {
+		if (dstW <= 0 || dstH <= 0) return;
+		if (SDL_MUSTLOCK(src)) SDL_LockSurface(src);
+		if (SDL_MUSTLOCK(dst)) SDL_LockSurface(dst);
+
+		const Uint8 *srcPix = (const Uint8 *)src->pixels;
+		Uint8 *dstPix = (Uint8 *)dst->pixels;
+
+		// 16.16 fixed-point ratios
+		int xRatio = (src->w << 16) / dstW;
+		int yRatio = (src->h << 16) / dstH;
+
+		for (int oy = 0; oy < dstH; oy++) {
+			int cy = dy + oy;
+			if (cy < 0 || cy >= dst->h) continue;
+			int sy = (oy * yRatio) >> 16;
+			const Uint8 *srcRow = srcPix + sy * src->pitch;
+			Uint8 *dstRow = dstPix + cy * dst->pitch;
+			for (int ox = 0; ox < dstW; ox++) {
+				int cx = dx + ox;
+				if (cx < 0 || cx >= dst->w) continue;
+				int sx = (ox * xRatio) >> 16;
+				dstRow[cx] = srcRow[sx];
+			}
+		}
+
+		if (SDL_MUSTLOCK(dst)) SDL_UnlockSurface(dst);
+		if (SDL_MUSTLOCK(src)) SDL_UnlockSurface(src);
+	}
+}
 
 
 /**
@@ -58,6 +94,12 @@ int JJ1Level::step () {
 	} else if(setup.hudStyle == hudType::FPS) {
 		// Leave space for panel in view height
 		viewH = canvasH - 33;
+	}
+	// Fixed HUD: reserve space for scaled panel at bottom (integer multiples only)
+	if (setup.hudFixed && setup.hudStyle == hudType::Classic && canvasW > SW) {
+		int pf_int = canvasW / SW;
+		if (pf_int * SW == canvasW)
+			viewH = canvasH - 33 * pf_int;
 	}
 
 	// Search for active events
@@ -236,6 +278,12 @@ void JJ1Level::draw () {
 		// Leave space for panel in view height
 		viewH = canvasH - 33;
 	}
+	// Fixed HUD: reserve space for scaled panel at bottom (integer multiples only)
+	if (setup.hudFixed && setup.hudStyle == hudType::Classic && canvasW > SW) {
+		int pf_int = canvasW / SW;
+		if (pf_int * SW == canvasW)
+			viewH = canvasH - 33 * pf_int;
+	}
 
 	// Ensure the new viewport is within the level
 	if (FTOI(viewX) + canvasW >= TTOI(LW)) viewX = ITOF(TTOI(LW) - canvasW);
@@ -323,6 +371,9 @@ void JJ1Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
+				// NOTE: hi-res is NOT applied to background tiles here.
+				// Background tiles are drawn BEFORE entities on the canvas; queuing hi-res
+				// after the canvas would cause them to overdraw player sprites (Z-order bug).
 
 			}
 
@@ -345,7 +396,6 @@ void JJ1Level::draw () {
 
 
 	// Show foreground tiles
-
 	for (y = 0; y <= ITOT(viewH - 1) + 1; y++) {
 
 		for (x = 0; x <= ITOT(canvasW - 1) + 1; x++) {
@@ -360,10 +410,10 @@ void JJ1Level::draw () {
 
 				dst.x = TTOI(x) - (vX & 31);
 				dst.y = TTOI(y) - (vY & 31);
-				if (ticks & 64) src.y = TTOI(eventSet[ge->event].multiB);
-				else src.y = TTOI(eventSet[ge->event].multiA);
+				unsigned char animTile;
+				if (ticks & 64) { src.y = TTOI(eventSet[ge->event].multiB); animTile = static_cast<unsigned char>(eventSet[ge->event].multiB); }
+				else { src.y = TTOI(eventSet[ge->event].multiA); animTile = static_cast<unsigned char>(eventSet[ge->event].multiA); }
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
 			}
 
@@ -377,7 +427,6 @@ void JJ1Level::draw () {
 				dst.y = TTOI(y) - (vY & 31);
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
-
 				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
 			}
 
@@ -404,10 +453,35 @@ void JJ1Level::draw () {
 	int offsetX = 0;
 	bool isWide = (canvasW != SW);
 
-	if(setup.hudStyle == hudType::FPS && isWide) {
-		// center panel
+	if(isWide && (setup.hudStyle == hudType::FPS || setup.hudStyle == hudType::Classic)) {
+		// center panel in widescreen
 		offsetX = (canvasW >> 1) - (SW >> 1);
 	}
+
+	// Panel scale for fixed (full-width) HUD mode.
+	// Only activates when canvasW is an exact integer multiple of SW so that
+	// panel cells and font glyphs scale by the same integer factor.
+	float pf = 1.0f;
+	int   ps = 1;
+	int   panelH = 33;
+	if (setup.hudFixed && setup.hudStyle == hudType::Classic && isWide) {
+		int pf_int = canvasW / SW; // integer multiples only
+		if (pf_int >= 1 && pf_int * SW == canvasW) {
+			pf      = (float)pf_int;
+			panelH  = 33 * pf_int;
+			ps      = pf_int;
+			offsetX = 0; // panel spans full width
+		}
+		// else: non-integer ratio — fall back to floating (offsetX unchanged)
+	}
+	// Helper: scale a horizontal panel-space coordinate to canvas pixels
+	auto S  = [pf](int v) { return (int)(v * pf + 0.5f); };
+	// Helper: map "v pixels from canvas bottom" to the correct canvas y in the
+	// NN-scaled panel. Source row (33-v) first appears at dest row
+	// ceil((33-v)*panelH/33), so canvas y = panelTop + ceil((33-v)*panelH/33).
+	auto Sy = [panelH](int v) -> int {
+		return (canvasH - panelH) + (int)ceilf((33 - v) * panelH / 33.0f);
+	};
 
 	video.setClipRect(canvas, nullptr);
 
@@ -434,12 +508,17 @@ void JJ1Level::draw () {
 	if(setup.hudStyle == hudType::Classic ||
 		(setup.hudStyle == hudType::FPS && !isWide)) {
 
-		dst.x = 0;
-		dst.y = canvasH - 33;
-		SDL_BlitSurface(panel, nullptr, canvas, &dst);
-
-		// Fill the one missing pixel row at the bottom black
-		video.drawRect(0, canvasH - 1, SW, 1, LEVEL_BLACK);
+		if (pf > 1.0f) {
+			// Fixed HUD at integer scale: panel fills full canvas width
+			blitSurfaceScaled(panel, canvas, 0, canvasH - panelH, canvasW, panelH);
+			video.drawRect(0, canvasH - 1, canvasW, 1, LEVEL_BLACK);
+		} else {
+			dst.x = offsetX;
+			dst.y = canvasH - 33;
+			SDL_BlitSurface(panel, nullptr, canvas, &dst);
+			// Fill the one missing pixel row at the bottom black
+			video.drawRect(offsetX, canvasH - 1, SW, 1, LEVEL_BLACK);
+		}
 	} else if (setup.hudStyle == hudType::FPS) {
 		// quake-style HUD
 
@@ -473,40 +552,42 @@ void JJ1Level::draw () {
 	// Show panel data
 
 	// Show score
-	panelSmallFont->showNumber(localPlayer->getScore(), offsetX + 84, canvasH - 27);
+	panelSmallFont->showNumber(localPlayer->getScore(), offsetX + S(84), Sy(27), ps);
 
 	// Show time remaining
 	if (endTime > ticks) x = endTime - ticks;
 	else x = 0;
 	y = x / (60 * 1000);
-	panelSmallFont->showNumber(y, offsetX + 116, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + S(116), Sy(27), ps);
 	x -= (y * 60 * 1000);
 	y = x / 1000;
-	panelSmallFont->showNumber(y, offsetX + 136, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + S(136), Sy(27), ps);
 	x -= (y * 1000);
 	y = x / 100;
-	panelSmallFont->showNumber(y, offsetX + 148, canvasH - 27);
+	panelSmallFont->showNumber(y, offsetX + S(148), Sy(27), ps);
 
 	// Show lives
-	panelSmallFont->showNumber(localPlayer->getLives(), offsetX + 124, canvasH - 13);
+	panelSmallFont->showNumber(localPlayer->getLives(), offsetX + S(124), Sy(13), ps);
 
 	// Show planet number
 
 	if (worldNum <= 41) // Main game levels
-		panelSmallFont->showNumber((worldNum % 3) + 1, offsetX + 184, canvasH - 13);
+		panelSmallFont->showNumber((worldNum % 3) + 1, offsetX + S(184), Sy(13), ps);
 	else if ((worldNum >= 50) && (worldNum <= 52)) // Christmas levels
-		panelSmallFont->showNumber(worldNum - 49, offsetX + 184, canvasH - 13);
-	else panelSmallFont->showNumber(worldNum, offsetX + 184, canvasH - 13);
+		panelSmallFont->showNumber(worldNum - 49, offsetX + S(184), Sy(13), ps);
+	else panelSmallFont->showNumber(worldNum, offsetX + S(184), Sy(13), ps);
 
 	// Show level number
-	panelSmallFont->showNumber(levelNum + 1, offsetX + 196, canvasH - 13);
+	panelSmallFont->showNumber(levelNum + 1, offsetX + S(196), Sy(13), ps);
 
 	// Show ammo
 	if (localPlayer->getAmmoType() == -1) {
 
 		// Draw "infinity" symbol
-		panelSmallFont->showString(":", offsetX + 225, canvasH - 13);
-		panelSmallFont->showString(";", offsetX + 233, canvasH - 13);
+		panelSmallFont->showString(":", offsetX + S(225), Sy(13),
+			alignX::Left, alignY::Top, ps);
+		panelSmallFont->showString(";", offsetX + S(233), Sy(13),
+			alignX::Left, alignY::Top, ps);
 
 	} else {
 
@@ -515,19 +596,18 @@ void JJ1Level::draw () {
 		// Trailing 0s
 		if (x < 100) {
 
-			panelSmallFont->showNumber(0, offsetX + 229, canvasH - 13);
-			if (x < 10) panelSmallFont->showNumber(0, offsetX + 237, canvasH - 13);
+			panelSmallFont->showNumber(0, offsetX + S(229), Sy(13), ps);
+			if (x < 10) panelSmallFont->showNumber(0, offsetX + S(237), Sy(13), ps);
 
 		}
 
-		panelSmallFont->showNumber(x > 999? 999: x, offsetX + 245, canvasH - 13);
+		panelSmallFont->showNumber(x > 999? 999: x, offsetX + S(245), Sy(13), ps);
 
 	}
 
 
 	// Draw the health bar
 
-	dst.x = 20;
 	x = localPlayer->getJJ1LevelPlayer()->getEnergy();
 	y = (ticks - prevTicks) * 40;
 
@@ -545,9 +625,10 @@ void JJ1Level::draw () {
 
 	}
 
+	int barFilled = 0;
 	if (energyBar > F1) {
 
-		dst.w = FTOI(energyBar) - 1;
+		barFilled = (int)((FTOI(energyBar) - 1) * pf + 0.5f);
 
 		// Choose energy bar colour
 		int color;
@@ -555,17 +636,13 @@ void JJ1Level::draw () {
 		else if (x > 51) color = 24; // blue only before first hit
 		else if (x > 38) color = 17; // green
 		else if (x > 25) color = 80; // pink
-		else if (x > 20) color = 32; // orange is only seen in easy
+		else color = 32; // orange is only seen in easy
 
 		// Draw energy bar
-		video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, color);
+		video.drawRect(offsetX + S(20), Sy(13), barFilled, S(7), color);
 
-		dst.x += dst.w;
-		dst.w = 64 - dst.w;
-
-	} else dst.w = 64;
-
+	}
 
 	// Fill in remaining energy bar space with black
-	video.drawRect(offsetX + dst.x, canvasH - 13, dst.w, 7, LEVEL_BLACK);
+	video.drawRect(offsetX + S(20) + barFilled, Sy(13), S(64) - barFilled, S(7), LEVEL_BLACK);
 }

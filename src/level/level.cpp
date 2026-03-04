@@ -317,7 +317,7 @@ int Level::select (bool& menu, int option) {
 				int ret = fileMenu.main(true, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
-					// TODO
+					doSave(ret);
 				}
 
 				// Restore level palette
@@ -399,9 +399,18 @@ int Level::loop (bool& menu, int& option, bool& message) {
 	if (::loop(NORMAL_LOOP, paletteEffects, paused) == E_QUIT) return E_QUIT;
 
 
-	if (controls.release(C_ESCAPE)) {
+	if (controls.release(C_MENU)) {
 
+		// Consume C_ESCAPE to prevent double-trigger when keyboard Escape is used
+		// (both C_MENU and C_ESCAPE share the Escape key on keyboard)
+		controls.release(C_ESCAPE);
 		menu = !menu;
+		option = 0;
+
+	} else if (menu && controls.release(C_ESCAPE)) {
+
+		// Gamepad B (or keyboard Escape when C_MENU didn't fire): close menu
+		menu = false;
 		option = 0;
 
 	}

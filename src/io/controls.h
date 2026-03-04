@@ -46,8 +46,9 @@
 #define C_PAUSE   16
 #define C_YES     17
 #define C_NO      18
+#define C_MENU    19 /* Open/close in-game menu (separate from back/cancel) */
 // Size of those arrays
-#define CONTROLS  19
+#define CONTROLS  20
 
 // Time interval
 #define T_KEY   200
@@ -71,7 +72,9 @@ class Controls {
 		typedef struct {
 
 			int  button; ///< Joystick button
+			int  altButton; ///< Secondary joystick button (-1 = none)
 			bool pressed; ///< Whether or not the button is pressed
+			bool altPressed; ///< Whether or not the alt button is pressed
 
 		} Buttons;
 
@@ -121,10 +124,12 @@ class Controls {
 
 		void setKey           (int control, int key);
 		void setButton        (int control, int button);
+		void setAltButton     (int control, int button);
 		void setAxis          (int control, int axis, bool direction);
 		void setHat           (int control, int hat, int direction);
 		int  getKey           (int control);
 		int  getButton        (int control);
+		int  getAltButton     (int control);
 		int  getAxis          (int control);
 		int  getAxisDirection (int control);
 		int  getHat           (int control);

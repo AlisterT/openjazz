@@ -30,6 +30,8 @@ class JJ1Save {
 		explicit JJ1Save (const char* fileName);
 		~JJ1Save ();
 
+		static void write (int slot, const char* playerName, int planet, int level, difficultyType difficulty);
+
 		bool valid;
 		char* name;
 		int planet;

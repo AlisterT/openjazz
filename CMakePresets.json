@@ -163,6 +163,49 @@
         "psp-parent",
         "type-release"
       ]
+    },
+    {
+      "name": "steamdeck-parent",
+      "inherits": "base",
+      "displayName": "Comment: Steam Deck Linux preset",
+      "description": "Steam Deck (SteamOS/Linux) build — 1280x800 native, widescreen, bilinear upscaling",
+      "hidden": true,
+      "cacheVariables": {
+        "DEFAULT_SCREEN_WIDTH":  "1280",
+        "DEFAULT_SCREEN_HEIGHT": "800",
+        "DEFAULT_FULLSCREEN":    "ON",
+        "DEFAULT_SCALE":         "2",
+        "DEFAULT_SCALE_METHOD":  "1",
+        "SCALE":                 "ON",
+        "PORTABLE":              "ON",
+        "HIRES":                 "ON",
+        "CMAKE_C_FLAGS":         "-march=x86-64-v3",
+        "CMAKE_CXX_FLAGS":       "-march=x86-64-v3",
+        "DEFAULT_BUTTON_JUMP":       "0",
+        "DEFAULT_BUTTON_SWIM":       "0",
+        "DEFAULT_BUTTON_FIRE":       "2",
+        "DEFAULT_BUTTON_ESCAPE":     "7",
+        "DEFAULT_BUTTON_ESCAPE_ALT": "1",
+        "DEFAULT_BUTTON_PAUSE":      "6",
+        "DEFAULT_AXIS_FIRE":         "5",
+        "DEFAULT_AXIS_FIRE_DIR":     "1"
+      }
+    },
+    {
+      "name": "steamdeck-debug",
+      "displayName": "Steam Deck Linux (Debug)",
+      "inherits": [
+        "steamdeck-parent",
+        "type-debug"
+      ]
+    },
+    {
+      "name": "steamdeck-release",
+      "displayName": "Steam Deck Linux (Release)",
+      "inherits": [
+        "steamdeck-parent",
+        "type-release"
+      ]
     }
   ],
   "buildPresets": [
@@ -209,6 +252,14 @@
     {
       "name": "psp-release",
       "configurePreset": "psp-release"
+    },
+    {
+      "name": "steamdeck-debug",
+      "configurePreset": "steamdeck-debug"
+    },
+    {
+      "name": "steamdeck-release",
+      "configurePreset": "steamdeck-release"
     }
   ],
   "packagePresets": [
@@ -255,6 +306,14 @@
     {
       "name": "psp-release",
       "configurePreset": "psp-release"
+    },
+    {
+      "name": "steamdeck-debug",
+      "configurePreset": "steamdeck-debug"
+    },
+    {
+      "name": "steamdeck-release",
+      "configurePreset": "steamdeck-release"
     }
   ],
   "workflowPresets": [
@@ -422,6 +481,32 @@
         {
           "type": "package",
           "name": "psp-release"
+        }
+      ]
+    },
+    {
+      "name": "steamdeck-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "steamdeck-debug"
+        },
+        {
+          "type": "build",
+          "name": "steamdeck-debug"
+        }
+      ]
+    },
+    {
+      "name": "steamdeck-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "steamdeck-release"
+        },
+        {
+          "type": "build",
+          "name": "steamdeck-release"
         }
       ]
     }

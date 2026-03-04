@@ -51,6 +51,7 @@ class Setup {
 		bool          leaveUnneeded;
 		bool          slowMotion;
 		hudType       hudStyle;
+		bool          hudFixed; ///< HUD panel fixed full-width at bottom (true) or floating centered (false)
 
 		Setup  ();
 		~Setup ();

@@ -58,6 +58,10 @@ int SetupMenu::setupKeyboard () {
 
 		if (character == controls.getKey(C_ESCAPE)) return E_NONE;
 
+		// Allow gamepad back/escape button to exit
+		// (loop(SET_KEY_LOOP) only returns keyboard events; use release() for gamepad)
+		if (controls.release(C_ESCAPE)) return E_NONE;
+
 		if (controls.getCursor(x, y) &&
 			(x < 100) && (y >= canvasH - 12) &&
 			controls.wasCursorReleased()) return E_NONE;
@@ -131,192 +135,226 @@ int SetupMenu::setupKeyboard () {
 
 #ifndef NO_CONTROLLER_CFG
 /**
- * Run the joystick setup menu.
+ * Format a control's current gamepad binding as a short human-readable string.
+ * Returns e.g. "btn 0", "ax5+", "hat up", or "none".
+ */
+static void formatBinding (int control, char *buf, int bufLen) {
+	int btn = controls.getButton(control);
+	int altBtn = controls.getAltButton(control);
+	int axis = controls.getAxis(control);
+	int axDir = controls.getAxisDirection(control);
+	int hat = controls.getHat(control);
+
+	// Primary binding
+	if (btn >= 0) {
+		if (altBtn >= 0)
+			SDL_snprintf(buf, bufLen, "btn%d/btn%d", btn, altBtn);
+		else
+			SDL_snprintf(buf, bufLen, "btn %d", btn);
+	} else if (axis >= 0) {
+		SDL_snprintf(buf, bufLen, "ax%d%c", axis, axDir ? '+' : '-');
+	} else if (hat >= 0) {
+		const char *dirs[] = {"up","right","down","left"};
+		int d = hat & 0xF;
+		int di = (d == SDL_HAT_UP) ? 0 : (d == SDL_HAT_RIGHT) ? 1 :
+		         (d == SDL_HAT_DOWN) ? 2 : 3;
+		SDL_snprintf(buf, bufLen, "hat%s", dirs[di]);
+	} else {
+		SDL_snprintf(buf, bufLen, "none");
+	}
+}
+
+
+/**
+ * Apply the "original" button preset (classic JJ1 layout):
+ * B=jump, A=fire, Y=weapon, RB=menu, LB=pause, no alt bindings.
+ */
+static void applyPresetOriginal () {
+	controls.setButton(C_JUMP,   1);  // B
+	controls.setButton(C_SWIM,   1);  // B
+	controls.setButton(C_FIRE,   0);  // A
+	controls.setButton(C_CHANGE, 3);  // Y
+	controls.setButton(C_ENTER,  0);  // A
+	controls.setButton(C_ESCAPE, 1);  // B = back
+	controls.setButton(C_MENU,   7);  // Start = menu
+	controls.setButton(C_PAUSE,  4);  // LB
+	for (int i = 0; i < CONTROLS; i++) controls.setAltButton(i, -1);
+	controls.setAxis(C_FIRE, -1, true);
+}
+
+
+/**
+ * Apply the "Jazz² style" button preset (matches jazz2-native layout):
+ * A=jump, X=fire, B=back (alt escape), Start=menu, Select=pause, RT=alt fire.
+ */
+static void applyPresetJazz2 () {
+	controls.setButton(C_JUMP,   0);  // A
+	controls.setButton(C_SWIM,   0);  // A
+	controls.setButton(C_FIRE,   2);  // X
+	controls.setButton(C_CHANGE, 3);  // Y
+	controls.setButton(C_ENTER,  0);  // A
+	controls.setButton(C_ESCAPE, 1);  // B = back
+	controls.setButton(C_MENU,   7);  // Start = menu
+	controls.setButton(C_PAUSE,  6);  // Select
+	for (int i = 0; i < CONTROLS; i++) controls.setAltButton(i, -1);
+	controls.setAxis(C_FIRE, 5, true);   // RT = alt fire
+}
+
+
+/**
+ * Run the gamepad configuration menu.
+ * Shows all player controls with their current bindings in a list.
+ * Navigate with up/down, press Enter/A to reassign a control.
+ * Preset buttons quickly apply common layouts.
  *
  * @return Error code
  */
 int SetupMenu::setupJoystick () {
 
-	const char *options[PCONTROLS] = {"up", "down", "left", "right", "jump", "swim up", "fire", "weapon"};
-	int x, y;
+	// Controls shown in the list (indices into the controls arrays)
+	static const int ctrlIndex[] = {
+		C_UP, C_DOWN, C_LEFT, C_RIGHT,
+		C_JUMP, C_SWIM, C_FIRE, C_CHANGE,
+		C_ENTER, C_ESCAPE, C_MENU, C_PAUSE
+	};
+	static const char *ctrlName[] = {
+		"up", "down", "left", "right",
+		"jump", "swim", "fire", "weapon",
+		"confirm", "back", "menu", "pause"
+	};
+	static const int nCtrl = 12;
 
-	int progress = 0;
+	// Two extra rows: preset buttons
+	static const int nRows = nCtrl + 2;
+
+	int selection = 0;
+	bool assigning = false;
+	int x, y;
+	char bindBuf[32];
 
 	while (true) {
 
-		int control = loop(SET_JOYSTICK_LOOP);
+		int control = loop(assigning ? SET_JOYSTICK_LOOP : NORMAL_LOOP);
 
 		if (control == E_QUIT) return E_QUIT;
 
-		switch (control & 0xF00) {
+		if (assigning) {
+			// Waiting for any joystick input to assign to the current control
+			int ctrl = ctrlIndex[selection];
+			bool assigned = false;
 
-			case JOYSTICKB:
+			switch (control & 0xF00) {
+				case JOYSTICKB:
+					controls.setButton(ctrl, control & 0xFF);
+					assigned = true;
+					break;
+				case JOYSTICKANEG:
+					controls.setAxis(ctrl, control & 0xFF, false);
+					assigned = true;
+					break;
+				case JOYSTICKAPOS:
+					controls.setAxis(ctrl, control & 0xFF, true);
+					assigned = true;
+					break;
+				case JOYSTICKHUP:
+					controls.setHat(ctrl, control & 0xFF, SDL_HAT_UP);
+					assigned = true;
+					break;
+				case JOYSTICKHLFT:
+					controls.setHat(ctrl, control & 0xFF, SDL_HAT_LEFT);
+					assigned = true;
+					break;
+				case JOYSTICKHRHT:
+					controls.setHat(ctrl, control & 0xFF, SDL_HAT_RIGHT);
+					assigned = true;
+					break;
+				case JOYSTICKHDWN:
+					controls.setHat(ctrl, control & 0xFF, SDL_HAT_DOWN);
+					assigned = true;
+					break;
+			}
 
-				// If this is a navigation controls (up, down, or enter),
-				// make sure it's not the same as other navigation controls
+			if (assigned) {
+				playConfirmSound();
+				assigning = false;
+			}
 
-				if (((progress != C_UP) &&
-					(progress != C_DOWN) &&
-					(progress != C_ENTER)) ||
-					(controls.getButton(progress) == (control & 0xFF)) ||
-					((controls.getButton(C_UP) != (control & 0xFF)) &&
-					(controls.getButton(C_DOWN) != (control & 0xFF)) &&
-					(controls.getButton(C_ENTER) != (control & 0xFF)))) {
+			// Escape key cancels assignment
+			if (controls.release(C_ESCAPE)) {
+				assigning = false;
+			}
 
-					controls.setButton(progress, control & 0xFF);
-					progress++;
+		} else {
+			// Navigation mode
+			if (controls.release(C_ESCAPE)) return E_NONE;
 
-					if (progress == PCONTROLS) {
+			if (controls.getCursor(x, y) &&
+				(x < 100) && (y >= canvasH - 12) &&
+				controls.wasCursorReleased()) return E_NONE;
 
-						// If all controls have been assigned, return
-						playConfirmSound();
-						return E_NONE;
+			if (controls.release(C_UP)) {
+				if (selection > 0) selection--;
+				else selection = nRows - 1;
+			}
+			if (controls.release(C_DOWN)) {
+				if (selection < nRows - 1) selection++;
+				else selection = 0;
+			}
 
-					}
-
+			if (controls.release(C_ENTER)) {
+				playConfirmSound();
+				if (selection < nCtrl) {
+					// Start waiting for joystick input for this control
+					assigning = true;
+				} else if (selection == nCtrl) {
+					applyPresetOriginal();
+				} else {
+					applyPresetJazz2();
 				}
-
-				break;
-
-			case JOYSTICKANEG:
-
-				// If this is a navigation controls (up, down, or enter),
-				// make sure it's not the same as other navigation controls
-
-				if (((progress != C_UP) &&
-					(progress != C_DOWN) &&
-					(progress != C_ENTER)) ||
-					((controls.getAxis(progress) == (control & 0xFF)) && !controls.getAxisDirection(progress)) ||
-					(((controls.getAxis(C_UP) != (control & 0xFF)) || controls.getAxisDirection(C_UP)) &&
-					((controls.getAxis(C_DOWN) != (control & 0xFF)) || controls.getAxisDirection(C_DOWN)) &&
-					((controls.getAxis(C_ENTER) != (control & 0xFF)) || controls.getAxisDirection(C_ENTER)))) {
-
-					controls.setAxis(progress, control & 0xFF, false);
-					progress++;
-
-					if (progress == PCONTROLS) {
-
-						// If all controls have been assigned, return
-						playConfirmSound();
-						return E_NONE;
-
-					}
-
-				}
-
-				break;
-
-			case JOYSTICKAPOS:
-
-				// If this is a navigation controls (up, down, or enter),
-				// make sure it's not the same as other navigation controls
-
-				if (((progress != C_UP) &&
-					(progress != C_DOWN) &&
-					(progress != C_ENTER)) ||
-					((controls.getAxis(progress) == (control & 0xFF)) && controls.getAxisDirection(progress)) ||
-					(((controls.getAxis(C_UP) != (control & 0xFF)) || !controls.getAxisDirection(C_UP)) &&
-					((controls.getAxis(C_DOWN) != (control & 0xFF)) || !controls.getAxisDirection(C_DOWN)) &&
-					((controls.getAxis(C_ENTER) != (control & 0xFF)) || !controls.getAxisDirection(C_ENTER)))) {
-
-					controls.setAxis(progress, control & 0xFF, true);
-					progress++;
-
-					if (progress == PCONTROLS) {
-
-						// If all controls have been assigned, return
-						playConfirmSound();
-						return E_NONE;
-
-					}
-
-				}
-
-				break;
-
-			case JOYSTICKHUP:
-			case JOYSTICKHLFT:
-			case JOYSTICKHRHT:
-			case JOYSTICKHDWN:
-
-				int direction = 0;
-				switch(control & 0xF00) {
-					case JOYSTICKHUP:  direction = SDL_HAT_UP;    break;
-					case JOYSTICKHLFT: direction = SDL_HAT_LEFT;  break;
-					case JOYSTICKHRHT: direction = SDL_HAT_RIGHT; break;
-					case JOYSTICKHDWN: direction = SDL_HAT_DOWN;  break;
-				}
-
-				// If this is a navigation controls (up, down, or enter),
-				// make sure it's not the same as other navigation controls
-
-				if (((progress != C_UP) &&
-					(progress != C_DOWN) &&
-					(progress != C_ENTER)) ||
-					((controls.getHat(progress) == (control & 0xFF)) && (controls.getHatDirection(progress) == direction)) ||
-					(((controls.getHat(C_UP) != (control & 0xFF)) || (controls.getHatDirection(C_UP) != direction)) &&
-					((controls.getHat(C_DOWN) != (control & 0xFF)) || (controls.getHatDirection(C_DOWN) != direction)) &&
-					((controls.getHat(C_ENTER) != (control & 0xFF)) || (controls.getHatDirection(C_ENTER) != direction)))) {
-
-					controls.setHat(progress, control & 0xFF, direction);
-					progress++;
-
-					if (progress == PCONTROLS) {
-
-						// If all controls have been assigned, return
-						playConfirmSound();
-						return E_NONE;
-
-					}
-
-				}
-
-				break;
-
+			}
 		}
-
-		if (controls.release(C_ESCAPE)) return E_NONE;
-
-		if ((controls.getCursor(x, y) &&
-			(x < 100) && (y >= canvasH - 12) &&
-			controls.wasCursorReleased())) return E_NONE;
 
 
 		SDL_Delay(T_MENU_FRAME);
-
 		video.clearScreen(0);
 
-		fontmn2->showString("JOYSTICK CONFIGURATION", canvasW >> 1,
+		fontmn2->showString("GAMEPAD CONFIGURATION", canvasW >> 1,
 			(canvasH >> 1) - 80, alignX::Center);
 
-		for (int count = 0; count < PCONTROLS; count++) {
+		int listTop = (canvasH >> 1) - 56;
 
-			if (count < progress)
-				fontmn2->showString("okay", (canvasW >> 1) + 16,
-					(canvasH >> 1) + (count << 4) - 56);
+		for (int i = 0; i < nCtrl; i++) {
+			int rowY = listTop + i * 11;
 
-			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
+			if (i == selection) fontmn2->mapPalette(240, 8, 114, 16);
 
-			fontmn2->showString(options[count], (canvasW >> 1) - 96,
-				(canvasH >> 1) + (count << 4) - 56);
+			fontmn2->showString(ctrlName[i], (canvasW >> 1) - 96, rowY);
 
-			if (count == progress) {
-
-				fontmn2->showString("press control", canvasW >> 1,
-					(canvasH >> 1) + (count << 4) - 56);
-
-				fontmn2->restorePalette();
-
+			if (i == selection && assigning) {
+				fontmn2->showString("press control", (canvasW >> 1) + 8, rowY);
+			} else {
+				formatBinding(ctrlIndex[i], bindBuf, sizeof(bindBuf));
+				fontmn2->showString(bindBuf, (canvasW >> 1) + 8, rowY);
 			}
 
+			if (i == selection) fontmn2->restorePalette();
 		}
 
-		showEscString();
+		// Preset buttons
+		int presetY = listTop + nCtrl * 11 + 6;
 
+		if (selection == nCtrl) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("preset: original", (canvasW >> 1) - 96, presetY);
+		if (selection == nCtrl) fontmn2->restorePalette();
+
+		if (selection == nCtrl + 1) fontmn2->mapPalette(240, 8, 114, 16);
+		fontmn2->showString("preset: jazz2", (canvasW >> 1) - 96, presetY + 11);
+		if (selection == nCtrl + 1) fontmn2->restorePalette();
+
+		showEscString();
 	}
 
 	return E_NONE;
-
 }
 #endif
 
@@ -334,12 +372,15 @@ int SetupMenu::setupVideo () {
 	    768, 800, 864, 900, 960, 1024, 1050, 1080, 1152, 1200, 1440, 1536, 1600,
 	    2048, 2160, MAX_SCREEN_HEIGHT};
 	const char *methodString[4] = { "nearest", "bilinear", "scalex", "hqx"};
+	// Aspect ratio presets: 0=free, 1=16:9, 2=16:10 (Steam Deck), 3=4:3
+	const char *aspectString[4] = { "free", "16:9", "16:10", "4:3" };
 	int scaleFactor = video.getScaleFactor();
 	scalerType scaleMethod = video.getScaleMethod();
 	int screenW, screenH, oldscreenW, oldscreenH, x, y;
 	screenW = oldscreenW = video.getWidth();
 	screenH = oldscreenH = video.getHeight();
 	int selection = 0;
+	int aspectIndex = 0;
 	bool resOK = true;
 
 	char scaleString[3] = "Yx";
@@ -349,6 +390,15 @@ int SetupMenu::setupVideo () {
 	int resStringWidth = 0;
 
 	// helpers
+	auto calcAspectHeight = [&] (int w) -> int {
+		switch (aspectIndex) {
+			case 1: return (w * 9)  / 16;  // 16:9
+			case 2: return (w * 10) / 16;  // 16:10
+			case 3: return (w * 3)  / 4;   // 4:3
+			default: return 0;
+		}
+	};
+
 	auto changeWidth = [&] (bool isPositive) {
 		int count = 0;
 		if(isPositive && (screenW < video.getMaxWidth())) {
@@ -362,6 +412,11 @@ int SetupMenu::setupVideo () {
 				count--;
 
 			screenW = widthOptions[count];
+		}
+		// Apply aspect ratio constraint when locked
+		if (aspectIndex > 0) {
+			int newH = calcAspectHeight(screenW);
+			screenH = CLAMP(newH, video.getMinHeight(), video.getMaxHeight());
 		}
 	};
 	auto changeHeight = [&] (bool isPositive) {
@@ -385,6 +440,18 @@ int SetupMenu::setupVideo () {
 		else if (!isPositive && scaleFactor > MIN_SCALE)
 			scaleFactor--;
 	};
+	auto changeAspect = [&] (bool isPositive) {
+		if (isPositive && aspectIndex < 3)
+			aspectIndex++;
+		else if (!isPositive && aspectIndex > 0)
+			aspectIndex--;
+		// Apply newly selected aspect ratio to current width
+		if (aspectIndex > 0) {
+			int newH = calcAspectHeight(screenW);
+			screenH = CLAMP(newH, video.getMinHeight(), video.getMaxHeight());
+		}
+	};
+
 	auto changeScaleMethod = [&] (bool isPositive) {
 		// TODO
 #if 0
@@ -461,13 +528,13 @@ int SetupMenu::setupVideo () {
 
 		// Width
 		fontmn2->showString("width:", (canvasW >> 1) - 80, (canvasH >> 1) - 16);
-		fontmn2->showNumber(screenW, (canvasW >> 1) + 48, (canvasH >> 1) - 16);
+		fontmn2->showNumber(screenW, (canvasW >> 1) + 40, (canvasH >> 1) - 16);
 
 		switchPalette(selection == 1);
 
 		// Height
 		fontmn2->showString("height:", (canvasW >> 1) - 80, canvasH >> 1);
-		fontmn2->showNumber(screenH, (canvasW >> 1) + 48, canvasH >> 1);
+		fontmn2->showNumber(screenH, (canvasW >> 1) + 40, canvasH >> 1);
 
 		switchPalette(selection == 2);
 
@@ -485,17 +552,23 @@ int SetupMenu::setupVideo () {
 		fontmn2->showString("method:", (canvasW >> 1) - 80, (canvasH >> 1) + 32);
 		fontmn2->showString(methodString[+scaleMethod], (canvasW >> 1) + 8, (canvasH >> 1) + 32);
 
+		switchPalette(selection == 4);
+
+		// Aspect ratio
+		fontmn2->showString("aspect:", (canvasW >> 1) - 80, (canvasH >> 1) + 48);
+		fontmn2->showString(aspectString[aspectIndex], (canvasW >> 1) + 8, (canvasH >> 1) + 48);
+
 		switchPalette(false);
 
 		if (controls.release(C_UP)) {
 			if(selection > 0)
 				selection--;
 			else
-				selection = 3;
+				selection = 4;
 		}
 
 		if (controls.release(C_DOWN)) {
-			if(selection < 3)
+			if(selection < 4)
 				selection++;
 			else
 				selection = 0;
@@ -517,6 +590,9 @@ int SetupMenu::setupVideo () {
 			case 3:
 				changeScaleMethod(hasPressedRight);
 				break;
+			case 4:
+				changeAspect(hasPressedRight);
+				break;
 			}
 			resOK = true;
 		}
@@ -526,7 +602,7 @@ int SetupMenu::setupVideo () {
 			scaleFactor != video.getScaleFactor() || scaleMethod != video.getScaleMethod()) {
 
 			fontmn2->showString(resOK ? "press enter to apply" : "invalid resolution!",
-				(canvasW >> 1), (canvasH >> 1) + 56, alignX::Center);
+				(canvasW >> 1), (canvasH >> 1) + 64, alignX::Center);
 
 			// Apply resolution change
 			if (controls.release(C_ENTER)) {
@@ -654,13 +730,13 @@ int SetupMenu::setupAudio () {
  */
 int SetupMenu::setupMain () {
 
-	const char* setupOptions[6] = {"character", "keyboard", "joystick", "video", "audio", "gameplay"};
+	const char* setupOptions[6] = {"character", "keyboard", "gamepad", "video", "audio", "gameplay"};
 	const char* setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};
 	const char* setupCharacterColOptions[8] = {"white", "red", "orange", "yellow", "green", "blue", "animation 1", "animation 2"};
 	const unsigned char setupCharacterCols[8] = {PC_GREY, PC_RED, PC_ORANGE, PC_YELLOW, PC_LGREEN, PC_BLUE, PC_SANIM, PC_LANIM};
-	const char* setupModsOff[4] = {"slow motion: off", "extra items: take", "bird limit: one", "hud style: classic"};
-	const char* setupModsOn[4] = {"slow motion: on", "extra items: leave", "bird limit: no", "hud style: old fps" };
-	const char* setupMods[4];
+	const char* setupModsOff[5] = {"slow motion: off", "extra items: take", "bird limit: one", "hud style: classic", "hud panel: float"};
+	const char* setupModsOn[5] = {"slow motion: on", "extra items: leave", "bird limit: no", "hud style: old fps", "hud panel: fixed"};
+	const char* setupMods[5];
 	int ret;
 	int option, suboption, subsuboption;
 
@@ -670,6 +746,7 @@ int SetupMenu::setupMain () {
 	setupMods[1] = (setup.leaveUnneeded? setupModsOn[1]: setupModsOff[1]);
 	setupMods[2] = (setup.manyBirds? setupModsOn[2]: setupModsOff[2]);
 	setupMods[3] = (setup.hudStyle == hudType::FPS? setupModsOn[3]: setupModsOff[3]);
+	setupMods[4] = (setup.hudFixed? setupModsOn[4]: setupModsOff[4]);
 
 	video.setPalette(menuPalette);
 
@@ -759,9 +836,20 @@ int SetupMenu::setupMain () {
 
 				suboption = 0;
 
+				// Pre-compute max pixel width from all Off+On strings so the
+				// menu stays centered when options are toggled.
+				{
+					int modsMaxWidth = 0;
+					for (int i = 0; i < 5; i++) {
+						int w1 = fontmn2->getStringWidth(setupModsOff[i]);
+						int w2 = fontmn2->getStringWidth(setupModsOn[i]);
+						if (w1 > modsMaxWidth) modsMaxWidth = w1;
+						if (w2 > modsMaxWidth) modsMaxWidth = w2;
+					}
+
 				while (true) {
 
-					ret = generic("GAME OPTIONS", setupMods, 4, suboption);
+					ret = generic("GAME OPTIONS", setupMods, 5, suboption, modsMaxWidth);
 
 					if (ret == E_QUIT) return E_QUIT;
 					if (ret < 0) break;
@@ -779,8 +867,11 @@ int SetupMenu::setupMain () {
 					} else {
 						setup.hudStyle = hudType::Classic;
 					}
+					setup.hudFixed = (setupMods[4] == setupModsOn[4]);
 
 				}
+
+				} // modsMaxWidth scope
 
 				break;
 

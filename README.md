@@ -59,6 +59,41 @@ data files are expected to be under different paths (alongside the executable
 works always as a general fallback). You can also specifiy a game folder as
 command line argument.
 
+## Steam Deck / AppImage
+
+A pre-configured AppImage for the Steam Deck is available, built with
+1280×800 fullscreen, 2× integer scaling and widescreen support.
+
+### Building the AppImage
+
+Requires: CMake, Ninja, a C++14 compiler, SDL2 dev headers, and
+[linuxdeploy](https://github.com/linuxdeploy/linuxdeploy) on your `$PATH`.
+
+```bash
+./builds/steamdeck/build_appimage.sh
+```
+
+Output: `OpenJazz-<version>-steamdeck-x86_64.AppImage`
+
+### Running on Steam Deck
+
+1. Copy the AppImage and your Jazz Jackrabbit™ game data to the Deck
+2. Place game data either next to the AppImage or in a separate folder
+3. Make executable and run:
+
+```bash
+chmod +x OpenJazz-*-steamdeck-x86_64.AppImage
+
+# Game data next to the AppImage:
+./OpenJazz-*-steamdeck-x86_64.AppImage
+
+# Game data in a separate folder:
+./OpenJazz-*-steamdeck-x86_64.AppImage /path/to/jazz1
+```
+
+First launch defaults to 1280×800 fullscreen at 2× scale.
+Press **Escape → Setup Options → Video** to adjust resolution or scaling.
+
 ## Authors
 
 Original author: AJ Thomson (alister_j_t at yahoo dot com)

@@ -134,6 +134,7 @@ class Level {
 		LevelStage   getStage ();
 		void         setStage (LevelStage stage);
 		virtual void receive  (unsigned char* buffer) = 0;
+		virtual void doSave   (int slot) { (void)slot; }
 
 };
 

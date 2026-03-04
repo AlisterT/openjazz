@@ -95,7 +95,7 @@ int Menu::message (const char* text) {
  *
  * @return Error code
  */
-int Menu::generic (const char *title, const char** optionNames, int options, int& chosen) {
+int Menu::generic (const char *title, const char** optionNames, int options, int& chosen, int minWidth) {
 
 	int x, y;
 
@@ -103,7 +103,7 @@ int Menu::generic (const char *title, const char** optionNames, int options, int
 
 	// calculate the longest string length for centering
 	int xOffset = (canvasW >> 1);
-	int maxWidth = 0;
+	int maxWidth = minWidth;
 	for (int i = 0; i < options; i++) {
 		int w = fontmn2->getStringWidth(optionNames[i]);
 		if(w > maxWidth) maxWidth = w;

@@ -283,6 +283,7 @@ class JJ1Level : public Level {
 		fixed          getWaterLevel ();
 		void           flash         (unsigned char red, unsigned char green, unsigned char blue, int duration);
 		void           receive       (unsigned char* buffer) override;
+		void           doSave        (int slot) override;
 		virtual int    play          ();
 
 };

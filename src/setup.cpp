@@ -56,6 +56,7 @@ Setup::Setup () {
 	leaveUnneeded = true;
 	slowMotion = false;
 	hudStyle = hudType::Classic;
+	hudFixed = true;
 
 }
 
@@ -79,6 +80,14 @@ SetupOptions Setup::load () {
 	SetupOptions cfg = { false, 0, 0, false, 0, scalerType::None };
 #ifdef FULLSCREEN_ONLY
 	cfg.fullScreen = true;
+#elif defined(DEFAULT_FULLSCREEN)
+	cfg.fullScreen = true;
+#endif
+#ifdef DEFAULT_SCALE
+	cfg.videoScale = DEFAULT_SCALE;
+#endif
+#ifdef DEFAULT_SCALE_METHOD
+	cfg.scaleMethod = static_cast<scalerType>(CLAMP(DEFAULT_SCALE_METHOD, +scalerType::None, +scalerType::hqx));
 #endif
 
 	// Open config file
@@ -96,7 +105,8 @@ SetupOptions Setup::load () {
 	}
 
 	// Check that the config file has the correct version
-	if (file->loadChar() != 7) {
+	int cfgVersion = file->loadChar();
+	if (cfgVersion < 7 || cfgVersion > 9) {
 
 		LOG_WARN("Valid configuration file not found.");
 		delete file;
@@ -124,13 +134,17 @@ SetupOptions Setup::load () {
 	cfg.valid = true;
 
 	// Read controls
-	for (int i = 0; i < CONTROLS - 4; i++)
+	// CONTROLS-5 = keys for controls 0..14 (C_UP..C_TNT); last 5 use defaults
+	for (int i = 0; i < CONTROLS - 5; i++)
 		controls.setKey(i, file->loadInt());
 
-	for (int i = 0; i < CONTROLS; i++)
+	// Version 9 added C_MENU (slot 19); older configs only have 19 entries
+	int nc = (cfgVersion >= 9) ? CONTROLS : (CONTROLS - 1);
+
+	for (int i = 0; i < nc; i++)
 		controls.setButton(i, file->loadInt());
 
-	for (int i = 0; i < CONTROLS; i++) {
+	for (int i = 0; i < nc; i++) {
 
 		int a, d;
 
@@ -140,7 +154,7 @@ SetupOptions Setup::load () {
 
 	}
 
-	for (int i = 0; i < CONTROLS; i++) {
+	for (int i = 0; i < nc; i++) {
 
 		int h, d;
 
@@ -148,6 +162,11 @@ SetupOptions Setup::load () {
 		d = file->loadInt();
 		controls.setHat(i, h, d);
 
+	}
+
+	if (cfgVersion >= 8) {
+		for (int i = 0; i < nc; i++)
+			controls.setAltButton(i, file->loadInt());
 	}
 
 	// Read the player's name
@@ -176,6 +195,7 @@ SetupOptions Setup::load () {
 	} else {
 		setup.hudStyle = hudType::Classic;
 	}
+	setup.hudFixed = ((opt & 16) != 0);
 
 	delete file;
 
@@ -214,7 +234,7 @@ void Setup::save () {
 
 
 	// Write the version number
-	file->storeChar(7);
+	file->storeChar(9);
 
 	// Write video settings
 	file->storeShort(video.getWidth());
@@ -229,8 +249,8 @@ void Setup::save () {
 	file->storeChar(video.getScaleFactor());
 	file->storeChar(+video.getScaleMethod());
 
-	// Write controls
-	for (count = 0; count < CONTROLS - 4; count++)
+	// Write controls (CONTROLS-5 keyboard keys: controls 0..14; C_MENU and last 4 use defaults)
+	for (count = 0; count < CONTROLS - 5; count++)
 		file->storeInt(controls.getKey(count));
 
 	for (count = 0; count < CONTROLS; count++)
@@ -249,6 +269,9 @@ void Setup::save () {
 		file->storeInt(controls.getHatDirection(count));
 
 	}
+
+	for (count = 0; count < CONTROLS; count++)
+		file->storeInt(controls.getAltButton(count));
 
 	// Write the player's name
 	for (count = 0; count < STRING_LENGTH; count++)
@@ -272,6 +295,7 @@ void Setup::save () {
 	if (setup.leaveUnneeded) count |= 2;
 	if (setup.slowMotion) count |= 4;
 	if (setup.hudStyle == hudType::FPS) count |= 8;
+	if (setup.hudFixed) count |= 16;
 
 	file->storeChar(count);
 

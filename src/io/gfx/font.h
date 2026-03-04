@@ -52,10 +52,10 @@ class Font {
 		explicit Font(bool bonus);
 		~Font();
 
-		Point showString          (const char *s, int x, int y, alignX xAlign = alignX::Left, alignY yAlign = alignY::Top);
+		Point showString          (const char *s, int x, int y, alignX xAlign = alignX::Left, alignY yAlign = alignY::Top, int scale = 1);
 		Point showStringCentered  (const char *s);
 		int   showSceneString     (const unsigned char *s, int x, int y);
-		void  showNumber          (int n, int x, int y);
+		void  showNumber          (int n, int x, int y, int scale = 1);
 		void  mapPalette          (int start, int length, int newStart, int newLength);
 		void  restorePalette      ();
 		int   getHeight           () const;

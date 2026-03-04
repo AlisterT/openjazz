@@ -141,6 +141,48 @@ jobs:
           name: openjazz-linux-glibc2.35-x86_64
           path: OJ-*/
 
+  linux-appimage:
+    name: Build (Linux x86_64, AppImage)
+    needs: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -yqq
+          sudo apt-get install -yqq cmake ninja-build libsdl2-dev patchelf
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build OpenJazz
+        run: cmake --workflow --preset release
+
+      - name: Install into AppDir
+        run: cmake --install build-release --prefix AppDir/usr
+
+      - name: Download linuxdeploy and appimagetool
+        run: |
+          curl -fsSL https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -o linuxdeploy
+          curl -fsSL https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool
+          chmod +x linuxdeploy appimagetool
+
+      - name: Bundle libraries and create AppImage
+        env:
+          OJ_VERSION: ${{ needs.prepare.outputs.oj_version }}
+          APPIMAGE_EXTRACT_AND_RUN: 1
+          NO_STRIP: 1
+        run: |
+          ./linuxdeploy --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/OpenJazz.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/48x48/apps/OpenJazz.png
+          ./appimagetool --no-appstream AppDir openjazz-${OJ_VERSION}-linux-x86_64.AppImage
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: openjazz-linux-appimage-x86_64
+          path: openjazz-*.AppImage
+
   windows-mingw-gcc:
     name: Build (Windows x86_64, MinGW, GCC)
     needs: prepare
@@ -343,6 +385,7 @@ jobs:
       # all
       - dist
       - linux-clang
+      - linux-appimage
       - windows-mingw-gcc
       - web-emscripten
       - android-gradle-debug
@@ -430,6 +473,7 @@ jobs:
       # all
       - dist
       - linux-clang
+      - linux-appimage
       - windows-mingw-gcc
       - web-emscripten
       - android-gradle-debug

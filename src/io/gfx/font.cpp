@@ -33,6 +33,40 @@ namespace {
 
 	constexpr int normalPadding = 2;
 	constexpr int sceneStringPadding = 1;
+
+	// Nearest-neighbor scaled blit for 8-bit indexed surfaces, respecting color key.
+	static void blitGlyphScaled (SDL_Surface *src, SDL_Rect *srcRect,
+	                              SDL_Surface *dst, int dx, int dy, int scale) {
+		Uint32 colorKey = 0;
+#if OJ_SDL3
+		bool hasColorKey = SDL_GetSurfaceColorKey(src, &colorKey);
+#else
+		bool hasColorKey = (SDL_GetColorKey(src, &colorKey) == 0);
+#endif
+		if (SDL_MUSTLOCK(src)) SDL_LockSurface(src);
+		if (SDL_MUSTLOCK(dst)) SDL_LockSurface(dst);
+
+		const Uint8 *srcPix = (const Uint8 *)src->pixels;
+		Uint8 *dstPix = (Uint8 *)dst->pixels;
+
+		for (int sy = 0; sy < srcRect->h; sy++) {
+			for (int sx = 0; sx < srcRect->w; sx++) {
+				Uint8 pixel = srcPix[(srcRect->y + sy) * src->pitch + (srcRect->x + sx)];
+				if (hasColorKey && pixel == (Uint8)colorKey) continue;
+				for (int oy = 0; oy < scale; oy++) {
+					for (int ox = 0; ox < scale; ox++) {
+						int cx = dx + sx * scale + ox;
+						int cy = dy + sy * scale + oy;
+						if (cx >= 0 && cx < dst->w && cy >= 0 && cy < dst->h)
+							dstPix[cy * dst->pitch + cx] = pixel;
+					}
+				}
+			}
+		}
+
+		if (SDL_MUSTLOCK(dst)) SDL_UnlockSurface(dst);
+		if (SDL_MUSTLOCK(src)) SDL_UnlockSurface(src);
+	}
 }
 
 void Font::commonSetup() {
@@ -420,7 +454,7 @@ Font::~Font () {
  * @return The x and y coordinates of the end of the string
  */
 Point Font::showString (const char* string, int x, int y,
-	alignX xAlign, alignY yAlign) {
+	alignX xAlign, alignY yAlign, int scale) {
 
 	if (!isOk) return Point(x, y);
 
@@ -468,7 +502,7 @@ Point Font::showString (const char* string, int x, int y,
 
 			// skip spaces and invalid
 			if(c == INVALID_FONT_CHAR) {
-				xOffset += spaceWidth;
+				xOffset += spaceWidth * scale;
 				#if DEBUG_FONTS
 				if (string[i] != ' ') // log invalid
 					LOG_MAX("Skipping char %d in %s at index %d", string[i], string, i);
@@ -480,9 +514,12 @@ Point Font::showString (const char* string, int x, int y,
 			SDL_Rect dst = { xOffset, yOffset, 0, 0 };
 
 			// Draw the character to the screen
-			SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
+			if (scale > 1)
+				blitGlyphScaled(characterAtlas, &atlasRects[c], canvas, xOffset, yOffset, scale);
+			else
+				SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
-			xOffset += atlasRects[c].w + normalPadding;
+			xOffset += (atlasRects[c].w + normalPadding) * scale;
 		}
 	}
 
@@ -543,7 +580,7 @@ int Font::showSceneString (const unsigned char* string, int x, int y) {
  *
  * @return The x-coordinate of the end of the number
  */
-void Font::showNumber (int n, int x, int y) {
+void Font::showNumber (int n, int x, int y, int scale) {
 	if (!isOk) return;
 
 	SDL_Rect dst;
@@ -555,10 +592,13 @@ void Font::showNumber (int n, int x, int y) {
 
 		// Determine 0's position on the screen
 		dst.y = y;
-		dst.x = x - atlasRects[c].w;
+		dst.x = x - atlasRects[c].w * scale;
 
 		// Draw 0 to the screen
-		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
+		if (scale > 1)
+			blitGlyphScaled(characterAtlas, &atlasRects[c], canvas, dst.x, dst.y, scale);
+		else
+			SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
 		return;
 	}
@@ -574,14 +614,17 @@ void Font::showNumber (int n, int x, int y) {
 	while (count) {
 		unsigned int c = map[int('0' + (count % 10))];
 
-		offset -= atlasRects[c].w;
+		offset -= atlasRects[c].w * scale;
 
 		// Determine the digit's position on the screen
 		dst.y = y;
 		dst.x = offset;
 
 		// Draw the digit to the screen
-		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
+		if (scale > 1)
+			blitGlyphScaled(characterAtlas, &atlasRects[c], canvas, dst.x, dst.y, scale);
+		else
+			SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 
 		count /= 10;
 	}
@@ -592,10 +635,13 @@ void Font::showNumber (int n, int x, int y) {
 
 		// Determine the negative sign's position on the screen
 		dst.y = y;
-		dst.x = offset - atlasRects[c].w;
+		dst.x = offset - atlasRects[c].w * scale;
 
 		// Draw the negative sign to the screen
-		SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
+		if (scale > 1)
+			blitGlyphScaled(characterAtlas, &atlasRects[c], canvas, dst.x, dst.y, scale);
+		else
+			SDL_BlitSurface(characterAtlas, &atlasRects[c], canvas, &dst);
 	}
 }
 

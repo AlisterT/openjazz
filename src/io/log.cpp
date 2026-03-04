@@ -51,7 +51,11 @@ Log::Log () {
 
 	level = LL_DEBUG;
 	quiet = false;
+#ifndef PORTABLE
 	logfile = fopen("openjazz.log", "w");
+#else
+	logfile = nullptr;
+#endif
 	color_stdout = false;
 	color_stderr = false;
 
