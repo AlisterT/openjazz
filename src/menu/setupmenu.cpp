@@ -141,11 +141,15 @@ int SetupMenu::setupJoystick () {
 	int x, y;
 
 	int progress = 0;
-
+	int lastcontrol = -1;
+	
 	while (true) {
 
 		int control = loop(SET_JOYSTICK_LOOP);
-
+		if (control == lastcontrol) {
+			continue;
+		}
+		
 		if (control == E_QUIT) return E_QUIT;
 
 		switch (control & 0xF00) {
@@ -176,6 +180,7 @@ int SetupMenu::setupJoystick () {
 
 				}
 
+				lastcontrol = control;
 				break;
 
 			case JOYSTICKANEG:
@@ -203,7 +208,7 @@ int SetupMenu::setupJoystick () {
 					}
 
 				}
-
+				lastcontrol = control;
 				break;
 
 			case JOYSTICKAPOS:
@@ -231,7 +236,8 @@ int SetupMenu::setupJoystick () {
 					}
 
 				}
-
+				
+				lastcontrol = control;
 				break;
 
 			case JOYSTICKHUP:
@@ -270,7 +276,7 @@ int SetupMenu::setupJoystick () {
 					}
 
 				}
-
+				lastcontrol = control;
 				break;
 
 		}
