@@ -367,7 +367,7 @@ jobs:
           tree -aL 2
 
       - name: Advance tag to recent commit
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             try {
