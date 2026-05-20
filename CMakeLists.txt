@@ -117,7 +117,7 @@ else()
 	add_executable(OpenJazz ${OJ_SOURCES})
 endif()
 target_include_directories(OpenJazz PUBLIC src)
-target_link_libraries(OpenJazz ${OJ_LIBS_HOST})
+target_link_libraries(OpenJazz PRIVATE ${OJ_LIBS_HOST})
 
 # warnings
 if(MSVC)
@@ -154,8 +154,10 @@ add_subdirectory(ext)
 # external libraries
 
 if(ANDROID)
-	target_compile_definitions(OpenJazz PRIVATE OJ_SDL2)
-	set(SDL_STATUS "SDL2 (bundled)")
+	find_package(SDL3 REQUIRED CONFIG)
+	target_compile_definitions(OpenJazz PRIVATE OJ_SDL3)
+	target_link_libraries(OpenJazz PRIVATE SDL3::SDL3)
+	set(SDL_STATUS "SDL3 (android prefab)")
 elseif(EMSCRIPTEN)
 	# emscripten ships a "port" of SDL2, no linking necessary
 	target_compile_options(OpenJazz PRIVATE "--use-port=sdl2;-flto;-fexceptions")
@@ -165,7 +167,7 @@ elseif(LEGACY_SDL)
 	find_package(SDL REQUIRED)
 	target_compile_definitions(OpenJazz PRIVATE OJ_SDL1)
 	target_include_directories(OpenJazz PRIVATE ${SDL_INCLUDE_DIR})
-	target_link_libraries(OpenJazz ${SDL_LIBRARY})
+	target_link_libraries(OpenJazz PRIVATE ${SDL_LIBRARY})
 	set(SDL_STATUS "SDL1.2 (legacy)")
 else()
 	set(SDL_VERSION "2" CACHE STRING "SDL Version to use (2 or 3")
@@ -174,17 +176,17 @@ else()
 		find_package(SDL2 REQUIRED)
 		target_compile_definitions(OpenJazz PRIVATE OJ_SDL2)
 		if(WIN32 OR WII) # TODO: figure out, which other platforms need this
-			target_link_libraries(OpenJazz SDL2::SDL2main)
+			target_link_libraries(OpenJazz PRIVATE SDL2::SDL2main)
 		endif()
 		if(PSP)
 			target_compile_definitions(OpenJazz PRIVATE SDL_MAIN_HANDLED)
 		endif()
-		target_link_libraries(OpenJazz SDL2::SDL2)
+		target_link_libraries(OpenJazz PRIVATE SDL2::SDL2)
 		set(SDL_STATUS "SDL2")
 	else()
 		find_package(SDL3 3.4.0 REQUIRED)
 		target_compile_definitions(OpenJazz PRIVATE OJ_SDL3)
-		target_link_libraries(OpenJazz SDL3::SDL3)
+		target_link_libraries(OpenJazz PRIVATE SDL3::SDL3)
 		set(SDL_STATUS "SDL3")
 	endif()
 endif()
@@ -214,7 +216,7 @@ if(NETWORK)
 		endif()
 	endif()
 	if(OJ_LIBS_NET)
-		target_link_libraries(OpenJazz ${OJ_LIBS_NET})
+		target_link_libraries(OpenJazz PRIVATE ${OJ_LIBS_NET})
 	endif()
 endif()
 
@@ -316,7 +318,7 @@ elseif(ANDROID)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/android.cpp
 		src/platforms/android.h)
-	target_link_libraries(OpenJazz -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid)
+	target_link_libraries(OpenJazz PRIVATE -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid)
 elseif(RISCOS)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/riscos.cpp
@@ -327,7 +329,7 @@ elseif(3DS)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/3ds.cpp
 		src/platforms/3ds.h)
-	target_link_libraries(OpenJazz -lcitro3d)
+	target_link_libraries(OpenJazz PRIVATE -lcitro3d)
 	ctr_generate_smdh(OpenJazz.smdh
 		NAME "OpenJazz"
 		DESCRIPTION "Jack Jazzrabbit 1 game engine reimplementation"
@@ -352,13 +354,13 @@ elseif(WII)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/wii.cpp
 		src/platforms/wii.h)
-	target_link_libraries(OpenJazz -laesnd -lfat -lwiikeyboard)
+	target_link_libraries(OpenJazz PRIVATE -laesnd -lfat -lwiikeyboard)
 	ogc_create_dol(OpenJazz)
 elseif(PSP)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/psp.cpp
 		src/platforms/psp.h)
-	target_link_libraries(OpenJazz
+	target_link_libraries(OpenJazz PRIVATE
 		-lGL -lpspdebug -lpspgu -lpspctrl -lpspge -lpspdisplay -lpsphprm -lpspvfpu -lpspaudio -lpspirkeyb -lpsppower)
 	create_pbp_file(TARGET OpenJazz
 		TITLE "\"Jazz Jackrabbit (OpenJazz)\""
@@ -390,7 +392,7 @@ elseif(UNIX)
 	target_sources(OpenJazz PRIVATE
 		src/platforms/xdg.cpp
 		src/platforms/xdg.h)
-	target_link_libraries(OpenJazz -lm)
+	target_link_libraries(OpenJazz PRIVATE -lm)
 endif()
 
 # installation

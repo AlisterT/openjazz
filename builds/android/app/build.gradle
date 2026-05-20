@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "eu.alister.openjazz"
+    namespace = "eu.alister.openjazz"
     compileSdkVersion 35
+    ndkVersion = "28.2.13676358"
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion 35
@@ -10,10 +11,14 @@ android {
         versionName project.properties["app.version_name"]
         externalNativeBuild {
             cmake {
-                arguments "-DANDROID_APP_PLATFORM=android-24", "-DANDROID_STL=c++_static"
+                arguments "-DANDROID_PLATFORM=android-24", "-DANDROID_STL=c++_static"
+                // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
             }
         }
+    }
+    buildFeatures {
+        prefab = true
     }
     buildTypes {
         release {
@@ -28,14 +33,41 @@ android {
     externalNativeBuild {
         cmake {
             path '../../../CMakeLists.txt'
-            version '3.27.9+'
+            version = '4.1.2+'
         }
     }
     lint {
-        abortOnError false
+        abortOnError = false
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files("SDL3-${sdlVersion}.aar")
+}
+
+afterEvaluate {
+    preBuild.dependsOn downloadSdlAar
+}
+
+tasks.register('downloadSdlAar') {
+    doLast {
+        def sdlAarDest = file("SDL3-${sdlVersion}.aar")
+        if (!sdlAarDest.exists()) {
+            println "Downloading SDL ${sdlVersion} AAR..."
+            def sdlZipDest = layout.buildDirectory.file("sdl3.zip").get().asFile
+            sdlZipDest.parentFile.mkdirs()
+            new URL("https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip")
+                .withInputStream { i -> sdlZipDest.withOutputStream { it << i } }
+            copy {
+                from zipTree(sdlZipDest)
+                into projectDir
+                include "**/*.aar"
+                eachFile { FileCopyDetails fcp ->
+                    fcp.relativePath = new RelativePath(true, fcp.file.name)
+                }
+                includeEmptyDirs = false
+            }
+        }
+    }
 }

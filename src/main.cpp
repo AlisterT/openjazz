@@ -29,6 +29,11 @@
 // consume all external variables
 #define EXTERN
 
+#if OJ_SDL3
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#endif
+
 #include "game/game.h"
 #include "io/controls.h"
 #include "io/file.h"
@@ -454,7 +459,7 @@ int play () {
 
 	}
 
-	if (mainMenu->main() == E_QUIT) {
+	if (mainMenu->run() == E_QUIT) {
 
 		delete mainMenu;
 
@@ -572,7 +577,7 @@ int loop (LoopType type, PaletteEffect* paletteEffects, bool effectsStopped) {
 void logSDLVersion() {
 #if OJ_SDL3
 	// define a compatible struct
-	struct SDL_version { Uint8 major; Uint8 minor; Uint8 patch; };
+	struct SDL_version { int major, minor, patch; };
 
 	const int compiledVer = SDL_VERSION;
 	const int linkedVer = SDL_GetVersion();

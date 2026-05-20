@@ -15,4 +15,4 @@ target_compile_definitions(scale2x PRIVATE
 	restrict=${RESTRICT_KEYWORD})
 target_include_directories(scale2x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(OpenJazz scale2x)
+target_link_libraries(OpenJazz PRIVATE scale2x)

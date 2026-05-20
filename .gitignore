@@ -47,6 +47,8 @@ EBOOT.PBP
 # Android
 builds/android/.gradle/
 builds/android/app/.cxx/
+*.aar
+*.app
 
 # distribution archives
 openjazz-*.tar.*

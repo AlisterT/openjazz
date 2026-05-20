@@ -63,7 +63,7 @@ class Menu {
 class FileMenu : public Menu {
 
 	public:
-		int main (bool forSaving, bool showCustom);
+		int run (bool forSaving, bool showCustom);
 
 };
 
@@ -114,7 +114,7 @@ class SetupMenu : public Menu {
 		int setupAudio    ();
 
 	public:
-		int setupMain     ();
+		int run ();
 
 };
 
@@ -136,7 +136,7 @@ class MainMenu : public Menu {
 		MainMenu  ();
 		~MainMenu ();
 
-		int main ();
+		int run ();
 		int skip (int levelNum, int worldNum);
 
 };

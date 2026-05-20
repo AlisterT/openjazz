@@ -200,7 +200,7 @@ int MainMenu::select (int option) {
 
 		case 3: // Setup options
 
-			if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
+			if (setupMenu.run() == E_QUIT) return E_QUIT;
 
 			break;
 
@@ -249,7 +249,7 @@ int MainMenu::select (int option) {
  *
  * @return Error code
  */
-int MainMenu::main () {
+int MainMenu::run () {
 
 	SDL_Rect options[6] = {
 		{92, 35, 136, 22},

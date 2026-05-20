@@ -652,7 +652,7 @@ int SetupMenu::setupAudio () {
  *
  * @return Error code
  */
-int SetupMenu::setupMain () {
+int SetupMenu::run () {
 
 	const char* setupOptions[6] = {"character", "keyboard", "joystick", "video", "audio", "gameplay"};
 	const char* setupCharacterOptions[5] = {"name", "fur", "bandana", "gun", "wristband"};

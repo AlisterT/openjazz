@@ -342,7 +342,7 @@ int GameMenu::loadGame () {
 	int ret;
 
 	while (true) {
-		ret = fileMenu->main(false, true);
+		ret = fileMenu->run(false, true);
 		if (ret < 0) return ret;
 
 		if (ret == 4) {

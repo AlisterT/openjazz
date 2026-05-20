@@ -27,7 +27,7 @@
 #include "util.h"
 #include <memory>
 
-int FileMenu::main (bool forSaving, bool showCustom) {
+int FileMenu::run (bool forSaving, bool showCustom) {
 	int x, y;
 	int chosen = 0;
 	std::unique_ptr<JJ1Save> save[4];

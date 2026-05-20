@@ -17,7 +17,7 @@
 
 #ifdef __ANDROID__
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include "io/file.h"
 #include "util.h"
 
@@ -27,7 +27,7 @@ void AndroidPlatform::AddGamePaths() {
 		gamePaths.add(createString(pref), PATH_TYPE_CONFIG|PATH_TYPE_TEMP);
 	}
 
-	const char* storage = SDL_AndroidGetExternalStoragePath();
+	const char* storage = SDL_GetAndroidExternalStoragePath();
 	if(storage) {
 		gamePaths.add(createString(storage), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 	}

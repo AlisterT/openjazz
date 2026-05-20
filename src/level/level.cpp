@@ -317,7 +317,7 @@ int Level::select (bool& menu, int option) {
 
 				playConfirmSound();
 
-				int ret = fileMenu.main(true, false);
+				int ret = fileMenu.run(true, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
 					if (handleSave(ret))
@@ -340,7 +340,7 @@ int Level::select (bool& menu, int option) {
 
 				playConfirmSound();
 
-				int ret = fileMenu.main(false, false);
+				int ret = fileMenu.run(false, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
 					playConfirmSound();
@@ -363,7 +363,7 @@ int Level::select (bool& menu, int option) {
 
 				bool wasSlow = setup.slowMotion;
 
-				if (setupMenu.setupMain() == E_QUIT) return E_QUIT;
+				if (setupMenu.run() == E_QUIT) return E_QUIT;
 
 				if (wasSlow && !setup.slowMotion) steps <<= 1;
 				else if (!wasSlow && setup.slowMotion) steps >>= 1;
