@@ -366,6 +366,7 @@ void playMusic (const char * fileName, bool restart) {
 		xmp_start_player(xmpC, audioSpec.freq, playerFlags);
 		xmp_set_player(xmpC, XMP_PLAYER_INTERP, MUSIC_INTERPOLATION);
 		xmp_set_player(xmpC, XMP_PLAYER_DSP, MUSIC_EFFECTS);
+		xmp_set_player(xmpC, XMP_PLAYER_AMP, 2); // add loudness
 	} else {
 		LOG_ERROR("Could not play music file: %s", fileName);
 		delete[] currentMusic;

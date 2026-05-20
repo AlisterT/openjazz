@@ -18,7 +18,21 @@ target_link_libraries(OpenJazz miniz)
 
 # xmp
 
-add_subdirectory(xmp)
+find_package(libxmp 4.7.0 QUIET)
+if(libxmp_FOUND)
+	if(TARGET libxmp::xmp_shared)
+		target_link_libraries(OpenJazz libxmp::xmp_shared)
+		set(XMP_STATUS "libxmp (external shared)")
+	elseif(TARGET libxmp::xmp_static)
+		target_link_libraries(OpenJazz libxmp::xmp_static)
+		set(XMP_STATUS "libxmp (external static)")
+	endif()
+else()
+	add_subdirectory(xmp)
+	target_link_libraries(OpenJazz xmp)
+	set(XMP_STATUS "eXtended Masi Player (internal)")
+endif()
+set(XMP_STATUS ${XMP_STATUS} CACHE STRING "Which xmp library is used" FORCE)
 
 # stb
 

@@ -1,6 +1,5 @@
 
 include(CheckSymbolExists)
-include(CheckFunctionExists)
 
 # xmp
 
@@ -62,5 +61,3 @@ if(UNIX)
 	endif()
 	target_link_libraries(xmp PRIVATE m)
 endif()
-
-target_link_libraries(OpenJazz xmp)
