@@ -101,8 +101,8 @@ int SetupMenu::setupKeyboard () {
 		for (int count = 0; count < PCONTROLS; count++) {
 
 			if (count < progress)
-				fontmn2->showString("okay", (canvasW >> 1) + 16,
-					(canvasH >> 1) + (count << 4) - 56);
+				fontmn2->showString(controls.getKeyName(count),
+					(canvasW >> 1) + 16, (canvasH >> 1) + (count << 4) - 56);
 
 			else if (count == progress) fontmn2->mapPalette(240, 8, 114, 16);
 
