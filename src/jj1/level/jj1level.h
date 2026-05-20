@@ -251,6 +251,7 @@ class JJ1Level : public Level {
 		int  load (char* fileName, bool checkpoint);
 		int  step ();
 		void draw ();
+		bool handleSave (int slot) override;
 
 	public:
 		JJ1EventPath path[PATHS]; ///< Pre-defined event movement paths

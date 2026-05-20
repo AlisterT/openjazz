@@ -125,6 +125,7 @@ class Level {
 			unsigned char textPalIndex, unsigned char selectedTextPalIndex,
 			int textPalSpan);
 		int  loop          (bool& menu, int& option, bool& message);
+		virtual bool handleSave (int /*slot*/) { return false; }
 
 	public:
 		explicit Level(Game* owner);

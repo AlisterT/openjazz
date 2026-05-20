@@ -41,15 +41,11 @@
 
 static bool getSaveData(int slot, int &lvl, int &plnt, difficultyType &dffclty) {
 	// load save game
-	char* fileName = createString("SAVE.0");
-	fileName[5] += slot;
-	auto save = std::make_unique<JJ1Save>(fileName);
-	delete[] fileName;
-
-	if(save->valid) {
-		lvl = save->level;
-		plnt = save->planet;
-		dffclty = save->difficulty;
+	auto save = JJ1Save::fromSlot(slot);
+	if(save->isValid()) {
+		lvl = save->getLevel();
+		plnt = save->getPlanet();
+		dffclty = save->getDifficulty();
 
 		return true;
 	}

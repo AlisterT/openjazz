@@ -270,9 +270,9 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		for (count = 0; count < 5; count++) {
 
-			// Gray out Save (unimplemented) FIXME: needs to be disabled generally in multiplayer
+			// Gray out Load and Save in multiplayer
 
-			if (count == 1) {
+			if (multiplayer && (count == 1 || count == 2)) {
 
 				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - 48, 132, 15, textPalIndex);
 
@@ -307,6 +307,7 @@ int Level::select (bool& menu, int option) {
 		case 0: // Continue
 
 			menu = false;
+			playConfirmSound();
 
 			break;
 
@@ -314,16 +315,22 @@ int Level::select (bool& menu, int option) {
 
 			if (!multiplayer) {
 
+				playConfirmSound();
+
 				int ret = fileMenu.main(true, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
-					// TODO
+					if (handleSave(ret))
+						playConfirmSound();
+					else
+						playSound(SE::OW);
 				}
 
 				// Restore level palette
 				video.setPalette(palette);
 
-			}
+			} else
+				playSound(SE::OW);
 
 			break;
 
@@ -331,22 +338,28 @@ int Level::select (bool& menu, int option) {
 
 			if (!multiplayer) {
 
+				playConfirmSound();
+
 				int ret = fileMenu.main(false, false);
 				if (ret == E_QUIT) return E_QUIT;
 				if (ret >= 0) {
+					playConfirmSound();
 					return E_LOAD0 + ret;
 				}
 
 				// Restore level palette
 				video.setPalette(palette);
 
-			}
+			} else
+				playSound(SE::OW);
 
 			break;
 
 		case 3: // Setup
 
 			if (!multiplayer) {
+
+				playConfirmSound();
 
 				bool wasSlow = setup.slowMotion;
 
@@ -358,12 +371,14 @@ int Level::select (bool& menu, int option) {
 				// Restore level palette
 				video.setPalette(palette);
 
-			}
+			} else
+				playSound(SE::OW);
 
 			break;
 
 		case 4: // Quit game
 
+			playConfirmSound();
 			return E_RETURN;
 
 	}

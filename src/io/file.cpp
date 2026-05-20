@@ -256,7 +256,7 @@ unsigned char File::loadChar () {
 }
 
 
-void File::storeChar (unsigned char val) {
+void File::storeChar (const unsigned char val) {
 
 	fputc(val, file);
 
@@ -304,7 +304,7 @@ unsigned short int File::loadShort (unsigned short int max) {
 }
 
 
-void File::storeShort (unsigned short int val) {
+void File::storeShort (const unsigned short int val) {
 
 	fputc(val & 255, file);
 	fputc(val >> 8, file);
@@ -331,7 +331,7 @@ signed int File::loadInt () {
 }
 
 
-void File::storeInt (signed int val) {
+void File::storeInt (const signed int val) {
 
 	unsigned int uval;
 
@@ -345,7 +345,32 @@ void File::storeInt (signed int val) {
 }
 
 
-void File::storeData (void* data, int length) {
+/**
+ * Load a string with given length from the file.
+ *
+ * @return The new string
+ */
+char * File::loadString (int length) {
+	char *string = new char[length + 1];
+	int res = fread(string, 1, length, file);
+
+	if (res != length)
+		LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
+
+	string[length] = '\0';
+
+	return string;
+}
+
+
+void File::storeString (const char *string) {
+	int length = strlen(string);
+
+	storeData(string, length);
+}
+
+
+void File::storeData (const void* data, int length) {
 
 	if(!forWriting) {
 		LOG_ERROR("File %s not opened for writing!", filePath);
@@ -534,25 +559,6 @@ char * File::loadFileName () {
 	}
 
 	string[length] = 0;
-
-	return string;
-}
-
-
-
-/**
- * Load a string with given length from the file.
- *
- * @return The new string
- */
-char * File::loadString (int length) {
-	char *string = new char[length + 1];
-	int res = fread(string, 1, length, file);
-
-	if (res != length)
-		LOG_ERROR("Could not read whole string (%d of %d bytes read)", res, length);
-
-	string[length] = '\0';
 
 	return string;
 }

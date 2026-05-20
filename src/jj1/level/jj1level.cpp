@@ -39,6 +39,7 @@
 #include "jj1level.h"
 #include "jj1levelplayer.h"
 #include "jj1/jj1episodeutils.h"
+#include "jj1/save/jj1save.h"
 
 #include "game/game.h"
 #include "game/gamemode.h"
@@ -925,4 +926,9 @@ int JJ1Level::play () {
 
 	return E_NONE;
 
+}
+
+bool JJ1Level::handleSave (int slot) {
+	auto save = std::make_unique<JJ1Save>(setup.characterName, worldNum, levelNum, getDifficulty());
+	return save->save(slot);
 }

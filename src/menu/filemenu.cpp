@@ -35,18 +35,15 @@ int FileMenu::main (bool forSaving, bool showCustom) {
 
 	// load save games
 
-	char* fileName = createString("SAVE.0");
-	for (int i = 0; i < 4; i++) {
-		save[i] = std::make_unique<JJ1Save>(fileName);
-		fileName[5]++;
-	}
-	delete[] fileName;
+	for (int i = 0; i < 4; i++)
+		save[i] = JJ1Save::fromSlot(i);
 
-	const char *loadGameOptions[5] = {save[0]->name, save[1]->name, save[2]->name, save[3]->name, "custom"};
+	const char *loadGameOptions[5] = { save[0]->getName(), save[1]->getName(),
+		save[2]->getName(), save[3]->getName(), "custom"};
 
 	auto fileChosen = [&]() -> bool {
 		if (chosen < 4 && !forSaving) {
-			if(!save[chosen]->valid) {
+			if(!save[chosen]->isValid()) {
 				playSound(SE::WAIT);
 
 				return false;
