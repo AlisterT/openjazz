@@ -259,8 +259,6 @@ int MainMenu::run () {
 		{82, 137, 156, 26},
 		{78, 166, 166, 29}};
 	int macroType[4];
-	File* file;
-	char* fileName;
 	Plasma plasma;
 	SDL_Rect dst;
 	int option, macro, x, y, ret;
@@ -277,52 +275,53 @@ int MainMenu::run () {
 	idleTime = globalTicks + T_DEMO;
 
 	// Check for demo macros
+	char *fileName = createString("MACRO.1");
+	for (macro = 0; macro < 4; macro++) {
+		macroType[macro] = -1;
 
-	fileName = createString("MACRO.1");
-
-	for (macro = 0; macro < 4; macro++)
-	{
-
-		try {
-
-			file = new File(fileName, PATH_TYPE_GAME);
+		if (File::exists(fileName, PATH_TYPE_GAME)) {
+			FilePtr file = std::make_unique<File>(fileName, PATH_TYPE_GAME);
 			macroType[macro] = file->loadChar();
-			delete file;
-
-		} catch (int e) {
-
-			macroType[macro] = -1;
-
 		}
 
 		fileName[6]++;
-
 	}
-
-	macro = 3;
-
 	delete[] fileName;
 
+	macro = 3;
 
 	while (true) {
 
 		if (loop(NORMAL_LOOP) == E_QUIT) return E_QUIT;
 
-		if (controls.release(C_ESCAPE)) option = 5;
+		if (controls.release(C_ESCAPE)) {
+			option = 5;
 
-		if (controls.release(C_UP)) option = (option + 5) % 6;
+			// New demo timeout
+			idleTime = globalTicks + T_DEMO;
+		}
 
-		if (controls.release(C_DOWN)) option = (option + 1) % 6;
+		if (controls.release(C_UP)) {
+			option = (option + 5) % 6;
+
+			// New demo timeout
+			idleTime = globalTicks + T_DEMO;
+		}
+
+		if (controls.release(C_DOWN)) {
+			option = (option + 1) % 6;
+
+			// New demo timeout
+			idleTime = globalTicks + T_DEMO;
+		}
 
 		if (controls.release(C_ENTER)) {
-
 			ret = select(option);
 
 			if (ret < 0) return ret;
 
 			// New demo timeout
 			idleTime = globalTicks + T_DEMO;
-
 		}
 
 		if (controls.getCursor(x, y)) {
@@ -386,7 +385,7 @@ int MainMenu::run () {
 
 				if (macro != x) {
 
-					fileName = createString("MACRO.1");
+					char *fileName = createString("MACRO.1");
 					fileName[6] += macro;
 
 					if (game->playLevel(fileName) == E_QUIT) {
@@ -397,7 +396,6 @@ int MainMenu::run () {
 						return E_QUIT;
 
 					}
-
 					delete[] fileName;
 
 				}
