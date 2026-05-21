@@ -793,6 +793,24 @@ bool PathMgr::add(char* newPath, int newPathType) {
 	return true;
 }
 
+const char *PathMgr::getTemp() {
+	Path* path = gamePaths.paths;
+
+	while (path) {
+
+		// skip other paths
+		if ((path->pathType & PATH_TYPE_TEMP) != PATH_TYPE_TEMP) {
+			path = path->next;
+			continue;
+		}
+
+		return path->path;
+
+	}
+
+	LOG_WARN("Could not find temp path");
+	return "";
+}
 
 /**
  * Create a new directory path object.

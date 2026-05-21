@@ -51,6 +51,8 @@ class Log {
 		void setLevel(int level);
 		int  getLevel();
 		void setQuiet(bool enable);
+		void setFile(bool enable);
+		void setFileReady();
 		void log(int level, const char *file, int line, const char *fmt, ...) LIKE_PRINTF;
 
 	private:
@@ -59,7 +61,7 @@ class Log {
 
 		FILE *logfile;
 		int level;
-		bool quiet;
+		bool quiet, logToFile;
 		bool color_stdout, color_stderr;
 
 };

@@ -114,6 +114,7 @@ class PathMgr {
 		~PathMgr();
 
 		bool add(char* newPath, int newPathType = PATH_TYPE_ANY);
+		const char* getTemp();
 
 		Path* paths;
 

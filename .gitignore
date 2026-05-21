@@ -1,6 +1,7 @@
 OpenJazz
 openjazz.cfg
 openjazz.log
+openjazz-log.html
 *.exe
 *.a
 *.o

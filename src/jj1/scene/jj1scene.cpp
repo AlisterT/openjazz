@@ -237,17 +237,17 @@ JJ1Scene::JJ1Scene (const char * fileName) {
 	LOG_TRACE("Scene: Script items: %d", scriptItems);
 	for (int i = 0; i < scriptItems; i++) {
 		scriptStarts[i] = file->loadInt(); // Load offset to script
-		LOG_MAX("scriptStart: %ld", scriptStarts[i]);
+		//LOG_MAX("scriptStart: %ld", scriptStarts[i]);
 	}
 
 	// Seek to datastart now
 	file->seek(dataOffset, true); // Seek to data offsets
 	dataItems = file->loadShort() + 1; // Get number of data items
-	LOG_TRACE("Scene: Data items %d", dataItems);
+	LOG_TRACE("Scene: Data items: %d", dataItems);
 	dataOffsets.resize(dataItems);
 	for (int i = 0; i < dataItems; i++) {
 		dataOffsets[i] = file->loadInt(); // Load offset to script
-		LOG_MAX("dataOffsets: %ld", dataOffsets[i]);
+		//LOG_MAX("dataOffsets: %ld", dataOffsets[i]);
 	}
 
 	loadData(file.get());

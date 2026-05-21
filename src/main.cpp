@@ -85,9 +85,10 @@ static struct CliOptions {
 	int level;
 	int world;
 	char *verboseLevel;
-	int quiet;
+	bool quiet;
+	bool logfile;
 } cli = {
-	false, -1, -1, -1, -1, NULL, 0
+	false, -1, -1, -1, -1, NULL, false, true
 };
 
 #ifndef FULLSCREEN_ONLY
@@ -109,28 +110,35 @@ int checkOptions (int argc, char *argv[]) {
 	// generic usage message
 	const char *usage[] = {
 		"OpenJazz [options] [[--] <game directory 1> <game directory 2>]",
-	    NULL,
+	    nullptr,
 	};
 
 	// command line options
 	struct argparse_option opt[] = {
 		OPT_HELP(),
 		OPT_GROUP("Engine options"),
-		OPT_BOOLEAN('m', "mute", &cli.muteAudio, "Mute audio output", NULL, 0, 0),
+		OPT_BOOLEAN('m', "mute", &cli.muteAudio, "Mute audio output",
+			nullptr, 0, 0),
 #ifndef FULLSCREEN_ONLY
-		OPT_BOOLEAN('f', "fullscreen", NULL, "Display in Fullscreen mode",
+		OPT_BOOLEAN('f', "fullscreen", nullptr, "Display in Fullscreen mode",
 			display_mode_cb, 0, OPT_NONEG),
-		OPT_BOOLEAN('\0', "window", NULL, "Display in Window mode",
+		OPT_BOOLEAN('\0', "window", nullptr, "Display in Window mode",
 			display_mode_cb, 0, OPT_NONEG),
 #endif
-		OPT_INTEGER('s', "scale", &cli.scaleFactor, "Scale graphics <int> times", NULL, 0, 0),
+		OPT_INTEGER('s', "scale", &cli.scaleFactor, "Scale graphics <number> times",
+			nullptr, 0, 0),
 		OPT_GROUP("Developer options"),
-		OPT_INTEGER('w', "world", &cli.world, "Load specific World", NULL, 0, 0),
-		OPT_INTEGER('l', "level", &cli.level, "Load specific Level", NULL, 0, 0),
-		OPT_BOOLEAN('q', "quiet", &cli.quiet, "Disable console logging (Enable with --no-quiet)", NULL, 0, 0),
+		OPT_INTEGER('w', "world", &cli.world, "Load specific World", nullptr, 0, 0),
+		OPT_INTEGER('l', "level", &cli.level, "Load specific Level", nullptr, 0, 0),
+		OPT_BOOLEAN('q', "quiet", &cli.quiet,
+			"Disable logging to console (Enable with --no-quiet)", NULL, 0, 0),
+		OPT_BOOLEAN('\0', "no-logfile", &cli.logfile, "Disable logging to file",
+			nullptr, 0, OPT_NONEG),
 		OPT_STRING('\0', "verbose", &cli.verboseLevel,
-			"Verbosity level: max, trace, debug, info, warn, error, fatal", NULL, 0, 0),
-		OPT_BOOLEAN('v', "version", NULL, "Show version information", version_cb, 0, OPT_NONEG),
+			"Verbosity level: max, trace, debug, info, warn, error, fatal",
+			nullptr, 0, 0),
+		OPT_BOOLEAN('v', "version", nullptr, "Show version information",
+			version_cb, 0, OPT_NONEG),
 		OPT_END(),
 	};
 
@@ -141,7 +149,8 @@ int checkOptions (int argc, char *argv[]) {
 	argc = argparse_parse(&argparse, argc, argv);
 
 	// apply logger options
-	if (cli.quiet) logger.setQuiet(cli.quiet);
+	logger.setQuiet(cli.quiet);
+	logger.setFile(cli.logfile);
 	int verbosity = logger.getLevel();
 	if (cli.verboseLevel) {
 		if (!strcmp(cli.verboseLevel, "max"))        verbosity = LL_MAX;
@@ -152,10 +161,8 @@ int checkOptions (int argc, char *argv[]) {
 		else if (!strcmp(cli.verboseLevel, "error")) verbosity = LL_ERROR;
 		else if (!strcmp(cli.verboseLevel, "fatal")) verbosity = LL_FATAL;
 		else {
-
 			fprintf(stderr, "error: option `--verbose` has invalid level\n");
 			exit(EXIT_FAILURE);
-
 		}
 	}
 	logger.setLevel(verbosity);
@@ -215,6 +222,9 @@ void startUp (const char *argv0, int pathCount, char *paths[]) {
 #ifdef DATAPATH
 	gamePaths.add(createString(DATAPATH), PATH_TYPE_SYSTEM|PATH_TYPE_GAME);
 #endif
+
+	// Enable logfile
+	logger.setFileReady();
 
 	// Default settings
 

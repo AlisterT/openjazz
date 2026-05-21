@@ -374,7 +374,7 @@ int JJ1Level::loadTiles (char* fileName) {
 		return E_FILE;
 	}
 
-	LOG_DEBUG("Loaded %d tiles", tiles);
+	LOG_TRACE("Loaded %d tiles", tiles);
 
 	// Create combined buffer
 	unsigned char* buffer = new unsigned char[TTOI(1) * TTOI(tiles)];

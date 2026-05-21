@@ -442,9 +442,8 @@ void JJ1Scene::loadData (File *f) {
 	for (int loop = 0; loop < dataItems; loop++) {
 
 		f->seek(dataOffsets[loop], true); // Seek to data start
-		unsigned short int dataLen = f->loadShort(); // Get get the length of the datablock
-		LOG_MAX("Data dataLen: %d", dataLen);
 
+		unsigned short int dataLen = f->loadShort(); // Get get the length of the datablock
 		if (dataLen == EAniHeader) {
 
 			LOG_MAX("Data Type: ANI");
@@ -455,7 +454,6 @@ void JJ1Scene::loadData (File *f) {
 		} else {
 
 			unsigned char type = f->loadChar();
-			LOG_MAX("Data Type: %d", type);
 
 			switch (type) {
 
@@ -465,7 +463,7 @@ void JJ1Scene::loadData (File *f) {
 				case 6:
 				case 7:
 					{
-						LOG_MAX("Data Type: Image, index: %d", loop);
+						LOG_MAX("Data Type: Image, index: %d, length: %d", loop, dataLen);
 						unsigned short int width = f->loadShort(SW); // Get width
 						unsigned short int height;
 
@@ -489,7 +487,7 @@ void JJ1Scene::loadData (File *f) {
 
 				default:
 
-					LOG_MAX("Data Type: Palette, index: %d", loop);
+					LOG_MAX("Data Type: Palette, index: %d, length: %d", loop, dataLen);
 					f->seek(-3, false); // fake an RLE block size marker and use first palette byte
 
 					palettes.emplace_back(loop);
@@ -521,14 +519,16 @@ void JJ1Scene::loadScripts (File *f) {
 	int loop = 0;
 
 	for(auto &page : pages) {
-		LOG_MAX("Parse Script: %d", loop);
 
 		SDL_Rect textRect = { 0,0,0,0 };
 		f->seek(scriptStarts[loop], true); // Seek to data start
 
-		if (f->loadChar() == 0x50) { // Script tag
+		char tag = f->loadChar();
+		if (tag == 0x50) { // Script tag
 
-			LOG_MAX("Script id: 0x%x", f->loadShort());
+			int id = f->loadShort();
+			OJ_UNUSED(id);
+			LOG_SCRIPT("Script id: %d", id);
 			int palette = f->loadShort();
 			LOG_SCRIPT("Script default palette: %d", palette);
 			page.paletteIndex = palette;
@@ -846,6 +846,8 @@ void JJ1Scene::loadScripts (File *f) {
 
 			}
 
+		} else {
+			LOG_MAX("Parse Script: %d, Unknown tag %d", loop, tag);
 		}
 
 		loop++;
