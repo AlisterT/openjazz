@@ -13,30 +13,39 @@ if(CMAKE_VERSION VERSION_LESS "3.24")
 	endif()
 endif()
 
+# build type: allow user override and multi-configuration generators
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	# Set build type if none was specified, git checkouts default to debug
+	set(default_build_type "Release")
+	if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+		set(default_build_type "Debug")
+	endif()
+	message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+	set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 # compiler cache
+set(CCACHE_STATUS "Disabled")
 option(WANT_CCACHE "Use ccache to speed up rebuilds" OFF)
 if(WANT_CCACHE)
-	if(NOT FOUND_CCACHE)
-		find_program(CCACHE_EXECUTABLE ccache)
-
-		if(CCACHE_EXECUTABLE)
-			message(STATUS "Using ccache as CXX compiler launcher")
-			set(FOUND_CCACHE 1 CACHE INTERNAL "ccache has been found")
-		endif()
-	endif()
-
+	find_program(CCACHE_EXECUTABLE ccache)
 	if(CCACHE_EXECUTABLE)
 		set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
+		set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
+		set(CCACHE_STATUS "Enabled, ccache")
+	else()
+		set(CCACHE_STATUS "Not found")
 	endif()
 endif()
 
 # global scope, since ASAN needs to catch all targets
+set(ASAN_STATUS "Disabled")
 option(WANT_ASAN "build with address sanitizer" OFF)
 if(WANT_ASAN)
-	message(STATUS "Building with address sanitizer")
 	add_compile_options(-fno-omit-frame-pointer -fsanitize=address)
 	add_link_options(-fno-omit-frame-pointer -fsanitize=address)
+	set(ASAN_STATUS "Enabled")
 endif()
 
 # formatting and static analysis
@@ -44,14 +53,8 @@ file(GLOB_RECURSE ALL_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 
-if(NOT FOUND_ASTYLE)
-	find_program(ASTYLE_EXECUTABLE astyle)
-
-	if(ASTYLE_EXECUTABLE)
-		message(STATUS "Found source code formatter: astyle")
-		set(FOUND_ASTYLE 1 CACHE INTERNAL "Astyle has been found")
-	endif()
-endif()
+set(ASTYLE_STATUS "Not available")
+find_program(ASTYLE_EXECUTABLE astyle)
 if(ASTYLE_EXECUTABLE)
 	list(APPEND ASTYLE_ARGS
 		--suffix=none
@@ -74,15 +77,11 @@ if(ASTYLE_EXECUTABLE)
 		COMMAND ${ASTYLE_EXECUTABLE} ${ASTYLE_ARGS} ${ALL_SRC}
 		COMMENT "Running astyle to format source code"
 		VERBATIM)
+	set(ASTYLE_STATUS "Enabled, astyle (target 'format')")
 endif()
 
-if(NOT FOUND_CPPCHECK)
-	find_program(CPPCHECK_EXECUTABLE cppcheck)
-	if(CPPCHECK_EXECUTABLE)
-		message(STATUS "Found static analysis tool: cppcheck")
-		set(FOUND_CPPCHECK 1 CACHE INTERNAL "Cppcheck has been found")
-	endif()
-endif()
+set(CPPCHECK_STATUS "Not available")
+find_program(CPPCHECK_EXECUTABLE cppcheck)
 if(CPPCHECK_EXECUTABLE)
 	list(APPEND CPPCHECK_ARGS
 		--enable=warning,style,performance,portability,unusedFunction
@@ -99,8 +98,5 @@ if(CPPCHECK_EXECUTABLE)
 		COMMAND ${CPPCHECK_EXECUTABLE} ${CPPCHECK_ARGS} ${ALL_SRC}
 		COMMENT "Running cppcheck for static analysis"
 		USES_TERMINAL VERBATIM)
-endif()
-
-if(NOT FOUND_ASTYLE AND NOT FOUND_CPPCHECK)
-	message(STATUS "No source code formatter or static analysis tool enabled.")
+	set(CPPCHECK_STATUS "Enabled, cppcheck (target 'cppcheck')")
 endif()

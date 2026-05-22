@@ -110,7 +110,7 @@ JJ1Save::JJ1Save(const char* saveName, int planet, int level, difficultyType dif
 	valid(true), planet(planet), level(level), difficulty(difficulty) {
 
 	name = new char[17];
-	strncpy(name, saveName, 17);
+	strncpy(name, saveName, 16);
 	name[16] = '\0';
 
 	for(int i = 0; i < 5; i++)
