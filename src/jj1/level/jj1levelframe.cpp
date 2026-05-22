@@ -60,6 +60,11 @@ int JJ1Level::step () {
 		viewH = canvasH - 33;
 	}
 
+#if OJ_DEBUG
+	// Apply cheats
+	localPlayer->getJJ1LevelPlayer()->applyCheats();
+#endif
+
 	// Search for active events
 	for (y = FTOT(viewY) - 5; y < ITOT(FTOI(viewY) + viewH) + 5; y++) {
 
@@ -314,8 +319,7 @@ void JJ1Level::draw () {
 
 
 			// If this is not a foreground tile, draw it
-			if ((ge->event != 124) &&
-				(ge->event != 125) &&
+			if ((ge->event != 123) && (ge->event != 124) && (ge->event != 125) &&
 				(eventSet[ge->event].movement != 37) &&
 				(eventSet[ge->event].movement != 38)) {
 
@@ -324,6 +328,12 @@ void JJ1Level::draw () {
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
+#if OJ_DEBUG
+				if(debug::showFlags & DS_TILEMASK)
+					SDL_BlitSurface(maskedTileset, &src, canvas, &dst);
+				if(debug::showFlags & DS_BGTILES)
+					video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 55, false);
+#endif
 			}
 
 		}
@@ -364,12 +374,16 @@ void JJ1Level::draw () {
 				else src.y = TTOI(eventSet[ge->event].multiA);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
-				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
+#if OJ_DEBUG
+				if(debug::showFlags & DS_TILEMASK)
+					SDL_BlitSurface(maskedTileset, &src, canvas, &dst);
+				if(debug::showFlags & DS_ANIMTILES)
+					video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 44, false);
+#endif
 			}
 
 			// If this is a foreground tile, draw it
-			if ((ge->event == 124) ||
-				(ge->event == 125) ||
+			if ((ge->event == 124) || (ge->event == 125) ||
 				(eventSet[ge->event].movement == 37) ||
 				(eventSet[ge->event].movement == 38)) {
 
@@ -378,7 +392,12 @@ void JJ1Level::draw () {
 				src.y = TTOI(ge->tile);
 				SDL_BlitSurface(tileSet, &src, canvas, &dst);
 
-				//video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
+#if OJ_DEBUG
+				if(debug::showFlags & DS_TILEMASK)
+					SDL_BlitSurface(maskedTileset, &src, canvas, &dst);
+				if(debug::showFlags & DS_FGTILES)
+					video.drawRect(dst.x, dst.y, TTOI(1), TTOI(1), 33, false);
+#endif
 			}
 
 		}
@@ -501,8 +520,16 @@ void JJ1Level::draw () {
 	// Show level number
 	panelSmallFont->showNumber(levelNum + 1, offsetX + 196, canvasH - 13);
 
+
+
 	// Show ammo
-	if (localPlayer->getAmmoType() == -1) {
+	bool unlimitedAmmo = localPlayer->getAmmoType() == -1; // blaster
+#if OJ_DEBUG
+	// force unlimited ammo
+	if(debug::cheatFlags & DC_AMMO)
+		unlimitedAmmo = true;
+#endif
+	if (unlimitedAmmo) {
 
 		// Draw "infinity" symbol
 		panelSmallFont->showString(":", offsetX + 225, canvasH - 13);

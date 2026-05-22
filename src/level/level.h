@@ -80,7 +80,6 @@ enum LevelStage {
 
 };
 
-
 // Classes
 
 class Anim;
@@ -94,8 +93,12 @@ class Level {
 
 	private:
 		const char* menuOptions[6];
+		int         nMenuOptions;
 		SetupMenu   setupMenu; ///< Setup menu to run on the player's command
 		FileMenu    fileMenu; ///< Save and Load menus to run on the player's command
+#if OJ_DEBUG
+		DebugMenu   debugMenu;
+#endif
 
 		int select (bool& menu, int option);
 
@@ -135,7 +138,6 @@ class Level {
 		LevelStage   getStage ();
 		void         setStage (LevelStage stage);
 		virtual void receive  (unsigned char* buffer) = 0;
-
 };
 
 

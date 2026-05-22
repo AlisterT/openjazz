@@ -200,6 +200,9 @@ class JJ1Level : public Level {
 
 	private:
 		SDL_Surface*  tileSet; ///< Tile images
+#if OJ_DEBUG
+		SDL_Surface*  maskedTileset; ///< Tile images with applied mask
+#endif
 		SDL_Surface*  panel; ///< HUD background image
 		SDL_Surface*  panelBG[2]; ///< HUD background image borders
 		SDL_Surface*  panelAmmo[6]; ///< HUD ammo type images

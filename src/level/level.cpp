@@ -39,20 +39,22 @@
 #include "jj1/scene/jj1scene.h"
 #include "loop.h"
 #include "setup.h"
-
+#include "debug.h"
 
 /**
  * Create a new base level
  */
-Level::Level (Game* owner) {
+Level::Level (Game* owner) :
+	menuOptions{"continue game", "save game", "load game", "setup options",
+		"quit game", "debug menus"} {
 
 	game = owner;
 
-	menuOptions[0] = "continue game";
-	menuOptions[1] = "save game";
-	menuOptions[2] = "load game";
-	menuOptions[3] = "setup options";
-	menuOptions[4] = "quit game";
+#if OJ_DEBUG
+	nMenuOptions = 6;
+#else
+	nMenuOptions = 5;
+#endif
 
 	// Arbitrary initial value
 	smoothfps = 50.0f;
@@ -264,24 +266,26 @@ void Level::drawOverlay (unsigned char bg, bool menu, int option,
 
 		// Draw the menu
 
-		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 140, 92, bg);
-		video.drawRect((canvasW >> 1) - 72, (canvasH >> 1) - 54, 140, 92, textPalIndex, false);
+		int menuHeight = 16 * nMenuOptions + 12;
+
+		video.drawRect((canvasW >> 1) - 72, ((canvasH - menuHeight) >> 1) - 10, 140, menuHeight, bg);
+		video.drawRect((canvasW >> 1) - 72, ((canvasH - menuHeight) >> 1) - 10, 140, menuHeight, textPalIndex, false);
 
 
-		for (count = 0; count < 5; count++) {
+		for (count = 0; count < nMenuOptions; count++) {
 
 			// Gray out Load and Save in multiplayer
 
 			if (multiplayer && (count == 1 || count == 2)) {
 
-				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - 48, 132, 15, textPalIndex);
+				video.drawRect((canvasW >> 1) - 68, (canvasH >> 1) + (count << 4) - menuHeight / 2 - 2, 132, 15, textPalIndex);
 
 			}
 
 			if (count == option) fontmn2->mapPalette(240, 8, selectedTextPalIndex, textPalSpan);
 			else fontmn2->mapPalette(240, 8, textPalIndex, textPalSpan);
 
-			fontmn2->showString(menuOptions[count], (canvasW >> 1) - 64, (canvasH >> 1) + (count << 4) - 46);
+			fontmn2->showString(menuOptions[count], (canvasW >> 1) - 64, (canvasH >> 1) + (count << 4) - menuHeight / 2);
 
 		}
 
@@ -381,6 +385,19 @@ int Level::select (bool& menu, int option) {
 			playConfirmSound();
 			return E_RETURN;
 
+#if OJ_DEBUG
+		case 5: // Debug menus
+
+			playConfirmSound();
+
+			if (debugMenu.run(-1) == E_QUIT) return E_QUIT;
+
+			// Restore level palette
+			video.setPalette(palette);
+
+			break;
+#endif
+
 	}
 
 	return E_NONE;
@@ -434,9 +451,9 @@ int Level::loop (bool& menu, int& option, bool& message) {
 
 		// Deal with menu controls
 
-		if (controls.release(C_UP)) option = (option + 4) % 5;
+		if (controls.release(C_UP)) option = (option + nMenuOptions - 1) % nMenuOptions;
 
-		if (controls.release(C_DOWN)) option = (option + 1) % 5;
+		if (controls.release(C_DOWN)) option = (option + 1) % nMenuOptions;
 
 		if (controls.release(C_ENTER)) {
 

@@ -23,8 +23,8 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-
 #include "game/gamemode.h"
+#include "debug.h"
 
 #include "OpenJazz.h"
 
@@ -42,7 +42,6 @@
 
 // Demo timeout
 #define T_DEMO 20000
-
 
 // Classes
 
@@ -141,6 +140,29 @@ class MainMenu : public Menu {
 
 };
 
+#if OJ_DEBUG
+
+class DebugPage;
+
+/// Debug menu
+class DebugMenu : public Menu {
+
+	public:
+		DebugMenu();
+
+		int run(int page);
+		int showPage(int num);
+		int getPage() const;
+
+	private:
+		int page;
+		int numPages;
+		DebugPage *debugPage;
+};
+
+inline int DebugMenu::getPage() const { return page; }
+
+#endif
 
 // Variables
 

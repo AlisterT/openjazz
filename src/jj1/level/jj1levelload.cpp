@@ -388,6 +388,12 @@ int JJ1Level::loadTiles (char* fileName) {
 	video.enableColorKey(tileSet, TKEY);
 	delete[] buffer;
 
+#if OJ_DEBUG
+	// create an empty tileset for showing the mask
+	maskedTileset = video.createSurface(nullptr, TTOI(1), TTOI(tiles));
+	video.enableColorKey(maskedTileset, TKEY);
+#endif
+
 	return tiles;
 }
 
@@ -602,6 +608,9 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	if (res < 0) {
 		video.destroySurface(tileSet);
+#if OJ_DEBUG
+		video.destroySurface(maskedTileset);
+#endif
 		deletePanel();
 		delete font;
 
@@ -652,29 +661,25 @@ int JJ1Level::load (char* fileName, bool checkpoint) {
 
 	delete[] buffer;
 
-	/* Uncomment the code below if you want to see the mask instead of the tile
-	graphics during gameplay */
+#if OJ_DEBUG
+	// This let's us see the mask of the tile graphics during gameplay
 
-	/*if (SDL_MUSTLOCK(tileSet)) SDL_LockSurface(tileSet);
+	if (SDL_MUSTLOCK(maskedTileset)) SDL_LockSurface(maskedTileset);
 
 	for (int i = 0; i < tiles; i++) {
-
 		for (int y = 0; y < 32; y++) {
-
 			for (int x = 0; x < 32; x++) {
 
-				if (mask[i][((y >> 2) << 3) + (x >> 2)] == 1)
-					((char *)(tileSet->pixels))
-						[(i * 1024) + (y * 32) + x] = 88;
+				bool masked = (mask[i][((y >> 2) << 3) + (x >> 2)] == 1);
+				((char *)(maskedTileset->pixels))[(i * 1024) + (y * 32) + x] =
+					masked ? 88 : TKEY; // orange
 
 			}
-
 		}
-
 	}
 
-	if (SDL_MUSTLOCK(tileSet)) SDL_UnlockSurface(tileSet);*/
-
+	if (SDL_MUSTLOCK(maskedTileset)) SDL_UnlockSurface(maskedTileset);
+#endif
 
 	// Load special event path
 	buffer = file->loadRLE(PATHS << 9);

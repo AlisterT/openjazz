@@ -39,6 +39,7 @@
 #include "io/gfx/font.h"
 #include "io/gfx/video.h"
 #include "io/sound.h"
+#include "io/log.h"
 #include "util.h"
 
 
@@ -89,6 +90,46 @@ void JJ1LevelPlayer::ground () {
 
 }
 
+void JJ1LevelPlayer::applyCheats () {
+#if OJ_DEBUG
+	// Add bird
+	if(debug::cheatFlags & DC_BIRD) {
+		birds = new JJ1Bird(birds, this, FTOT(x), FTOT(y));
+		debug::cheatFlags &= ~DC_BIRD;
+		LOG_DEBUG("Cheats: added bird");
+	}
+
+	// Toggle airboard
+	if(debug::cheatFlags & DC_AIRBOARD) {
+		flying = !flying;
+		debug::cheatFlags &= ~DC_AIRBOARD;
+		LOG_DEBUG("Cheats: toggled airboard");
+	}
+
+	// Unlimited Ammo
+	if(debug::cheatFlags & DC_AMMO) {
+		player->ammo[0] = 99;
+		player->ammo[1] = 99;
+		player->ammo[2] = 99;
+		player->ammo[4] = 1;
+	}
+
+	// End current level
+	if(debug::cheatFlags & DC_LEVELSKIP) {
+		level->setStage(LS_END);
+		debug::cheatFlags &= ~DC_LEVELSKIP;
+		LOG_DEBUG("Cheats: skipped level");
+	}
+
+	// Go to bonus level, FIXME: check if available
+	if(debug::cheatFlags & DC_BONUS) {
+		level->setNext(2, level->getWorld());
+		level->setStage(LS_END);
+		debug::cheatFlags &= ~DC_BONUS;
+		LOG_DEBUG("Cheats: enter bonus level");
+	}
+#endif
+}
 
 /**
  * Tries to switch ammo to specific type, with fallback
@@ -144,6 +185,27 @@ void JJ1LevelPlayer::control (unsigned int ticks) {
 		return;
 
 	}
+
+#if OJ_DEBUG
+	// Force invincibility
+	if(debug::cheatFlags & DC_INVINCIBLE) {
+		reaction = PR_INVINCIBLE;
+		reactionTime = ticks + 2200;
+	}
+
+	// Force running shoes
+	if (debug::cheatFlags & DC_RUNNING) {
+		fastFeetTime = ticks + 100;
+	}
+
+	// Kill Jazz
+	if(debug::cheatFlags & DC_KILL) {
+		kill(nullptr, ticks);
+		debug::cheatFlags &= ~DC_KILL;
+		LOG_DEBUG("Cheats: killed Jazz");
+		return;
+	}
+#endif
 
 	if ((eventType == JJ1PE_FLOATH) || (eventType == JJ1PE_REPELH)) {
 
@@ -926,23 +988,27 @@ void JJ1LevelPlayer::draw (unsigned int ticks, int change) {
 	// Remove red flash or player colour from sprite
 	an->restorePalette();
 
+#if OJ_DEBUG
+	// Show the area of the player
+	if (debug::showFlags & DS_PLAYERAREA) {
+		video.drawRect(FTOI(drawX + PXO_L), FTOI(drawY + PYO_TOP),
+			FTOI(PXO_R - PXO_L), FTOI(-PYO_TOP), 89);
+		video.drawRect(FTOI(drawX + PXO_ML), FTOI(drawY + PYO_TOP),
+			FTOI(PXO_MR - PXO_ML), FTOI(-PYO_TOP), 88);
+	}
 
-	// Uncomment the following to see the area of the player
-	/*drawRect(FTOI(drawX + PXO_L),
-		FTOI(drawY + PYO_TOP),
-		FTOI(PXO_R - PXO_L),
-		FTOI(-PYO_TOP), 89);
-	drawRect(FTOI(drawX + PXO_ML),
-		FTOI(drawY + PYO_TOP),
-		FTOI(PXO_MR - PXO_ML),
-		FTOI(-PYO_TOP), 88);*/
+	// Show the tile containing the player's base
+	if (debug::showFlags & DS_PLAYERBASE) {
+		video.drawRect(FTOI(TTOF(FTOT(x + PXO_MID)) - viewX),
+			FTOI(TTOF(FTOT(y)) - viewY), 32, 32, 48);
+	}
 
-	// Uncomment the following to show the tile containing the player's base
-	//drawRect(FTOI(TTOF(FTOT(x + PXO_MID)) - viewX), FTOI(TTOF(FTOT(y)) - viewY), 32, 32, 48);
-
-	// Uncomment the following to show the player's event tile
-	// if (eventType != JJ1PE_NONE) drawRect(FTOI(TTOF(eventX) - viewX), FTOI(TTOF(eventY) - viewY), 32, 32, 89);
-
+	// Show the player's event tile
+	if (debug::showFlags & DS_PLAYEREVENTTILE && eventType != JJ1PE_NONE) {
+			video.drawRect(FTOI(TTOF(eventX) - viewX),
+				FTOI(TTOF(eventY) - viewY), 32, 32, 89);
+	}
+#endif
 
 	if (flying) {
 

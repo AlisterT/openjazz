@@ -63,6 +63,9 @@
  */
 JJ1Level::JJ1Level (Game* owner) : Level(owner) {
 	tileSet = panel = nullptr;
+#if OJ_DEBUG
+	maskedTileset = nullptr;
+#endif
 	for (int i = 0; i < 6; i++)
 		panelAmmo[i] = nullptr;
 	for (int i = 0; i < 2; i++)
@@ -140,7 +143,9 @@ JJ1Level::~JJ1Level () {
 	delete[] spriteSet;
 
 	video.destroySurface(tileSet);
-
+#if OJ_DEBUG
+	video.destroySurface(maskedTileset);
+#endif
 	deletePanel();
 
 	delete font;

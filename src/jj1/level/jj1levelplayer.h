@@ -192,6 +192,7 @@ class JJ1LevelPlayer final : public LevelPlayer {
 		void           send        (unsigned char* buffer) override;
 		void           receive     (unsigned char* buffer) override;
 
+		void           applyCheats ();
 		void           changeAmmo  (int type, bool fallback = false);
 		void           control     (unsigned int ticks);
 		void           move        (unsigned int ticks);

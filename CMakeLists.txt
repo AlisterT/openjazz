@@ -56,6 +56,9 @@ set(OJ_SOURCES
 	src/logo.h
 	src/loop.h
 	src/main.cpp
+	src/debug.h
+	src/debug.cpp
+	src/menu/debugmenu.cpp
 	src/menu/filemenu.cpp
 	src/menu/gamemenu.cpp
 	src/menu/mainmenu.cpp
@@ -125,6 +128,10 @@ if(MSVC)
 else()
 	target_compile_options(OpenJazz PRIVATE -Wall -Wextra)
 endif()
+
+# build type
+
+target_compile_definitions(OpenJazz PRIVATE $<$<CONFIG:Debug>:OJ_DEBUG>)
 
 # portable mode
 
