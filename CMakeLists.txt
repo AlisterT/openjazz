@@ -73,6 +73,7 @@ set(OJ_SOURCES
 	src/platforms/platform_interface.h
 	src/player/player.cpp
 	src/player/player.h
+	src/SDL_wrapper.h
 	src/setup.cpp
 	src/setup.h
 	src/types.h

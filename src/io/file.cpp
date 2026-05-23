@@ -30,15 +30,10 @@
 #include "util.h"
 #include "io/log.h"
 
+#include "SDL_wrapper.h"
 #include <string.h>
 #include <unistd.h>
 #include <miniz.h>
-
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 #if !(defined(_WIN32) || defined(WII) || defined(PSP))
     #define UPPERCASE_FILENAMES

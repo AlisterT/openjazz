@@ -17,7 +17,7 @@
 
 #ifdef __ANDROID__
 
-#include <SDL3/SDL.h>
+#include "SDL_wrapper.h"
 #include "io/file.h"
 #include "util.h"
 

@@ -22,15 +22,11 @@
 
 #include "plasma.h"
 
+#include "SDL_wrapper.h"
 #include "level/level.h"
 #include "util.h"
 #include "io/gfx/video.h"
 
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 /**
  * Create the plasma.

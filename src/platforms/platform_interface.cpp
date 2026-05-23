@@ -15,12 +15,7 @@
 
 #include "platform_interface.h"
 #include "platforms.h"
-
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
+#include "SDL_wrapper.h"
 
 IPlatform::~IPlatform() {}
 
@@ -39,8 +34,6 @@ IPlatform* IPlatform::make() {
 	return new VitaPlatform();
 #elif defined(__riscos__)
 	return new RiscosPlatform();
-#elif defined(__SYMBIAN32__)
-	return new SymbianPlatform();
 #elif defined(__APPLE__)
 	return new ApplePlatform();
 #elif defined(__ANDROID__)

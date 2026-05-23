@@ -22,13 +22,9 @@
 #define _PLANET_H
 
 
+#include "SDL_wrapper.h"
 #include "io/gfx/sprite.h"
 
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 // Class
 

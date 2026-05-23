@@ -19,7 +19,7 @@
 
 #include "TargetConditionals.h"
 
-#include <SDL.h>
+#include "SDL_wrapper.h"
 #include "util.h"
 #include "io/file.h"
 

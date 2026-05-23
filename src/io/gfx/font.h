@@ -21,12 +21,7 @@
 #define OJ_FONT_H
 
 #include "OpenJazz.h"
-
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
+#include "SDL_wrapper.h"
 
 #define MAX_FONT_CHARS 128
 

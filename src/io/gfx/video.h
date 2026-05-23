@@ -22,15 +22,10 @@
 #ifndef OJ_VIDEO_H
 #define OJ_VIDEO_H
 
+#include "SDL_wrapper.h"
 #include "setup.h"
 #include "paletteeffects.h"
 #include "platforms/platforms.h"
-
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 // Constants
 

@@ -23,16 +23,12 @@
  */
 
 
+#include "SDL_wrapper.h"
 #include "anim.h"
 #include "sprite.h"
 
 #include "jj1/level/jj1level.h"
 
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 /**
  * Create empty animation.

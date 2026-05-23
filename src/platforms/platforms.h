@@ -30,7 +30,6 @@
 #include "psvita.h"
 #include "riscos.h"
 #include "switch.h"
-#include "symbian.h"
 #include "wii.h"
 #include "windows.h"
 #include "xdg.h"

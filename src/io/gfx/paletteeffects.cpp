@@ -31,13 +31,9 @@
 #include "level/levelplayer.h"
 #include "player/player.h"
 
+#include "SDL_wrapper.h"
 #include <string.h>
 
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 /**
  * Create a new palette effect.

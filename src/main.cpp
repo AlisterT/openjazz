@@ -29,10 +29,13 @@
 // consume all external variables
 #define EXTERN
 
+#include "SDL_wrapper.h"
 #if OJ_SDL3
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #endif
+#include <cmath>
+#include <cstring>
+#include <argparse.h>
 
 #include "game/game.h"
 #include "io/controls.h"
@@ -55,17 +58,10 @@
 #include "platforms/platforms.h"
 #include "version.h"
 
-#include <cstring>
-#include <argparse.h>
-
 #if !OJ_SDL3
 	// Define some stuff to be SDL3 compatible
 
 	#define SDL_EVENT_QUIT SDL_QUIT
-#endif
-
-#ifndef __SYMBIAN32__
-	#include <math.h>
 #endif
 
 #define PI 3.141592f

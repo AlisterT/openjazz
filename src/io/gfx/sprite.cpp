@@ -23,14 +23,9 @@
  */
 
 
+#include "SDL_wrapper.h"
 #include "video.h"
 #include "sprite.h"
-
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
 
 
 /**

@@ -88,7 +88,7 @@ if(CPPCHECK_EXECUTABLE)
 		--std=c++14
 		--language=c++
 		-I${CMAKE_CURRENT_SOURCE_DIR}/src
-		-U__SYMBIAN32__ -UUIQ3 -UENABLE_JJ2                     # unmaintained
+		-UENABLE_JJ2                                            # unmaintained
 		-UGP2X -UWIZ -UDINGOO -UCAANOO -UGAMESHELL -U__riscos__ # contributed
 		-UPSP -U__vita__ -U__3DS__ -U__wii__ -U__SWITCH__       # homebrew
 		#--enable=information

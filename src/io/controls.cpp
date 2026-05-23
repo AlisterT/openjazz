@@ -23,12 +23,7 @@
  *
  */
 
-#ifdef OJ_SDL3
-	#include <SDL3/SDL.h>
-#else
-	#include <SDL.h>
-#endif
-
+#include "SDL_wrapper.h"
 #include "controls.h"
 #include "gfx/video.h"
 #include "platforms/platforms.h"
