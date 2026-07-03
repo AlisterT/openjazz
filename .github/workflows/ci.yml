@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Retrieve tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Get version, tag and pull request info
@@ -67,7 +67,7 @@ jobs:
           sudo apt-get install -yqq git asciidoctor w3m
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Generate Archives
         env:
@@ -96,7 +96,7 @@ jobs:
           sudo apt-get install -yqq build-essential cmake libsdl1.2-dev
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz (normal)
         run: |
@@ -119,7 +119,7 @@ jobs:
             libsdl2-dev asciidoctor w3m
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz (slim)
         run: |
@@ -161,7 +161,7 @@ jobs:
             toolchain:p cmake:p ninja:p SDL2:p asciidoctor:p
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz
         run: |
@@ -195,7 +195,7 @@ jobs:
             asciidoctor w3m
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz
         run: |
@@ -225,7 +225,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - uses: nttld/setup-ndk@v1
         with:
           ndk-version: r28c
@@ -286,7 +286,7 @@ jobs:
           sudo apt-get install -yqq ninja-build dos2unix asciidoctor w3m
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz
         run: |
@@ -320,7 +320,7 @@ jobs:
           apk add git cmake ninja asciidoctor w3m
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build OpenJazz
         run: |
@@ -358,7 +358,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: repo
 
@@ -445,7 +445,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: repo
 
