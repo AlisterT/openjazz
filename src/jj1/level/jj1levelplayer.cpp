@@ -683,6 +683,14 @@ bool JJ1LevelPlayer::touchEvent (JJ1EventType* event, unsigned char gridX, unsig
 
 	if ((event->movement == 37) || (event->movement == 38)) {
 
+		// Tube events are checked every frame while the player overlaps them.
+		// Play their configured sound only when entering a different tube node.
+		bool sameTubeNode =
+			((eventType == JJ1PE_REPELH) || (eventType == JJ1PE_REPELUP) ||
+			 (eventType == JJ1PE_REPELDOWN)) &&
+			(eventX == gridX) && (eventY == gridY);
+		if (!sameTubeNode) playSound(event->sound);
+
 		// Repel
 
 		if (event->multiB) {
